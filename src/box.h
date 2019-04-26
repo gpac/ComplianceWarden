@@ -2,17 +2,22 @@
 
 #include <cstdint>
 #include <vector>
-#include <cstdio>
+
+struct Symbol
+{
+  const char* name;
+  int64_t value;
+};
 
 struct Box
 {
   uint32_t fourcc;
   std::vector<Box> children;
+  std::vector<Symbol> syms;
 
   void add(const char* name, int64_t value)
   {
-    if(0)
-      printf("%s: %d\n", name, (int)value);
+    syms.push_back({ name, value });
   }
 };
 

@@ -30,6 +30,14 @@ void dump(Box const& box, int depth = 0)
          (box.fourcc >> 0) & 0xff);
   printf("\n");
 
+  for(auto& sym : box.syms)
+  {
+    for(int i = 0; i < depth; ++i)
+      printf("  ");
+
+    printf("%s: %lld\n", sym.name, (long long)sym.value);
+  }
+
   for(auto& child : box.children)
     dump(child, depth + 1);
 }
