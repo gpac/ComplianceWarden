@@ -18,6 +18,7 @@ LDFLAGS+=-Wl,-gc-sections
 
 SRCS_APP+=\
   src/main.cpp\
+  src/common_boxes.cpp\
 
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_APP:%=$(BIN)/%.o)
