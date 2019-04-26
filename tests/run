@@ -10,7 +10,9 @@ mkdir -p "$tmpDir"
 
 function main
 {
-  $BIN/cw.exe
+  $BIN/cw.exe $scriptDir/aac.mp4 > $tmpDir/aac.new
+  # cp $tmpDir/aac.new $scriptDir/aac.ref
+  diff -Naurw $scriptDir/aac.ref $tmpDir/aac.new
   echo "OK"
 }
 

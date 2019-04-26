@@ -1,0 +1,24 @@
+root
+  ftyp
+  free
+  mdat
+  moov
+    mvhd
+    trak
+      tkhd
+      edts
+      mdia
+        mdhd
+        hdlr
+        minf
+          smhd
+          dinf
+          stbl
+            stsd
+            stts
+            stsc
+            stsz
+            stco
+            sgpd
+            sbgp
+    udta
