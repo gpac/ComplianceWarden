@@ -13,5 +13,5 @@ static const SpecDesc g_miafSpec =
   },
 };
 
-static auto registered = registerSpec(&g_miafSpec);
+static auto const registered = registerSpec(&g_miafSpec);
 

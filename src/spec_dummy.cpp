@@ -34,5 +34,5 @@ static const SpecDesc g_dummySpec =
   },
 };
 
-static auto registered = registerSpec(&g_dummySpec);
+static auto const registered = registerSpec(&g_dummySpec);
 
