@@ -16,6 +16,9 @@ struct RuleDesc
 
 struct SpecDesc
 {
+  const char* caption;
   std::vector<RuleDesc> rules;
 };
+
+int registerSpec(SpecDesc const* spec);
 

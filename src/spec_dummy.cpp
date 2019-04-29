@@ -10,8 +10,9 @@ static bool canFind(H& haystack, P const& predicate)
   return false;
 }
 
-extern const SpecDesc g_dummySpec =
+static const SpecDesc g_dummySpec =
 {
+  "Dummy Spec, v1.2",
   {
     {
       "'ftyp' box must appear first",
@@ -32,4 +33,6 @@ extern const SpecDesc g_dummySpec =
     },
   },
 };
+
+static auto registered = registerSpec(&g_dummySpec);
 

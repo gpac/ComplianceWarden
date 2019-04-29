@@ -2,10 +2,11 @@
 
 ftyp_start:
 dd BE(ftyp_end - ftyp_start)
-db "ftip"
+db "ftip" ; error: mistyped 'ftyp'
 
 db "isom"
 dd BE(0x200)
 db "isom", "iso2", "mp41"
 ftyp_end:
 
+; error: no 'moov' box
