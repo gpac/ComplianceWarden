@@ -13,14 +13,14 @@ static const SpecDesc spec =
       }
     },
     {
-      "The FileTypeBox shall contain, in the compatible_brands list,"
-      "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12)"
+      "The FileTypeBox shall contain, in the compatible_brands list, "
+      "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
       "[and] brand(s) identifying conformance to this document (specified in 10).",
       [] (Box const& root, IReport* out)
       {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))
         {
-          out->error("first box must be ftyp");
+          out->error("ftyp box not found");
           return;
         }
 
