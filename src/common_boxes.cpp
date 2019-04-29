@@ -13,6 +13,15 @@ void parseRaw(BitReader& br, Box& box)
   // box.add("raw_byte", br.u(8));
 }
 
+void parseFtyp(BitReader& br, Box& box)
+{
+  box.add("brand", br.u(32));
+  box.add("version", br.u(32));
+
+  while(!br.empty())
+    box.add("compatible_brand", br.u(32));
+}
+
 void parseMfhd(BitReader& br, Box& box)
 {
   box.add("version", br.u(8));
@@ -109,6 +118,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
   case FOURCC("dref"):
   case FOURCC(".too"):
     return &parseChildren;
+  case FOURCC("ftyp"):
+    return &parseFtyp;
   case FOURCC("mdat"):
     return &parseRaw;
   case FOURCC("mfhd"):
