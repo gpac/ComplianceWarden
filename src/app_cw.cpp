@@ -4,6 +4,7 @@
 #include "box.h"
 #include "common_boxes.h"
 #include "parser.h"
+#include "spec.h"
 
 using namespace std;
 
@@ -42,6 +43,22 @@ void dump(Box const& box, int depth = 0)
     dump(child, depth + 1);
 }
 
+void checkCompliance(Box const& file, SpecDesc const& spec)
+{
+  struct Output : IOutput
+  {
+    void error(const char* fmt, ...) override
+    {
+      fprintf(stderr, "Error: %s\n", fmt);
+    }
+  };
+
+  Output out;
+
+  for(auto& rule : spec.rules)
+    rule.check(file, &out);
+}
+
 int main(int argc, const char* argv[])
 {
   if(argc != 2)
@@ -57,6 +74,10 @@ int main(int argc, const char* argv[])
   auto func = getParseFunction(root.fourcc);
   func(br, root);
   dump(root);
+
+  extern const SpecDesc g_dummySpec;
+  checkCompliance(root, g_dummySpec);
+
   return 0;
 }
 
