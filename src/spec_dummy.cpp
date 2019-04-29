@@ -10,7 +10,7 @@ static bool canFind(H& haystack, P const& predicate)
   return false;
 }
 
-static const SpecDesc g_dummySpec =
+static const SpecDesc spec =
 {
   "Dummy Spec, v1.2",
   {
@@ -34,5 +34,5 @@ static const SpecDesc g_dummySpec =
   },
 };
 
-static auto const registered = registerSpec(&g_dummySpec);
+static auto const registered = registerSpec(&spec);
 
