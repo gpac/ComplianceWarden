@@ -1,5 +1,15 @@
 #include "spec.h"
 
+template<typename H, typename P>
+static bool canFind(H& haystack, P const& predicate)
+{
+  for(auto& needle : haystack)
+    if(predicate(needle))
+      return true;
+
+  return false;
+}
+
 extern const SpecDesc g_dummySpec =
 {
   {
@@ -16,13 +26,7 @@ extern const SpecDesc g_dummySpec =
       "'moov' box must exist",
       [] (Box const& root, IOutput* out)
       {
-        bool found = false;
-
-        for(auto& box : root.children)
-          if(box.fourcc == FOURCC("moov"))
-            found = true;
-
-        if(!found)
+        if(!canFind(root.children, [] (Box const& box) { return box.fourcc == FOURCC("moov"); }))
           out->error("moov box not found");
       }
     },
