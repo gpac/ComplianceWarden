@@ -18,6 +18,14 @@ struct BitReader
     return r;
   }
 
+  BitReader sub(int byteCount)
+  {
+    assert(m_pos % 8 == 0);
+    auto sub = BitReader { src + m_pos / 8, byteCount };
+    m_pos += byteCount * 8;
+    return sub;
+  }
+
   int bit()
   {
     const int byteOffset = m_pos / 8;

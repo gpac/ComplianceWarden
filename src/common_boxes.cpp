@@ -82,11 +82,10 @@ void parseChildren(BitReader& br, Box& box)
     child.fourcc = br.u(32);
 
     const auto payloadSize = int(size - 8);
-    auto sub = BitReader { br.src + br.m_pos / 8, payloadSize };
+    auto sub = br.sub(payloadSize);
     auto parseFunc = getParseFunction(child.fourcc);
     parseFunc(sub, child);
     box.children.push_back(std::move(child));
-    br.m_pos += payloadSize * 8;
   }
 }
 }
