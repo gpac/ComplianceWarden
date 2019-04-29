@@ -15,7 +15,7 @@ extern const SpecDesc g_dummySpec =
   {
     {
       "'ftyp' box must appear first",
-      [] (Box const& root, IOutput* out)
+      [] (Box const& root, IReport* out)
       {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))
           out->error("first box must be ftyp");
@@ -24,7 +24,7 @@ extern const SpecDesc g_dummySpec =
 
     {
       "'moov' box must exist",
-      [] (Box const& root, IOutput* out)
+      [] (Box const& root, IReport* out)
       {
         if(!canFind(root.children, [] (Box const& box) { return box.fourcc == FOURCC("moov"); }))
           out->error("moov box not found");

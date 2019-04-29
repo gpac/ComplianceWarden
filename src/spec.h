@@ -3,7 +3,7 @@
 #include <vector>
 #include "box.h"
 
-struct IOutput
+struct IReport
 {
   virtual void error(const char* fmt, ...) = 0;
 };
@@ -11,7 +11,7 @@ struct IOutput
 struct RuleDesc
 {
   const char* caption;
-  void (* check)(Box const& root, IOutput* out);
+  void (* check)(Box const& root, IReport* out);
 };
 
 struct SpecDesc

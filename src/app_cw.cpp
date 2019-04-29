@@ -45,22 +45,22 @@ void dump(Box const& box, int depth = 0)
 
 void checkCompliance(Box const& file, SpecDesc const& spec)
 {
-  struct Output : IOutput
+  struct Report : IReport
   {
     void error(const char* fmt, ...) override
     {
-      fprintf(stdout, "[Rule #%d] %s\n", i, fmt);
+      fprintf(stdout, "[Rule #%d] %s\n", ruleIdx, fmt);
     }
 
-    int i = 0;
+    int ruleIdx = 0;
   };
 
-  Output out;
+  Report out;
 
   for(auto& rule : spec.rules)
   {
     rule.check(file, &out);
-    out.i++;
+    out.ruleIdx++;
   }
 }
 
