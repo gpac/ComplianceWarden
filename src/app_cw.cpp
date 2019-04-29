@@ -1,5 +1,7 @@
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "box.h"
 #include "common_boxes.h"
@@ -72,15 +74,27 @@ int registerSpec(SpecDesc const* spec)
   return 0;
 }
 
+SpecDesc const* findSpec(const char* name)
+{
+  for(auto& spec : g_allSpecs)
+    if(strcmp(spec->name, name) == 0)
+      return spec;
+
+  fprintf(stderr, "Spec '%s' not found\n", name);
+  exit(1);
+}
+
 int main(int argc, const char* argv[])
 {
-  if(argc != 2)
+  if(argc != 3)
   {
-    fprintf(stderr, "Usage: %s <input.mp4>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <spec> <input.mp4>\n", argv[0]);
     return 1;
   }
 
-  auto buf = loadFile(argv[1]);
+  auto spec = findSpec(argv[1]);
+
+  auto buf = loadFile(argv[2]);
   BitReader br { buf.data(), (int)buf.size() };
   Box root {};
   root.fourcc = FOURCC("root");
@@ -88,7 +102,7 @@ int main(int argc, const char* argv[])
   func(br, root);
   dump(root);
 
-  checkCompliance(root, g_allSpecs[0]);
+  checkCompliance(root, spec);
 
   return 0;
 }

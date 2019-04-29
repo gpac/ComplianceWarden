@@ -10,10 +10,13 @@ mkdir -p "$tmpDir"
 
 function main
 {
-  $BIN/cw.exe $scriptDir/aac.mp4 > $tmpDir/aac.new
+  $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
 
-  check_rules dummy_no_ftyp
+  check_rules dummy dummy_no_ftyp
+  check_rules heif heif/valid
+  check_rules heif heif/invalid-no-ftyp
+  check_rules heif heif/invalid-no-mif1
 
   $BIN/binarize.exe < $scriptDir/binarize_me.txt > $tmpDir/binarized.bin
   compare $scriptDir/binarized.ref $tmpDir/binarized.bin
@@ -23,9 +26,12 @@ function main
 
 function check_rules
 {
-  local name="$1"
-  nasm $scriptDir/$name.asm -f bin -o $tmpDir/$name.mp4
-  $BIN/cw.exe $tmpDir/$name.mp4 > $tmpDir/$name.new
+  local spec="$1"
+  local name="$2"
+  local mp4path="$tmpDir/$name.mp4"
+  mkdir -p $(dirname $mp4path)
+  nasm $scriptDir/$name.asm -f bin -o $mp4path
+  $BIN/cw.exe $spec $tmpDir/$name.mp4 > $tmpDir/$name.new
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }
 

@@ -12,6 +12,7 @@ static bool canFind(H& haystack, P const& predicate)
 
 static const SpecDesc spec =
 {
+  "dummy",
   "Dummy Spec, v1.2",
   {
     {
