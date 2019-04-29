@@ -1,7 +1,6 @@
 #pragma once
 
 #include "box.h"
-#include <map>
 #include <cassert>
 
 struct BitReader
