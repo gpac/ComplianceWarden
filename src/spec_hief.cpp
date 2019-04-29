@@ -1,3 +1,4 @@
+#include <cstring>
 #include "spec.h"
 
 static const SpecDesc spec =
@@ -28,7 +29,7 @@ static const SpecDesc spec =
         bool found = false;
 
         for(auto& brand : ftypBox.syms)
-          if(brand.value == FOURCC("mif1"))
+          if(!strcmp(brand.name, "compatible_brand") && brand.value == FOURCC("mif1"))
             found = true;
 
         if(!found)

@@ -2,11 +2,11 @@
 
 ftyp_start:
 dd BE(ftyp_end - ftyp_start)
-db "ftyp" ; error: mistyped 'ftyp'
+db "ftyp"
 
 db "isom"
 dd BE(0x200)
 db "mif1"
 ftyp_end:
 
-; error: no 'moov' box
+; vim: syntax=nasm

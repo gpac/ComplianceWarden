@@ -9,4 +9,4 @@ dd BE(0x200)
 db "isom", "iso2", "mp41"
 ftyp_end:
 
-; error: no 'moov' box
+; vim: syntax=nasm
