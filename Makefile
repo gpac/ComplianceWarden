@@ -16,12 +16,21 @@ endif
 CXXFLAGS+=-ffunction-sections -fdata-sections
 LDFLAGS+=-Wl,-gc-sections
 
-SRCS_APP+=\
-  src/main.cpp\
+#------------------------------------------------------------------------------
+SRCS_CW+=\
+  src/app_cw.cpp\
   src/common_boxes.cpp\
 
 TARGETS+=$(BIN)/cw.exe
-$(BIN)/cw.exe: $(SRCS_APP:%=$(BIN)/%.o)
+$(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
 
+#------------------------------------------------------------------------------
+SRCS_BINARIZE+=\
+  src/app_binarize.cpp\
+
+TARGETS+=$(BIN)/binarize.exe
+$(BIN)/binarize.exe: $(SRCS_BINARIZE:%=$(BIN)/%.o)
+
+#------------------------------------------------------------------------------
 everything: $(TARGETS)
 

@@ -1,0 +1,5 @@
+"Hello, world"
+00100001
+"tkhd" 00100001 00100001 00100001 00100001
+   "these are the box contents"
+00001010
