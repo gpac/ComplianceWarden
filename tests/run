@@ -13,10 +13,20 @@ function main
   $BIN/cw.exe $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
 
+  check_rules dummy_no_ftyp
+
   $BIN/binarize.exe < $scriptDir/binarize_me.txt > $tmpDir/binarized.bin
   compare $scriptDir/binarized.ref $tmpDir/binarized.bin
 
   echo "OK"
+}
+
+function check_rules
+{
+  local name="$1"
+  nasm $scriptDir/$name.asm -f bin -o $tmpDir/$name.mp4
+  $BIN/cw.exe $tmpDir/$name.mp4 > $tmpDir/$name.new
+  compare $scriptDir/$name.ref $tmpDir/$name.new
 }
 
 function compare

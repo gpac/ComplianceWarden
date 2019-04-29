@@ -49,14 +49,19 @@ void checkCompliance(Box const& file, SpecDesc const& spec)
   {
     void error(const char* fmt, ...) override
     {
-      fprintf(stderr, "Error: %s\n", fmt);
+      fprintf(stdout, "[Rule #%d] %s\n", i, fmt);
     }
+
+    int i = 0;
   };
 
   Output out;
 
   for(auto& rule : spec.rules)
+  {
     rule.check(file, &out);
+    out.i++;
+  }
 }
 
 int main(int argc, const char* argv[])
