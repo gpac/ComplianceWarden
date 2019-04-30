@@ -1,6 +1,6 @@
 #pragma once
 
-#include "parser.h"
+#include "reader.h"
 
 ParseBoxFunc* getParseFunction(uint32_t fourcc);
 

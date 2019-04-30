@@ -2,10 +2,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 #include "box.h"
 #include "common_boxes.h"
-#include "parser.h"
+#include "reader.h"
 #include "spec.h"
 
 using namespace std;
@@ -93,6 +94,48 @@ SpecDesc const* findSpec(const char* name)
   fprintf(stderr, "Spec '%s' not found\n", name);
   exit(1);
 }
+
+struct BitReader
+{
+  uint8_t* src;
+  int size = 0;
+
+  int64_t u(int n)
+  {
+    uint64_t r = 0;
+
+    for(int i = 0; i < n; ++i)
+      r = (r << 1) | bit();
+
+    return r;
+  }
+
+  BitReader sub(int byteCount)
+  {
+    assert(m_pos % 8 == 0);
+    auto sub = BitReader { src + m_pos / 8, byteCount };
+    m_pos += byteCount * 8;
+    return sub;
+  }
+
+  int bit()
+  {
+    const int byteOffset = m_pos / 8;
+    const int bitOffset = m_pos % 8;
+
+    assert(byteOffset < size);
+
+    m_pos++;
+    return (src[byteOffset] >> (7 - bitOffset)) & 1;
+  }
+
+  bool empty() const
+  {
+    return m_pos / 8 >= size;
+  }
+
+  int m_pos = 0;
+};
 
 struct BoxReader : IReader
 {

@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "box.h"
-#include "parser.h" // ParseBoxFunc
+#include "reader.h" // ParseBoxFunc
 
 struct IReport
 {
