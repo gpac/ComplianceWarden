@@ -22,7 +22,7 @@ SRCS_CW+=\
   src/common_boxes.cpp\
 
 SRCS_CW+=src/spec_dummy.cpp
-SRCS_CW+=src/spec_hief.cpp
+SRCS_CW+=src/spec_heif.cpp
 
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
