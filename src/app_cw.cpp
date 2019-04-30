@@ -35,6 +35,9 @@ void dump(Box const& box, int depth = 0)
 
   for(auto& sym : box.syms)
   {
+    if(!strcmp(sym.name, ""))
+      continue;
+
     for(int i = 0; i < depth; ++i)
       printf("  ");
 
@@ -84,6 +87,36 @@ SpecDesc const* findSpec(const char* name)
   exit(1);
 }
 
+struct BoxReader : IReader
+{
+  bool empty() override
+  {
+    return br.empty();
+  }
+
+  int64_t sym(const char* name, int bits) override
+  {
+    auto val = br.u(bits);
+    myBox.add(name, val);
+    return val;
+  }
+
+  void box() override
+  {
+    BoxReader subReader;
+    const uint32_t size = br.u(32);
+    subReader.myBox.fourcc = br.u(32);
+    subReader.br = br.sub(int(size - 8));
+    auto parseFunc = getParseFunction(subReader.myBox.fourcc);
+    parseFunc(&subReader);
+
+    myBox.children.push_back(std::move(subReader.myBox));
+  }
+
+  BitReader br;
+  Box myBox;
+};
+
 int main(int argc, const char* argv[])
 {
   if(argc != 3)
@@ -95,14 +128,14 @@ int main(int argc, const char* argv[])
   auto spec = findSpec(argv[1]);
 
   auto buf = loadFile(argv[2]);
-  BitReader br { buf.data(), (int)buf.size() };
-  Box root {};
-  root.fourcc = FOURCC("root");
-  auto func = getParseFunction(root.fourcc);
-  func(br, root);
-  dump(root);
+  BoxReader topReader;
+  topReader.br = { buf.data(), (int)buf.size() };
+  topReader.myBox.fourcc = FOURCC("root");
+  auto func = getParseFunction(topReader.myBox.fourcc);
+  func(&topReader);
+  dump(topReader.myBox);
 
-  checkCompliance(root, spec);
+  checkCompliance(topReader.myBox, spec);
 
   return 0;
 }

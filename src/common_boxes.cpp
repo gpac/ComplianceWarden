@@ -3,99 +3,83 @@
 
 namespace
 {
-void parseRaw(BitReader& br, Box& box)
+void parseRaw(IReader* br)
 {
-  while(!br.empty())
-    br.u(8);
-
-  (void)box;
-  // while(!br.empty())
-  // box.add("raw_byte", br.u(8));
+  while(!br->empty())
+    br->sym("", 8);
 }
 
-void parseFtyp(BitReader& br, Box& box)
+void parseFtyp(IReader* br)
 {
-  box.add("brand", br.u(32));
-  box.add("version", br.u(32));
+  br->sym("brand", 32);
+  br->sym("version", 32);
 
-  while(!br.empty())
-    box.add("compatible_brand", br.u(32));
+  while(!br->empty())
+    br->sym("compatible_brand", 32);
 }
 
-void parseMfhd(BitReader& br, Box& box)
+void parseMfhd(IReader* br)
 {
-  box.add("version", br.u(8));
-  box.add("flags", br.u(24));
-  box.add("sequence_number", br.u(32));
+  br->sym("version", 8);
+  br->sym("flags", 24);
+  br->sym("sequence_number", 32);
 }
 
-void parseMvhd(BitReader& br, Box& box)
+void parseMvhd(IReader* br)
 {
-  box.add("version", br.u(8));
-  box.add("flags", br.u(24));
-  box.add("creation_time", br.u(32));
-  box.add("modification_time", br.u(32));
-  box.add("timescale", br.u(32));
-  box.add("duration", br.u(32));
+  br->sym("version", 8);
+  br->sym("flags", 24);
+  br->sym("creation_time", 32);
+  br->sym("modification_time", 32);
+  br->sym("timescale", 32);
+  br->sym("duration", 32);
 }
 
-void parseTfdt(BitReader& br, Box& box)
+void parseTfdt(IReader* br)
 {
-  box.add("version", br.u(8));
-  box.add("flags", br.u(24));
-  box.add("base_media_decode_time", (long long)br.u(64));
+  br->sym("version", 8);
+  br->sym("flags", 24);
+  br->sym("base_media_decode_time", 64);
 }
 
-void parseTrun(BitReader& br, Box& box)
+void parseTrun(IReader* br)
 {
-  box.add("version", br.u(8));
-  auto flags = br.u(24);
-  box.add("flags", flags);
+  br->sym("version", 8);
+  auto flags = br->sym("flags", 24);
   // 0x000001 data‐offset‐present
   // 0x000004 first‐sample‐flags‐present
   // 0x000100 sample‐duration‐present
   // 0x000200 sample‐size‐present
   // 0x000400 sample‐flags‐present
   // 0x000800 sample‐composition‐time‐offsets‐present
-  auto const sample_count = br.u(32);
-  box.add("sample_count", sample_count);
+  auto const sample_count = br->sym("sample_count", 32);
 
   if(flags & 0x1)
-    box.add("data_offset", br.u(32));
+    br->sym("data_offset", 32);
 
   if(flags & 0x4)
-    box.add("first_sample_flags", br.u(32));
+    br->sym("first_sample_flags", 32);
 
   for(int i = 0; i < sample_count; ++i)
   {
     if(flags & 0x100)
-      box.add("sample_duration", br.u(32));
+      br->sym("sample_duration", 32);
 
     if(flags & 0x200)
-      box.add("sample_size", br.u(32));
+      br->sym("sample_size", 32);
 
     if(flags & 0x400)
-      box.add("sample_flags", br.u(32));
+      br->sym("sample_flags", 32);
 
     if(flags & 0x800)
-      box.add("sample_composition_time_offset", br.u(32));
+      br->sym("sample_composition_time_offset", 32);
   }
 }
 
-void parseChildren(BitReader& br, Box& box)
+void parseChildren(IReader* br)
 {
-  while(!br.empty())
-  {
-    Box child;
-    const uint32_t size = br.u(32);
-    child.fourcc = br.u(32);
-
-    const auto payloadSize = int(size - 8);
-    auto sub = br.sub(payloadSize);
-    auto parseFunc = getParseFunction(child.fourcc);
-    parseFunc(sub, child);
-    box.children.push_back(std::move(child));
-  }
+  while(!br->empty())
+    br->box();
 }
 }
 

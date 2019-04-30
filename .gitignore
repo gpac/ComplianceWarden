@@ -1,5 +1,6 @@
 /bin
 /bin-san
+/bin-cov
 /cov-html
 /tags
 *.swp

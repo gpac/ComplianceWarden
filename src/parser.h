@@ -5,8 +5,8 @@
 
 struct BitReader
 {
-  const uint8_t* src;
-  const int size = 0;
+  uint8_t* src;
+  int size = 0;
 
   int64_t u(int n)
   {
@@ -45,5 +45,14 @@ struct BitReader
   int m_pos = 0;
 };
 
-using ParseBoxFunc = void(BitReader & br, Box & box);
+///////////////////////////////////////////////////////////////////////////////
+
+struct IReader
+{
+  virtual bool empty() = 0;
+  virtual int64_t sym(const char* name, int bits) = 0;
+  virtual void box() = 0;
+};
+
+using ParseBoxFunc = void(IReader * br);
 
