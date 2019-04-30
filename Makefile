@@ -28,12 +28,5 @@ TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
 
 #------------------------------------------------------------------------------
-SRCS_BINARIZE+=\
-  src/app_binarize.cpp\
-
-TARGETS+=$(BIN)/binarize.exe
-$(BIN)/binarize.exe: $(SRCS_BINARIZE:%=$(BIN)/%.o)
-
-#------------------------------------------------------------------------------
 everything: $(TARGETS)
 
