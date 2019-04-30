@@ -14,11 +14,6 @@ struct Box
   uint32_t fourcc;
   std::vector<Box> children;
   std::vector<Symbol> syms;
-
-  void add(const char* name, int64_t value)
-  {
-    syms.push_back({ name, value });
-  }
 };
 
 template<size_t N>

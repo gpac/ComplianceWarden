@@ -97,7 +97,7 @@ struct BoxReader : IReader
   int64_t sym(const char* name, int bits) override
   {
     auto val = br.u(bits);
-    myBox.add(name, val);
+    myBox.syms.push_back({ name, val });
     return val;
   }
 
