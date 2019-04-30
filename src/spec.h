@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "box.h"
+#include "parser.h" // ParseBoxFunc
 
 struct IReport
 {
@@ -30,6 +31,8 @@ struct SpecDesc
 
   // list of compliance checks for this spec.
   std::vector<RuleDesc> rules;
+
+  ParseBoxFunc* (* getParseFunction)(uint32_t fourcc);
 };
 
 int registerSpec(SpecDesc const* spec);

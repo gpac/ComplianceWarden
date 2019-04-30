@@ -13,8 +13,9 @@ function main
   $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
 
-  check_rules dummy dummy/invalid-no-ftyp
   check_rules dummy dummy/valid
+  check_rules dummy dummy/invalid-no-ftyp
+  check_rules dummy dummy/invalid-forbidden-value-in-custom-box
 
   check_rules heif heif/valid
   check_rules heif heif/invalid-no-ftyp

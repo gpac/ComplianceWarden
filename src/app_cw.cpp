@@ -13,6 +13,13 @@ using namespace std;
 vector<uint8_t> loadFile(const char* path)
 {
   FILE* fp = fopen(path, "rb");
+
+  if(!fp)
+  {
+    fprintf(stderr, "Can't open '%s' for reading\n", path);
+    exit(1);
+  }
+
   vector<uint8_t> buf(100 * 1024 * 1024);
   auto const size = fread(buf.data(), 1, buf.size(), fp);
   fclose(fp);
@@ -104,10 +111,11 @@ struct BoxReader : IReader
   void box() override
   {
     BoxReader subReader;
+    subReader.spec = spec;
     const uint32_t size = br.u(32);
     subReader.myBox.fourcc = br.u(32);
     subReader.br = br.sub(int(size - 8));
-    auto parseFunc = getParseFunction(subReader.myBox.fourcc);
+    auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
 
     myBox.children.push_back(std::move(subReader.myBox));
@@ -115,6 +123,18 @@ struct BoxReader : IReader
 
   BitReader br;
   Box myBox;
+  const SpecDesc* spec;
+
+private:
+  ParseBoxFunc* selectBoxParseFunction(uint32_t fourcc)
+  {
+    // try first custom parse function
+    if(spec->getParseFunction)
+      if(auto func = spec->getParseFunction(fourcc))
+        return func;
+
+    return getParseFunction(fourcc);
+  }
 };
 
 int main(int argc, const char* argv[])
@@ -131,8 +151,10 @@ int main(int argc, const char* argv[])
   BoxReader topReader;
   topReader.br = { buf.data(), (int)buf.size() };
   topReader.myBox.fourcc = FOURCC("root");
-  auto func = getParseFunction(topReader.myBox.fourcc);
-  func(&topReader);
+  topReader.spec = spec;
+  auto parseFunc = getParseFunction(topReader.myBox.fourcc);
+  parseFunc(&topReader);
+
   dump(topReader.myBox);
 
   checkCompliance(topReader.myBox, spec);

@@ -37,6 +37,7 @@ static const SpecDesc spec =
       }
     },
   },
+  nullptr,
 };
 
 static auto const registered = registerSpec(&spec);
