@@ -10,18 +10,29 @@ mkdir -p "$tmpDir"
 
 function main
 {
-  $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
-  compare $scriptDir/aac.ref $tmpDir/aac.new
+  run_test real_mp4
 
-  check_rules dummy dummy/valid
-  check_rules dummy dummy/invalid-no-ftyp
-  check_rules dummy dummy/invalid-forbidden-value-in-custom-box
+  run_test check_rules dummy dummy/valid
+  run_test check_rules dummy dummy/invalid-no-ftyp
+  run_test check_rules dummy dummy/invalid-forbidden-value-in-custom-box
 
-  check_rules heif heif/valid
-  check_rules heif heif/invalid-no-ftyp
-  check_rules heif heif/invalid-no-mif1
+  run_test check_rules heif heif/valid
+  run_test check_rules heif heif/invalid-no-ftyp
+  run_test check_rules heif heif/invalid-no-mif1
 
   echo "OK"
+}
+
+function run_test
+{
+  echo "* $*"
+  "$@"
+}
+
+function real_mp4
+{
+  $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
+  compare $scriptDir/aac.ref $tmpDir/aac.new
 }
 
 function check_rules

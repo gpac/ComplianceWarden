@@ -54,6 +54,7 @@ tests/                     Integration tests (tests calling the entry points)
 tests/run                  Entry point for the test script. Usage: "tests/run bin"
 scripts/cov.sh             Coverage script. Generates a coverage report reflecting the
                            current status of the test suite,
+scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ```
 
 # Testing
