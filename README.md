@@ -48,7 +48,7 @@ $ make
 check                      Top-level full-test script. Reformats + builds + tests.
                            Must pass without error before each commit.
 
-src/*.cpp                  Source files
+src/                       Source files
 
 tests/                     Integration tests (tests calling the entry points)
 tests/run                  Entry point for the test script. Usage: "tests/run bin"
