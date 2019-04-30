@@ -18,13 +18,6 @@ void parseFtyp(IReader* br)
     br->sym("compatible_brand", 32);
 }
 
-void parseMfhd(IReader* br)
-{
-  br->sym("version", 8);
-  br->sym("flags", 24);
-  br->sym("sequence_number", 32);
-}
-
 void parseMvhd(IReader* br)
 {
   br->sym("version", 8);
@@ -33,13 +26,6 @@ void parseMvhd(IReader* br)
   br->sym("modification_time", 32);
   br->sym("timescale", 32);
   br->sym("duration", 32);
-}
-
-void parseTfdt(IReader* br)
-{
-  br->sym("version", 8);
-  br->sym("flags", 24);
-  br->sym("base_media_decode_time", 64);
 }
 
 void parseTrun(IReader* br)
@@ -106,12 +92,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseFtyp;
   case FOURCC("mdat"):
     return &parseRaw;
-  case FOURCC("mfhd"):
-    return &parseMfhd;
   case FOURCC("mvhd"):
     return &parseMvhd;
-  case FOURCC("tfdt"):
-    return &parseTfdt;
   case FOURCC("trun"):
     return &parseTrun;
   }

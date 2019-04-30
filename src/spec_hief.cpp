@@ -7,12 +7,6 @@ static const SpecDesc spec =
   "HEIF - ISO/IEC 23008-12 - First edition 2017-12",
   {
     {
-      "This is a placeholder rule",
-      [] (Box const &, IReport*)
-      {
-      }
-    },
-    {
       "The FileTypeBox shall contain, in the compatible_brands list, "
       "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
       "[and] brand(s) identifying conformance to this document (specified in 10).",
