@@ -63,9 +63,11 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     void error(const char* fmt, ...) override
     {
       fprintf(stdout, "[Rule #%d] %s\n", ruleIdx, fmt);
+      ++errorCount;
     }
 
     int ruleIdx = 0;
+    int errorCount = 0;
   };
 
   Report out;
@@ -75,6 +77,11 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     rule.check(file, &out);
     out.ruleIdx++;
   }
+
+  if(out.errorCount)
+    fprintf(stdout, "%d error(s).\n", out.errorCount);
+  else
+    fprintf(stdout, "No errors.\n");
 }
 
 std::vector<SpecDesc const*> g_allSpecs;
