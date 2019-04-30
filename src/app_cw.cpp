@@ -205,7 +205,8 @@ int main(int argc, const char* argv[])
   auto parseFunc = getParseFunction(topReader.myBox.fourcc);
   parseFunc(&topReader);
 
-  dump(topReader.myBox);
+  if(0)
+    dump(topReader.myBox);
 
   checkCompliance(topReader.myBox, spec);
 

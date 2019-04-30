@@ -1,9 +1,2 @@
-root
-  ftyp
-  brand: 1769172845
-  version: 512
-  compatible_brand: 1769172845
-  compatible_brand: 1769172786
-  compatible_brand: 1836069937
 [Rule #0] 'mif1' brand not found in 'ftyp' box
 1 error(s).
