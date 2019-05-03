@@ -1,4 +1,16 @@
 #include "spec.h"
+#include <cassert>
+#include <cstring>
+
+static
+const Symbol* find(Box const* box, const char* name)
+{
+  for(auto& sym : box->syms)
+    if(!strcmp(sym.name, name))
+      return &sym;
+
+  return nullptr;
+}
 
 template<typename H, typename P>
 static bool canFind(H& haystack, P const& predicate)
@@ -65,7 +77,10 @@ static const SpecDesc spec =
         if(!pDumy)
           return; // nothing to check
 
-        if(!pDumy->syms.empty() && pDumy->syms[0].value == 666)
+        auto pHoly = find(pDumy, "holy");
+        assert(pHoly); // guaranted to exist by the box parser
+
+        if(pHoly->value == 666)
           out->error("'holy' symbol in 'dumy' box is equal to 666");
       }
     },
