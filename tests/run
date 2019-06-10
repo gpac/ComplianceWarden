@@ -20,6 +20,9 @@ function main
   run_test check_rules heif heif/invalid-no-ftyp
   run_test check_rules heif heif/invalid-no-mif1
 
+  run_test check_rules miaf miaf/valid
+  run_test check_rules miaf miaf/invalid-no-meta
+
   echo "OK"
 }
 
