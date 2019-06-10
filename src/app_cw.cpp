@@ -84,17 +84,21 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     fprintf(stdout, "No errors.\n");
 }
 
-std::vector<SpecDesc const*> g_allSpecs;
+std::vector<SpecDesc const*>& g_allSpecs()
+{
+  static std::vector<SpecDesc const*> allSpecs;
+  return allSpecs;
+}
 
 int registerSpec(SpecDesc const* spec)
 {
-  g_allSpecs.push_back(spec);
+  g_allSpecs().push_back(spec);
   return 0;
 }
 
 SpecDesc const* findSpec(const char* name)
 {
-  for(auto& spec : g_allSpecs)
+  for(auto& spec : g_allSpecs())
     if(strcmp(spec->name, name) == 0)
       return spec;
 
