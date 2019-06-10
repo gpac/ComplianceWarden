@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export BIN=bin
+export BIN=${BIN-bin}
 
 ./scripts/reformat.sh
 make -j`nproc`
-./tests/run bin
+./tests/run $BIN
 
 lines=$(find $BIN -name "*.lines" | xargs cat | awk '{s+=$1} END {printf "%d\n", (s/1000)}')
 echo "compilation mass: $lines kloc"
