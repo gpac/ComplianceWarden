@@ -117,7 +117,7 @@ void dumpMvhd(BitReader& br, int depth)
 void dumpTfdt(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
-  println(depth, "dd 0x%.8x ; version and flags", version_and_flags);
+  println(depth, "u32(0x%.8x) ; version and flags", version_and_flags);
   auto version = (version_and_flags >> 24) & 0xff;
 
   if(version == 1)
