@@ -59,7 +59,7 @@ constexpr uint32_t FOURCC(const char(&tab)[N])
   uint32_t r = 0;
 
   for(int i = 0; i < 4; ++i)
-    r = ((r<<8) | tab[i]);
+    r = ((r << 8) | tab[i]);
 
   return r;
 }
@@ -97,25 +97,28 @@ void dumpRaw(BitReader& br, int depth)
 
 void dumpMfhd(BitReader& br, int depth)
 {
-  println(depth, "dd 0x%.8x ; version and flags", br.u(32));
-  println(depth, "dd %d ; sequence_number", br.u(32));
+  println(depth, "u32(0x%.8x) ; version and flags", br.u(32));
+  println(depth, "u32(%d) ; sequence_number", br.u(32));
 }
 
 void dumpMvhd(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
-  println(depth, "dd BE(0x%.8x) ; version and flags", version_and_flags);
-  println(depth, "dd BE(%d) ; creation_time", br.u(32));
-  println(depth, "dd BE(%d) ; modification_time", br.u(32));
-  println(depth, "dd BE(%d) ; timescale", br.u(32));
-  println(depth, "dd BE(%d) ; duration", br.u(32));
+  println(depth, "u32(0x%.8x) ; version and flags", version_and_flags);
+  println(depth, "u32(%d) ; creation_time", br.u(32));
+  println(depth, "u32(%d) ; modification_time", br.u(32));
+  println(depth, "u32(%d) ; timescale", br.u(32));
+  println(depth, "u32(%d) ; duration", br.u(32));
+
+  while(!br.empty())
+    printf("db 0x%.2X\n", br.u(8));
 }
 
 void dumpTfdt(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
   println(depth, "dd 0x%.8x ; version and flags", version_and_flags);
-  auto version = (version_and_flags>>24) & 0xff;
+  auto version = (version_and_flags >> 24) & 0xff;
 
   if(version == 1)
   {
@@ -123,7 +126,7 @@ void dumpTfdt(BitReader& br, int depth)
   }
   else
   {
-    println(depth, "dd %lld ; base-media-decode-time", (long long)br.u(32));
+    println(depth, "u32(%d) ; base-media-decode-time", br.u(32));
   }
 }
 
@@ -132,55 +135,66 @@ void dumpTfhd(BitReader& br, int depth)
   auto version_and_flags = br.u(32);
   auto const flags = version_and_flags & 0xffffff;
 
-  println(depth, "dd 0x%.8x ; version and flags", version_and_flags);
-  println(depth, "dd %d ; track-id", br.u(32));
+  println(depth, "u32(0x%.8x) ; version and flags", version_and_flags);
+  println(depth, "u32(%d) ; track-id", br.u(32));
 
   if(flags & 0x000001)
     println(depth, "dq %lld ; base-data-offset", (long long)br.u(64));
 
   if(flags & 0x000002)
-    println(depth, "dd BE(%d) ; sample-description-index", br.u(32));
+    println(depth, "u32(%d) ; sample-description-index", br.u(32));
 
   if(flags & 0x000008)
-    println(depth, "dd BE(%d) ; default-sample-duration", br.u(32));
+    println(depth, "u32(%d) ; default-sample-duration", br.u(32));
 
   if(flags & 0x000010)
-    println(depth, "dd BE(%d) ; default-sample-size", br.u(32));
+    println(depth, "u32(%d) ; default-sample-size", br.u(32));
 
   if(flags & 0x000020)
-    println(depth, "dd BE(%d) ; default-sample-flags", br.u(32));
+    println(depth, "u32(%d) ; default-sample-flags", br.u(32));
 }
 
 void dumpFtyp(BitReader& br, int depth)
 {
-  println(depth, "dd BE(0x%.8x) ; major_brand", br.u(32));
-  println(depth, "dd BE(%d) ; minor_version", br.u(32));
+  println(depth, "u32(0x%.8x) ; major_brand", br.u(32));
+  println(depth, "u32(%d) ; minor_version", br.u(32));
 
   while(!br.empty())
-    println(depth, "dd BE(0x%.8x) ; compatible_brand", br.u(32));
+    println(depth, "u32(0x%.8x) ; compatible_brand", br.u(32));
 }
 
 void dumpMdhd(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
-  println(depth, "dd 0x%.8x ; version and flags", version_and_flags);
+  println(depth, "dd BE(0x%.8x) ; version and flags", version_and_flags);
 
   auto const version = (version_and_flags >> 24) & 0xff;
 
-  auto bits = version == 1 ? 64 : 32;
+  if(version == 1)
+    println(depth, "dq %d ; creation_time", br.u(64));
+  else
+    println(depth, "u32(%d) ; creation_time", br.u(32));
 
-  println(depth, "dd %d ; creation_time", br.u(bits));
-  println(depth, "dd %d ; modification_time", br.u(bits));
-  println(depth, "dd BE(%d) ; timescale", br.u(32));
-  println(depth, "dd %d ; duration", br.u(bits));
-  println(depth, "dw %d ; pad bit + langage code", br.u(16));
-  println(depth, "dw %d ; pre_defined", br.u(16));
+  if(version == 1)
+    println(depth, "dq %d ; modification_time", br.u(64));
+  else
+    println(depth, "u32(%d) ; modification_time", br.u(32));
+
+  println(depth, "u32(%d) ; timescale", br.u(32));
+
+  if(version == 1)
+    println(depth, "dq %d ; duration", br.u(64));
+  else
+    println(depth, "u32(%d) ; duration", br.u(32));
+
+  println(depth, "u16(%d) ; pad bit + langage code", br.u(16));
+  println(depth, "u16(%d) ; pre_defined", br.u(16));
 }
 
 void dumpTrun(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
-  println(depth, "dd 0x%.8x ; version and flags", version_and_flags);
+  println(depth, "dd BE(0x%.8x) ; version and flags", version_and_flags);
   auto const flags = (version_and_flags & 0xffffff);
   auto const version = (version_and_flags >> 24) & 0xff;
 
@@ -192,29 +206,29 @@ void dumpTrun(BitReader& br, int depth)
   // 0x000800 sample‐composition‐time‐offsets‐present
 
   auto const sample_count = br.u(32);
-  println(depth, "dd %d ; sample_count", sample_count);
+  println(depth, "dd BE(%d) ; sample_count", sample_count);
 
   if(flags & 0x1)
-    println(depth, "dd %d ; data_offset", br.u(32));
+    println(depth, "dd BE(%d) ; data_offset", br.u(32));
 
   if(flags & 0x4)
-    println(depth, "dd 0x%.8x; first_sample_flags", br.u(32));
+    println(depth, "dd BE(0x%.8x); first_sample_flags", br.u(32));
 
   for(int i = 0; i < sample_count; ++i)
   {
     if(flags & 0x100)
-      println(depth, "dd %d ; sample_duration", br.u(32));
+      println(depth, "dd BE(%d) ; sample_duration", br.u(32));
 
     if(flags & 0x200)
-      println(depth, "dd %d ; sample_size", br.u(32));
+      println(depth, "dd BE(%d) ; sample_size", br.u(32));
 
     if(flags & 0x400)
-      println(depth, "dd 0x%.8x ; sample_flags", br.u(32));
+      println(depth, "dd BE(0x%.8x) ; sample_flags", br.u(32));
 
     if(flags & 0x800)
     {
       assert(version == 0);
-      println(depth, "dd %d ; sample_composition_time_offset", br.u(32));
+      println(depth, "dd BE(%d) ; sample_composition_time_offset", br.u(32));
     }
   }
 }
@@ -266,7 +280,8 @@ string allocLabel(string name)
 
   string r = name;
 
-  int k=1;
+  int k = 1;
+
   while(labels.find(r) != labels.end())
   {
     ++k;
@@ -298,8 +313,8 @@ void dumpBoxes(BitReader& br, int depth)
     auto label = slabel.c_str();
 
     printf("%s_start:\n", label);
-    printf("dd BE(%s_end - %s_start)\n", label, label);
-    printf("db \"%s\"\n", label);
+    printf("u32(%s_end - %s_start)\n", label, label);
+    printf("fourcc(\"%s\")\n", label);
 
     const auto payloadSize = int(size - 8);
 
@@ -322,6 +337,9 @@ int main()
 
   printf("; vim: syntax=nasm\n");
   printf("%%define BE(a) ( ((((a)>>24)&0xFF) << 0) + ((((a)>>16)&0xFF) << 8) + ((((a)>>8)&0xFF) << 16)  + ((((a)>>0)&0xFF) << 24))\n");
+  printf("%%define u32(a) dd ( ((((a)>>24)&0xFF) << 0) + ((((a)>>16)&0xFF) << 8) + ((((a)>>8)&0xFF) << 16)  + ((((a)>>0)&0xFF) << 24))\n");
+  printf("%%define u16(a) dw ( ((((a)>>8)&0xFF) << 0)  + ((((a)>>0)&0xFF) << 8))\n");
+  printf("%%define fourcc(a) db a\n");
   printf("\n");
   BitReader br { buf.data(), (int)buf.size() };
   dumpBoxes(br, 0);
