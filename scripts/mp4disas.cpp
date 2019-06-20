@@ -166,7 +166,7 @@ void dumpFtyp(BitReader& br, int depth)
 void dumpMdhd(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
-  println(depth, "dd BE(0x%.8x) ; version and flags", version_and_flags);
+  println(depth, "u32(0x%.8x) ; version and flags", version_and_flags);
 
   auto const version = (version_and_flags >> 24) & 0xff;
 
@@ -194,7 +194,7 @@ void dumpMdhd(BitReader& br, int depth)
 void dumpTrun(BitReader& br, int depth)
 {
   auto version_and_flags = br.u(32);
-  println(depth, "dd BE(0x%.8x) ; version and flags", version_and_flags);
+  println(depth, "u32(0x%.8x) ; version and flags", version_and_flags);
   auto const flags = (version_and_flags & 0xffffff);
   auto const version = (version_and_flags >> 24) & 0xff;
 
@@ -206,29 +206,29 @@ void dumpTrun(BitReader& br, int depth)
   // 0x000800 sample‐composition‐time‐offsets‐present
 
   auto const sample_count = br.u(32);
-  println(depth, "dd BE(%d) ; sample_count", sample_count);
+  println(depth, "u32(%d) ; sample_count", sample_count);
 
   if(flags & 0x1)
-    println(depth, "dd BE(%d) ; data_offset", br.u(32));
+    println(depth, "u32(%d) ; data_offset", br.u(32));
 
   if(flags & 0x4)
-    println(depth, "dd BE(0x%.8x); first_sample_flags", br.u(32));
+    println(depth, "u32(0x%.8x); first_sample_flags", br.u(32));
 
   for(int i = 0; i < sample_count; ++i)
   {
     if(flags & 0x100)
-      println(depth, "dd BE(%d) ; sample_duration", br.u(32));
+      println(depth, "u32(%d) ; sample_duration", br.u(32));
 
     if(flags & 0x200)
-      println(depth, "dd BE(%d) ; sample_size", br.u(32));
+      println(depth, "u32(%d) ; sample_size", br.u(32));
 
     if(flags & 0x400)
-      println(depth, "dd BE(0x%.8x) ; sample_flags", br.u(32));
+      println(depth, "u32(0x%.8x) ; sample_flags", br.u(32));
 
     if(flags & 0x800)
     {
       assert(version == 0);
-      println(depth, "dd BE(%d) ; sample_composition_time_offset", br.u(32));
+      println(depth, "u32(%d) ; sample_composition_time_offset", br.u(32));
     }
   }
 }
