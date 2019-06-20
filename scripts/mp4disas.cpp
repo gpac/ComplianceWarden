@@ -111,7 +111,7 @@ void dumpMvhd(BitReader& br, int depth)
   println(depth, "u32(%d) ; duration", br.u(32));
 
   while(!br.empty())
-    printf("db 0x%.2X\n", br.u(8));
+    println(depth, "db 0x%.2X", br.u(8));
 }
 
 void dumpTfdt(BitReader& br, int depth)
