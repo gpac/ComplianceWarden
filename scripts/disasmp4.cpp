@@ -1,8 +1,8 @@
 // Keep this file standalone.
 //
 // Usage example:
-// $ g++ scripts/mp4disas.cpp -o mp4disas
-// $ ./mp4disas < tests/aac.mp4 > yo.asm
+// $ g++ scripts/disasmp4.cpp -o disasmp4
+// $ ./disasmp4 < tests/aac.mp4 > yo.asm
 // $ nasm -f bin yo.asm -o test.mp4
 //
 #include <cstdlib>
