@@ -1,5 +1,4 @@
 #include <cstring>
-#include <vector>
 #include "spec.h"
 
 static const SpecDesc spec =
@@ -51,36 +50,26 @@ static const SpecDesc spec =
 
         auto& ftypBox = root.children[0];
 
-        bool found = false;
-
-        struct Brand { char brand[5];
-        } mif1 { "mif1" }, miaf { "miaf" };
-        std::vector<Brand> expected = { miaf, mif1 };
+        bool foundMiaf = false, foundMif1 = false;
 
         for(auto& brand : ftypBox.syms)
         {
           if(strcmp(brand.name, "compatible_brand"))
             continue;
 
-          if(brand.value != FOURCC(expected.back().brand))
-          {
-            auto* v = 3 + (char*)&brand.value;
-            char got[5] = { *(v--), *(v--), *(v--), *v, 0 };
-            out->error("Expected compatible brand '%s', got '%s'", expected.back().brand, got);
-            break;
-          }
+          if(brand.value == FOURCC("miaf"))
+            foundMiaf = true;
 
-          expected.pop_back();
-
-          if(expected.empty())
-          {
-            found = true;
-            break;
-          }
+          if(brand.value == FOURCC("mif1"))
+            foundMif1 = true;
         }
 
-        if(!found)
-          out->error("compatible_brands list order is not conformant (%d not found).", (int)expected.size());
+        auto strFound = [] (bool found) {
+            return found ? "found" : "not found";
+          };
+
+        if(!foundMiaf || !foundMif1)
+          out->error("compatible_brands list shall contain 'miaf' (%s) and 'mif1' (%s).", strFound(foundMiaf), strFound(foundMif1));
       },
     },
   },

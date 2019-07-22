@@ -1,2 +1,2 @@
-[Rule #2] compatible_brands list order is not conformant (1 not found).
+[Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found).
 1 error(s).
