@@ -6,7 +6,7 @@ db "ftyp"
 
 db "isom"
 dd BE(0x200)
-db "mif1", "miaf", "dumy"
+db "mif1", "miaf", "dumy", "dumy"
 
 ftyp_end:
 
@@ -19,17 +19,6 @@ dd BE(hdlr_end - hdlr_start)
 db "hdlr"
 hdlr_end:
 
-dinf_start:
-dd BE(dinf_end - dinf_start)
-db "dinf"
-dinf_end:
-
 meta_end:
-
-;"Other boxes may be present in the file but they shall not affect the processing"
-xxxx_start:
-dd BE(xxxx_end - xxxx_start)
-db "xxxx"
-xxxx_end:
 
 ; vim: syntax=nasm
