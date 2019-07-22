@@ -5,12 +5,14 @@ readonly BIN=$1
 readonly scriptDir=$(dirname $0)
 
 readonly tmpDir=/tmp/test-cw-$$
-trap "rm -rf $tmpDir" EXIT
+#rap "rm -rf $tmpDir" EXIT
 mkdir -p "$tmpDir"
 
 function main
 {
-  run_test real_mp4
+  run_test real_mp4_aac
+  run_test real_mp4_avc
+  run_test real_mp4_heif
 
   run_test check_rules_folder dummy
   run_test check_rules_folder heif
@@ -25,10 +27,26 @@ function run_test
   "$@"
 }
 
-function real_mp4
+function real_mp4_aac
 {
   $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
+}
+
+function real_mp4_avc
+{
+  $BIN/cw.exe dummy $scriptDir/avc.mp4 > $tmpDir/avc.new
+  compare $scriptDir/avc.ref $tmpDir/avc.new
+}
+
+function real_mp4_heif
+{
+  #generated with 'isoifftool -m 0 -t avc -i avc.264 -o heif.mp4 -s 320 240'
+  $BIN/cw.exe heif $scriptDir/heif.mp4 > $tmpDir/heif.new
+  compare $scriptDir/heif.ref $tmpDir/heif.new
+
+  $BIN/cw.exe miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new
+  compare $scriptDir/miaf.ref $tmpDir/miaf.new
 }
 
 function check_rules

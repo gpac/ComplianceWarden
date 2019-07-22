@@ -13,6 +13,7 @@ ftyp_end:
 meta_start:
 dd BE(meta_end - meta_start)
 db "meta"
+dd BE(0)
 
 dinf_start:
 dd BE(dinf_end - dinf_start)

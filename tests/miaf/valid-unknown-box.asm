@@ -19,6 +19,7 @@ xxxx1_end:
 meta_start:
 dd BE(meta_end - meta_start)
 db "meta"
+dd BE(0)
 
 hdlr_start:
 dd BE(hdlr_end - hdlr_start)
