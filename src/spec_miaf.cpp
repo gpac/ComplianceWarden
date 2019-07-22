@@ -72,6 +72,26 @@ static const SpecDesc spec =
           out->error("compatible_brands list shall contain 'miaf' (%s) and 'mif1' (%s).", strFound(foundMiaf), strFound(foundMif1));
       },
     },
+    {
+      "The XMLBox and BinaryXMLBox shall not be used in a MetaBox.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("meta"))
+          {
+            for(auto& metaChild : box.children)
+            {
+              if(metaChild.fourcc == FOURCC("xml "))
+                out->error("MetaBox shall not contain a XMLBox.");
+
+              if(metaChild.fourcc == FOURCC("bxml"))
+                out->error("MetaBox shall not contain a BinaryXMLBox.");
+            }
+          }
+        }
+      },
+    },
   },
   nullptr,
 };

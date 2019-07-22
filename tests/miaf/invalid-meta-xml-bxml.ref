@@ -1,0 +1,4 @@
+[Rule #1] The HandlerBox shall be the first contained box within the MetaBox.
+[Rule #3] MetaBox shall not contain a XMLBox.
+[Rule #3] MetaBox shall not contain a BinaryXMLBox.
+3 error(s).
