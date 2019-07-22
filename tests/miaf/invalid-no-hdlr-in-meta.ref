@@ -1,2 +1,3 @@
 [Rule #1] The HandlerBox shall be the first contained box within the MetaBox.
-1 error(s).
+[Rule #4] 'hdlr' not found in MetaBox
+2 error(s).

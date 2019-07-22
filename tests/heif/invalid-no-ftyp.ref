@@ -1,2 +1,4 @@
-[Rule #0] ftyp box not found
-1 error(s).
+[Rule #0] 'ftyp' box not found
+[Rule #1] 'meta' box not found at file level
+[Rule #2] 'hdlr' not found in MetaBox
+3 error(s).

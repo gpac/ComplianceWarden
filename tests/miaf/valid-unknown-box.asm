@@ -23,6 +23,12 @@ db "meta"
 hdlr_start:
 dd BE(hdlr_end - hdlr_start)
 db "hdlr"
+dd BE(0)
+dd BE(0)
+db "pict"
+dd BE(0)
+dd BE(0)
+dd BE(0)
 hdlr_end:
 
 ;"Other boxes may be present in the file but they shall not affect the processing"

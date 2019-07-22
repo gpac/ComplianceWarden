@@ -44,7 +44,7 @@ static const SpecDesc spec =
       {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))
         {
-          out->error("ftyp box not found");
+          out->error("'ftyp' box not found");
           return;
         }
 
@@ -91,6 +91,29 @@ static const SpecDesc spec =
           }
         }
       },
+    },
+    {
+      "The handler type for the MetaBox shall be 'pict'.",
+      [] (Box const& root, IReport* out)
+      {
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("hdlr"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "handler_type"))
+                  {
+                    found = true;
+
+                    if(field.value != FOURCC("pict"))
+                      out->error("The handler type for the MetaBox shall be 'pict'.");
+                  }
+
+        if(!found)
+          out->error("'hdlr' not found in MetaBox");
+      }
     },
   },
   nullptr,

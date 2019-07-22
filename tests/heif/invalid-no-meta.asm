@@ -10,21 +10,4 @@ db "mif1", "miaf"
 
 ftyp_end:
 
-meta_start:
-dd BE(meta_end - meta_start)
-db "meta"
-
-hdlr_start:
-dd BE(hdlr_end - hdlr_start)
-db "hdlr"
-dd BE(0)
-dd BE(0)
-db "pict"
-dd BE(0)
-dd BE(0)
-dd BE(0)
-hdlr_end:
-
-meta_end:
-
 ; vim: syntax=nasm

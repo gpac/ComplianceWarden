@@ -23,6 +23,12 @@ db "meta"
 hdlr_start:
 dd BE(hdlr_end - hdlr_start)
 db "hdlr"
+dd BE(0)
+dd BE(0)
+db "pict"
+dd BE(0)
+dd BE(0)
+dd BE(0)
 hdlr_end:
 
 ;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"

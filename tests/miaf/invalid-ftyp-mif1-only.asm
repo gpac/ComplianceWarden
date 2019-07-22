@@ -17,6 +17,12 @@ db "meta"
 hdlr_start:
 dd BE(hdlr_end - hdlr_start)
 db "hdlr"
+dd BE(0)
+dd BE(0)
+db "pict"
+dd BE(0)
+dd BE(0)
+dd BE(0)
 hdlr_end:
 
 meta_end:

@@ -18,6 +18,20 @@ void parseFtyp(IReader* br)
     br->sym("compatible_brand", 32);
 }
 
+void parseHdlr(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+  br->sym("pre_defined", 32);
+  br->sym("handler_type", 32);
+  br->sym("reserved1", 32);
+  br->sym("reserved2", 32);
+  br->sym("reserved3", 32);
+
+  while(!br->empty())
+    br->sym("", 8);
+}
+
 void parseMvhd(IReader* br)
 {
   br->sym("version", 8);
@@ -90,6 +104,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseChildren;
   case FOURCC("ftyp"):
     return &parseFtyp;
+  case FOURCC("hdlr"):
+    return &parseHdlr;
   case FOURCC("mdat"):
     return &parseRaw;
   case FOURCC("mvhd"):
