@@ -16,4 +16,10 @@ dinf_end:
 
 meta_end:
 
+;"Other boxes may be present in the file but they shall not affect the processing"
+xxxx_start:
+dd BE(xxxx_end - xxxx_start)
+db "xxxx"
+xxxx_end:
+
 ; vim: syntax=nasm
