@@ -12,16 +12,9 @@ function main
 {
   run_test real_mp4
 
-  run_test check_rules dummy dummy/valid
-  run_test check_rules dummy dummy/invalid-no-ftyp
-  run_test check_rules dummy dummy/invalid-forbidden-value-in-custom-box
-
-  run_test check_rules heif heif/valid
-  run_test check_rules heif heif/invalid-no-ftyp
-  run_test check_rules heif heif/invalid-no-mif1
-
-  run_test check_rules miaf miaf/valid
-  run_test check_rules miaf miaf/invalid-no-meta
+  run_test check_rules_folder dummy
+  run_test check_rules_folder heif
+  run_test check_rules_folder miaf
 
   echo "OK"
 }
@@ -47,6 +40,15 @@ function check_rules
   nasm $scriptDir/$name.asm -f bin -o $mp4path
   $BIN/cw.exe $spec $tmpDir/$name.mp4 > $tmpDir/$name.new
   compare $scriptDir/$name.ref $tmpDir/$name.new
+}
+
+function check_rules_folder
+{
+  local folder="$1"
+  for i in `ls $scriptDir/$folder/*.asm` ; do
+    local name=`basename ${i%.*}`
+    run_test check_rules $folder "$folder/$name"
+  done
 }
 
 function compare
