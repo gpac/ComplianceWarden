@@ -1,7 +1,5 @@
 include generic.mk
 
-CXXFLAGS+=-g3
-CXXFLAGS+=-Os
 CXXFLAGS+=-std=c++14
 CXXFLAGS+=-Wall -Wextra -Werror
 
@@ -10,6 +8,8 @@ CXXFLAGS+=-Isrc
 ifeq ($(DEBUG),1)
   CXXFLAGS+=-g3
   LDFLAGS+=-g
+else
+  CXXFLAGS+=-Os
 endif
 
 # Reduce executable size
