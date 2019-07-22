@@ -4,15 +4,15 @@ meta_start:
 dd BE(meta_end - meta_start)
 db "meta"
 
-hdlr_start:
-dd BE(hdlr_end - hdlr_start)
-db "hdlr"
-hdlr_end:
-
 dinf_start:
 dd BE(dinf_end - dinf_start)
 db "dinf"
 dinf_end:
+
+hdlr_start:
+dd BE(hdlr_end - hdlr_start)
+db "hdlr"
+hdlr_end:
 
 meta_end:
 

@@ -21,6 +21,18 @@ static const SpecDesc spec =
           out->error("'meta' box not found at file level");
       }
     },
+    {
+      "The HandlerBox shall be the first contained box within the MetaBox.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+          {
+            if(box.children.empty() || box.children[0].fourcc != FOURCC("hdlr"))
+              out->error("The HandlerBox shall be the first contained box within the MetaBox.");
+          }
+      }
+    },
   },
   nullptr,
 };
