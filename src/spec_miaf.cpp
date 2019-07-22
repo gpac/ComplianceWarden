@@ -1,4 +1,5 @@
 #include <cstring>
+#include <vector>
 #include "spec.h"
 
 static const SpecDesc spec =
@@ -32,6 +33,55 @@ static const SpecDesc spec =
               out->error("The HandlerBox shall be the first contained box within the MetaBox.");
           }
       }
+    },
+    {
+      "The FileTypeBox shall contain, in the compatible_brands list, "
+      "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
+      "[and] brand(s) identifying conformance to this document (specified in 10)."
+      "[...]"
+      "Files conforming to the general restrictions in clause 7 shall include "
+      "the brand 'miaf' in the compatible_brands in the FileTypeBox.",
+      [] (Box const& root, IReport* out)
+      {
+        if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))
+        {
+          out->error("ftyp box not found");
+          return;
+        }
+
+        auto& ftypBox = root.children[0];
+
+        bool found = false;
+
+        struct Brand { char brand[5];
+        } mif1 { "mif1" }, miaf { "miaf" };
+        std::vector<Brand> expected = { miaf, mif1 };
+
+        for(auto& brand : ftypBox.syms)
+        {
+          if(strcmp(brand.name, "compatible_brand"))
+            continue;
+
+          if(brand.value != FOURCC(expected.back().brand))
+          {
+            auto* v = 3 + (char*)&brand.value;
+            char got[5] = { *(v--), *(v--), *(v--), *v, 0 };
+            out->error("Expected compatible brand '%s', got '%s'", expected.back().brand, got);
+            break;
+          }
+
+          expected.pop_back();
+
+          if(expected.empty())
+          {
+            found = true;
+            break;
+          }
+        }
+
+        if(!found)
+          out->error("compatible_brands list order is not conformant (%d not found).", (int)expected.size());
+      },
     },
   },
   nullptr,
