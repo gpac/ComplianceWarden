@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
+#include <cstdarg>
 
 #include "box.h"
 #include "common_boxes.h"
@@ -62,7 +63,12 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
   {
     void error(const char* fmt, ...) override
     {
-      fprintf(stdout, "[Rule #%d] %s\n", ruleIdx, fmt);
+      va_list args;
+      va_start(args, fmt);
+      printf("[Rule #%d] ", ruleIdx);
+      vprintf(fmt, args);
+      va_end(args);
+      printf("\n");
       ++errorCount;
     }
 
