@@ -143,6 +143,33 @@ static const SpecDesc spec =
           out->error("construction_method=1 on a coded image item");
       },
     },
+    {
+      "MIAF image items shall not reference any item protection",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+          {
+            bool isMiafItem = false, isProtected = false;
+
+            for(auto& metaChild : box.children)
+            {
+              if(metaChild.fourcc == FOURCC("ipro"))
+                isProtected = true;
+              else if(metaChild.fourcc == FOURCC("hdlr"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "handler_type"))
+                  {
+                    if(field.value == FOURCC("pict"))
+                      isMiafItem = true;
+                  }
+            }
+
+            if(isMiafItem && isProtected)
+              out->error("MIAF image item shall not reference any item protection");
+          }
+      },
+    },
   },
   nullptr,
 };
