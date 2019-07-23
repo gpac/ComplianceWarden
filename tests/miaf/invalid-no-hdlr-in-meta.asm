@@ -31,6 +31,19 @@ db "iinf"
 dd BE(0)
 iinf_end:
 
+iprp_start:
+dd BE(iprp_end - iprp_start)
+db "iprp"
+ipco_start:
+dd BE(ipco_end - ipco_start)
+db "ipco"
+ispe_start:
+dd BE(ispe_end - ispe_start)
+db "ispe"
+ispe_end:
+ipco_end:
+iprp_end:
+
 meta_end:
 
 ; vim: syntax=nasm

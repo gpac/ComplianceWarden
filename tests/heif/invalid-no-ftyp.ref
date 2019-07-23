@@ -2,4 +2,5 @@
 [Rule #1] 'meta' box not found at file level
 [Rule #2] 'hdlr' not found in MetaBox
 [Rule #3] ItemInfoBox is required
-4 error(s).
+[Rule #4] MIAF missing Image spatial extents property
+5 error(s).

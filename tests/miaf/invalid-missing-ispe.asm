@@ -10,12 +10,6 @@ db "mif1", "miaf"
 
 ftyp_end:
 
-;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"
-free1_start:
-dd BE(free1_end - free1_start)
-db "free"
-free1_end:
-
 meta_start:
 dd BE(meta_end - meta_start)
 db "meta"
@@ -49,25 +43,9 @@ db "iprp"
 ipco_start:
 dd BE(ipco_end - ipco_start)
 db "ipco"
-ispe_start:
-dd BE(ispe_end - ispe_start)
-db "ispe"
-ispe_end:
 ipco_end:
 iprp_end:
 
-;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"
-free2_start:
-dd BE(free2_end - free2_start)
-db "free"
-free2_end:
-
 meta_end:
-
-;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"
-free3_start:
-dd BE(free3_end - free3_start)
-db "free"
-free3_end:
 
 ; vim: syntax=nasm

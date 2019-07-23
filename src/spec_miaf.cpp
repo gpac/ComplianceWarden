@@ -228,6 +228,30 @@ static const SpecDesc spec =
                     out->error("MIAF master image shall not be an auxiliary image");
       },
     },
+    {
+      "every image item be associated with a Image spatial extents property",
+      [] (Box const& root, IReport* out)
+      {
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                {
+                  if(iprpChild.fourcc == FOURCC("ipco"))
+                    for(auto& ipcoChild : iprpChild.children)
+                      if(ipcoChild.fourcc == FOURCC("ispe"))
+                        found = true;
+
+                  break;
+                }
+
+        if(!found)
+          out->error("MIAF missing Image spatial extents property");
+      },
+    },
   },
   nullptr,
 };
