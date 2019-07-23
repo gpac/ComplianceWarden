@@ -113,7 +113,35 @@ static const SpecDesc spec =
 
         if(!found)
           out->error("'hdlr' not found in MetaBox");
-      }
+      },
+    },
+    {
+      "construction_method shall be equal to 0 for MIAF image items that are coded image items.\n"
+      "construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.",
+      [] (Box const& root, IReport* out)
+      {
+        bool foundIref = false;
+        int constructionMethod = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+            {
+              if(metaChild.fourcc == FOURCC("iloc"))
+              {
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "construction_method"))
+                    constructionMethod = field.value;
+              }
+              else if(metaChild.fourcc == FOURCC("iref"))
+              {
+                foundIref = true;
+              }
+            }
+
+        if(constructionMethod == 1 && !foundIref)
+          out->error("construction_method=1 on a coded image item");
+      },
     },
   },
   nullptr,

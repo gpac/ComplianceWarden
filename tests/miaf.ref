@@ -1,2 +1,3 @@
 [Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found).
-1 error(s).
+[Rule #5] construction_method=1 on a coded image item
+2 error(s).

@@ -27,6 +27,58 @@ void parseMeta(IReader* br)
     br->box();
 }
 
+void parseIloc(IReader* br)
+{
+  auto version = br->sym("version", 8);
+
+  br->sym("flags", 24);
+
+  br->sym("offset_size", 4);
+  br->sym("length_size", 4);
+  br->sym("base_offset_size", 4);
+
+  if((version == 1) || (version == 2))
+  {
+    br->sym("index_size", 4);
+  }
+  else
+  {
+    br->sym("reserved1", 4);
+  }
+
+  int64_t item_count = 0;
+
+  if(version < 2)
+  {
+    item_count = br->sym("item_count", 16);
+  }
+  else if(version == 2)
+  {
+    item_count = br->sym("item_count", 32);
+  }
+
+  for(auto i = 0; i < item_count; i++)
+  {
+    if(version < 2)
+    {
+      br->sym("item_ID", 16);
+    }
+    else if(version == 2)
+    {
+      br->sym("item_ID", 32);
+    }
+
+    if((version == 1) || (version == 2))
+    {
+      br->sym("reserved2", 12);
+      br->sym("construction_method", 4);
+    }
+  }
+
+  while(!br->empty())
+    br->sym("", 8);
+}
+
 void parseHdlr(IReader* br)
 {
   br->sym("version", 8);
@@ -114,6 +166,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseFtyp;
   case FOURCC("meta"):
     return &parseMeta;
+  case FOURCC("iloc"):
+    return &parseIloc;
   case FOURCC("hdlr"):
     return &parseHdlr;
   case FOURCC("mdat"):
