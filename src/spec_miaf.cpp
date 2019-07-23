@@ -194,6 +194,40 @@ static const SpecDesc spec =
           out->error("ItemInfoBox is required");
       },
     },
+    {
+      "The primary item shall be a MIAF master image item.",
+      [] (Box const& root, IReport* out)
+      {
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm"))
+              {
+                found = true;
+
+                // for(auto& field : metaChild.syms)
+                // if(!strcmp(field.name, "item_ID"))
+                // itemId = field.value;
+              }
+
+        if(!found)
+          out->error("PrimaryItemBox is required");
+
+        // thumbnails
+        // TODO: we need a real sample and to generate invalid* samples
+        // out->error("MIAF master image shall not be a thumbnail image");
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("ipco"))
+                for(auto& metaChild : box.children)
+                  if(metaChild.fourcc == FOURCC("auxC"))
+                    out->error("MIAF master image shall not be an auxiliary image");
+      },
+    },
   },
   nullptr,
 };

@@ -161,6 +161,7 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
   case FOURCC("stbl"):
   case FOURCC("dref"):
   case FOURCC(".too"):
+  case FOURCC("ipco"):
     return &parseChildren;
   case FOURCC("ftyp"):
     return &parseFtyp;

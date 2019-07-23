@@ -1,4 +1,5 @@
 [Rule #0] 'meta' box not found at file level
 [Rule #4] 'hdlr' not found in MetaBox
 [Rule #7] ItemInfoBox is required
-3 error(s).
+[Rule #8] PrimaryItemBox is required
+4 error(s).
