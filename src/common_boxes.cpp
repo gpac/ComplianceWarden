@@ -38,35 +38,26 @@ void parseIloc(IReader* br)
   br->sym("base_offset_size", 4);
 
   if((version == 1) || (version == 2))
-  {
     br->sym("index_size", 4);
-  }
+
   else
-  {
     br->sym("reserved1", 4);
-  }
 
   int64_t item_count = 0;
 
   if(version < 2)
-  {
     item_count = br->sym("item_count", 16);
-  }
+
   else if(version == 2)
-  {
     item_count = br->sym("item_count", 32);
-  }
 
   for(auto i = 0; i < item_count; i++)
   {
     if(version < 2)
-    {
       br->sym("item_ID", 16);
-    }
+
     else if(version == 2)
-    {
       br->sym("item_ID", 32);
-    }
 
     if((version == 1) || (version == 2))
     {
@@ -74,6 +65,15 @@ void parseIloc(IReader* br)
       br->sym("construction_method", 4);
     }
   }
+
+  while(!br->empty())
+    br->sym("", 8);
+}
+
+void parseIinf(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
 
   while(!br->empty())
     br->sym("", 8);
@@ -168,6 +168,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseMeta;
   case FOURCC("iloc"):
     return &parseIloc;
+  case FOURCC("iinf"):
+    return &parseIinf;
   case FOURCC("hdlr"):
     return &parseHdlr;
   case FOURCC("mdat"):

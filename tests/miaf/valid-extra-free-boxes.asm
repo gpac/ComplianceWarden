@@ -32,6 +32,12 @@ dd BE(0)
 dd BE(0)
 hdlr_end:
 
+iinf_start:
+dd BE(iinf_end - iinf_start)
+db "iinf"
+dd BE(0)
+iinf_end:
+
 ;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"
 free2_start:
 dd BE(free2_end - free2_start)

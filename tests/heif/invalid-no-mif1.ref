@@ -1,4 +1,5 @@
 [Rule #0] 'mif1' brand not found in 'ftyp' box
 [Rule #1] 'meta' box not found at file level
 [Rule #2] 'hdlr' not found in MetaBox
-3 error(s).
+[Rule #3] ItemInfoBox is required
+4 error(s).

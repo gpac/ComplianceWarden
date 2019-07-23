@@ -20,6 +20,12 @@ dd BE(dinf_end - dinf_start)
 db "dinf"
 dinf_end:
 
+iinf_start:
+dd BE(iinf_end - iinf_start)
+db "iinf"
+dd BE(0)
+iinf_end:
+
 hdlr_start:
 dd BE(hdlr_end - hdlr_start)
 db "hdlr"

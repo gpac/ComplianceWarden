@@ -170,6 +170,30 @@ static const SpecDesc spec =
           }
       },
     },
+    {
+      "ItemInfoBox "
+      "Version 0 or 1 of this box is required by ISO/IEC 23008-12",
+      [] (Box const& root, IReport* out)
+      {
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "version"))
+                  {
+                    if(field.value == 0 || field.value == 1)
+                      found = true;
+                    else
+                      out->error("Version 0 or 1 of ItemInfoBox is required");
+                  }
+
+        if(!found)
+          out->error("ItemInfoBox is required");
+      },
+    },
   },
   nullptr,
 };

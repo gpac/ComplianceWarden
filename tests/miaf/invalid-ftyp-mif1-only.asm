@@ -26,4 +26,10 @@ dd BE(0)
 dd BE(0)
 hdlr_end:
 
+iinf_start:
+dd BE(iinf_end - iinf_start)
+db "iinf"
+dd BE(0)
+iinf_end:
+
 meta_end:
