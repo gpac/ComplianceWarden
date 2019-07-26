@@ -21,7 +21,7 @@ void ENSURE(bool cond, const char* format, ...)
     fprintf(stderr, "\n");
     fflush(stderr);
     va_end(args);
-    exit(0);
+    exit(1);
   }
 }
 
@@ -182,9 +182,13 @@ struct BoxReader : IReader
   {
     BoxReader subReader;
     subReader.spec = spec;
-    const uint32_t size = br.u(32);
-    ENSURE(size >= 8, "BoxReader::box(): box size %d < 8 bytes", size);
+    auto size = br.u(32);
     subReader.myBox.fourcc = br.u(32);
+
+    if(size == 1)
+      size = br.u(64); // large size
+
+    ENSURE(size >= 8, "BoxReader::box(): box size %d < 8 bytes", size);
 
     subReader.br = br.sub(int(size - 8));
     auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
