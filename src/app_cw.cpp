@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
 #include <cstdarg>
 
 #include "box.h"
@@ -12,15 +11,24 @@
 
 using namespace std;
 
+void ENSURE(bool cond, const char* format, ...)
+{
+  if(!cond)
+  {
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+    va_end(args);
+    exit(0);
+  }
+}
+
 vector<uint8_t> loadFile(const char* path)
 {
   FILE* fp = fopen(path, "rb");
-
-  if(!fp)
-  {
-    fprintf(stderr, "Can't open '%s' for reading\n", path);
-    exit(1);
-  }
+  ENSURE(fp, "Can't open '%s' for reading", path);
 
   vector<uint8_t> buf(100 * 1024 * 1024);
   auto const size = fread(buf.data(), 1, buf.size(), fp);
@@ -129,7 +137,9 @@ struct BitReader
 
   BitReader sub(int byteCount)
   {
-    assert(m_pos % 8 == 0);
+    ENSURE((m_pos % 8) == 0, "BitReader::sub(): not byte-aligned");
+    ENSURE(byteCount <= size, "BitReader::sub(): overflow asking %d bytes with %d available", byteCount, size - m_pos);
+
     auto sub = BitReader { src + m_pos / 8, byteCount };
     m_pos += byteCount * 8;
     return sub;
@@ -140,7 +150,7 @@ struct BitReader
     const int byteOffset = m_pos / 8;
     const int bitOffset = m_pos % 8;
 
-    assert(byteOffset < size);
+    ENSURE(byteOffset < size, "BitReader::bit() overflow");
 
     m_pos++;
     return (src[byteOffset] >> (7 - bitOffset)) & 1;
@@ -173,7 +183,9 @@ struct BoxReader : IReader
     BoxReader subReader;
     subReader.spec = spec;
     const uint32_t size = br.u(32);
+    ENSURE(size >= 8, "BoxReader::box(): box size %d < 8 bytes", size);
     subReader.myBox.fourcc = br.u(32);
+
     subReader.br = br.sub(int(size - 8));
     auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
