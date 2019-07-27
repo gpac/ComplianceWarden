@@ -93,50 +93,6 @@ void parseHdlr(IReader* br)
     br->sym("", 8);
 }
 
-void parseMvhd(IReader* br)
-{
-  br->sym("version", 8);
-  br->sym("flags", 24);
-  br->sym("creation_time", 32);
-  br->sym("modification_time", 32);
-  br->sym("timescale", 32);
-  br->sym("duration", 32);
-}
-
-void parseTrun(IReader* br)
-{
-  br->sym("version", 8);
-  auto flags = br->sym("flags", 24);
-  // 0x000001 data‐offset‐present
-  // 0x000004 first‐sample‐flags‐present
-  // 0x000100 sample‐duration‐present
-  // 0x000200 sample‐size‐present
-  // 0x000400 sample‐flags‐present
-  // 0x000800 sample‐composition‐time‐offsets‐present
-  auto const sample_count = br->sym("sample_count", 32);
-
-  if(flags & 0x1)
-    br->sym("data_offset", 32);
-
-  if(flags & 0x4)
-    br->sym("first_sample_flags", 32);
-
-  for(int i = 0; i < sample_count; ++i)
-  {
-    if(flags & 0x100)
-      br->sym("sample_duration", 32);
-
-    if(flags & 0x200)
-      br->sym("sample_size", 32);
-
-    if(flags & 0x400)
-      br->sym("sample_flags", 32);
-
-    if(flags & 0x800)
-      br->sym("sample_composition_time_offset", 32);
-  }
-}
-
 void parseClli(IReader* br)
 {
   br->sym("max_content_light_level", 16);
@@ -196,10 +152,6 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseHdlr;
   case FOURCC("mdat"):
     return &parseRaw;
-  case FOURCC("mvhd"):
-    return &parseMvhd;
-  case FOURCC("trun"):
-    return &parseTrun;
   case FOURCC("clli"):
     return &parseClli;
   case FOURCC("mdcv"):
