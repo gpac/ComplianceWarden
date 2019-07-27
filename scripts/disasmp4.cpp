@@ -55,7 +55,7 @@ struct BitReader
 template<size_t N>
 constexpr uint32_t FOURCC(const char(&tab)[N])
 {
-  static_assert(N == 4 + 1);
+  static_assert(N == 4 + 1, "Invalid FOURCC length");
   uint32_t r = 0;
 
   for(int i = 0; i < 4; ++i)
@@ -90,7 +90,7 @@ void dumpRaw(BitReader& br, int depth)
   printf("db");
 
   while(!br.empty())
-    printf(" 0x%.2X,", br.u(8));
+    printf(" 0x%.2X,", (unsigned)br.u(8));
 
   printf("\n");
 }
