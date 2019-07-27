@@ -217,24 +217,39 @@ int main(int argc, const char* argv[])
 {
   if(argc != 3)
   {
-    fprintf(stderr, "Usage: %s <spec> <input.mp4>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <spec> <list|input.mp4>\n", argv[0]);
     return 1;
   }
 
   auto spec = findSpec(argv[1]);
 
-  auto buf = loadFile(argv[2]);
-  BoxReader topReader;
-  topReader.br = { buf.data(), (int)buf.size() };
-  topReader.myBox.fourcc = FOURCC("root");
-  topReader.spec = spec;
-  auto parseFunc = getParseFunction(topReader.myBox.fourcc);
-  parseFunc(&topReader);
+  if(!strcmp(argv[2], "list"))
+  {
+    fprintf(stdout, "Specification name: %s\n", spec->name);
+    fprintf(stdout, "            detail: %s\n\n", spec->caption);
+    int ruleIdx = 0;
 
-  if(0)
-    dump(topReader.myBox);
+    for(auto& r : spec->rules)
+    {
+      fprintf(stdout, "Rule #%04d: %s\n\n", ruleIdx, r.caption);
+      ruleIdx++;
+    }
+  }
+  else
+  {
+    auto buf = loadFile(argv[2]);
+    BoxReader topReader;
+    topReader.br = { buf.data(), (int)buf.size() };
+    topReader.myBox.fourcc = FOURCC("root");
+    topReader.spec = spec;
+    auto parseFunc = getParseFunction(topReader.myBox.fourcc);
+    parseFunc(&topReader);
 
-  checkCompliance(topReader.myBox, spec);
+    if(0)
+      dump(topReader.myBox);
+
+    checkCompliance(topReader.myBox, spec);
+  }
 
   return 0;
 }
