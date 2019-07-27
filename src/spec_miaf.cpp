@@ -3,10 +3,11 @@
 
 static const SpecDesc spec =
 {
-  "miaf",
-  "MIAF - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
+  "MIAF (Multi-Image Application Format)\n",
+  "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
   {
     {
+      "Section :\n"
       "The file-level MetaBox shall always be present (see 7.2.1.4).\n"
       "The MetaBox shall be present at the file-level",
       [] (Box const& root, IReport* out)
@@ -229,7 +230,7 @@ static const SpecDesc spec =
       },
     },
     {
-      "every image item be associated with a Image spatial extents property",
+      "Every image item be associated with a Image spatial extents property",
       [] (Box const& root, IReport* out)
       {
         bool found = false;
