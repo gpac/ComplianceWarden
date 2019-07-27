@@ -12,6 +12,7 @@ struct Symbol
 struct Box
 {
   uint32_t fourcc;
+  uint64_t size;
   std::vector<Box> children;
   std::vector<Symbol> syms;
 };

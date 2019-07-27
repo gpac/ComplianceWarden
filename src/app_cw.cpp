@@ -182,15 +182,15 @@ struct BoxReader : IReader
   {
     BoxReader subReader;
     subReader.spec = spec;
-    auto size = br.u(32);
+    subReader.myBox.size = br.u(32);
     subReader.myBox.fourcc = br.u(32);
 
-    if(size == 1)
-      size = br.u(64); // large size
+    if(subReader.myBox.size == 1)
+      subReader.myBox.size = br.u(64); // large size
 
-    ENSURE(size >= 8, "BoxReader::box(): box size %d < 8 bytes", size);
+    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes", subReader.myBox.size);
 
-    subReader.br = br.sub(int(size - 8));
+    subReader.br = br.sub(int(subReader.myBox.size - 8));
     auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
 
@@ -240,6 +240,7 @@ int main(int argc, const char* argv[])
     auto buf = loadFile(argv[2]);
     BoxReader topReader;
     topReader.br = { buf.data(), (int)buf.size() };
+    topReader.myBox.size = buf.size();
     topReader.myBox.fourcc = FOURCC("root");
     topReader.spec = spec;
     auto parseFunc = getParseFunction(topReader.myBox.fourcc);

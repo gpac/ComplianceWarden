@@ -137,6 +137,26 @@ void parseTrun(IReader* br)
   }
 }
 
+void parseClli(IReader* br)
+{
+  br->sym("max_content_light_level", 16);
+  br->sym("max_pic_average_light_level", 16);
+}
+
+void parseMdcv(IReader* br)
+{
+  br->sym("display_primaries_x_0", 16);
+  br->sym("display_primaries_y_0", 16);
+  br->sym("display_primaries_x_1", 16);
+  br->sym("display_primaries_y_1", 16);
+  br->sym("display_primaries_x_2", 16);
+  br->sym("display_primaries_y_2", 16);
+  br->sym("white_point_x", 16);
+  br->sym("white_point_y", 16);
+  br->sym("max_display_mastering_luminance", 32);
+  br->sym("min_display_mastering_luminance", 32);
+}
+
 void parseChildren(IReader* br)
 {
   while(!br->empty())
@@ -180,6 +200,10 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseMvhd;
   case FOURCC("trun"):
     return &parseTrun;
+  case FOURCC("clli"):
+    return &parseClli;
+  case FOURCC("mdcv"):
+    return &parseMdcv;
   }
 
   return &parseRaw;

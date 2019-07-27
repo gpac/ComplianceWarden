@@ -1,9 +1,11 @@
-#include <cstring>
 #include "spec.h"
+#include <cstring>
+#include <functional>
 
 static const SpecDesc spec =
 {
-  "MIAF (Multi-Image Application Format)\n",
+  "miaf",
+  "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
   {
     {
@@ -251,6 +253,118 @@ static const SpecDesc spec =
 
         if(!found)
           out->error("MIAF missing Image spatial extents property");
+      },
+    },
+    {
+      "Enforce 'clli' parsing and positioning",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<const Box*> found;
+
+        // Look for valid 'clli' boxes
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto& stsdChild : stblChild.children)
+                                  if(stsdChild.fourcc == FOURCC("clli"))
+                                  {
+                                    auto& clli = stsdChild;
+                                    found.push_back(&clli);
+
+                                    if(clli.size != 12)
+                                      out->error("'clli' box size is %d bytes (expected 12).");
+
+                                    for(auto& field : clli.syms)
+                                      if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
+                                        out->error("Invalid 'clli' field \"%s\" (value=%lld).", field.name, field.value);
+                                  }
+
+        // Look for other invalidly positioned 'clli' boxes
+        std::function<void(const Box &)> parse = [&] (const Box& parent)
+          {
+            for(auto& box : parent.children)
+              if(box.fourcc == FOURCC("clli"))
+              {
+                for(auto b : found)
+                  if(&box == b)
+                    break;
+
+                out->error("Invalid 'clli' position (parent is '%c%c%c%c').",
+                           (parent.fourcc >> 24) & 0xff, (parent.fourcc >> 16) & 0xff,
+                           (parent.fourcc >> 8) & 0xff, (parent.fourcc >> 0) & 0xff);
+              }
+              else
+                parse(box);
+          };
+
+        parse(root);
+      },
+    },
+    {
+      "Enforce 'mdcv' parsing and positioning",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<const Box*> found;
+
+        // Look for valid 'mdcv' boxes
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto& stsdChild : stblChild.children)
+                                  if(stsdChild.fourcc == FOURCC("mdcv"))
+                                  {
+                                    auto& mdcv = stsdChild;
+                                    found.push_back(&mdcv);
+
+                                    if(mdcv.size != 32)
+                                      out->error("'mdcv' box size is %d bytes (expected 32).");
+
+                                    for(auto& field : mdcv.syms)
+                                      if(strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
+                                         && strcmp(field.name, "display_primaries_x_1") && strcmp(field.name, "display_primaries_y_1")
+                                         && strcmp(field.name, "display_primaries_x_2") && strcmp(field.name, "display_primaries_y_2")
+                                         && strcmp(field.name, "white_point_x") && strcmp(field.name, "white_point_y")
+                                         && strcmp(field.name, "max_display_mastering_luminance") && strcmp(field.name, "min_display_mastering_luminance"))
+                                        out->error("Invalid 'mdcv' field \"%s\" (value=%lld).", field.name, field.value);
+                                  }
+
+        // Look for other invalidly positioned 'mdcv' boxes
+        std::function<void(const Box &)> parse = [&] (const Box& parent)
+          {
+            for(auto& box : parent.children)
+              if(box.fourcc == FOURCC("mdcv"))
+              {
+                for(auto b : found)
+                  if(&box == b)
+                    break;
+
+                out->error("Invalid 'mdcv' position (parent is '%c%c%c%c').",
+                           (parent.fourcc >> 24) & 0xff, (parent.fourcc >> 16) & 0xff,
+                           (parent.fourcc >> 8) & 0xff, (parent.fourcc >> 0) & 0xff);
+              }
+              else
+                parse(box);
+          };
+
+        parse(root);
       },
     },
   },
