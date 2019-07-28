@@ -9,7 +9,7 @@ static const SpecDesc spec =
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
   {
     {
-      "Section :\n"
+      "Section 3.13:\n"
       "The file-level MetaBox shall always be present (see 7.2.1.4).\n"
       "The MetaBox shall be present at the file-level",
       [] (Box const& root, IReport* out)
@@ -25,6 +25,7 @@ static const SpecDesc spec =
       }
     },
     {
+      "Section 7.2.1.1\n"
       "The HandlerBox shall be the first contained box within the MetaBox.",
       [] (Box const& root, IReport* out)
       {
@@ -37,6 +38,7 @@ static const SpecDesc spec =
       }
     },
     {
+      "Section 7.2.1.2\n"
       "The FileTypeBox shall contain, in the compatible_brands list, "
       "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
       "[and] brand(s) identifying conformance to this document (specified in 10)."
@@ -76,6 +78,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.2.1.4\n"
       "The XMLBox and BinaryXMLBox shall not be used in a MetaBox.",
       [] (Box const& root, IReport* out)
       {
@@ -96,6 +99,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.2.1.5\n"
       "The handler type for the MetaBox shall be 'pict'.",
       [] (Box const& root, IReport* out)
       {
@@ -119,6 +123,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.2.1.7\n"
       "construction_method shall be equal to 0 for MIAF image items that are coded image items.\n"
       "construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.",
       [] (Box const& root, IReport* out)
@@ -147,6 +152,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.2.1.8\n"
       "MIAF image items shall not reference any item protection",
       [] (Box const& root, IReport* out)
       {
@@ -174,6 +180,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.2.1.9\n"
       "ItemInfoBox "
       "Version 0 or 1 of this box is required by ISO/IEC 23008-12",
       [] (Box const& root, IReport* out)
@@ -198,6 +205,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.3.2\n"
       "The primary item shall be a MIAF master image item.",
       [] (Box const& root, IReport* out)
       {
@@ -232,6 +240,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.3.6.3\n"
       "Every image item be associated with a Image spatial extents property",
       [] (Box const& root, IReport* out)
       {
@@ -256,6 +265,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.4.4.2.2\n"
       "Enforce 'clli' parsing and positioning",
       [] (Box const& root, IReport* out)
       {
@@ -310,6 +320,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 7.4.4.3.2\n"
       "Enforce 'mdcv' parsing and positioning",
       [] (Box const& root, IReport* out)
       {

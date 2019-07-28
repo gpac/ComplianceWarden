@@ -7,6 +7,7 @@ static const SpecDesc spec =
   "HEIF - ISO/IEC 23008-12 - First edition 2017-12",
   {
     {
+      "Section 10.1\n"
       "The FileTypeBox shall contain, in the compatible_brands list, "
       "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
       "[and] brand(s) identifying conformance to this document (specified in 10).",
@@ -31,6 +32,7 @@ static const SpecDesc spec =
       }
     },
     {
+      "Section 6.2\n"
       "A MetaBox ('meta'), as specified in ISO/IEC 14496-12, is required at file level.",
       [] (Box const& root, IReport* out)
       {
@@ -45,6 +47,7 @@ static const SpecDesc spec =
       }
     },
     {
+      "Section 6.2\n"
       "The handler type for the MetaBox shall be 'pict'.",
       [] (Box const& root, IReport* out)
       {
@@ -68,6 +71,7 @@ static const SpecDesc spec =
       }
     },
     {
+      "Section 10.2.1.1\n"
       "Version 0 or 1 of ItemInfoBox is required",
       [] (Box const& root, IReport* out)
       {
@@ -91,6 +95,7 @@ static const SpecDesc spec =
       },
     },
     {
+      "Section 6.5.3.1\n"
       "every image item be associated with a Image spatial extents property",
       [] (Box const& root, IReport* out)
       {
