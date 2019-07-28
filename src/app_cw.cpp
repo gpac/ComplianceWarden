@@ -188,13 +188,17 @@ struct BoxReader : IReader
     if(subReader.myBox.size == 1)
       subReader.myBox.size = br.u(64); // large size
 
-    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes", subReader.myBox.size);
+    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes (fourcc='%c%c%c%c')", subReader.myBox.size,
+           (subReader.myBox.fourcc >> 24) & 0xff, (subReader.myBox.fourcc >> 16) & 0xff,
+           (subReader.myBox.fourcc >> 8) & 0xff, (subReader.myBox.fourcc >> 0) & 0xff);
 
     subReader.br = br.sub(int(subReader.myBox.size - 8));
+    auto pos = subReader.br.m_pos;
     auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
-
     myBox.children.push_back(std::move(subReader.myBox));
+
+    ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - 8) * 8, "romain");
   }
 
   BitReader br;
