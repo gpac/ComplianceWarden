@@ -18,6 +18,51 @@ void parseFtyp(IReader* br)
     br->sym("compatible_brand", 32);
 }
 
+void parseStsd(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entryCount = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entryCount; i++)
+    br->box();
+}
+
+void parseVisualSampleEntry(IReader* br)
+{
+  // SampleEntry
+  br->sym("reserved1", 8);
+  br->sym("reserved2", 8);
+  br->sym("reserved3", 8);
+  br->sym("reserved4", 8);
+  br->sym("reserved5", 8);
+  br->sym("reserved6", 8);
+  br->sym("data_reference_index", 16);
+
+  // VisualSampleEntry
+  br->sym("pre_defined", 16);
+  br->sym("reserved7", 16);
+  br->sym("pre_defined1", 32);
+  br->sym("pre_defined2", 32);
+  br->sym("pre_defined3", 32);
+  br->sym("width", 16);
+  br->sym("height", 16);
+  br->sym("horizresolution", 32);
+  br->sym("vertresolution", 32);
+  br->sym("reserved8", 32);
+  br->sym("frame_count", 16);
+
+  for(int i = 0; i < 32; ++i)
+    br->sym("", 8); // compressorname
+
+  br->sym("depth", 16);
+  br->sym("pre_defined4", 16);
+
+  while(!br->empty())
+    br->box(); // clap, pasp
+}
+
 void parseMeta(IReader* br)
 {
   br->sym("version", 8);
@@ -140,8 +185,12 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
   case FOURCC("ipco"):
   case FOURCC("iprp"):
     return &parseChildren;
+  case FOURCC("avc1"):
+    return &parseVisualSampleEntry;
   case FOURCC("ftyp"):
     return &parseFtyp;
+  case FOURCC("stsd"):
+    return &parseStsd;
   case FOURCC("meta"):
     return &parseMeta;
   case FOURCC("iloc"):
