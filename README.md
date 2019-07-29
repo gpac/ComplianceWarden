@@ -42,6 +42,17 @@ $ export CXX=x86_64-w64-mingw32-g++
 $ make
 ```
 
+## Emscripten (WASM)
+
+```
+em++ -std=c++14 src/app_cw.cpp src/common_boxes.cpp src/spec_dummy.cpp src/spec_miaf.cpp src/spec_heif.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_sp
+ecCheckC', '_specListRulesC']"
+```
+
+See https://rbouqueau.github.io/ComplianceWarden-wasm/ for a demo.
+
+The HTML integration source code is hosted at https://github.com/rbouqueau/ComplianceWarden-wasm.
+
 # Code architecture
 
 ```

@@ -110,16 +110,6 @@ int registerSpec(SpecDesc const* spec)
   return 0;
 }
 
-SpecDesc const* findSpec(const char* name)
-{
-  for(auto& spec : g_allSpecs())
-    if(strcmp(spec->name, name) == 0)
-      return spec;
-
-  fprintf(stderr, "Spec '%s' not found\n", name);
-  exit(1);
-}
-
 struct BitReader
 {
   uint8_t* src;
@@ -217,6 +207,45 @@ private:
   }
 };
 
+SpecDesc const* specFind(const char* name)
+{
+  for(auto& spec : g_allSpecs())
+    if(strcmp(spec->name, name) == 0)
+      return spec;
+
+  fprintf(stderr, "Spec '%s' not found\n", name);
+  exit(1);
+}
+
+void specListRules(const SpecDesc* spec)
+{
+  fprintf(stdout, "Specification name: %s\n", spec->name);
+  fprintf(stdout, "            detail: %s\n\n", spec->caption);
+  int ruleIdx = 0;
+
+  for(auto& r : spec->rules)
+  {
+    fprintf(stdout, "Rule #%04d: %s\n\n", ruleIdx, r.caption);
+    ruleIdx++;
+  }
+}
+
+void specCheck(const SpecDesc* spec, uint8_t* data, size_t size)
+{
+  BoxReader topReader;
+  topReader.br = { data, (int)size };
+  topReader.myBox.size = size;
+  topReader.myBox.fourcc = FOURCC("root");
+  topReader.spec = spec;
+  auto parseFunc = getParseFunction(topReader.myBox.fourcc);
+  parseFunc(&topReader);
+
+  if(0)
+    dump(topReader.myBox);
+
+  checkCompliance(topReader.myBox, spec);
+}
+
 int main(int argc, const char* argv[])
 {
   if(argc != 3)
@@ -225,37 +254,43 @@ int main(int argc, const char* argv[])
     return 1;
   }
 
-  auto spec = findSpec(argv[1]);
+  auto spec = specFind(argv[1]);
 
   if(!strcmp(argv[2], "list"))
   {
-    fprintf(stdout, "Specification name: %s\n", spec->name);
-    fprintf(stdout, "            detail: %s\n\n", spec->caption);
-    int ruleIdx = 0;
-
-    for(auto& r : spec->rules)
-    {
-      fprintf(stdout, "Rule #%04d: %s\n\n", ruleIdx, r.caption);
-      ruleIdx++;
-    }
+    specListRules(spec);
   }
   else
   {
     auto buf = loadFile(argv[2]);
-    BoxReader topReader;
-    topReader.br = { buf.data(), (int)buf.size() };
-    topReader.myBox.size = buf.size();
-    topReader.myBox.fourcc = FOURCC("root");
-    topReader.spec = spec;
-    auto parseFunc = getParseFunction(topReader.myBox.fourcc);
-    parseFunc(&topReader);
-
-    if(0)
-      dump(topReader.myBox);
-
-    checkCompliance(topReader.myBox, spec);
+    specCheck(spec, buf.data(), (int)buf.size());
   }
 
   return 0;
+}
+
+/*****************************************************************************/
+
+/*emscripten exports */
+extern "C" {
+struct SpecDesc;
+SpecDesc const* specFindC(const char* name);
+void specListRulesC(const SpecDesc* spec);
+void specCheckC(const SpecDesc* spec, uint8_t* data, size_t size);
+}
+
+SpecDesc const* specFindC(const char* name)
+{
+  return specFind(name);
+}
+
+void specListRulesC(const SpecDesc* spec)
+{
+  specListRules(spec);
+}
+
+void specCheckC(const SpecDesc* spec, uint8_t* data, size_t size)
+{
+  specCheck(spec, data, size);
 }
 
