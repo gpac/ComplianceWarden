@@ -273,7 +273,7 @@ static const SpecDesc spec =
 
         auto checkIntegrity = [&] (const Box& clli) {
             if(clli.size != 12)
-              out->error("'clli' box size is %d bytes (expected 12).");
+              out->error("'clli' box size is %d bytes (expected 12).", clli.size);
 
             for(auto& field : clli.syms)
               if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
@@ -318,9 +318,7 @@ static const SpecDesc spec =
                 if(!ok)
                 {
                   checkIntegrity(box);
-                  out->error("Invalid 'clli' position (parent is '%c%c%c%c').",
-                             (parent.fourcc >> 24) & 0xff, (parent.fourcc >> 16) & 0xff,
-                             (parent.fourcc >> 8) & 0xff, (parent.fourcc >> 0) & 0xff);
+                  out->error("Invalid 'clli' position (parent is '%s').", toString(parent.fourcc).c_str());
                 }
               }
               else
@@ -339,7 +337,7 @@ static const SpecDesc spec =
 
         auto checkIntegrity = [&] (const Box& mdcv) {
             if(mdcv.size != 32)
-              out->error("'mdcv' box size is %d bytes (expected 32).");
+              out->error("'mdcv' box size is %d bytes (expected 32).", mdcv.size);
 
             for(auto& field : mdcv.syms)
               if(strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
@@ -388,9 +386,7 @@ static const SpecDesc spec =
                 if(!ok)
                 {
                   checkIntegrity(box);
-                  out->error("Invalid 'mdcv' position (parent is '%c%c%c%c').",
-                             (parent.fourcc >> 24) & 0xff, (parent.fourcc >> 16) & 0xff,
-                             (parent.fourcc >> 8) & 0xff, (parent.fourcc >> 0) & 0xff);
+                  out->error("Invalid 'mdcv' position (parent is '%s').", toString(parent.fourcc).c_str());
                 }
               }
               else
