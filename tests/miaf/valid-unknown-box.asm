@@ -35,6 +35,8 @@ hdlr_end:
 pitm_start:
 dd BE(pitm_end - pitm_start)
 db "pitm"
+dd BE(0)
+db 0x00, 0x00
 pitm_end:
 
 iinf_start:
