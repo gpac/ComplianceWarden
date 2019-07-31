@@ -130,6 +130,43 @@ void parseIinf(IReader* br)
     br->sym("", 8);
 }
 
+void parseIref(IReader* br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  if(version == 0)
+  {
+    while(!br->empty())
+    {
+      br->sym("box_size", 32);
+      br->sym("box_type", 32);
+      br->sym("from_item_ID", 16);
+      auto reference_count = br->sym("reference_count", 16);
+
+      for(auto j = 0; j < reference_count; j++)
+      {
+        br->sym("to_item_ID", 16);
+      }
+    }
+  }
+  else if(version == 1)
+  {
+    while(!br->empty())
+    {
+      br->sym("box_size", 32);
+      br->sym("box_type", 32);
+      br->sym("from_item_ID", 32);
+      auto reference_count = br->sym("reference_count", 16);
+
+      for(auto j = 0; j < reference_count; j++)
+      {
+        br->sym("to_item_ID", 32);
+      }
+    }
+  }
+}
+
 void parseHdlr(IReader* br)
 {
   br->sym("version", 8);
@@ -214,6 +251,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseIloc;
   case FOURCC("iinf"):
     return &parseIinf;
+  case FOURCC("iref"):
+    return &parseIref;
   case FOURCC("hdlr"):
     return &parseHdlr;
   case FOURCC("mdat"):

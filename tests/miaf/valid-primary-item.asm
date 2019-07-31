@@ -33,25 +33,24 @@ dd BE(0)
 db 0xaa, 0xbb
 pitm_end:
 
+iref_start:
+dd BE(iref_end - iref_start)
+db "iref"
+db 0x01, 0x00, 0x00, 0x00 ; version=1
+thmb_start:
+dd BE(thmb_end - thmb_start)
+dd "thmb"
+dd BE(0)      ; from_item_ID
+db 0x00, 0x01 ; reference_count
+dd BE(0)      ; to_item_ID
+thmb_end:
+iref_end:
+
 iinf_start:
 dd BE(iinf_end - iinf_start)
 db "iinf"
 dd BE(0)
 iinf_end:
-
-iloc_start:
-dd BE(iloc_end - iloc_start)
-db "iloc"
-dd BE(0x01000000)
-dd BE(1) ; 1 item
-dd BE(1) ; construction_method(1)
-iloc_end:
-
-iref_start:
-dd BE(iref_end - iref_start)
-db "iref"
-dd BE(0)
-iref_end:
 
 iprp_start:
 dd BE(iprp_end - iprp_start)

@@ -185,6 +185,7 @@ static const SpecDesc spec =
       [] (Box const& root, IReport* out)
       {
         bool found = false;
+        uint32_t primaryItemId = -1;
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
@@ -193,17 +194,22 @@ static const SpecDesc spec =
               {
                 found = true;
 
-                // for(auto& field : metaChild.syms)
-                // if(!strcmp(field.name, "item_ID"))
-                // itemId = field.value;
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "item_ID"))
+                    primaryItemId = field.value;
               }
 
         if(!found)
           out->error("PrimaryItemBox is required");
 
-        // thumbnails
-        // TODO: we need a real sample and to generate invalid* samples
-        // out->error("MIAF master image shall not be a thumbnail image");
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "from_item_ID"))
+                    if(field.value == primaryItemId)
+                      out->error("MIAF master image (item_ID=%X) shall not be a thumbnail image", primaryItemId);
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
