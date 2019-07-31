@@ -1,6 +1,5 @@
 [Rule #0] 'meta' box not found at file level
 [Rule #4] 'hdlr' not found in MetaBox
-[Rule #7] ItemInfoBox is required
-[Rule #8] PrimaryItemBox is required
-[Rule #9] MIAF missing Image spatial extents property
-5 error(s).
+[Rule #7] PrimaryItemBox is required
+[Rule #8] MIAF missing Image spatial extents property
+4 error(s).

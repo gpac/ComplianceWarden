@@ -164,6 +164,17 @@ void parseMdcv(IReader* br)
   br->sym("min_display_mastering_luminance", 32);
 }
 
+void parsePitm(IReader* br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  if (version == 0)
+  br->sym("item_ID", 16);
+  else
+  br->sym("item_ID", 32);
+}
+
 void parseChildren(IReader* br)
 {
   while(!br->empty())
@@ -213,6 +224,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseClli;
   case FOURCC("mdcv"):
     return &parseMdcv;
+  case FOURCC("pitm"):
+    return &parsePitm;
   }
 
   return &parseRaw;

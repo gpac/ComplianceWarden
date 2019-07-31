@@ -71,8 +71,9 @@ static const SpecDesc spec =
       }
     },
     {
-      "Section 10.2.1.1\n"
-      "Version 0 or 1 of ItemInfoBox is required",
+      "Section 7.2.1.9\n"
+      "ItemInfoBox "
+      "Version 0 or 1 of this box is required by ISO/IEC 23008-12",
       [] (Box const& root, IReport* out)
       {
         bool found = false;
@@ -120,28 +121,42 @@ static const SpecDesc spec =
       },
     },
     {
-      "Section 7.2.1.9\n"
-      "ItemInfoBox "
-      "Version 0 or 1 of this box is required by ISO/IEC 23008-12",
+      "Section 7.2.3.3\n"
+      "CodingConstraintsBox ('ccst') shall be present once",
       [] (Box const& root, IReport* out)
       {
-        bool found = false;
+        bool foundSampleEntry = false;
+        bool foundCCst = false;
 
         for(auto& box : root.children)
-          if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
-              if(metaChild.fourcc == FOURCC("iinf"))
-                for(auto& field : metaChild.syms)
-                  if(!strcmp(field.name, "version"))
-                  {
-                    if(field.value == 0 || field.value == 1)
-                      found = true;
-                    else
-                      out->error("Version 0 or 1 of ItemInfoBox is required");
-                  }
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto& stsdChild : stblChild.children)
+                                  if(stsdChild.fourcc == FOURCC("avc1"))
+                                  {
+                                    foundSampleEntry = true;
 
-        if(!found)
-          out->error("ItemInfoBox is required");
+                                    for(auto& avc1Child : stsdChild.children)
+                                      if(avc1Child.fourcc == FOURCC("ccst"))
+                                      {
+                                        if(!foundCCst)
+                                          foundCCst = true;
+                                        else
+                                          out->error("CodingConstraintsBox ('ccst') is present several times");
+                                      }
+                                  }
+
+        if(foundSampleEntry && !foundCCst)
+          out->error("CodingConstraintsBox ('ccst') shall be present once");
       },
     },
   },
