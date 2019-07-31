@@ -25,6 +25,17 @@ void ENSURE(bool cond, const char* format, ...)
   }
 }
 
+std::string toString(uint32_t fourcc)
+{
+  char fourccStr[5] = {};
+  snprintf(fourccStr, 5, "%c%c%c%c",
+           (fourcc >> 24) & 0xff,
+           (fourcc >> 16) & 0xff,
+           (fourcc >> 8) & 0xff,
+           (fourcc >> 0) & 0xff);
+  return fourccStr;
+}
+
 vector<uint8_t> loadFile(const char* path)
 {
   FILE* fp = fopen(path, "rb");
@@ -43,11 +54,7 @@ void dump(Box const& box, int depth = 0)
   for(int i = 0; i < depth; ++i)
     printf("  ");
 
-  printf("%c%c%c%c",
-         (box.fourcc >> 24) & 0xff,
-         (box.fourcc >> 16) & 0xff,
-         (box.fourcc >> 8) & 0xff,
-         (box.fourcc >> 0) & 0xff);
+  printf("%s", toString(box.fourcc).c_str());
   printf("\n");
 
   for(auto& sym : box.syms)
@@ -178,9 +185,8 @@ struct BoxReader : IReader
     if(subReader.myBox.size == 1)
       subReader.myBox.size = br.u(64); // large size
 
-    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes (fourcc='%c%c%c%c')", subReader.myBox.size,
-           (subReader.myBox.fourcc >> 24) & 0xff, (subReader.myBox.fourcc >> 16) & 0xff,
-           (subReader.myBox.fourcc >> 8) & 0xff, (subReader.myBox.fourcc >> 0) & 0xff);
+    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes (fourcc='%s')",
+           subReader.myBox.size, toString(subReader.myBox.fourcc).c_str());
 
     subReader.br = br.sub(int(subReader.myBox.size - 8));
     auto pos = subReader.br.m_pos;
@@ -189,10 +195,8 @@ struct BoxReader : IReader
     myBox.children.push_back(std::move(subReader.myBox));
 
     ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - 8) * 8,
-           "Box '%c%c%c%c': read %d bits instead of %llu bits",
-           (subReader.myBox.fourcc >> 24) & 0xff, (subReader.myBox.fourcc >> 16) & 0xff,
-           (subReader.myBox.fourcc >> 8) & 0xff, (subReader.myBox.fourcc >> 0) & 0xff,
-           subReader.br.m_pos - pos, (subReader.myBox.size - 8) * 8);
+           "Box '%s': read %d bits instead of %llu bits",
+           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, (subReader.myBox.size - 8) * 8);
   }
 
   BitReader br;

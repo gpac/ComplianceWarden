@@ -35,5 +35,6 @@ struct SpecDesc
   ParseBoxFunc* (* getParseFunction)(uint32_t fourcc);
 };
 
+std::string toString(uint32_t fourcc);
 int registerSpec(SpecDesc const* spec);
 
