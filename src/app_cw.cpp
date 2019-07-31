@@ -188,10 +188,15 @@ struct BoxReader : IReader
     parseFunc(&subReader);
     myBox.children.push_back(std::move(subReader.myBox));
 
-    ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - 8) * 8, "romain");
+    ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - 8) * 8,
+           "Box '%c%c%c%c': read %d bits instead of %llu bits",
+           (subReader.myBox.fourcc >> 24) & 0xff, (subReader.myBox.fourcc >> 16) & 0xff,
+           (subReader.myBox.fourcc >> 8) & 0xff, (subReader.myBox.fourcc >> 0) & 0xff,
+           subReader.br.m_pos - pos, (subReader.myBox.size - 8) * 8);
   }
 
   BitReader br;
+
   Box myBox;
   const SpecDesc* spec;
 

@@ -22,6 +22,7 @@ SRCS_CW+=\
   src/common_boxes.cpp\
 
 SRCS_CW+=src/spec_dummy.cpp
+SRCS_CW+=src/spec_isobmff.cpp
 SRCS_CW+=src/spec_heif.cpp
 SRCS_CW+=src/spec_miaf.cpp
 

@@ -272,6 +272,9 @@ static const SpecDesc spec =
         std::vector<const Box*> found;
 
         auto checkIntegrity = [&] (const Box& clli) {
+            if(clli.size != 12)
+              out->error("'clli' box size is %d bytes (expected 12).");
+
             for(auto& field : clli.syms)
               if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
                 out->error("Invalid 'clli' field \"%s\" (value=%lld).", field.name, field.value);
@@ -335,6 +338,9 @@ static const SpecDesc spec =
         std::vector<const Box*> found;
 
         auto checkIntegrity = [&] (const Box& mdcv) {
+            if(mdcv.size != 32)
+              out->error("'mdcv' box size is %d bytes (expected 32).");
+
             for(auto& field : mdcv.syms)
               if(strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
                  && strcmp(field.name, "display_primaries_x_1") && strcmp(field.name, "display_primaries_y_1")

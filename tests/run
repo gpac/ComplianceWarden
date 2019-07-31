@@ -15,6 +15,7 @@ function main
   run_test real_mp4_heif
 
   run_test check_rules_folder dummy
+  run_test check_rules_folder isobmff
   run_test check_rules_folder heif
   run_test check_rules_folder miaf
 
@@ -56,7 +57,11 @@ function check_rules
   local mp4path="$tmpDir/$name.mp4"
   mkdir -p $(dirname $mp4path)
   nasm $scriptDir/$name.asm -f bin -o $mp4path
-  $BIN/cw.exe $spec $tmpDir/$name.mp4 > $tmpDir/$name.new
+  if [[ $name == *error* ]] ; then
+    $BIN/cw.exe $spec $tmpDir/$name.mp4 2> $tmpDir/$name.new || :
+  else
+    $BIN/cw.exe $spec $tmpDir/$name.mp4 > $tmpDir/$name.new
+  fi
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }
 
