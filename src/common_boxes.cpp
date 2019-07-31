@@ -169,10 +169,10 @@ void parsePitm(IReader* br)
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
 
-  if (version == 0)
-  br->sym("item_ID", 16);
+  if(version == 0)
+    br->sym("item_ID", 16);
   else
-  br->sym("item_ID", 32);
+    br->sym("item_ID", 32);
 }
 
 void parseChildren(IReader* br)
@@ -202,8 +202,6 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
   case FOURCC("ipco"):
   case FOURCC("iprp"):
     return &parseChildren;
-  case FOURCC("avc1"):
-    return &parseVisualSampleEntry;
   case FOURCC("ftyp"):
     return &parseFtyp;
   case FOURCC("stsd"):
@@ -228,6 +226,28 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parsePitm;
   }
 
+  if(isVisualSampleEntry(fourcc))
+    return &parseVisualSampleEntry;
+
   return &parseRaw;
+}
+
+bool isVisualSampleEntry(uint32_t fourcc)
+{
+  switch(fourcc)
+  {
+  case FOURCC("avc1"):
+  case FOURCC("avc2"):
+  case FOURCC("avc3"):
+  case FOURCC("avc4"):
+  case FOURCC("hev1"):
+  case FOURCC("hev2"):
+  case FOURCC("hvc1"):
+  case FOURCC("hvc2"):
+  case FOURCC("av01"):
+    return true;
+  default:
+    return false;
+  }
 }
 
