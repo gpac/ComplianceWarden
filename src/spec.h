@@ -1,6 +1,7 @@
 // This is how the app sees concrete specifications.
 #pragma once
 
+#include <string>
 #include <vector>
 #include "box.h"
 #include "reader.h" // ParseBoxFunc

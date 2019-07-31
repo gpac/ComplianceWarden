@@ -396,6 +396,48 @@ static const SpecDesc spec =
         parse(root);
       },
     },
+    {
+      "Section 7.3.6.5\n"
+      "\"all images conformant with this document shall have a pixel aspect ratio of 1:1\"\n"
+      "The default pixel aspect ratio of an image, in the absence of association with\n"
+      "a PixelAspectRatioBox property, is 1:1 (i.e. 'square'). This value of pixel\n"
+      "aspect ratio is the mandatory value for all images mandated or conditionally\n"
+      "mandated by this document, i.e. all images conformant with this document shall\n"
+      "have a pixel aspect ratio of 1:1.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto& stsdChild : stblChild.children)
+                                  if(stsdChild.fourcc == FOURCC("avc1"))
+                                    for(auto& avc1Child : stsdChild.children)
+                                      if(avc1Child.fourcc == FOURCC("pasp"))
+                                      {
+                                        uint32_t hSpacing = -1, vSpacing = -1;
+
+                                        for(auto& sym : avc1Child.syms)
+                                        {
+                                          if(!strcmp(sym.name, "hSpacing"))
+                                            hSpacing = sym.value;
+                                          else if(!strcmp(sym.name, "vSpacing"))
+                                            vSpacing = sym.value;
+                                        }
+
+                                        if(vSpacing != hSpacing)
+                                          out->error("Pixel aspect ratio shall be 1:1 but is %:%", hSpacing, vSpacing);
+                                      }
+      },
+    },
   },
   nullptr,
 };

@@ -29,6 +29,12 @@ void parseStsd(IReader* br)
     br->box();
 }
 
+void parsePasp(IReader* br)
+{
+  br->sym("hSpacing", 32);
+  br->sym("vSpacing", 32);
+}
+
 void parseVisualSampleEntry(IReader* br)
 {
   // SampleEntry
@@ -191,6 +197,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseFtyp;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("pasp"):
+    return &parsePasp;
   case FOURCC("meta"):
     return &parseMeta;
   case FOURCC("iloc"):
