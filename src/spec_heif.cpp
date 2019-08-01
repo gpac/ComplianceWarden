@@ -159,6 +159,40 @@ static const SpecDesc spec =
           out->error("CodingConstraintsBox ('ccst') shall be present once");
       },
     },
+    {
+      "Section 6.4.2\n"
+      "The primary item shall not be a hidden image item",
+      [] (Box const& root, IReport* out)
+      {
+        uint32_t primaryItemId = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "item_ID"))
+                    primaryItemId = field.value;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "flags"))
+                        if(!(sym.value & 1))
+                          // ISOBMFF 8.11.6.1: (flags & 1) equal to 1 indicates that the item is not intended to be a part of the presentation
+                          break;
+
+                      if(!strcmp(sym.name, "item_ID"))
+                        if(sym.value == primaryItemId)
+                          out->error("The primary item shall not be a hidden image item");
+                    }
+      },
+    },
   },
   nullptr,
 };

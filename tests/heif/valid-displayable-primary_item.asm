@@ -6,7 +6,7 @@ db "ftyp"
 
 db "isom"
 dd BE(0x200)
-db "mif1", "miaf"
+db "mif1"
 
 ftyp_end:
 
@@ -15,34 +15,33 @@ dd BE(meta_end - meta_start)
 db "meta"
 dd BE(0)
 
-dinf_start:
-dd BE(dinf_end - dinf_start)
-db "dinf"
-dinf_end:
-
-pitm_start:
-dd BE(pitm_end - pitm_start)
-db "pitm"
+hdlr_start:
+dd BE(hdlr_end - hdlr_start)
+db "hdlr"
 dd BE(0)
-db 0x00, 0x00
-pitm_end:
+dd BE(0)
+db "pict"
+dd BE(0)
+dd BE(0)
+dd BE(0)
+hdlr_end:
 
 iinf_start:
 dd BE(iinf_end - iinf_start)
 db "iinf"
 dd BE(0)
-db 0x00, 0x00
+db 0x00, 0x01
+infe_start:
+dd BE(infe_end - infe_start)
+db "infe"
+dd BE(0)
+db 0xaa, 0xbb ; item_ID
+db 0x00, 0x00 ; protected item
+db 0x00
+db 0x00
+db 0x00
+infe_end:
 iinf_end:
-
-xml_start:
-dd BE(xml_end - xml_start)
-db "xml "
-xml_end:
-
-bxml_start:
-dd BE(bxml_end - bxml_start)
-db "bxml"
-bxml_end:
 
 iprp_start:
 dd BE(iprp_end - iprp_start)

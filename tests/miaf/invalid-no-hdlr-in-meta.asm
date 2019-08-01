@@ -31,6 +31,7 @@ iinf_start:
 dd BE(iinf_end - iinf_start)
 db "iinf"
 dd BE(0)
+db 0x00, 0x00
 iinf_end:
 
 iprp_start:

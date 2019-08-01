@@ -159,23 +159,32 @@ static const SpecDesc spec =
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
           {
-            bool isMiafItem = false, isProtected = false;
+            bool isMiafItem = false;
 
             for(auto& metaChild : box.children)
             {
-              if(metaChild.fourcc == FOURCC("ipro"))
-                isProtected = true;
-              else if(metaChild.fourcc == FOURCC("hdlr"))
+              if(metaChild.fourcc == FOURCC("hdlr"))
+              {
                 for(auto& field : metaChild.syms)
                   if(!strcmp(field.name, "handler_type"))
                   {
                     if(field.value == FOURCC("pict"))
                       isMiafItem = true;
                   }
+              }
+              else if(metaChild.fourcc == FOURCC("ipro"))
+              {
+                if(isMiafItem)
+                  out->error("MIAF image item shall not reference any item protection ('ipro')");
+              }
+              else if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                    for(auto& sym : iinfChild.syms)
+                      if(!strcmp(sym.name, "item_protection_index"))
+                        if(sym.value != 0)
+                          out->error("MIAF image item shall not reference any item protection ('infe' item_protection_index)");
             }
-
-            if(isMiafItem && isProtected)
-              out->error("MIAF image item shall not reference any item protection");
           }
       },
     },

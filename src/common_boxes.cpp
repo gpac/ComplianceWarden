@@ -123,11 +123,80 @@ void parseIloc(IReader* br)
 
 void parseIinf(IReader* br)
 {
-  br->sym("version", 8);
+  auto version = br->sym("version", 8);
   br->sym("flags", 24);
 
-  while(!br->empty())
-    br->sym("", 8);
+  uint32_t entry_count;
+
+  if(version == 0)
+    entry_count = br->sym("entry_count", 16);
+  else if(version == 1)
+    entry_count = br->sym("entry_count", 32);
+  else
+    return;
+
+  for(uint32_t i = 0; i < entry_count; ++i)
+    br->box(); // ItemInfoEntry
+}
+
+void parseInfe(IReader* br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  if((version == 0) || (version == 1))
+  {
+    br->sym("item_ID", 16);
+    br->sym("item_protection_index", 16);
+
+    while(br->sym("", 8))
+      ; // item_name
+
+    while(br->sym("", 8))
+      ; // content_type
+
+    while(br->sym("", 8))
+      ; // content_encoding
+  }
+
+  if(version == 1)
+  {
+    // ItemInfoExtension(extension_type);
+    while(!br->empty())
+      br->sym("", 8);
+  }
+
+  if(version >= 2)
+  {
+    if(version == 2)
+    {
+      br->sym("item_ID", 16);
+    }
+    else if(version == 3)
+    {
+      br->sym("item_ID", 32);
+    }
+
+    br->sym("item_protection_index", 16);
+    uint32_t item_type = br->sym("item_type", 32);
+
+    while(br->sym("", 8))
+      ; // item_name
+
+    if(item_type == FOURCC("mime"))
+    {
+      while(br->sym("", 8))
+        ; // content_type
+
+      while(br->sym("", 8))
+        ; // content_encoding
+    }
+    else if(item_type == FOURCC("uri "))
+    {
+      while(br->sym("", 8))
+        ; // item_uri_type
+    }
+  }
 }
 
 void parseIref(IReader* br)
@@ -251,6 +320,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseIloc;
   case FOURCC("iinf"):
     return &parseIinf;
+  case FOURCC("infe"):
+    return &parseInfe;
   case FOURCC("iref"):
     return &parseIref;
   case FOURCC("hdlr"):
