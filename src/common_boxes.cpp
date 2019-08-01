@@ -18,6 +18,42 @@ void parseFtyp(IReader* br)
     br->sym("compatible_brand", 32);
 }
 
+void parseTkhd(IReader* br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  if(version == 1)
+  {
+    br->sym("version", 64);
+    br->sym("modification_time", 64);
+    br->sym("track_ID", 32);
+    br->sym("reserved", 32);
+    br->sym("duration", 64);
+  }
+  else // version==0
+  {
+    br->sym("creation_time", 32);
+    br->sym("modification_time", 32);
+    br->sym("track_ID", 32);
+    br->sym("reserved", 32);
+    br->sym("duration", 32);
+  }
+
+  br->sym("reserved", 32);
+  br->sym("reserved", 32);
+  br->sym("layer", 16);
+  br->sym("alternate_group", 16);
+  br->sym("volume", 16);
+  br->sym("reserved", 16);
+
+  for(auto i = 0; i < 9; ++i)
+    br->sym("matrix", 32); // id is 0,0,0x40000000
+
+  br->sym("width", 32); // fixed 16.16
+  br->sym("height", 32); // fixed 16.16
+}
+
 void parseStsd(IReader* br)
 {
   br->sym("version", 8);
@@ -310,6 +346,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseChildren;
   case FOURCC("ftyp"):
     return &parseFtyp;
+  case FOURCC("tkhd"):
+    return &parseTkhd;
   case FOURCC("stsd"):
     return &parseStsd;
   case FOURCC("pasp"):
