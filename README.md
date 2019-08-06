@@ -45,8 +45,7 @@ $ make
 ## Emscripten (WASM)
 
 ```
-em++ -std=c++14 src/app_cw.cpp src/common_boxes.cpp src/spec_dummy.cpp src/spec_miaf.cpp src/spec_heif.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_sp
-ecCheckC', '_specListRulesC']"
+em++ -std=c++14 src/app_cw.cpp src/common_boxes.cpp src/spec_dummy.cpp src/spec_miaf.cpp src/spec_heif.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC']" --pre-js wasm-fs-pre.js
 ```
 
 See https://rbouqueau.github.io/ComplianceWarden-wasm/ for a demo.
