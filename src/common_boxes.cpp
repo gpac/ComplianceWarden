@@ -224,7 +224,7 @@ void parseInfe(IReader* br)
       while(br->sym("", 8))
         ; // content_type
 
-      while(br->sym("", 8))
+      while(!br->empty() && br->sym("", 8))
         ; // content_encoding
     }
     else if(item_type == FOURCC("uri "))
