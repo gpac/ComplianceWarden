@@ -484,6 +484,62 @@ static const SpecDesc spec =
         }
       },
     },
+    {
+      "Section 8.7\n"
+      "If multiple tracks are present in the file, they shall have the same duration,\n"
+      "and edit lists may be needed to achieve this.",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<int64_t> durations;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "duration"))
+                        durations.push_back(sym.value);
+
+        if(!durations.empty())
+        {
+          auto refDuration = durations[0];
+
+          for(auto d : durations)
+            if(d != refDuration)
+              out->error("All tracks shall have the same duration: found (%ld) while first track duration is %ld (expressed in 'mvhd' timescale)", d, refDuration);
+        }
+      },
+    },
+    {
+      "Section 7.4.5\n"
+      "When present, audio tracks shall have the same duration as the video or image\n"
+      "sequence track",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<int64_t> durations;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "duration"))
+                        durations.push_back(sym.value);
+
+        if(!durations.empty())
+        {
+          auto refDuration = durations[0];
+
+          for(auto d : durations)
+            if(d != refDuration)
+              out->error("All tracks shall have the same duration: found (%ld) while first track duration is %ld (expressed in 'mvhd' timescale)", d, refDuration);
+        }
+      },
+    },
   },
   nullptr,
 };
