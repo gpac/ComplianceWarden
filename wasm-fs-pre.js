@@ -6,7 +6,7 @@ var Module = {
   
       var stderrBuffer = "";
       function stderr(asciiCode) {
-        console.log(String.fromCharCode(asciiCode));
+        document.getElementById("compliance_tool_errors").innerHTML += String.fromCharCode(asciiCode);
       }
   
       FS.init(null, stdout, stderr);
