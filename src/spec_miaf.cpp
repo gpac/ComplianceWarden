@@ -215,18 +215,25 @@ static const SpecDesc spec =
           if(box.fourcc == FOURCC("meta"))
             for(auto& metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t fourcc = 0;
+
                 for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    fourcc = field.value;
+
                   if(!strcmp(field.name, "from_item_ID"))
                     if(field.value == primaryItemId)
-                      out->error("MIAF master image (item_ID=%X) shall not be a thumbnail image", primaryItemId);
+                    {
+                      if(fourcc == FOURCC("auxl"))
+                        out->error("MIAF master image (item_ID=%X) shall not be a auxiliary image", primaryItemId);
 
-        for(auto& box : root.children)
-          if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
-              if(metaChild.fourcc == FOURCC("ipco"))
-                for(auto& metaChild : box.children)
-                  if(metaChild.fourcc == FOURCC("auxC"))
-                    out->error("MIAF master image shall not be an auxiliary image");
+                      if(fourcc == FOURCC("thmb"))
+                        out->error("MIAF master image (item_ID=%X) shall not be a thumbnail image", primaryItemId);
+                    }
+                }
+              }
       },
     },
     {

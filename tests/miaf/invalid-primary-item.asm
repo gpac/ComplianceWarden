@@ -44,6 +44,13 @@ dd BE(0xaabb) ; from_item_ID
 db 0x00, 0x01 ; reference_count
 dd BE(0)      ; to_item_ID
 thmb_end:
+auxl_start:
+dd BE(auxl_end - auxl_start)
+dd "auxl"
+dd BE(0xaabb) ; from_item_ID
+db 0x00, 0x01 ; reference_count
+dd BE(0)      ; to_item_ID
+auxl_end:
 iref_end:
 
 iinf_start:
