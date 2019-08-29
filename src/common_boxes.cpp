@@ -333,6 +333,7 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
   case FOURCC("moov"):
   case FOURCC("trak"):
   case FOURCC("moof"):
+  case FOURCC("tref"):
   case FOURCC("traf"):
   case FOURCC("ilst"):
   case FOURCC("mvex"):

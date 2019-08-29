@@ -1,6 +1,7 @@
 #include "spec.h"
 #include <cstring>
 #include <functional>
+#include <map>
 
 static const SpecDesc spec =
 {
@@ -545,6 +546,126 @@ static const SpecDesc spec =
             if(d != refDuration)
               out->error("All tracks shall have the same duration: found (%ld) while first track duration is %ld (expressed in 'mvhd' timescale)", d, refDuration);
         }
+      },
+    },
+    {
+      "Section 8.5\n"
+      "For any type of track (video, audio, image sequence, metadata etc.) there shall either\n"
+      "be exactly one track of that type not identified as an auxiliary or thumbnail track,\n"
+      "or all tracks of that type not identified as an auxiliary or thumbnail track shall form a\n"
+      "single group of alternates, i.e. after any alternate track selection has been performed,\n"
+      "there is at most a single track of any given type",
+      [] (Box const& root, IReport* out)
+      {
+        struct HandlerTypeData
+        {
+          uint16_t alternateGroup = 0;
+          std::vector<uint32_t> referenceTypes;
+        };
+        std::map<uint32_t /*handler_type*/, HandlerTypeData> trackTypes;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+              {
+                uint32_t handlerType = 0;
+
+                // find the hldr
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("hdlr"))
+                        for(auto& sym : mdiaChild.syms)
+                          if(!strcmp(sym.name, "handler_type"))
+                            handlerType = (uint32_t)sym.value;
+
+                if(handlerType == 0)
+                {
+                  out->error("'trak' with no 'hdlr': check ISOBMFF conformance");
+                  continue;
+                }
+
+                // ensure entry
+                if(trackTypes.find(handlerType) == trackTypes.end())
+                  trackTypes.insert({ handlerType, HandlerTypeData {}
+                                    });
+
+                // find alternate_group
+                {
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("tkhd"))
+                      for(auto& sym : trakChild.syms)
+                        if(!strcmp(sym.name, "alternate_group"))
+                          trackTypes.find(handlerType)->second.alternateGroup = (uint16_t)sym.value;
+                }
+
+                // find tref
+                bool trefFound = false;
+                {
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("tref"))
+                      for(auto& trefChild : trakChild.children)
+                      {
+                        if(trefFound)
+                          out->error("'tref' with multiple TrackReferenceTypeBox: check ISOBMFF conformance");
+
+                        if(trefChild.fourcc != FOURCC("thmb") && trefChild.fourcc != FOURCC("auxl"))
+                          out->error("'tref' with unknown TrackReferenceTypeBox type \'%X\'", trefChild.fourcc);
+                        else if(handlerType != FOURCC("pict"))
+                          out->error("Thumbnails and Auxiliaries are expected with a 'pict' handler type", trefChild.fourcc);
+
+                        trefFound = true;
+                        trackTypes.find(handlerType)->second.referenceTypes.push_back(trefChild.fourcc);
+                      }
+
+                  if(!trefFound)
+                    trackTypes.find(handlerType)->second.referenceTypes.push_back(FOURCC("main"));
+                }
+              }
+
+        bool firstPredicate = true;
+
+        for(auto& e : trackTypes)
+        {
+          int found = 0;
+
+          for(auto referenceType : e.second.referenceTypes)
+            if(referenceType == FOURCC("main"))
+              found++;
+
+          if(found != 1) // shall be exactly one
+            firstPredicate = false;
+        }
+
+        bool secondPredicate = true;
+        {
+          uint16_t alternate_group = 0; // no information on possible relations to other tacks, dixit ISOBMFF
+
+          for(auto& e : trackTypes)
+          {
+            for(auto referenceType : e.second.referenceTypes)
+              if(referenceType != FOURCC("thmb") && referenceType != FOURCC("auxl"))
+              {
+                if(alternate_group)
+                {
+                  if(alternate_group != e.second.alternateGroup)
+                    secondPredicate = false;
+                }
+                else
+                {
+                  if(e.second.alternateGroup) // found an alternate_group
+                    alternate_group = e.second.alternateGroup;
+                }
+              }
+          }
+
+          if(!alternate_group)
+            secondPredicate = false; // no alternate_group found, therefore can't form a group of alternates
+        }
+
+        if(!(firstPredicate ^ secondPredicate))
+          out->error("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
       },
     },
   },
