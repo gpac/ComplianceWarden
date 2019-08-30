@@ -62,9 +62,20 @@ fourcc("moov")
 trak_start:
 dd BE(trak_end - trak_start)
 fourcc("trak")
+
 mdia_start:
 dd BE(mdia_end - mdia_start)
 fourcc("mdia")
+
+hdlr2_start:
+dd BE(hdlr2_end - hdlr2_start)
+db "hdlr"
+dd BE(0)
+dd BE(0)
+dd "pict"
+dd 0, 0, 0
+hdlr2_end:
+
 minf_start:
 dd BE(minf_end - minf_start)
 fourcc("minf")

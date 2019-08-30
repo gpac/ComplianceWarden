@@ -64,6 +64,18 @@ mvhd_end:
 trak_start:
 dd BE(trak_end - trak_start)
 db "trak"
+mdia_start:
+dd BE(mdia_end - mdia_start)
+db "mdia"
+hdlr_start:
+dd BE(hdlr_end - hdlr_start)
+db "hdlr"
+dd BE(0)
+dd BE(0)
+dd "pict"
+dd 0, 0, 0
+hdlr_end:
+mdia_end:
 tkhd_start:
 dd BE(tkhd_end - tkhd_start)
 db "tkhd"
