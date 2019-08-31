@@ -1,6 +1,8 @@
 #include <cstring>
 #include "spec.h"
 
+extern bool isVisualSampleEntry(uint32_t fourcc);
+
 static const SpecDesc spec =
 {
   "heif",
@@ -141,12 +143,12 @@ static const SpecDesc spec =
                             for(auto& stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("avc1"))
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
                                   {
                                     foundSampleEntry = true;
 
-                                    for(auto& avc1Child : stsdChild.children)
-                                      if(avc1Child.fourcc == FOURCC("ccst"))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("ccst"))
                                       {
                                         if(!foundCCst)
                                           foundCCst = true;

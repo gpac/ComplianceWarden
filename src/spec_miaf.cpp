@@ -4,6 +4,8 @@
 #include <functional>
 #include <map>
 
+extern bool isVisualSampleEntry(uint32_t fourcc);
+
 static const SpecDesc spec =
 {
   "miaf",
@@ -293,11 +295,11 @@ static const SpecDesc spec =
                             for(auto& stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("avc1"))
-                                    for(auto& avc1Child : stsdChild.children)
-                                      if(avc1Child.fourcc == FOURCC("clli"))
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("clli"))
                                       {
-                                        auto& clli = avc1Child;
+                                        auto& clli = sampleEntryChild;
                                         found.push_back(&clli);
                                         checkIntegrity(clli);
                                       }
@@ -361,11 +363,11 @@ static const SpecDesc spec =
                             for(auto& stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("avc1"))
-                                    for(auto& avc1Child : stsdChild.children)
-                                      if(avc1Child.fourcc == FOURCC("mdcv"))
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("mdcv"))
                                       {
-                                        auto& mdcv = avc1Child;
+                                        auto& mdcv = sampleEntryChild;
                                         found.push_back(&mdcv);
                                         checkIntegrity(mdcv);
                                       }
@@ -418,13 +420,13 @@ static const SpecDesc spec =
                             for(auto& stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("avc1"))
-                                    for(auto& avc1Child : stsdChild.children)
-                                      if(avc1Child.fourcc == FOURCC("pasp"))
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("pasp"))
                                       {
                                         uint32_t hSpacing = -1, vSpacing = -1;
 
-                                        for(auto& sym : avc1Child.syms)
+                                        for(auto& sym : sampleEntryChild.syms)
                                         {
                                           if(!strcmp(sym.name, "hSpacing"))
                                             hSpacing = sym.value;

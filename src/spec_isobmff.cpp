@@ -4,6 +4,8 @@
 #include <vector>
 #include <queue>
 
+extern bool isVisualSampleEntry(uint32_t fourcc);
+
 static const SpecDesc spec =
 {
   "isobmff",
@@ -45,12 +47,12 @@ static const SpecDesc spec =
                             for(auto& stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("avc1"))
-                                    for(auto& avc1Child : stsdChild.children)
-                                      if(avc1Child.fourcc == FOURCC("clap") || avc1Child.fourcc == FOURCC("pasp"))
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("clap") || sampleEntryChild.fourcc == FOURCC("pasp"))
                                       {
-                                        FourCCs.push_back(avc1Child.fourcc);
-                                        found.push_back(&avc1Child);
+                                        FourCCs.push_back(sampleEntryChild.fourcc);
+                                        found.push_back(&sampleEntryChild);
                                       }
 
         auto expected = std::vector<uint32_t>({ FOURCC("clap"), FOURCC("pasp") });
