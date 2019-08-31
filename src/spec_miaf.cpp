@@ -1,4 +1,5 @@
 #include "spec.h"
+#include <cassert>
 #include <cstring>
 #include <functional>
 #include <map>
@@ -516,7 +517,7 @@ static const SpecDesc spec =
 
           for(auto d : durations)
             if(d != refDuration)
-              out->error("All tracks shall have the same duration: found (%ld) while first track duration is %ld (expressed in 'mvhd' timescale)", d, refDuration);
+              out->error("All tracks shall have the same duration: found (%lld) while first track duration is %lld (expressed in 'mvhd' timescale)", d, refDuration);
         }
       },
     },
@@ -544,7 +545,7 @@ static const SpecDesc spec =
 
           for(auto d : durations)
             if(d != refDuration)
-              out->error("All tracks shall have the same duration: found (%ld) while first track duration is %ld (expressed in 'mvhd' timescale)", d, refDuration);
+              out->error("All tracks shall have the same duration: found (%lld) while first track duration is %lld (expressed in 'mvhd' timescale)", d, refDuration);
         }
       },
     },
@@ -667,6 +668,149 @@ static const SpecDesc spec =
         if(!(firstPredicate ^ secondPredicate))
           out->error("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
       },
+    },
+    {
+      "Section 8.6\n"
+      "repeating edits may be used; either all tracks shall indicate a 'looping' edit, or none",
+      [] (Box const& root, IReport* out)
+      {
+        int repeat = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("edts"))
+                    for(auto& edtsChild : trakChild.children)
+                      if(edtsChild.fourcc == FOURCC("elst"))
+                      {
+                        for(auto& sym : edtsChild.syms)
+                          if(!strcmp(sym.name, "flags"))
+                          {
+                            if(repeat == -1)
+                              repeat = (sym.value & 1);
+
+                            if(repeat != (sym.value & 1))
+                              out->error("Either all tracks or none shall indicate an edit list repetition");
+                          }
+                      }
+      }
+    },
+    {
+      "Section 8.6\n"
+      "the media_rate shall take either a value greater than 0 and up to and\n"
+      "including 1 (forward play), or minus 1 (normal speed reverse play)", // -1, not 0, or 1 ?
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("edts"))
+                    for(auto& edtsChild : trakChild.children)
+                      if(edtsChild.fourcc == FOURCC("elst"))
+                        for(auto& sym : edtsChild.syms)
+                          if(!strcmp(sym.name, "media_rate_integer"))
+                          {
+                            int16_t mediaRate = sym.value;
+
+                            if(mediaRate != -1 && mediaRate != 1)
+                              out->error("'elst' media rate shall be -1 or 1, found %d", mediaRate);
+                          }
+      }
+    },
+    {
+      "Section 8.6\n"
+      "when there are two 'media edits' one shall specify forward playback and the other reverse\n"
+      "over the same media time-range", // MEDIA COMPOSITION
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<int16_t> mediaRates;
+        std::vector<int64_t> editDurations, mediaTimes;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("edts"))
+                    for(auto& edtsChild : trakChild.children)
+                      if(edtsChild.fourcc == FOURCC("elst"))
+                        for(auto& sym : edtsChild.syms)
+                        {
+                          if(!strcmp(sym.name, "media_rate_integer"))
+                            mediaRates.push_back(sym.value);
+
+                          if(!strcmp(sym.name, "edit_duration"))
+                            editDurations.push_back(sym.value);
+
+                          if(!strcmp(sym.name, "media_time"))
+                            mediaTimes.push_back(sym.value);
+                        }
+
+        if(mediaRates.size() == 2)
+        {
+          assert(editDurations.size() == 2 && mediaTimes.size() == 2);
+
+          if(mediaRates[0] != 1 || mediaRates[1] != -1)
+            out->error("Two media edits found: media rates shall be { 1, -1 }, found { %d, %d }", mediaRates[0], mediaRates[1]);
+
+          if((mediaTimes[0] != mediaTimes[1] + mediaRates[1] * editDurations[1])
+             && (mediaTimes[0] + mediaRates[0] * editDurations[0] != mediaTimes[1]))
+            out->error("Two media edits found: one shall specify forward and the other reverse playback");
+        }
+      }
+    },
+    {
+      "Section 8.6\n"
+      "if an edit list is used to specify reverse playback (a negative media_rate) of some media\n"
+      "there shall be a sync sample (as defined by ISO/IEC 14496-12) at least every 4 frames, or\n"
+      "more often",
+      [] (Box const& root, IReport* out)
+      {
+        bool hasReversePlayback = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("edts"))
+                    for(auto& edtsChild : trakChild.children)
+                      if(edtsChild.fourcc == FOURCC("elst"))
+                        for(auto& sym : edtsChild.syms)
+                          if(!strcmp(sym.name, "media_rate_integer"))
+                            if(sym.value != -1)
+                              hasReversePlayback = true;
+
+        if(hasReversePlayback)
+        {
+          int64_t lastSync = -4;
+
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl"))
+                              for(auto& stblChild : minfChild.children)
+                                if(stblChild.fourcc == FOURCC("stss"))
+                                  for(auto& sym : stblChild.syms)
+                                    if(!strcmp(sym.name, "sample_number"))
+                                    {
+                                      if(sym.value - lastSync > 4)
+                                        out->error("Found edit list for reverse playback: sync sample delta (%ld - %ld) is more than 4", sym.value, lastSync);
+
+                                      lastSync = sym.value;
+                                    }
+        }
+      }
     },
   },
   nullptr,

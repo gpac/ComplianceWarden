@@ -54,6 +54,31 @@ void parseTkhd(IReader* br)
   br->sym("height", 32); // fixed 16.16
 }
 
+void parseElst(IReader* br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entry_count = br->sym("entry_count", 32);
+
+  for(int64_t i = 1; i <= entry_count; i++)
+  {
+    if(version == 1)
+    {
+      br->sym("edit_duration", 64);
+      br->sym("media_time", 64);
+    }
+    else // version==0
+    {
+      br->sym("edit_duration", 32);
+      br->sym("media_time", 32);
+    }
+
+    br->sym("media_rate_integer", 16);
+    br->sym("media_rate_fraction", 16);
+  }
+}
+
 void parseStsd(IReader* br)
 {
   br->sym("version", 8);
@@ -63,6 +88,17 @@ void parseStsd(IReader* br)
 
   for(auto i = 1; i <= entryCount; i++)
     br->box();
+}
+
+void parseStss(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entryCount = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entryCount; i++)
+    br->sym("sample_number", 32);
 }
 
 void parsePasp(IReader* br)
@@ -332,6 +368,7 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseChildren;
   case FOURCC("moov"):
   case FOURCC("trak"):
+  case FOURCC("edts"):
   case FOURCC("moof"):
   case FOURCC("tref"):
   case FOURCC("traf"):
@@ -349,8 +386,12 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseFtyp;
   case FOURCC("tkhd"):
     return &parseTkhd;
+  case FOURCC("elst"):
+    return &parseElst;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("stss"):
+    return &parseStss;
   case FOURCC("pasp"):
     return &parsePasp;
   case FOURCC("meta"):
