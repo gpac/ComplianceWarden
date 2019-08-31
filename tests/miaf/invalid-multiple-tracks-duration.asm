@@ -109,7 +109,7 @@ dd BE(hdlr2_end - hdlr2_start)
 db "hdlr"
 dd BE(0)
 dd BE(0)
-dd "pict"
+dd "thmb"
 dd 0, 0, 0
 hdlr2_end:
 mdia2_end:

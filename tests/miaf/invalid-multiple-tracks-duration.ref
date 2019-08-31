@@ -1,4 +1,3 @@
 [Rule #13] All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
 [Rule #14] All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
-[Rule #15] There should be at most one single track of any given type (rule predicates: {0, 0})
-3 error(s).
+2 error(s).

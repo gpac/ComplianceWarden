@@ -64,6 +64,20 @@ mvhd_end:
 trak_start:
 dd BE(trak_end - trak_start)
 db "trak"
+
+mdia1_start:
+dd BE(mdia1_end - mdia1_start)
+db "mdia"
+hdlr1_start:
+dd BE(hdlr1_end - hdlr1_start)
+db "hdlr"
+dd BE(0)
+dd BE(0)
+dd "pict"
+dd 0, 0, 0
+hdlr1_end:
+mdia1_end:
+
 tkhd_start:
 dd BE(tkhd_end - tkhd_start)
 db "tkhd"
@@ -89,6 +103,20 @@ trak_end:
 trak2_start:
 dd BE(trak2_end - trak2_start)
 db "trak"
+
+mdia2_start:
+dd BE(mdia2_end - mdia2_start)
+db "mdia"
+hdlr2_start:
+dd BE(hdlr2_end - hdlr2_start)
+db "hdlr"
+dd BE(0)
+dd BE(0)
+dd "thmb"
+dd 0, 0, 0
+hdlr2_end:
+mdia2_end:
+
 tkhd2_start:
 dd BE(tkhd2_end - tkhd2_start)
 db "tkhd"
