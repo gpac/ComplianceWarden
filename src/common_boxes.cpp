@@ -1,5 +1,18 @@
 // Box-parsers for MP4 and MPEG-DASH
 #include "common_boxes.h"
+#include <cassert>
+
+bool isMpegAudio(uint8_t oti)
+{
+  switch(oti)
+  {
+  case 0x40: case 0x6b: case 0x69:
+  case 0x66: case 0x67: case 0x68:
+    return true;
+  default:
+    return false;
+  }
+}
 
 namespace
 {
@@ -90,6 +103,127 @@ void parseStsd(IReader* br)
     br->box();
 }
 
+void processEsDescriptor(IReader* br);
+void processDecoderConfigDescriptor(IReader* br);
+void processAudioSpecificInfoConfig(IReader* br, int size);
+
+void processDescriptor(IReader* br, uint8_t oti /*0 if unknown/unrelevant*/)
+{
+  auto parseVlc = [] (IReader* br) {
+      int val = 0;
+      int n = 4;
+
+      while(n--)
+      {
+        int c = br->sym("byte", 8);
+        val <<= 7;
+        val = c & 0x7f;
+
+        if(!(c & 0x80))
+          break;
+      }
+
+      return val;
+    };
+
+  auto const tag = br->sym("tag", 8);
+  auto const len = parseVlc(br);
+  switch(tag)
+  {
+  case 0x03:
+    processEsDescriptor(br);
+    break;
+  case 0x04:
+    processDecoderConfigDescriptor(br);
+    break;
+  case 0x05:
+
+    if(isMpegAudio(oti))
+      processAudioSpecificInfoConfig(br, len); // DecoderSpecificInfoDescriptor
+    else // skip
+      for(int i = 0; i < len; ++i)
+        br->sym("byte", 8);
+
+    break;
+  default:
+
+    for(int i = 0; i < len; ++i)
+      br->sym("byte", 8);
+
+    break;
+  }
+}
+
+// ISO 14496-1 7.2.6.5.1
+void processEsDescriptor(IReader* br)
+{
+  br->sym("ES_ID", 16);
+
+  auto streamDependenceFlag = br->sym("streamDependenceFlag", 1);
+  auto URL_Flag = br->sym("URL_Flag", 1);
+  auto OCRstreamFlag = br->sym("OCRstreamFlag", 1);
+  br->sym("streamPriority", 5);
+
+  if(streamDependenceFlag)
+    br->sym("dependsOn_ES_ID", 16);
+
+  if(URL_Flag)
+    assert(0 && "URL_Flag=1 is not implemented");
+
+  if(OCRstreamFlag)
+    br->sym("OCR_ES_Id", 16);
+
+  processDescriptor(br, 0);
+}
+
+// ISO 14496-1 7.2.6.6.1
+void processDecoderConfigDescriptor(IReader* br)
+{
+  auto objectTypeIndication = br->sym("objectTypeIndication", 8);
+  br->sym("streamType", 6);
+  br->sym("upStream", 1);
+  br->sym("reserved", 1);
+  br->sym("bufferSizeDB", 24);
+  br->sym("maxBitrate", 32);
+  br->sym("avgBitrate", 32);
+
+  processDescriptor(br, objectTypeIndication);
+}
+
+void processAudioSpecificInfoConfig(IReader* br, int size)
+{
+  int readBits = 0;
+
+  // GetAudioObjectType()
+  auto audioObjectType = br->sym("audioObjectType", 5);
+  readBits = 5;
+
+  if(audioObjectType == 31)
+  {
+    br->sym("audioObjectTypeExt", 5); // audioObjectType = 32 + audioObjectTypeExt
+  }
+
+  // Skip
+  if(readBits % 8)
+  {
+    auto remainderBits = 8 - (readBits % 8);
+    br->sym("bits", remainderBits);
+    readBits += remainderBits;
+  }
+
+  for(auto i = readBits / 8; i < size; ++i)
+    br->sym("byte", 8);
+}
+
+void parseEsds(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  while(!br->empty())
+    processDescriptor(br, 0);
+}
+
 void parseStss(IReader* br)
 {
   br->sym("version", 8);
@@ -105,6 +239,32 @@ void parsePasp(IReader* br)
 {
   br->sym("hSpacing", 32);
   br->sym("vSpacing", 32);
+}
+
+void parseAudioSampleEntry(IReader* br)
+{
+  // SampleEntry
+  br->sym("reserved1", 8);
+  br->sym("reserved2", 8);
+  br->sym("reserved3", 8);
+  br->sym("reserved4", 8);
+  br->sym("reserved5", 8);
+  br->sym("reserved6", 8);
+  br->sym("data_reference_index", 16);
+
+  // AudioSampleEntry
+  br->sym("entry_version", 16);
+  br->sym("reserved", 16);
+  br->sym("reserved", 16);
+  br->sym("reserved", 16);
+  br->sym("channelcount", 16);
+  br->sym("samplesize", 16);
+  br->sym("pre_defined", 16);
+  br->sym("reserved", 16);
+  br->sym("samplerate", 32);
+
+  while(!br->empty())
+    br->box();
 }
 
 void parseVisualSampleEntry(IReader* br)
@@ -360,6 +520,25 @@ void parseChildren(IReader* br)
 }
 }
 
+bool isVisualSampleEntry(uint32_t fourcc)
+{
+  switch(fourcc)
+  {
+  case FOURCC("avc1"):
+  case FOURCC("avc2"):
+  case FOURCC("avc3"):
+  case FOURCC("avc4"):
+  case FOURCC("hev1"):
+  case FOURCC("hev2"):
+  case FOURCC("hvc1"):
+  case FOURCC("hvc2"):
+  case FOURCC("av01"):
+    return true;
+  default:
+    return false;
+  }
+}
+
 ParseBoxFunc* getParseFunction(uint32_t fourcc)
 {
   switch(fourcc)
@@ -390,6 +569,11 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseElst;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("mp4a"):
+  case FOURCC("twos"):
+    return &parseAudioSampleEntry;
+  case FOURCC("esds"):
+    return &parseEsds;
   case FOURCC("stss"):
     return &parseStss;
   case FOURCC("pasp"):
@@ -420,24 +604,5 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseVisualSampleEntry;
 
   return &parseRaw;
-}
-
-bool isVisualSampleEntry(uint32_t fourcc)
-{
-  switch(fourcc)
-  {
-  case FOURCC("avc1"):
-  case FOURCC("avc2"):
-  case FOURCC("avc3"):
-  case FOURCC("avc4"):
-  case FOURCC("hev1"):
-  case FOURCC("hev2"):
-  case FOURCC("hvc1"):
-  case FOURCC("hvc2"):
-  case FOURCC("av01"):
-    return true;
-  default:
-    return false;
-  }
 }
 
