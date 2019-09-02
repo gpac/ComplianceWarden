@@ -33,6 +33,14 @@ dd BE(0)
 db 0xaa, 0xbb
 pitm_end:
 
+iloc_start:
+dd BE(iloc_end - iloc_start)
+db "iloc"
+dd BE(0x01000000)
+dd BE(1) ; 1 item
+dd BE(0) ; construction_method(1)
+iloc_end:
+
 iref_start:
 dd BE(iref_end - iref_start)
 db "iref"

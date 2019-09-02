@@ -173,28 +173,50 @@ static const SpecDesc spec =
       "construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.",
       [] (Box const& root, IReport* out)
       {
-        bool foundIref = false;
-        int constructionMethod = -1;
+        struct ImageItem
+        {
+          bool foundIref = false;
+          int constructionMethod = -1;
+        };
+        std::map<uint32_t /*itemId*/, ImageItem> imageItems;
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
+          {
             for(auto& metaChild : box.children)
-            {
               if(metaChild.fourcc == FOURCC("iloc"))
               {
                 for(auto& field : metaChild.syms)
-                  if(!strcmp(field.name, "construction_method"))
-                    constructionMethod = field.value;
-              }
-              else if(metaChild.fourcc == FOURCC("iref"))
-              {
-                foundIref = true;
-              }
-            }
+                  if(!strcmp(field.name, "item_ID"))
+                  {
+                    if(imageItems.find(field.value) != imageItems.end())
+                      out->error("iloc itemId duplicates for %lld", field.value);
 
-        if(constructionMethod == 1 && !foundIref)
-          out->error("construction_method=1 on a coded image item");
-      },
+                    ImageItem ii;
+                    imageItems.insert({ field.value, ii });
+                  }
+
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "construction_method"))
+                    imageItems[field.value].constructionMethod = field.value;
+              }
+
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "to_item_ID"))
+                  {
+                    if(imageItems.find(field.value) == imageItems.end())
+                      out->error("iref references a non existing itemId=%lld", field.value);
+                    else
+                      imageItems[field.value].foundIref = true;
+                  }
+          }
+
+        for(auto& ii : imageItems)
+          if(ii.second.constructionMethod == 1 && !ii.second.foundIref)
+            out->error("construction_method=1 on a coded image item");
+      }
     },
     {
       "Section 7.2.1.8\n"
