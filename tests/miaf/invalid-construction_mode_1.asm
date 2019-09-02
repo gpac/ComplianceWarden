@@ -46,6 +46,8 @@ db "iloc"
 dd BE(0x01000000)
 dd BE(1) ; 1 item
 dd BE(1) ; construction_method(1)
+dw 0
+dw 0
 iloc_end:
 
 iprp_start:

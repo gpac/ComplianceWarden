@@ -1027,6 +1027,43 @@ static const SpecDesc spec =
                                           out->error("Sampling rate shall not exceed 48000, found %lld", sym.value >> 16);
       }
     },
+    {
+      "Section 8.2.1\n"
+      "MIAF image items shall use data_reference_index==0, i.e. the image data shall\n"
+      "be contained in the same file as the MetaBox.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iloc"))
+                for(auto& sym : metaChild.syms)
+                  if(!strcmp(sym.name, "data_reference_index"))
+                    if(sym.value)
+                      out->error("data_reference_index shall be 0, found %lld", sym.value);
+      }
+    },
+    {
+      "Section 8.2.2\n"
+      "External data references in the DataReferenceBox shall not be used for image\n"
+      "sequences or videos that are required, conditionally required, or explicitly\n"
+      "permitted by this document, i.e. those sequences/videos shall be self-contained",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("dinf"))
+                for(auto& dinfChild : metaChild.children)
+                  if(dinfChild.fourcc == FOURCC("dref"))
+                    for(auto& drefChild : dinfChild.children)
+                      if(drefChild.fourcc == FOURCC("url ") || drefChild.fourcc == FOURCC("urn "))
+                        for(auto& sym : drefChild.syms)
+                          if(!strcmp(sym.name, "flags"))
+                            if(!(sym.value & 1))
+                              out->error("dref content is not in the same file");
+      }
+    },
   },
   nullptr,
 };

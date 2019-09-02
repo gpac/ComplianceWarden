@@ -316,13 +316,14 @@ void parseIloc(IReader* br)
 
   br->sym("flags", 24);
 
-  br->sym("offset_size", 4);
-  br->sym("length_size", 4);
-  br->sym("base_offset_size", 4);
+  auto offset_size = br->sym("offset_size", 4);
+  auto length_size = br->sym("length_size", 4);
+  auto base_offset_size = br->sym("base_offset_size", 4);
+
+  uint8_t index_size = 0;
 
   if((version == 1) || (version == 2))
-    br->sym("index_size", 4);
-
+    index_size = br->sym("index_size", 4);
   else
     br->sym("reserved1", 4);
 
@@ -330,7 +331,6 @@ void parseIloc(IReader* br)
 
   if(version < 2)
     item_count = br->sym("item_count", 16);
-
   else if(version == 2)
     item_count = br->sym("item_count", 32);
 
@@ -338,7 +338,6 @@ void parseIloc(IReader* br)
   {
     if(version < 2)
       br->sym("item_ID", 16);
-
     else if(version == 2)
       br->sym("item_ID", 32);
 
@@ -346,6 +345,19 @@ void parseIloc(IReader* br)
     {
       br->sym("reserved2", 12);
       br->sym("construction_method", 4);
+    }
+
+    br->sym("data_reference_index", 16);
+    br->sym("base_offset", base_offset_size * 8);
+    auto extent_count = br->sym("extent_count", 16);
+
+    for(auto j = 0; j < extent_count; j++)
+    {
+      if(((version == 1) || (version == 2)) && (index_size > 0))
+        br->sym("item_reference_index", index_size * 8);
+
+      br->sym("extent_offset", offset_size * 8);
+      br->sym("extent_length", length_size * 8);
     }
   }
 
@@ -482,6 +494,28 @@ void parseHdlr(IReader* br)
     br->sym("", 8);
 }
 
+void parseDref(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entry_count = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entry_count; i++)
+  {
+    br->box();
+  }
+}
+
+void parseUrx(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  while(!br->empty())
+    br->sym("byte", 8);
+}
+
 void parseClli(IReader* br)
 {
   br->sym("max_content_light_level", 16);
@@ -555,8 +589,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
   case FOURCC("mvex"):
   case FOURCC("mdia"):
   case FOURCC("minf"):
+  case FOURCC("dinf"):
   case FOURCC("stbl"):
-  case FOURCC("dref"):
   case FOURCC(".too"):
   case FOURCC("ipco"):
   case FOURCC("iprp"):
@@ -590,6 +624,11 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseIref;
   case FOURCC("hdlr"):
     return &parseHdlr;
+  case FOURCC("dref"):
+    return &parseDref;
+  case FOURCC("url "):
+  case FOURCC("urn "):
+    return &parseUrx;
   case FOURCC("mdat"):
     return &parseRaw;
   case FOURCC("clli"):

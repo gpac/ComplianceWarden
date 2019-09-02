@@ -26,35 +26,29 @@ dd BE(0)
 dd BE(0)
 hdlr_end:
 
+dinf_start:
+dd BE(dinf_end - dinf_start)
+db "dinf"
+dref_start:
+dd BE(dref_end - dref_start)
+db "dref"
+dd BE(0)
+dd BE(1)    ; 1 entry
+url_start:
+dd BE(url_end - url_start)
+db "url "
+dd BE(0)     ; invalid: not in the same file
+db 0x6a, 0x0 ; fake URL
+url_end:
+dref_end:
+dinf_end:
+
 pitm_start:
 dd BE(pitm_end - pitm_start)
 db "pitm"
 dd BE(0)
-db 0xaa, 0xbb
+db 0x00, 0x00
 pitm_end:
-
-iloc_start:
-dd BE(iloc_end - iloc_start)
-db "iloc"
-dd BE(0x01000000)
-dd BE(1) ; 1 item
-dd BE(0) ; construction_method(1)
-dw 0
-dw 0
-iloc_end:
-
-iref_start:
-dd BE(iref_end - iref_start)
-db "iref"
-db 0x01, 0x00, 0x00, 0x00 ; version=1
-thmb_start:
-dd BE(thmb_end - thmb_start)
-dd "thmb"
-dd BE(0)      ; from_item_ID
-db 0x00, 0x01 ; reference_count
-dd BE(0)      ; to_item_ID
-thmb_end:
-iref_end:
 
 iinf_start:
 dd BE(iinf_end - iinf_start)
