@@ -195,6 +195,15 @@ static const SpecDesc spec =
                     }
       },
     },
+    {
+      "Section 6.4.2\n"
+      "The primary item shall not be a hidden image item",
+      [] (Box const & /*root*/, IReport* /*out*/)
+      {
+        /*infe::itemType=Exif	"XMP: item_type value 'mime' and
+           content type 'application/rdf+xml'"*/
+      },
+    },
   },
   nullptr,
 };
