@@ -67,6 +67,12 @@ void parseTkhd(IReader* br)
   br->sym("height", 32); // fixed 16.16
 }
 
+void parseReferenceTypeChildren(IReader* br)
+{
+  while(!br->empty())
+    br->sym("track_IDs", 32);
+}
+
 void parseElst(IReader* br)
 {
   auto version = br->sym("version", 8);
@@ -222,6 +228,20 @@ void parseEsds(IReader* br)
 
   while(!br->empty())
     processDescriptor(br, 0);
+}
+
+void parseStts(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entryCount = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entryCount; i++)
+  {
+    br->sym("sample_count", 32);
+    br->sym("sample_delta", 32);
+  }
 }
 
 void parseStss(IReader* br)
@@ -601,11 +621,17 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseElst;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("pict"):
+  case FOURCC("thmb"):
+  case FOURCC("auxl"):
+    return &parseReferenceTypeChildren;
   case FOURCC("mp4a"):
   case FOURCC("twos"):
     return &parseAudioSampleEntry;
   case FOURCC("esds"):
     return &parseEsds;
+  case FOURCC("stts"):
+    return &parseStts;
   case FOURCC("stss"):
     return &parseStss;
   case FOURCC("pasp"):

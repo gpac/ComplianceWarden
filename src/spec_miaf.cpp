@@ -7,6 +7,36 @@
 extern bool isVisualSampleEntry(uint32_t fourcc);
 extern bool isMpegAudio(uint8_t oti);
 
+constexpr bool boxEqual(Box const* a, Box const* b)
+{
+  if(a->fourcc != b->fourcc)
+    return false;
+
+  if(a->size != b->size)
+    return false;
+
+  if(a->syms.size() != b->syms.size())
+    return false;
+
+  for(size_t i = 0; i < a->syms.size(); ++i)
+  {
+    if(strcmp(a->syms[i].name, b->syms[i].name))
+      return false;
+
+    if(a->syms[i].value != b->syms[i].value)
+      return false;
+  }
+
+  if(a->children.size() != b->children.size())
+    return false;
+
+  for(size_t i = 0; i < a->children.size(); ++i)
+    if(!boxEqual(&a->children[i], &b->children[i]))
+      return false;
+
+  return true;
+}
+
 // MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
 static bool isMiafAac(const Box& mp4a, IReport* out)
 {
@@ -1062,6 +1092,158 @@ static const SpecDesc spec =
                           if(!strcmp(sym.name, "flags"))
                             if(!(sym.value & 1))
                               out->error("dref content is not in the same file");
+      }
+    },
+    {
+      "Section 7.4.6\n"
+      "for every sample of the master image sequence or video track, there shall be a\n"
+      "sample of the alpha plane track with the same composition time.",
+      [] (Box const& root, IReport* out)
+      {
+        auto findTrackId = [] (Box const& root) -> uint32_t {
+            for(auto& trakChild : root.children)
+              if(trakChild.fourcc == FOURCC("tkhd"))
+                for(auto& sym : trakChild.syms)
+                  if(!strcmp(sym.name, "track_ID"))
+                    return (uint32_t)sym.value;
+
+            return 0;
+          };
+
+        struct Track
+        {
+          uint32_t videoTrackId = 0, alphaPlaneTrackId = 0;
+        };
+
+        auto findAlphaTracks = [findTrackId] (Box const& root, IReport* out) -> std::vector<Track> {
+            std::vector<Track> trackIds;
+
+            for(auto& box : root.children)
+              if(box.fourcc == FOURCC("moov"))
+                for(auto& moovChild : box.children)
+                  if(moovChild.fourcc == FOURCC("trak"))
+                  {
+                    // find the hldr
+                    uint32_t handlerType = 0;
+
+                    for(auto& trakChild : moovChild.children)
+                      if(trakChild.fourcc == FOURCC("mdia"))
+                        for(auto& mdiaChild : trakChild.children)
+                          if(mdiaChild.fourcc == FOURCC("hdlr"))
+                            for(auto& sym : mdiaChild.syms)
+                              if(!strcmp(sym.name, "handler_type"))
+                                handlerType = (uint32_t)sym.value;
+
+                    // find tref track_id
+                    uint32_t trackId = 0;
+
+                    for(auto& trakChild : moovChild.children)
+                      if(trakChild.fourcc == FOURCC("tref"))
+                        for(auto& trefChild : trakChild.children)
+                          if(trefChild.fourcc == FOURCC("auxl"))
+                            for(auto& sym : trefChild.syms)
+                              if(!strcmp(sym.name, "track_IDs"))
+                              {
+                                if(trackId)
+                                  out->error("Unexpected: found several 'tref' track_IDs (%u then %lld)", trackId, sym.value);
+
+                                trackId = (uint32_t)sym.value;
+                              }
+
+                    if(handlerType == FOURCC("auxv") && trackId)
+                    {
+                      auto id = findTrackId(moovChild);
+
+                      if(id)
+                        trackIds.push_back({ trackId, id });
+                    }
+                  }
+
+            return trackIds;
+          };
+
+        auto tracks = findAlphaTracks(root, out);
+
+        for(auto& t : tracks)
+        {
+          auto getMediaTimes = [findTrackId] (Box const& root, uint32_t trackId) -> std::vector<Box const*> {
+              std::vector<Box const*> mediaTimes;
+
+              for(auto& box : root.children)
+                if(box.fourcc == FOURCC("moov"))
+                  for(auto& moovChild : box.children)
+                    if(moovChild.fourcc == FOURCC("trak"))
+                      for(auto& trakChild : moovChild.children)
+                      {
+                        auto id = findTrackId(moovChild);
+
+                        if(id != trackId)
+                          continue;
+
+                        if(trakChild.fourcc == FOURCC("mdia"))
+                          for(auto& mdiaChild : trakChild.children)
+                            if(mdiaChild.fourcc == FOURCC("minf"))
+                              for(auto& minfChild : mdiaChild.children)
+                                if(minfChild.fourcc == FOURCC("stbl"))
+                                  for(auto& stblChild : minfChild.children)
+                                    if(stblChild.fourcc == FOURCC("stss"))
+                                      mediaTimes.push_back(&stblChild);
+                      }
+
+              return mediaTimes;
+            };
+
+          auto mediaTimesMaster = getMediaTimes(root, t.videoTrackId);
+          auto mediaTimesAlpha = getMediaTimes(root, t.alphaPlaneTrackId);
+
+          struct EditListInfo
+          {
+            uint32_t edit_duration = 0;
+            uint32_t media_time = 0;
+            uint16_t media_rate_integer = 0;
+          };
+
+          auto getEditLists = [findTrackId] (Box const& root, uint32_t trackId) -> std::vector<Box const*> {
+              std::vector<Box const*> editLists;
+
+              for(auto& box : root.children)
+                if(box.fourcc == FOURCC("moov"))
+                  for(auto& moovChild : box.children)
+                    if(moovChild.fourcc == FOURCC("trak"))
+                      for(auto& trakChild : moovChild.children)
+                      {
+                        auto id = findTrackId(moovChild);
+
+                        if(id != trackId)
+                          continue;
+
+                        if(trakChild.fourcc == FOURCC("edts"))
+                          for(auto& edtsChild : trakChild.children)
+                            if(edtsChild.fourcc == FOURCC("elst"))
+                              editLists.push_back(&edtsChild);
+                      }
+
+              return editLists;
+            };
+
+          auto editListsMaster = getEditLists(root, t.videoTrackId);
+          auto editListsAlpha = getEditLists(root, t.alphaPlaneTrackId);
+
+          auto compareBoxVector = [] (std::vector<Box const*>& a, std::vector<Box const*>& b)
+            {
+              if(a.size() != b.size())
+                return false;
+
+              for(size_t i = 0; i < a.size(); ++i)
+                if(!boxEqual(a[i], b[i]))
+                  return false;
+
+              return true;
+            };
+
+          if(!compareBoxVector(mediaTimesMaster, mediaTimesAlpha) || !compareBoxVector(editListsMaster, editListsAlpha))
+            out->error("Composition times for trackId=%u different from alpha plane trackId=%u", t.videoTrackId, t.alphaPlaneTrackId);
+        }
       }
     },
   },
