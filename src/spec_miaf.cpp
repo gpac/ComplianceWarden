@@ -1100,6 +1100,13 @@ static const SpecDesc spec =
       "sample of the alpha plane track with the same composition time.",
       [] (Box const& root, IReport* out)
       {
+        /*TODO:
+           valid and invalid samples +
+           alpha planes: auxiliary 'auxl' image data + The following aux_type values, for images, or aux_track_type, for tracks, of the AuxiliaryTypeProperty (respectively AuxiliaryTypeInfoBox heif::'auxi' (container sample_entry)) are defined:
+           — “urn:mpeg:mpegB:cicp:systems:auxiliary:alpha” for alpha planes
+           — “urn:mpeg:mpegB:cicp:systems:auxiliary:depth” for depth maps.
+         */
+
         auto findTrackId = [] (Box const& root) -> uint32_t {
             for(auto& trakChild : root.children)
               if(trakChild.fourcc == FOURCC("tkhd"))
