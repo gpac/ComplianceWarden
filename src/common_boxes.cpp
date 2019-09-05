@@ -374,10 +374,8 @@ void parseIinf(IReader* br)
 
   if(version == 0)
     entry_count = br->sym("entry_count", 16);
-  else if(version == 1)
-    entry_count = br->sym("entry_count", 32);
   else
-    return;
+    entry_count = br->sym("entry_count", 32);
 
   for(uint32_t i = 0; i < entry_count; ++i)
     br->box(); // ItemInfoEntry
