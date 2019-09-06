@@ -1,53 +1,11 @@
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include "box_reader_impl.h"
+#include "fourcc.h"
 #include <cstdarg>
+#include <cstring>
 
-#include "box.h"
-#include "common_boxes.h"
-#include "reader.h"
-#include "spec.h"
+/* ***** utils ***** */
 
-using namespace std;
-
-void ENSURE(bool cond, const char* format, ...)
-{
-  if(!cond)
-  {
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    fflush(stderr);
-    va_end(args);
-    exit(1);
-  }
-}
-
-std::string toString(uint32_t fourcc)
-{
-  char fourccStr[5] = {};
-  snprintf(fourccStr, 5, "%c%c%c%c",
-           (fourcc >> 24) & 0xff,
-           (fourcc >> 16) & 0xff,
-           (fourcc >> 8) & 0xff,
-           (fourcc >> 0) & 0xff);
-  return fourccStr;
-}
-
-vector<uint8_t> loadFile(const char* path)
-{
-  FILE* fp = fopen(path, "rb");
-  ENSURE(fp, "Can't open '%s' for reading", path);
-
-  vector<uint8_t> buf(100 * 1024 * 1024);
-  auto const size = fread(buf.data(), 1, buf.size(), fp);
-  fclose(fp);
-  buf.resize(size);
-  buf.shrink_to_fit();
-  return buf;
-}
+std::vector<uint8_t> loadFile(const char* path);
 
 void dump(Box const& box, int depth = 0)
 {
@@ -71,6 +29,8 @@ void dump(Box const& box, int depth = 0)
   for(auto& child : box.children)
     dump(child, depth + 1);
 }
+
+/* ***** specs ***** */
 
 void checkCompliance(Box const& file, SpecDesc const* spec)
 {
@@ -117,105 +77,6 @@ int registerSpec(SpecDesc const* spec)
   return 0;
 }
 
-struct BitReader
-{
-  uint8_t* src;
-  int size = 0;
-
-  int64_t u(int n)
-  {
-    uint64_t r = 0;
-
-    for(int i = 0; i < n; ++i)
-      r = (r << 1) | bit();
-
-    return r;
-  }
-
-  BitReader sub(int byteCount)
-  {
-    ENSURE((m_pos % 8) == 0, "BitReader::sub(): not byte-aligned");
-    ENSURE(byteCount <= size, "BitReader::sub(): overflow asking %d bytes with %d available", byteCount, size - m_pos);
-
-    auto sub = BitReader { src + m_pos / 8, byteCount };
-    m_pos += byteCount * 8;
-    return sub;
-  }
-
-  int bit()
-  {
-    const int byteOffset = m_pos / 8;
-    const int bitOffset = m_pos % 8;
-
-    ENSURE(byteOffset < size, "BitReader::bit() overflow");
-
-    m_pos++;
-    return (src[byteOffset] >> (7 - bitOffset)) & 1;
-  }
-
-  bool empty() const
-  {
-    return m_pos / 8 >= size;
-  }
-
-  int m_pos = 0;
-};
-
-struct BoxReader : IReader
-{
-  bool empty() override
-  {
-    return br.empty();
-  }
-
-  int64_t sym(const char* name, int bits) override
-  {
-    auto val = br.u(bits);
-    myBox.syms.push_back({ name, val });
-    return val;
-  }
-
-  void box() override
-  {
-    BoxReader subReader;
-    subReader.spec = spec;
-    subReader.myBox.size = br.u(32);
-    subReader.myBox.fourcc = br.u(32);
-
-    if(subReader.myBox.size == 1)
-      subReader.myBox.size = br.u(64); // large size
-
-    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes (fourcc='%s')",
-           subReader.myBox.size, toString(subReader.myBox.fourcc).c_str());
-
-    subReader.br = br.sub(int(subReader.myBox.size - 8));
-    auto pos = subReader.br.m_pos;
-    auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
-    parseFunc(&subReader);
-    myBox.children.push_back(std::move(subReader.myBox));
-
-    ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - 8) * 8,
-           "Box '%s': read %d bits instead of %llu bits",
-           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, (subReader.myBox.size - 8) * 8);
-  }
-
-  BitReader br;
-
-  Box myBox;
-  const SpecDesc* spec;
-
-private:
-  ParseBoxFunc* selectBoxParseFunction(uint32_t fourcc)
-  {
-    // try first custom parse function
-    if(spec->getParseFunction)
-      if(auto func = spec->getParseFunction(fourcc))
-        return func;
-
-    return getParseFunction(fourcc);
-  }
-};
-
 SpecDesc const* specFind(const char* name)
 {
   for(auto& spec : g_allSpecs())
@@ -255,6 +116,8 @@ void specCheck(const SpecDesc* spec, uint8_t* data, size_t size)
   checkCompliance(topReader.myBox, spec);
 }
 
+/* ***** main ***** */
+
 int main(int argc, const char* argv[])
 {
   if(argc != 3)
@@ -278,9 +141,8 @@ int main(int argc, const char* argv[])
   return 0;
 }
 
-/*****************************************************************************/
+/* ***** emscripten exports ***** */
 
-/*emscripten exports */
 extern "C" {
 struct SpecDesc;
 SpecDesc const* specFindC(const char* name);

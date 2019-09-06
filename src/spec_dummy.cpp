@@ -1,4 +1,5 @@
 #include "spec.h"
+#include "fourcc.h"
 #include <cassert>
 #include <cstring>
 

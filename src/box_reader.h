@@ -1,6 +1,6 @@
 #pragma once
 
-#include "box.h"
+#include <cstdint>
 
 struct IReader
 {

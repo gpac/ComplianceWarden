@@ -1,8 +1,8 @@
 #include "spec.h"
+#include "fourcc.h"
 #include <cstring>
 #include <functional>
 #include <vector>
-#include <queue>
 
 extern bool isVisualSampleEntry(uint32_t fourcc);
 

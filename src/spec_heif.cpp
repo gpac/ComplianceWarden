@@ -1,5 +1,6 @@
 #include <cstring>
 #include "spec.h"
+#include "fourcc.h"
 
 extern bool isVisualSampleEntry(uint32_t fourcc);
 

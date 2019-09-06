@@ -1,10 +1,10 @@
 // This is how the app sees concrete specifications.
 #pragma once
 
+#include "box.h"
+#include "box_reader.h" // ParseBoxFunc
 #include <string>
 #include <vector>
-#include "box.h"
-#include "reader.h" // ParseBoxFunc
 
 struct IReport
 {
@@ -36,6 +36,5 @@ struct SpecDesc
   ParseBoxFunc* (* getParseFunction)(uint32_t fourcc);
 };
 
-std::string toString(uint32_t fourcc);
 int registerSpec(SpecDesc const* spec);
 

@@ -1,6 +1,19 @@
 // Box-parsers for MP4 and MPEG-DASH
+// TODO: split functions across specs with getParseFunction
 #include "common_boxes.h"
+#include "fourcc.h"
 #include <cassert>
+
+std::string toString(uint32_t fourcc)
+{
+  char fourccStr[5] = {};
+  snprintf(fourccStr, 5, "%c%c%c%c",
+           (fourcc >> 24) & 0xff,
+           (fourcc >> 16) & 0xff,
+           (fourcc >> 8) & 0xff,
+           (fourcc >> 0) & 0xff);
+  return fourccStr;
+}
 
 bool isMpegAudio(uint8_t oti)
 {
@@ -312,7 +325,7 @@ void parseVisualSampleEntry(IReader* br)
   br->sym("frame_count", 16);
 
   for(int i = 0; i < 32; ++i)
-    br->sym("", 8); // compressorname
+    br->sym("compressorname", 8); // compressorname
 
   br->sym("depth", 16);
   br->sym("pre_defined4", 16);
@@ -380,9 +393,6 @@ void parseIloc(IReader* br)
       br->sym("extent_length", length_size * 8);
     }
   }
-
-  while(!br->empty())
-    br->sym("", 8);
 }
 
 void parseIinf(IReader* br)
@@ -411,24 +421,22 @@ void parseInfe(IReader* br)
     br->sym("item_ID", 16);
     br->sym("item_protection_index", 16);
 
-    while(br->sym("", 8))
+    while(br->sym("item_name", 8))
       ; // item_name
 
-    while(br->sym("", 8))
+    while(br->sym("content_type", 8))
       ; // content_type
 
-    while(br->sym("", 8))
+    while(br->sym("content_encoding", 8))
       ; // content_encoding
   }
 
   if(version == 1)
   {
-    // ItemInfoExtension(extension_type);
     while(!br->empty())
-      br->sym("", 8);
+      br->sym("ItemInfoExtension(extension_type)", 8);
   }
-
-  if(version >= 2)
+  else if(version >= 2)
   {
     if(version == 2)
     {
@@ -442,20 +450,20 @@ void parseInfe(IReader* br)
     br->sym("item_protection_index", 16);
     uint32_t item_type = br->sym("item_type", 32);
 
-    while(br->sym("", 8))
+    while(br->sym("item_name", 8))
       ; // item_name
 
     if(item_type == FOURCC("mime"))
     {
-      while(br->sym("", 8))
+      while(br->sym("content_type", 8))
         ; // content_type
 
-      while(!br->empty() && br->sym("", 8))
+      while(!br->empty() && br->sym("content_encoding", 8))
         ; // content_encoding
     }
     else if(item_type == FOURCC("uri "))
     {
-      while(br->sym("", 8))
+      while(br->sym("item_uri_type", 8))
         ; // item_uri_type
     }
   }
@@ -509,7 +517,7 @@ void parseHdlr(IReader* br)
   br->sym("reserved3", 32);
 
   while(!br->empty())
-    br->sym("", 8);
+    br->sym("name", 8);
 }
 
 void parseDref(IReader* br)
