@@ -1,3 +1,4 @@
 [Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found).
 [Rule #5] construction_method=1 on a coded image item
-2 error(s).
+[Rule #29] All transformative properties shall be marked as essential
+3 error(s).

@@ -506,6 +506,34 @@ void parseIref(IReader* br)
   }
 }
 
+void parseIpma(IReader* br)
+{
+  auto version = br->sym("version", 8);
+  auto flags = br->sym("flags", 24);
+
+  auto entry_count = br->sym("entry_count", 32);
+
+  for(auto i = 0; i < entry_count; i++)
+  {
+    if(version < 1)
+      br->sym("item_ID", 16);
+    else
+      br->sym("item_ID", 32);
+
+    auto association_count = br->sym("association_count", 8);
+
+    for(auto i = 0; i < association_count; i++)
+    {
+      br->sym("essential", 1);
+
+      if(flags & 1)
+        br->sym("property_index", 15);
+      else
+        br->sym("property_index", 7);
+    }
+  }
+}
+
 void parseHdlr(IReader* br)
 {
   br->sym("version", 8);
@@ -654,6 +682,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseInfe;
   case FOURCC("iref"):
     return &parseIref;
+  case FOURCC("ipma"):
+    return &parseIpma;
   case FOURCC("hdlr"):
     return &parseHdlr;
   case FOURCC("dref"):

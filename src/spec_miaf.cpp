@@ -1254,6 +1254,27 @@ static const SpecDesc spec =
         }
       }
     },
+    {
+      "Section 7.3.9\n"
+      "All transformative properties associated with coded and derived images required\n"
+      "or conditionally required by this document shall be marked as essential, and\n"
+      "shall be from the set that are permitted by this document or the applicable\n"
+      "profile. No other essential transformative property shall be associated with\n"
+      "such images.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                    for(auto& sym : iprpChild.syms)
+                      if(!strcmp(sym.name, "essential"))
+                        if(sym.value)
+                          out->error("All transformative properties shall be marked as essential");
+      }
+    },
   },
   nullptr,
 };
