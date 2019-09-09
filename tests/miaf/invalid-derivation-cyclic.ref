@@ -1,0 +1,3 @@
+[Rule #30] Detected error in derivations: init -> iden (2) -> iden (2)
+[Rule #30] Detected cycle in derivations.
+2 error(s).

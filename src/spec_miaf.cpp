@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 #include <functional>
+#include <list>
 #include <map>
 
 extern bool isVisualSampleEntry(uint32_t fourcc);
@@ -77,6 +78,44 @@ static bool isMiafAac(const Box& mp4a, IReport* out)
 
   return res;
 }
+
+struct DerivationGraph
+{
+  // returns false on cyclic
+  bool visit(uint32_t itemIdSrc, std::list<uint32_t> visited, std::function<void(std::list<uint32_t> &)> onError, std::function<void(std::list<uint32_t> &)> onTerminal)
+  {
+    int newVisits = 0;
+    visited.push_back(itemIdSrc);
+
+    for(auto& c : connections)
+    {
+      if(c.src == itemIdSrc)
+      {
+        if(std::find(visited.begin(), visited.end(), c.dst) != visited.end()
+           || !visit(c.dst, visited, onError, onTerminal))
+        {
+          visited.push_back(c.dst);
+          onError(visited);
+          return false;
+        }
+
+        newVisits++;
+      }
+    }
+
+    if(newVisits == 0)
+      onTerminal(visited);
+
+    return true;
+  }
+
+  struct Connection
+  {
+    uint32_t src, dst;
+  };
+
+  std::vector<Connection> connections;
+};
 
 static const SpecDesc spec =
 {
@@ -1273,6 +1312,94 @@ static const SpecDesc spec =
                       if(!strcmp(sym.name, "essential"))
                         if(sym.value)
                           out->error("All transformative properties shall be marked as essential");
+      }
+    },
+    {
+      "Section 7.3.9\n"
+      "An identity derivation shall not be derived immediately from another identity\n"
+      "derivation",
+      [] (Box const& root, IReport* out)
+      {
+        DerivationGraph graph;
+        std::map<uint32_t /*item_ID*/, std::string /*item_type*/> itemTypes;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+            {
+              if(metaChild.fourcc == FOURCC("iinf"))
+              {
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                  {
+                    std::string item_type;
+                    uint32_t item_ID = 0;
+
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_type"))
+                        item_type = toString(sym.value);
+                      else if(!strcmp(sym.name, "item_ID"))
+                        item_ID = sym.value;
+                    }
+
+                    itemTypes.insert({ item_ID, item_type });
+                  }
+              }
+              else if(metaChild.fourcc == FOURCC("iref"))
+              {
+                bool parsing = false;
+                uint32_t from_item_ID = 0;
+
+                for(auto& sym : metaChild.syms)
+                {
+                  if(!strcmp(sym.name, "from_item_ID"))
+                  {
+                    from_item_ID = (int)sym.value;
+                  }
+                  else if(!strcmp(sym.name, "box_type"))
+                  {
+                    if(sym.value == FOURCC("dimg"))
+                      parsing = true;
+                    else
+                      parsing = false;
+                  }
+
+                  if(parsing)
+                    if(!strcmp(sym.name, "to_item_ID"))
+                      graph.connections.push_back({ from_item_ID, (uint32_t)sym.value });
+                }
+              }
+            }
+
+        auto check = [&] (std::list<uint32_t>& visited) {
+            std::string last;
+
+            for(auto v : visited)
+            {
+              if(itemTypes[v] == "iden" && last == "iden")
+                out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u)", v);
+
+              last = itemTypes[v];
+            }
+          };
+
+        auto onError = [&] (std::list<uint32_t>& visited) {
+            std::string str = "init";
+
+            for(auto v : visited)
+              str += " -> " + itemTypes[v] + " (" + std::to_string(v) + ")";
+
+            out->error("Detected error in derivations: %s", str.c_str());
+          };
+
+        for(auto& c : graph.connections)
+        {
+          std::list<uint32_t> visited;
+
+          if(!graph.visit(c.src, visited, onError, check))
+            out->error("Detected cycle in derivations.");
+        }
       }
     },
   },
