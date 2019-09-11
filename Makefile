@@ -26,6 +26,8 @@ SRCS_CW+=src/spec_dummy.cpp
 SRCS_CW+=src/spec_isobmff.cpp
 SRCS_CW+=src/spec_heif.cpp
 SRCS_CW+=src/spec_miaf.cpp
+SRCS_CW+=src/spec_miaf_audio.cpp
+SRCS_CW+=src/spec_miaf_derivations.cpp
 
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
