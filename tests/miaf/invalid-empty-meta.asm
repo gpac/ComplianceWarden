@@ -24,6 +24,7 @@ db "ipco"
 ispe_start:
 dd BE(ispe_end - ispe_start)
 db "ispe"
+dd 0, 0, 0
 ispe_end:
 ipco_end:
 iprp_end:

@@ -1,5 +1,5 @@
-[Rule #20] objectTypeIndication shall be an AAC codec (found 65)
-[Rule #20] Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
-[Rule #22] objectTypeIndication shall be an AAC codec (found 65)
-[Rule #22] Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
+[Rule #6] objectTypeIndication shall be an AAC codec (found 65)
+[Rule #6] Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
+[Rule #8] objectTypeIndication shall be an AAC codec (found 65)
+[Rule #8] Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
 4 error(s).

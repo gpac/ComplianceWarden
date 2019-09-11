@@ -37,10 +37,7 @@ constexpr bool boxEqual(Box const* a, Box const* b)
   return true;
 }
 
-const std::initializer_list<RuleDesc> rulesAudio;
-const std::initializer_list<RuleDesc> rulesDerivations;
-
-const std::initializer_list<RuleDesc> rulesGeneral =
+std::initializer_list<RuleDesc> rulesGeneral =
 {
   {
     "Section 3.13:\n"
@@ -294,7 +291,7 @@ const std::initializer_list<RuleDesc> rulesGeneral =
   },
   {
     "Section 7.3.6.3\n"
-    "Every image item be associated with a Image spatial extents property",
+    "Every image item shall be associated with a Image spatial extents property",
     [] (Box const& root, IReport* out)
     {
       bool found = false;
@@ -1095,12 +1092,15 @@ static std::vector<RuleDesc> concat(const std::initializer_list<const std::initi
   return v;
 }
 
+extern const std::initializer_list<RuleDesc> getRulesAudio();
+extern const std::initializer_list<RuleDesc> getRulesDerivations();
+
 static const SpecDesc spec =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
-  concat({ rulesGeneral, rulesAudio, rulesDerivations }),
+  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations() }),
   nullptr,
 };
 

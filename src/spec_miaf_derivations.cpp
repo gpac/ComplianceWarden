@@ -101,92 +101,97 @@ DerivationGraph buildDerivationGraph(Box const& root)
   return graph;
 }
 
-const std::initializer_list<RuleDesc> rulesDerivations =
+const std::initializer_list<RuleDesc> getRulesDerivations()
 {
+  static const
+  std::initializer_list<RuleDesc> rulesDerivations =
   {
-    "Section 7.3.9\n"
-    "An identity derivation shall not be derived immediately from another identity\n"
-    "derivation",
-    [] (Box const& root, IReport* out)
     {
-      auto graph = buildDerivationGraph(root);
-
-      auto check = [&] (std::list<uint32_t>& visited) {
-          std::string last;
-
-          for(auto v : visited)
-          {
-            if(graph.itemTypes[v] == "iden" && last == "iden")
-              out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u)", v);
-
-            last = graph.itemTypes[v];
-          }
-        };
-
-      auto onError = [&] (std::list<uint32_t>& visited) {
-          std::string str = "init";
-
-          for(auto v : visited)
-            str += " -> " + graph.itemTypes[v] + " (" + std::to_string(v) + ")";
-
-          out->error("Detected error in derivations: %s", str.c_str());
-        };
-
-      for(auto& c : graph.connections)
+      "Section 7.3.9\n"
+      "An identity derivation shall not be derived immediately from another identity\n"
+      "derivation",
+      [] (Box const& root, IReport* out)
       {
-        std::list<uint32_t> visited;
+        auto graph = buildDerivationGraph(root);
 
-        if(!graph.visit(c.src, visited, onError, check))
-          out->error("Detected cycle in derivations.");
+        auto check = [&] (std::list<uint32_t>& visited) {
+            std::string last;
+
+            for(auto v : visited)
+            {
+              if(graph.itemTypes[v] == "iden" && last == "iden")
+                out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u)", v);
+
+              last = graph.itemTypes[v];
+            }
+          };
+
+        auto onError = [&] (std::list<uint32_t>& visited) {
+            std::string str = "init";
+
+            for(auto v : visited)
+              str += " -> " + graph.itemTypes[v] + " (" + std::to_string(v) + ")";
+
+            out->error("Detected error in derivations: %s", str.c_str());
+          };
+
+        for(auto& c : graph.connections)
+        {
+          std::list<uint32_t> visited;
+
+          if(!graph.visit(c.src, visited, onError, check))
+            out->error("Detected cycle in derivations.");
+        }
       }
-    }
-  },
-  {
-    "Section 7.3.11.1\n"
-    "If derivations occur, they shall be in this order:\n"
-    "- mandatory coded image(s)\n"
-    "- optional identity derivation (subclause 7.3.11.2)\n"
-    "- optional grid (subclause 7.3.11.4)\n"
-    "- optional identity derivation (subclause 7.3.11.2)\n"
-    "- optional overlay (subclause 7.3.11.3)\n"
-    "- optional identity derivation (subclause 7.3.11.2)",
-    [] (Box const& root, IReport* out)
+    },
     {
-      auto graph = buildDerivationGraph(root);
-
-      auto check = [&] (std::list<uint32_t>& visited) {
-          std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
-
-          if(visited.size() > expected.size())
-          {
-            out->error("Too many derivations: %d (expected %d)", visited.size(), expected.size());
-            return;
-          }
-
-          auto visitedIt = visited.begin();
-
-          for(int i = 0; i < (int)visited.size(); ++i, ++visitedIt)
-            if(graph.itemTypes[*visitedIt] != expected[i])
-              out->error("Wrong derivation at index %d: expected \"%s\", got \"%s\"", i, expected[i].c_str(), graph.itemTypes[*visitedIt].c_str());
-        };
-
-      auto onError = [&] (std::list<uint32_t>& visited) {
-          std::string str = "init";
-
-          for(auto v : visited)
-            str += " -> " + graph.itemTypes[v] + " (" + std::to_string(v) + ")";
-
-          out->error("Detected error in derivations: %s", str.c_str());
-        };
-
-      for(auto& c : graph.connections)
+      "Section 7.3.11.1\n"
+      "If derivations occur, they shall be in this order:\n"
+      "- mandatory coded image(s)\n"
+      "- optional identity derivation (subclause 7.3.11.2)\n"
+      "- optional grid (subclause 7.3.11.4)\n"
+      "- optional identity derivation (subclause 7.3.11.2)\n"
+      "- optional overlay (subclause 7.3.11.3)\n"
+      "- optional identity derivation (subclause 7.3.11.2)",
+      [] (Box const& root, IReport* out)
       {
-        std::list<uint32_t> visited;
+        auto graph = buildDerivationGraph(root);
 
-        if(!graph.visit(c.src, visited, onError, check))
-          out->error("Detected cycle in derivations.");
+        auto check = [&] (std::list<uint32_t>& visited) {
+            std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
+
+            if(visited.size() > expected.size())
+            {
+              out->error("Too many derivations: %d (expected %d)", visited.size(), expected.size());
+              return;
+            }
+
+            auto visitedIt = visited.begin();
+
+            for(int i = 0; i < (int)visited.size(); ++i, ++visitedIt)
+              if(graph.itemTypes[*visitedIt] != expected[i])
+                out->error("Wrong derivation at index %d: expected \"%s\", got \"%s\"", i, expected[i].c_str(), graph.itemTypes[*visitedIt].c_str());
+          };
+
+        auto onError = [&] (std::list<uint32_t>& visited) {
+            std::string str = "init";
+
+            for(auto v : visited)
+              str += " -> " + graph.itemTypes[v] + " (" + std::to_string(v) + ")";
+
+            out->error("Detected error in derivations: %s", str.c_str());
+          };
+
+        for(auto& c : graph.connections)
+        {
+          std::list<uint32_t> visited;
+
+          if(!graph.visit(c.src, visited, onError, check))
+            out->error("Detected cycle in derivations.");
+        }
       }
-    }
-  }
-};
+    },
+  };
+  return rulesDerivations;
+}
 

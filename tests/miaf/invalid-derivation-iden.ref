@@ -1,2 +1,3 @@
-[Rule #30] An identity derivation shall not be derived immediately from another identity (item_ID=1)
-1 error(s).
+[Rule #4] An identity derivation shall not be derived immediately from another identity (item_ID=1)
+[Rule #5] Wrong derivation at index 1: expected "grid", got "iden"
+2 error(s).

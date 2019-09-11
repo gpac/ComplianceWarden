@@ -469,6 +469,15 @@ void parseInfe(IReader* br)
   }
 }
 
+void parseIspe(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("image_width", 32);
+  br->sym("image_height", 32);
+}
+
 void parseIref(IReader* br)
 {
   auto version = br->sym("version", 8);
@@ -680,6 +689,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseIinf;
   case FOURCC("infe"):
     return &parseInfe;
+  case FOURCC("ispe"):
+    return &parseIspe;
   case FOURCC("iref"):
     return &parseIref;
   case FOURCC("ipma"):

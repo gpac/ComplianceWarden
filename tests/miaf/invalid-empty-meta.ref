@@ -1,4 +1,4 @@
-[Rule #1] The HandlerBox shall be the first contained box within the MetaBox.
-[Rule #4] 'hdlr' not found in MetaBox
-[Rule #7] PrimaryItemBox is required
+[Rule #13] The HandlerBox shall be the first contained box within the MetaBox.
+[Rule #16] 'hdlr' not found in MetaBox
+[Rule #19] PrimaryItemBox is required
 3 error(s).
