@@ -1068,6 +1068,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "such images.",
     [] (Box const& root, IReport* out)
     {
+      // TODO: know what a "transformative property" is
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
           for(auto& metaChild : box.children)
@@ -1076,7 +1077,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 if(iprpChild.fourcc == FOURCC("ipma"))
                   for(auto& sym : iprpChild.syms)
                     if(!strcmp(sym.name, "essential"))
-                      if(sym.value)
+                      if(sym.value == 0)
                         out->error("All transformative properties shall be marked as essential");
     }
   },
@@ -1094,13 +1095,14 @@ static std::vector<RuleDesc> concat(const std::initializer_list<const std::initi
 
 extern const std::initializer_list<RuleDesc> getRulesAudio();
 extern const std::initializer_list<RuleDesc> getRulesDerivations();
+extern const std::initializer_list<RuleDesc> getRulesNumPixels();
 
 static const SpecDesc spec =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
-  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations() }),
+  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels() }),
   nullptr,
 };
 
