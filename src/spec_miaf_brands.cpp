@@ -38,7 +38,7 @@ const std::initializer_list<RuleDesc> getRulesBrands()
       {
         (void)root;
         (void)out;
-        //TODO
+        // TODO
       }
     },
     {
@@ -64,7 +64,11 @@ const std::initializer_list<RuleDesc> getRulesBrands()
     },
     {
       "Section 10.4\n"
-      "",
+      "A track indicated to conform to this brand shall be constrained as follows:\n"
+      "- The track shall be an image sequence ('pict') track.\n"
+      "- In the image sequence track, any single coded picture shall be decodable by\n"
+      "  decoding a maximum of two coded pictures (i.e. the picture itself and at most\n"
+      "  one reference), and these two coded pictures shall be a valid bitstream.",
       [] (Box const& root, IReport* out)
       {
         (void)root;
@@ -107,7 +111,7 @@ const std::initializer_list<RuleDesc> getRulesBrands()
       " - the set of CMAF tracks associated with the MIAF visual tracks shall have the\n"
       "   same duration, same number of fragments and fragments shall be time-aligned.\n"
       "   Fragments of the different CMAF tracks shall also be interleaved in the MIAF\n"
-      "   file.\n",
+      "   file.",
       [] (Box const& root, IReport* out)
       {
         (void)root;

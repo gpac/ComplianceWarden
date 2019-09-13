@@ -7,8 +7,8 @@ const std::initializer_list<RuleDesc> getRulesProfiles()
   std::initializer_list<RuleDesc> rulesProfiles =
   {
     {
-    "Section A.3\n"
-    "MIAF HEVC Basic profile\n"
+      "Section A.3\n"
+      "MIAF HEVC Basic profile\n"
       "Section A.3.1\n"
       "This profile includes the requirements of\n"
       "- self-containment (subclause 8.2),\n"
@@ -134,3 +134,4 @@ const std::initializer_list<RuleDesc> getRulesProfiles()
 
   return rulesProfiles;
 }
+
