@@ -1,3 +1,3 @@
-[Rule #28] Either all tracks or none shall indicate an edit list repetition
-[Rule #30] Two media edits found: media rates shall be { 1, -1 }, found { 1, 1 }
+[Rule #16] Either all tracks or none shall indicate an edit list repetition
+[Rule #18] Two media edits found: media rates shall be { 1, -1 }, found { 1, 1 }
 2 error(s).

@@ -1,5 +1,5 @@
-[Rule #13] The HandlerBox shall be the first contained box within the MetaBox.
-[Rule #15] MetaBox shall not contain a XMLBox.
-[Rule #15] MetaBox shall not contain a BinaryXMLBox.
-[Rule #16] 'hdlr' not found in MetaBox
+[Rule #1] The HandlerBox shall be the first contained box within the MetaBox.
+[Rule #3] MetaBox shall not contain a XMLBox.
+[Rule #3] MetaBox shall not contain a BinaryXMLBox.
+[Rule #4] 'hdlr' not found in MetaBox
 4 error(s).

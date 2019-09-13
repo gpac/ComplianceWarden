@@ -1,4 +1,4 @@
-[Rule #24] Matrix field of the TrackHeaderBox: "c" value (0) shall be 0x00010000 or 0xFFFF0000 ("a" is 0)
-[Rule #24] Matrix field of the TrackHeaderBox: "d" value (0) shall be 0x00010000 or 0xFFFF0000 ("b" is 0)
-[Rule #24] Matrix field of the TrackHeaderBox: "w" value (4) shall be 0x40000000
+[Rule #12] Matrix field of the TrackHeaderBox: "c" value (0) shall be 0x00010000 or 0xFFFF0000 ("a" is 0)
+[Rule #12] Matrix field of the TrackHeaderBox: "d" value (0) shall be 0x00010000 or 0xFFFF0000 ("b" is 0)
+[Rule #12] Matrix field of the TrackHeaderBox: "w" value (4) shall be 0x40000000
 3 error(s).

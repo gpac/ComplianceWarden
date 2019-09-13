@@ -1,4 +1,4 @@
-[Rule #29] 'elst' media rate shall be -1 or 1, found 0
-[Rule #29] 'elst' media rate shall be -1 or 1, found 2
-[Rule #30] Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
+[Rule #17] 'elst' media rate shall be -1 or 1, found 0
+[Rule #17] 'elst' media rate shall be -1 or 1, found 2
+[Rule #18] Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
 3 error(s).

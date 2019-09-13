@@ -1,5 +1,5 @@
-[Rule #12] 'meta' box not found at file level
-[Rule #16] 'hdlr' not found in MetaBox
-[Rule #19] PrimaryItemBox is required
-[Rule #20] MIAF missing Image spatial extents property
+[Rule #0] 'meta' box not found at file level
+[Rule #4] 'hdlr' not found in MetaBox
+[Rule #7] PrimaryItemBox is required
+[Rule #8] MIAF missing Image spatial extents property
 4 error(s).

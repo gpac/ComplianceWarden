@@ -1088,7 +1088,7 @@ static std::vector<RuleDesc> concat(const std::initializer_list<const std::initi
   std::vector<RuleDesc> v;
 
   for(auto& r : rules)
-    v.insert(v.begin(), r.begin(), r.end());
+    v.insert(v.end(), r.begin(), r.end());
 
   return v;
 }
@@ -1096,13 +1096,15 @@ static std::vector<RuleDesc> concat(const std::initializer_list<const std::initi
 extern const std::initializer_list<RuleDesc> getRulesAudio();
 extern const std::initializer_list<RuleDesc> getRulesDerivations();
 extern const std::initializer_list<RuleDesc> getRulesNumPixels();
+extern const std::initializer_list<RuleDesc> getRulesBrands();
+extern const std::initializer_list<RuleDesc> getRulesProfiles();
 
 static const SpecDesc spec =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
-  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels() }),
+  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(), getRulesProfiles() }),
   nullptr,
 };
 

@@ -1,5 +1,5 @@
-[Rule #4] Detected error in derivations: init -> iden (2) -> iden (2)
-[Rule #4] Detected cycle in derivations.
-[Rule #5] Detected error in derivations: init -> iden (2) -> iden (2)
-[Rule #5] Detected cycle in derivations.
+[Rule #30] Detected error in derivations: init -> iden (2) -> iden (2)
+[Rule #30] Detected cycle in derivations.
+[Rule #31] Detected error in derivations: init -> iden (2) -> iden (2)
+[Rule #31] Detected cycle in derivations.
 4 error(s).
