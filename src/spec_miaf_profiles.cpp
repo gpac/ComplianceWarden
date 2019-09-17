@@ -1,5 +1,44 @@
 #include "spec.h"
 #include "fourcc.h"
+#include <sstream>
+
+bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
+{
+  for(auto& rule : spec.rules)
+  {
+    std::stringstream ss(rule.caption);
+    std::string line;
+    std::getline(ss, line);
+    std::stringstream ssl(line);
+    std::string word;
+    ssl >> word;
+
+    if(word != "Section")
+      throw std::runtime_error("Rule caption is misformed.");
+
+    ssl >> word;
+
+    if(word.rfind(section, 0) == 0)
+    {
+      struct Report : IReport
+      {
+        void error(const char*, ...) override
+        {
+          ++errorCount;
+        }
+
+        int errorCount = 0;
+      };
+      Report r;
+      rule.check(root, &r);
+
+      if(r.errorCount)
+        return false;
+    }
+  }
+
+  return true;
+}
 
 const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 {

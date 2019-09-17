@@ -2,7 +2,8 @@
 #include "fourcc.h"
 #include <cstring>
 #include <map>
-#include <sstream>
+
+bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
 
 const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
 {
@@ -173,38 +174,11 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
           out->error("'MiPr' brand: at most one top-level FreeSpaceBox is allowed.");
 
         // The primary image item conforms to a MIAF profile.
-        for(auto& rule : globalSpec.rules)
-        {
-          std::stringstream ss(rule.caption);
-          std::string line;
-          std::getline(ss, line);
-          std::stringstream ssl(line);
-          std::string word;
-          ssl >> word;
+        if(!checkRuleSection(globalSpec, "7.", root))
+          out->error("'MiPr' brand: this file shall conform to MIAF (Section 7).");
 
-          if(word != "Section")
-            throw std::runtime_error("Rule caption is misformed.");
-
-          ssl >> word;
-
-          if(word.rfind("7.", 0) == 0 || word.rfind("8.", 0) == 0)
-          {
-            struct Report : IReport
-            {
-              void error(const char*, ...) override
-              {
-                ++errorCount;
-              }
-
-              int errorCount = 0;
-            };
-            Report r;
-            rule.check(root, &r);
-
-            if(r.errorCount)
-              out->error("'MiPr' brand: this file shall conform to MIAF (Section 7).");
-          }
-        }
+        if(!checkRuleSection(globalSpec, "8.", root))
+          out->error("'MiPr' brand: this file shall conform to MIAF (Section 8).");
 
         found = false;
         uint32_t primaryItemId = -1;
@@ -313,7 +287,18 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
       "- The constraints of subclause 8.6 apply.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("MiAn"))
+                  found = true;
+
+        if(!found)
+          return;
+
         (void)out;
         // TODO
       }
@@ -327,9 +312,26 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
       "  one reference), and these two coded pictures shall be a valid bitstream.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out;
-        // TODO
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("MiBu"))
+                  found = true;
+
+        if(!found)
+          return;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("hdlr"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "handler_type"))
+                    if(field.value != FOURCC("pict"))
+                      out->error("'MiBu' brand: the track shall be an image sequence ('pict') track.");
       }
     },
     {
@@ -344,9 +346,38 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
       " - The tracks are fragmented.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out;
-        // TODO
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("MiAC"))
+                  found = true;
+
+        if(!found)
+          return;
+
+        if(!checkRuleSection(globalSpec, "10.6", root))
+          out->error("'MiAC' brand: this file shall conform to the 'MiCm' brand.");
+
+        if(!checkRuleSection(globalSpec, "10.3", root))
+          out->error("'MiAC' brand: this file shall conform to the 'MiAn' brand.");
+
+        // TODO:
+        out->error("'MiAC' brand: t>here is exactly one auxiliary alpha video track.");
+        out->error("'MiAC' brand: the non-auxiliary video track uses the 'vide' handler, and is not pre-multiplied.");
+
+        found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("mvex"))
+                found = true;
+
+        if(!found)
+          out->error("'MiAC' brand: the tracks are fragmented.");
       }
     },
     {
@@ -368,11 +399,19 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
       "   same duration, same number of fragments and fragments shall be time-aligned.\n"
       "   Fragments of the different CMAF tracks shall also be interleaved in the MIAF\n"
       "   file.",
-      [] (Box const& root, IReport* out)
+      [] (Box const& root, IReport* /*out*/)
       {
-        (void)root;
-        (void)out;
-        // TODO
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("MiCm"))
+                  found = true;
+
+        if(!found)
+          return;
       }
     },
   };
