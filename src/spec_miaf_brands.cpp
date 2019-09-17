@@ -1,5 +1,6 @@
 #include "spec.h"
 #include "fourcc.h"
+#include <cstring>
 
 const std::initializer_list<RuleDesc> getRulesBrands()
 {
@@ -12,9 +13,78 @@ const std::initializer_list<RuleDesc> getRulesBrands()
       "presence of specific image coding formats",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out;
-        // TODO
+        std::string filename;
+
+        for(auto& field : root.syms)
+          if(!strcmp(field.name, "filename"))
+            filename.push_back((char)field.value);
+
+        auto extPos = filename.find_last_of('.');
+
+        if(extPos > filename.length())
+        {
+          out->error("Filename has no extension.");
+          extPos = filename.length() - 1;
+        }
+
+        auto const ext = filename.substr(extPos + 1);
+
+        auto getExtensionFromBrand = [] (Box const& root) -> std::vector<const char*> {
+            for(auto& box : root.children)
+              if(box.fourcc == FOURCC("ftyp"))
+                for(auto& sym : box.syms)
+                  if(strcmp(sym.name, "compatible_brand"))
+                    switch(sym.value)
+                    {
+                    case FOURCC("avci"):
+                      return { "avci" };
+                    case FOURCC("avcs"):
+                      return { "avcs" };
+                    case FOURCC("heic"):
+                    case FOURCC("heix"):
+                    case FOURCC("heim"):
+                    case FOURCC("heis"):
+                      return { "heic", "hif" };
+                    case FOURCC("hevc"):
+                    case FOURCC("hevx"):
+                    case FOURCC("hevm"):
+                    case FOURCC("hevs"):
+                      return { "heics", "hif" };
+                    }
+
+            auto isSequence = [] (Box const& root) -> bool {
+                for(auto& box : root.children)
+                  if(box.fourcc == FOURCC("moov"))
+                    for(auto& moovChild : box.children)
+                      if(moovChild.fourcc == FOURCC("trak"))
+                        return true;
+
+                return false;
+              };
+
+            if(isSequence(root))
+              return { "heifs", "hif" };
+            else
+              return { "heif", "hif" };
+          };
+
+        bool found = false;
+        auto possibleExts = getExtensionFromBrand(root);
+
+        for(auto e : possibleExts)
+          if(ext == e)
+            found = true;
+
+        std::string expected;
+
+        for(auto e : possibleExts)
+        {
+          expected += e;
+          expected += " ";
+        }
+
+        if(!found)
+          out->error("File extension doesn't match: expecting one of '%s', got '%s'", expected.c_str(), ext.c_str());
       }
     },
     {

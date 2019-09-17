@@ -100,13 +100,24 @@ void specListRules(const SpecDesc* spec)
   }
 }
 
-void specCheck(const SpecDesc* spec, uint8_t* data, size_t size)
+void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
 {
   BoxReader topReader;
   topReader.br = { data, (int)size };
   topReader.myBox.size = size;
   topReader.myBox.fourcc = FOURCC("root");
   topReader.spec = spec;
+
+  {
+    auto fnPtr = filename;
+
+    while(*fnPtr)
+    {
+      topReader.myBox.syms.push_back({ "filename", *fnPtr, 8 });
+      fnPtr++;
+    }
+  }
+
   auto parseFunc = getParseFunction(topReader.myBox.fourcc);
   parseFunc(&topReader);
 
@@ -135,7 +146,7 @@ int main(int argc, const char* argv[])
   else
   {
     auto buf = loadFile(argv[2]);
-    specCheck(spec, buf.data(), (int)buf.size());
+    specCheck(spec, argv[2], buf.data(), (int)buf.size());
   }
 
   return 0;
@@ -147,7 +158,7 @@ extern "C" {
 struct SpecDesc;
 SpecDesc const* specFindC(const char* name);
 void specListRulesC(const SpecDesc* spec);
-void specCheckC(const SpecDesc* spec, uint8_t* data, size_t size);
+void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size);
 }
 
 SpecDesc const* specFindC(const char* name)
@@ -160,8 +171,8 @@ void specListRulesC(const SpecDesc* spec)
   specListRules(spec);
 }
 
-void specCheckC(const SpecDesc* spec, uint8_t* data, size_t size)
+void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
 {
-  specCheck(spec, data, size);
+  specCheck(spec, filename, data, size);
 }
 

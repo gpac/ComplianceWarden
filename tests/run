@@ -14,10 +14,11 @@ function main
   run_test real_mp4_avc
   run_test real_mp4_heif
 
-  run_test check_rules_folder dummy
-  run_test check_rules_folder isobmff
-  run_test check_rules_folder heif
-  run_test check_rules_folder miaf
+  run_test check_rules_folder dummy mp4
+  run_test check_rules_folder isobmff mp4
+  run_test check_rules_folder heif mp4
+  run_test check_rules_folder miaf hif
+  run_test miaf_file_extension
 
   echo "OK"
 }
@@ -50,17 +51,25 @@ function real_mp4_heif
   compare $scriptDir/miaf.ref $tmpDir/miaf.new
 }
 
+function miaf_file_extension
+{
+  cp $scriptDir/heif.mp4 $tmpDir/heif_no_ext
+  $BIN/cw.exe miaf $tmpDir/heif_no_ext > $tmpDir/no_file_extension.new
+  compare $scriptDir/no_file_extension.ref $tmpDir/no_file_extension.new
+}
+
 function check_rules
 {
   local spec="$1"
   local name="$2"
-  local mp4path="$tmpDir/$name.mp4"
+  local ext="$3"
+  local mp4path="$tmpDir/$name.$ext"
   mkdir -p $(dirname $mp4path)
   nasm $scriptDir/$name.asm -f bin -o $mp4path
   if [[ $name == *error* ]] ; then
-    $BIN/cw.exe $spec $tmpDir/$name.mp4 2> $tmpDir/$name.new || :
+    $BIN/cw.exe $spec $mp4path 2> $tmpDir/$name.new || :
   else
-    $BIN/cw.exe $spec $tmpDir/$name.mp4 > $tmpDir/$name.new
+    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new
   fi
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }
@@ -70,7 +79,7 @@ function check_rules_folder
   local folder="$1"
   for i in `ls $scriptDir/$folder/*.asm` ; do
     local name=`basename ${i%.*}`
-    run_test check_rules $folder "$folder/$name"
+    run_test check_rules $folder "$folder/$name" "$2"
   done
 }
 
