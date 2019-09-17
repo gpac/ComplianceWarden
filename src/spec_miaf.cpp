@@ -40,8 +40,8 @@ constexpr bool boxEqual(Box const* a, Box const* b)
 std::initializer_list<RuleDesc> rulesGeneral =
 {
   {
-    "Section 3.13:\n"
-    "The file-level MetaBox shall always be present (see 7.2.1.4).\n"
+    "Section 7.2.1.4:\n"
+    "The file-level MetaBox shall always be present.\n"
     "The MetaBox shall be present at the file-level",
     [] (Box const& root, IReport* out)
     {
@@ -1096,15 +1096,15 @@ static std::vector<RuleDesc> concat(const std::initializer_list<const std::initi
 extern const std::initializer_list<RuleDesc> getRulesAudio();
 extern const std::initializer_list<RuleDesc> getRulesDerivations();
 extern const std::initializer_list<RuleDesc> getRulesNumPixels();
-extern const std::initializer_list<RuleDesc> getRulesBrands();
-extern const std::initializer_list<RuleDesc> getRulesProfiles();
+extern const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec);
+extern const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec);
 
 static const SpecDesc spec =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
-  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(), getRulesProfiles() }),
+  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(spec), getRulesProfiles(spec) }),
   nullptr,
 };
 

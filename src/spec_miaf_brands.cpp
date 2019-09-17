@@ -1,9 +1,12 @@
 #include "spec.h"
 #include "fourcc.h"
 #include <cstring>
+#include <map>
+#include <sstream>
 
-const std::initializer_list<RuleDesc> getRulesBrands()
+const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
 {
+  static const SpecDesc& globalSpec = spec;
   static const
   std::initializer_list<RuleDesc> rulesBrands =
   {
@@ -106,9 +109,192 @@ const std::initializer_list<RuleDesc> getRulesBrands()
       "  item, or the primary item itself, is 128 000 bytes.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out;
-        // TODO
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("MiPr"))
+                  found = true;
+
+        if(!found)
+          return;
+
+        auto boxOrderCheck = [&] () -> bool {
+            if(root.children.size() < 2)
+              return false;
+
+            if(root.children[0].fourcc != FOURCC("ftyp"))
+              return false;
+
+            if(root.children[1].fourcc == FOURCC("meta"))
+              return true;
+            else if(root.children.size() >= 3
+                    && root.children[1].fourcc == FOURCC("fidx") && root.children[2].fourcc == FOURCC("meta"))
+              return true;
+            else
+              return false;
+          };
+
+        if(!boxOrderCheck())
+          out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening BoxFileIndexBox).");
+
+        for(auto& b : root.children)
+        {
+          if(b.fourcc == FOURCC("mdat"))
+            out->error("'MiPr' brand: the MediaDataBox shall not occur before the MetaBox.");
+
+          if(b.fourcc == FOURCC("meta"))
+            break;
+        }
+
+        int numFreeSpaceBox = 0;
+        bool seenMeta = false;
+
+        for(auto& b : root.children)
+        {
+          if(b.fourcc == FOURCC("mdat"))
+            break;
+
+          if(b.fourcc == FOURCC("meta"))
+            seenMeta = true;
+
+          if(b.fourcc == FOURCC("free"))
+          {
+            numFreeSpaceBox++;
+
+            if(!seenMeta)
+              out->error("'MiPr' brand: top-level FreeSpaceBox shall be between the MetaBox and the MediaDataBox.");
+          }
+        }
+
+        if(numFreeSpaceBox > 1)
+          out->error("'MiPr' brand: at most one top-level FreeSpaceBox is allowed.");
+
+        // The primary image item conforms to a MIAF profile.
+        for(auto& rule : globalSpec.rules)
+        {
+          std::stringstream ss(rule.caption);
+          std::string line;
+          std::getline(ss, line);
+          std::stringstream ssl(line);
+          std::string word;
+          ssl >> word;
+
+          if(word != "Section")
+            throw std::runtime_error("Rule caption is misformed.");
+
+          ssl >> word;
+
+          if(word.rfind("7.", 0) == 0 || word.rfind("8.", 0) == 0)
+          {
+            struct Report : IReport
+            {
+              void error(const char*, ...) override
+              {
+                ++errorCount;
+              }
+
+              int errorCount = 0;
+            };
+            Report r;
+            rule.check(root, &r);
+
+            if(r.errorCount)
+              out->error("'MiPr' brand: this file shall conform to MIAF (Section 7).");
+          }
+        }
+
+        found = false;
+        uint32_t primaryItemId = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm"))
+              {
+                found = true;
+
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "item_ID"))
+                    primaryItemId = field.value;
+              }
+
+        if(!found)
+          out->error("'MiPr' brand: PrimaryItemBox is required");
+
+        std::map<uint32_t /*itemId*/, int64_t /*offset*/> pitmSelfAndThmbs;
+        pitmSelfAndThmbs.insert({ primaryItemId, -1 }); // self
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+                for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    if(field.value != FOURCC("thmb"))
+                      continue;
+
+                  if(!strcmp(field.name, "to_item_ID"))
+                  {
+                    if(field.value != primaryItemId)
+                      for(auto& sym : metaChild.syms)
+                        if(!strcmp(sym.name, "from_item_ID"))
+                          pitmSelfAndThmbs.insert({ sym.value, -1 });
+                  }
+                }
+
+        if(pitmSelfAndThmbs.empty())
+          out->error("'MiPr' brand: there is at least one MIAF thumbnail image item present for the primary image item");
+
+        int64_t pitmFirstOffset = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iloc"))
+              {
+                // for MIAF coded image items construction_method==0 and data_reference_index==0
+                uint32_t itemId = 0;
+
+                for(auto& sym : metaChild.syms)
+                {
+                  if(!strcmp(sym.name, "item_ID"))
+                    itemId = sym.value;
+
+                  if(pitmSelfAndThmbs.find(itemId) != pitmSelfAndThmbs.end())
+                  {
+                    if(itemId == primaryItemId)
+                      if(!strcmp(sym.name, "base_offset"))
+                        pitmFirstOffset = sym.value;
+
+                    if(!strcmp(sym.name, "base_offset") || !strcmp(sym.name, "extent_offset"))
+                      pitmSelfAndThmbs[itemId] = sym.value;
+
+                    if(!strcmp(sym.name, "base_offset") || !strcmp(sym.name, "extent_offset"))
+                      pitmSelfAndThmbs[itemId] += sym.value;
+                  }
+                }
+              }
+
+        found = false;
+
+        for(auto& item : pitmSelfAndThmbs)
+        {
+          if(item.second < pitmSelfAndThmbs[primaryItemId])
+            out->error("'MiPr' brand: coded data offset thumbnail (item_ID=%u offset=%lld) precedes coded data for the primary item (item_ID=%u offset=%lld).",
+                       item.first, item.second, primaryItemId, pitmFirstOffset);
+
+          if(item.second < 128000)
+            found = true;
+        }
+
+        if(!found)
+          out->error("'MiPr' brand: The maximum number of bytes from the beginning of the file to\n"
+                     "  the last byte of the coded data for at least one of the thumbnail images of the\n"
+                     "  primary item, or the primary item itself, is 128 000 bytes.");
       }
     },
     {

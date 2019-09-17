@@ -1,8 +1,10 @@
 #include "spec.h"
 #include "fourcc.h"
 
-const std::initializer_list<RuleDesc> getRulesProfiles()
+const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 {
+  static const SpecDesc& globalSpec = spec;
+  (void)globalSpec;
   static const
   std::initializer_list<RuleDesc> rulesProfiles =
   {
