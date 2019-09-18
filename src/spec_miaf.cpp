@@ -665,7 +665,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                       if(trefChild.fourcc != FOURCC("thmb") && trefChild.fourcc != FOURCC("auxl"))
                         out->error("'tref' with unknown TrackReferenceTypeBox type \'%X\'", trefChild.fourcc);
                       else if(handlerType != FOURCC("pict"))
-                        out->error("Thumbnails and Auxiliaries are expected with a 'pict' handler type", trefChild.fourcc);
+                        out->error("Thumbnails and Auxiliaries are expected with a 'pict' handler type, found '%s'", toString(handlerType).c_str());
 
                       trefFound = true;
                       trackTypes.find(handlerType)->second.referenceTypes.push_back(trefChild.fourcc);
@@ -906,12 +906,63 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "sample of the alpha plane track with the same composition time.",
     [] (Box const& root, IReport* out)
     {
-      /*TODO:
-         valid and invalid samples +
-         alpha planes: auxiliary 'auxl' image data + The following aux_type values, for images, or aux_track_type, for tracks, of the AuxiliaryTypeProperty (respectively AuxiliaryTypeInfoBox heif::'auxi' (container sample_entry)) are defined:
-         — “urn:mpeg:mpegB:cicp:systems:auxiliary:alpha” for alpha planes
-         — “urn:mpeg:mpegB:cicp:systems:auxiliary:depth” for depth maps.
-       */
+      bool found = false;
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipco"))
+                  for(auto& ipcoChild : iprpChild.children)
+                    if(ipcoChild.fourcc == FOURCC("auxC"))
+                    {
+                      std::string auxType;
+
+                      for(auto& sym : ipcoChild.syms)
+                        if(!strcmp(sym.name, "aux_type"))
+                        {
+                          auxType.push_back((char)sym.value);
+
+                          if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                            found = true;
+                        }
+                    }
+
+      if(!found)
+        return;
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("moov"))
+          for(auto& moovChild : box.children)
+            if(moovChild.fourcc == FOURCC("trak"))
+              for(auto& trakChild : moovChild.children)
+                if(trakChild.fourcc == FOURCC("mdia"))
+                  for(auto& mdiaChild : trakChild.children)
+                    if(mdiaChild.fourcc == FOURCC("minf"))
+                      for(auto& minfChild : mdiaChild.children)
+                        if(minfChild.fourcc == FOURCC("stbl"))
+                          for(auto& stblChild : minfChild.children)
+                            if(stblChild.fourcc == FOURCC("stsd"))
+                              for(auto& stsdChild : stblChild.children)
+                                if(isVisualSampleEntry(stsdChild.fourcc))
+                                  for(auto& sampleEntryChild : stsdChild.children)
+                                    if(sampleEntryChild.fourcc == FOURCC("auxi"))
+                                    {
+                                      std::string auxType;
+
+                                      for(auto& sym : sampleEntryChild.syms)
+                                        if(!strcmp(sym.name, "aux_track_type"))
+                                        {
+                                          auxType.push_back((char)sym.value);
+
+                                          if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                                            found = true;
+                                        }
+                                    }
+
+      if(!found)
+        return;
 
       auto findTrackId = [] (Box const& root) -> uint32_t {
           for(auto& trakChild : root.children)
@@ -963,7 +1014,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                               trackId = (uint32_t)sym.value;
                             }
 
-                  if(handlerType == FOURCC("auxv") && trackId)
+                  if(handlerType == FOURCC("pict") && trackId)
                   {
                     auto id = findTrackId(moovChild);
 
@@ -999,7 +1050,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                             for(auto& minfChild : mdiaChild.children)
                               if(minfChild.fourcc == FOURCC("stbl"))
                                 for(auto& stblChild : minfChild.children)
-                                  if(stblChild.fourcc == FOURCC("stss"))
+                                  if(stblChild.fourcc == FOURCC("stts"))
                                     mediaTimes.push_back(&stblChild);
                     }
 

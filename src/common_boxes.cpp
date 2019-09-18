@@ -343,6 +343,28 @@ void parseMeta(IReader* br)
     br->box();
 }
 
+void parseAuxc(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  while(br->sym("aux_type", 8))
+  {
+  }
+
+  while(!br->empty())
+    br->sym("aux_subtype", 8);
+}
+
+void parseAuxi(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  while(!br->empty())
+    br->sym("aux_track_type", 8);
+}
+
 void parseIloc(IReader* br)
 {
   auto version = br->sym("version", 8);
@@ -683,6 +705,10 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parsePasp;
   case FOURCC("meta"):
     return &parseMeta;
+  case FOURCC("auxC"):
+    return &parseAuxc;
+  case FOURCC("auxi"):
+    return &parseAuxi;
   case FOURCC("iloc"):
     return &parseIloc;
   case FOURCC("iinf"):
