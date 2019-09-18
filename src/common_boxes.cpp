@@ -1,5 +1,5 @@
 // Box-parsers for MP4 and MPEG-DASH
-// TODO: split functions across specs with getParseFunction
+// TODO: split functions across specs with getParseFunction in spec_*.cpp files
 #include "common_boxes.h"
 #include "fourcc.h"
 #include <cassert>
