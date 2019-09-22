@@ -3,16 +3,16 @@
 ftyp_start:
     dd BE(ftyp_end - ftyp_start)
     dd "ftyp"
-    db 0x61, 0x76, 0x69, 0x73 ; "brand(32)" 
+    db 0x61, 0x76, 0x69, 0x73 ; "brand(32)" ('avis') 
     db 0x00, 0x00, 0x00, 0x00 ; "version(32)" 
-    db 0x6D, 0x69, 0x66, 0x31 ; "compatible_brand(32)" 
-    db 0x61, 0x76, 0x69, 0x66 ; "compatible_brand(32)" 
-    db 0x69, 0x73, 0x6F, 0x34 ; "compatible_brand(32)" 
-    db 0x61, 0x76, 0x30, 0x31 ; "compatible_brand(32)" 
-    db 0x61, 0x76, 0x69, 0x73 ; "compatible_brand(32)" 
-    db 0x6D, 0x73, 0x66, 0x31 ; "compatible_brand(32)" 
-    db 0x6D, 0x69, 0x61, 0x66 ; "compatible_brand(32)" 
-    db 0x4D, 0x41, 0x31, 0x42 ; "compatible_brand(32)" 
+    db 0x6D, 0x69, 0x66, 0x31 ; "compatible_brand(32)" ('mif1') 
+    db 0x61, 0x76, 0x69, 0x66 ; "compatible_brand(32)" ('avif') 
+    db 0x69, 0x73, 0x6F, 0x34 ; "compatible_brand(32)" ('iso4') 
+    db 0x61, 0x76, 0x30, 0x31 ; "compatible_brand(32)" ('av01') 
+    db 0x61, 0x76, 0x69, 0x73 ; "compatible_brand(32)" ('avis') 
+    db 0x6D, 0x73, 0x66, 0x31 ; "compatible_brand(32)" ('msf1') 
+    db 0x6D, 0x69, 0x61, 0x66 ; "compatible_brand(32)" ('miaf') 
+    db 0x4D, 0x41, 0x31, 0x42 ; "compatible_brand(32)" ('MA1B') 
 ftyp_end:
 meta_start:
     dd BE(meta_end - meta_start)
@@ -25,27 +25,27 @@ meta_start:
         db 0x00 ; "version(8)" 
         db 0x00, 0x00, 0x00 ; "flags(24)" 
         db 0x00, 0x00, 0x00, 0x00 ; "pre_defined(32)" 
-        db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" 
+        db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" ('pict') 
         db 0x00, 0x00, 0x00, 0x00 ; "reserved1(32)" 
         db 0x00, 0x00, 0x00, 0x00 ; "reserved2(32)" 
         db 0x00, 0x00, 0x00, 0x00 ; "reserved3(32)" 
-        db 0x47 ; "name(8)" 
-        db 0x50 ; "name(8)" 
-        db 0x41 ; "name(8)" 
-        db 0x43 ; "name(8)" 
-        db 0x20 ; "name(8)" 
-        db 0x70 ; "name(8)" 
-        db 0x69 ; "name(8)" 
-        db 0x63 ; "name(8)" 
-        db 0x74 ; "name(8)" 
-        db 0x20 ; "name(8)" 
-        db 0x48 ; "name(8)" 
-        db 0x61 ; "name(8)" 
-        db 0x6E ; "name(8)" 
-        db 0x64 ; "name(8)" 
-        db 0x6C ; "name(8)" 
-        db 0x65 ; "name(8)" 
-        db 0x72 ; "name(8)" 
+        db 0x47 ; "name(8)" ('G') 
+        db 0x50 ; "name(8)" ('P') 
+        db 0x41 ; "name(8)" ('A') 
+        db 0x43 ; "name(8)" ('C') 
+        db 0x20 ; "name(8)" (' ') 
+        db 0x70 ; "name(8)" ('p') 
+        db 0x69 ; "name(8)" ('i') 
+        db 0x63 ; "name(8)" ('c') 
+        db 0x74 ; "name(8)" ('t') 
+        db 0x20 ; "name(8)" (' ') 
+        db 0x48 ; "name(8)" ('H') 
+        db 0x61 ; "name(8)" ('a') 
+        db 0x6E ; "name(8)" ('n') 
+        db 0x64 ; "name(8)" ('d') 
+        db 0x6C ; "name(8)" ('l') 
+        db 0x65 ; "name(8)" ('e') 
+        db 0x72 ; "name(8)" ('r') 
         db 0x00 ; "name(8)" 
     hdlr_end:
     pitm_start:
@@ -61,7 +61,7 @@ meta_start:
         db 0x00 ; "version(8)" 
         db 0x00, 0x00, 0x00 ; "flags(24)" 
         db 0x04 ; "offset_size(4)" "length_size(4)" 
-        db 0x40 ; "base_offset_size(4)" "reserved1(4)" 
+        db 0x40 ; "base_offset_size(4)" ('@') "reserved1(4)" ('@') 
         db 0x00, 0x02 ; "item_count(16)" 
         db 0x00, 0x03 ; "item_ID(16)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
@@ -87,12 +87,12 @@ meta_start:
             db 0x00, 0x00, 0x00 ; "flags(24)" 
             db 0x00, 0x03 ; "item_ID(16)" 
             db 0x00, 0x00 ; "item_protection_index(16)" 
-            db 0x61, 0x76, 0x30, 0x31 ; "item_type(32)" 
-            db 0x41 ; "item_name(8)" 
-            db 0x6C ; "item_name(8)" 
-            db 0x70 ; "item_name(8)" 
-            db 0x68 ; "item_name(8)" 
-            db 0x61 ; "item_name(8)" 
+            db 0x61, 0x76, 0x30, 0x31 ; "item_type(32)" ('av01') 
+            db 0x41 ; "item_name(8)" ('A') 
+            db 0x6C ; "item_name(8)" ('l') 
+            db 0x70 ; "item_name(8)" ('p') 
+            db 0x68 ; "item_name(8)" ('h') 
+            db 0x61 ; "item_name(8)" ('a') 
             db 0x00 ; "item_name(8)" 
         infe_end:
         infe2_start:
@@ -102,12 +102,12 @@ meta_start:
             db 0x00, 0x00, 0x00 ; "flags(24)" 
             db 0x00, 0x04 ; "item_ID(16)" 
             db 0x00, 0x00 ; "item_protection_index(16)" 
-            db 0x61, 0x76, 0x30, 0x31 ; "item_type(32)" 
-            db 0x43 ; "item_name(8)" 
-            db 0x6F ; "item_name(8)" 
-            db 0x6C ; "item_name(8)" 
-            db 0x6F ; "item_name(8)" 
-            db 0x72 ; "item_name(8)" 
+            db 0x61, 0x76, 0x30, 0x31 ; "item_type(32)" ('av01') 
+            db 0x43 ; "item_name(8)" ('C') 
+            db 0x6F ; "item_name(8)" ('o') 
+            db 0x6C ; "item_name(8)" ('l') 
+            db 0x6F ; "item_name(8)" ('o') 
+            db 0x72 ; "item_name(8)" ('r') 
             db 0x00 ; "item_name(8)" 
         infe2_end:
     iinf_end:
@@ -117,7 +117,7 @@ meta_start:
         db 0x00 ; "version(8)" 
         db 0x00, 0x00, 0x00 ; "flags(24)" 
         db 0x00, 0x00, 0x00, 0x0E ; "box_size(32)" 
-        db 0x61, 0x75, 0x78, 0x6C ; "box_type(32)" 
+        db 0x61, 0x75, 0x78, 0x6C ; "box_type(32)" ('auxl') 
         db 0x00, 0x03 ; "from_item_ID(16)" 
         db 0x00, 0x01 ; "reference_count(16)" 
         db 0x00, 0x04 ; "to_item_ID(16)" 
@@ -151,49 +151,49 @@ meta_start:
                 dd "auxC"
                 db 0x00 ; "version(8)" 
                 db 0x00, 0x00, 0x00 ; "flags(24)" 
-                db 0x75 ; "aux_type(8)" 
-                db 0x72 ; "aux_type(8)" 
-                db 0x6E ; "aux_type(8)" 
-                db 0x3A ; "aux_type(8)" 
-                db 0x6D ; "aux_type(8)" 
-                db 0x70 ; "aux_type(8)" 
-                db 0x65 ; "aux_type(8)" 
-                db 0x67 ; "aux_type(8)" 
-                db 0x3A ; "aux_type(8)" 
-                db 0x6D ; "aux_type(8)" 
-                db 0x70 ; "aux_type(8)" 
-                db 0x65 ; "aux_type(8)" 
-                db 0x67 ; "aux_type(8)" 
-                db 0x42 ; "aux_type(8)" 
-                db 0x3A ; "aux_type(8)" 
-                db 0x63 ; "aux_type(8)" 
-                db 0x69 ; "aux_type(8)" 
-                db 0x63 ; "aux_type(8)" 
-                db 0x70 ; "aux_type(8)" 
-                db 0x3A ; "aux_type(8)" 
-                db 0x73 ; "aux_type(8)" 
-                db 0x79 ; "aux_type(8)" 
-                db 0x73 ; "aux_type(8)" 
-                db 0x74 ; "aux_type(8)" 
-                db 0x65 ; "aux_type(8)" 
-                db 0x6D ; "aux_type(8)" 
-                db 0x73 ; "aux_type(8)" 
-                db 0x3A ; "aux_type(8)" 
-                db 0x61 ; "aux_type(8)" 
-                db 0x75 ; "aux_type(8)" 
-                db 0x78 ; "aux_type(8)" 
-                db 0x69 ; "aux_type(8)" 
-                db 0x6C ; "aux_type(8)" 
-                db 0x69 ; "aux_type(8)" 
-                db 0x61 ; "aux_type(8)" 
-                db 0x72 ; "aux_type(8)" 
-                db 0x79 ; "aux_type(8)" 
-                db 0x3A ; "aux_type(8)" 
-                db 0x61 ; "aux_type(8)" 
-                db 0x6C ; "aux_type(8)" 
-                db 0x70 ; "aux_type(8)" 
-                db 0x68 ; "aux_type(8)" 
-                db 0x61 ; "aux_type(8)" 
+                db 0x75 ; "aux_type(8)" ('u') 
+                db 0x72 ; "aux_type(8)" ('r') 
+                db 0x6E ; "aux_type(8)" ('n') 
+                db 0x3A ; "aux_type(8)" (':') 
+                db 0x6D ; "aux_type(8)" ('m') 
+                db 0x70 ; "aux_type(8)" ('p') 
+                db 0x65 ; "aux_type(8)" ('e') 
+                db 0x67 ; "aux_type(8)" ('g') 
+                db 0x3A ; "aux_type(8)" (':') 
+                db 0x6D ; "aux_type(8)" ('m') 
+                db 0x70 ; "aux_type(8)" ('p') 
+                db 0x65 ; "aux_type(8)" ('e') 
+                db 0x67 ; "aux_type(8)" ('g') 
+                db 0x42 ; "aux_type(8)" ('B') 
+                db 0x3A ; "aux_type(8)" (':') 
+                db 0x63 ; "aux_type(8)" ('c') 
+                db 0x69 ; "aux_type(8)" ('i') 
+                db 0x63 ; "aux_type(8)" ('c') 
+                db 0x70 ; "aux_type(8)" ('p') 
+                db 0x3A ; "aux_type(8)" (':') 
+                db 0x73 ; "aux_type(8)" ('s') 
+                db 0x79 ; "aux_type(8)" ('y') 
+                db 0x73 ; "aux_type(8)" ('s') 
+                db 0x74 ; "aux_type(8)" ('t') 
+                db 0x65 ; "aux_type(8)" ('e') 
+                db 0x6D ; "aux_type(8)" ('m') 
+                db 0x73 ; "aux_type(8)" ('s') 
+                db 0x3A ; "aux_type(8)" (':') 
+                db 0x61 ; "aux_type(8)" ('a') 
+                db 0x75 ; "aux_type(8)" ('u') 
+                db 0x78 ; "aux_type(8)" ('x') 
+                db 0x69 ; "aux_type(8)" ('i') 
+                db 0x6C ; "aux_type(8)" ('l') 
+                db 0x69 ; "aux_type(8)" ('i') 
+                db 0x61 ; "aux_type(8)" ('a') 
+                db 0x72 ; "aux_type(8)" ('r') 
+                db 0x79 ; "aux_type(8)" ('y') 
+                db 0x3A ; "aux_type(8)" (':') 
+                db 0x61 ; "aux_type(8)" ('a') 
+                db 0x6C ; "aux_type(8)" ('l') 
+                db 0x70 ; "aux_type(8)" ('p') 
+                db 0x68 ; "aux_type(8)" ('h') 
+                db 0x61 ; "aux_type(8)" ('a') 
                 db 0x00 ; "aux_type(8)" 
             auxC_end:
             pixi_start:
@@ -286,20 +286,20 @@ moov_start:
                 db 0x00 ; "version(8)" 
                 db 0x00, 0x00, 0x00 ; "flags(24)" 
                 db 0x00, 0x00, 0x00, 0x00 ; "pre_defined(32)" 
-                db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" 
+                db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" ('pict') 
                 db 0x00, 0x00, 0x00, 0x00 ; "reserved1(32)" 
                 db 0x00, 0x00, 0x00, 0x00 ; "reserved2(32)" 
                 db 0x00, 0x00, 0x00, 0x00 ; "reserved3(32)" 
-                db 0x47 ; "name(8)" 
-                db 0x50 ; "name(8)" 
-                db 0x41 ; "name(8)" 
-                db 0x43 ; "name(8)" 
-                db 0x20 ; "name(8)" 
-                db 0x61 ; "name(8)" 
-                db 0x76 ; "name(8)" 
-                db 0x69 ; "name(8)" 
-                db 0x66 ; "name(8)" 
-                db 0x73 ; "name(8)" 
+                db 0x47 ; "name(8)" ('G') 
+                db 0x50 ; "name(8)" ('P') 
+                db 0x41 ; "name(8)" ('A') 
+                db 0x43 ; "name(8)" ('C') 
+                db 0x20 ; "name(8)" (' ') 
+                db 0x61 ; "name(8)" ('a') 
+                db 0x76 ; "name(8)" ('v') 
+                db 0x69 ; "name(8)" ('i') 
+                db 0x66 ; "name(8)" ('f') 
+                db 0x73 ; "name(8)" ('s') 
                 db 0x00 ; "name(8)" 
             hdlr2_end:
             minf_start:
@@ -490,26 +490,26 @@ moov_start:
                 db 0x00 ; "version(8)" 
                 db 0x00, 0x00, 0x00 ; "flags(24)" 
                 db 0x00, 0x00, 0x00, 0x00 ; "pre_defined(32)" 
-                db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" 
+                db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" ('pict') 
                 db 0x00, 0x00, 0x00, 0x00 ; "reserved1(32)" 
                 db 0x00, 0x00, 0x00, 0x00 ; "reserved2(32)" 
                 db 0x00, 0x00, 0x00, 0x00 ; "reserved3(32)" 
-                db 0x47 ; "name(8)" 
-                db 0x50 ; "name(8)" 
-                db 0x41 ; "name(8)" 
-                db 0x43 ; "name(8)" 
-                db 0x20 ; "name(8)" 
-                db 0x61 ; "name(8)" 
-                db 0x76 ; "name(8)" 
-                db 0x69 ; "name(8)" 
-                db 0x66 ; "name(8)" 
-                db 0x73 ; "name(8)" 
-                db 0x20 ; "name(8)" 
-                db 0x61 ; "name(8)" 
-                db 0x6C ; "name(8)" 
-                db 0x70 ; "name(8)" 
-                db 0x68 ; "name(8)" 
-                db 0x61 ; "name(8)" 
+                db 0x47 ; "name(8)" ('G') 
+                db 0x50 ; "name(8)" ('P') 
+                db 0x41 ; "name(8)" ('A') 
+                db 0x43 ; "name(8)" ('C') 
+                db 0x20 ; "name(8)" (' ') 
+                db 0x61 ; "name(8)" ('a') 
+                db 0x76 ; "name(8)" ('v') 
+                db 0x69 ; "name(8)" ('i') 
+                db 0x66 ; "name(8)" ('f') 
+                db 0x73 ; "name(8)" ('s') 
+                db 0x20 ; "name(8)" (' ') 
+                db 0x61 ; "name(8)" ('a') 
+                db 0x6C ; "name(8)" ('l') 
+                db 0x70 ; "name(8)" ('p') 
+                db 0x68 ; "name(8)" ('h') 
+                db 0x61 ; "name(8)" ('a') 
                 db 0x00 ; "name(8)" 
             hdlr3_end:
             minf2_start:
@@ -613,49 +613,49 @@ moov_start:
                                 dd "auxi"
                                 db 0x00 ; "version(8)" 
                                 db 0x00, 0x00, 0x00 ; "flags(24)" 
-                                db 0x75 ; "aux_track_type(8)" 
-                                db 0x72 ; "aux_track_type(8)" 
-                                db 0x6E ; "aux_track_type(8)" 
-                                db 0x3A ; "aux_track_type(8)" 
-                                db 0x6D ; "aux_track_type(8)" 
-                                db 0x70 ; "aux_track_type(8)" 
-                                db 0x65 ; "aux_track_type(8)" 
-                                db 0x67 ; "aux_track_type(8)" 
-                                db 0x3A ; "aux_track_type(8)" 
-                                db 0x6D ; "aux_track_type(8)" 
-                                db 0x70 ; "aux_track_type(8)" 
-                                db 0x65 ; "aux_track_type(8)" 
-                                db 0x67 ; "aux_track_type(8)" 
-                                db 0x42 ; "aux_track_type(8)" 
-                                db 0x3A ; "aux_track_type(8)" 
-                                db 0x63 ; "aux_track_type(8)" 
-                                db 0x69 ; "aux_track_type(8)" 
-                                db 0x63 ; "aux_track_type(8)" 
-                                db 0x70 ; "aux_track_type(8)" 
-                                db 0x3A ; "aux_track_type(8)" 
-                                db 0x73 ; "aux_track_type(8)" 
-                                db 0x79 ; "aux_track_type(8)" 
-                                db 0x73 ; "aux_track_type(8)" 
-                                db 0x74 ; "aux_track_type(8)" 
-                                db 0x65 ; "aux_track_type(8)" 
-                                db 0x6D ; "aux_track_type(8)" 
-                                db 0x73 ; "aux_track_type(8)" 
-                                db 0x3A ; "aux_track_type(8)" 
-                                db 0x61 ; "aux_track_type(8)" 
-                                db 0x75 ; "aux_track_type(8)" 
-                                db 0x78 ; "aux_track_type(8)" 
-                                db 0x69 ; "aux_track_type(8)" 
-                                db 0x6C ; "aux_track_type(8)" 
-                                db 0x69 ; "aux_track_type(8)" 
-                                db 0x61 ; "aux_track_type(8)" 
-                                db 0x72 ; "aux_track_type(8)" 
-                                db 0x79 ; "aux_track_type(8)" 
-                                db 0x3A ; "aux_track_type(8)" 
-                                db 0x61 ; "aux_track_type(8)" 
-                                db 0x6C ; "aux_track_type(8)" 
-                                db 0x70 ; "aux_track_type(8)" 
-                                db 0x68 ; "aux_track_type(8)" 
-                                db 0x61 ; "aux_track_type(8)" 
+                                db 0x75 ; "aux_track_type(8)" ('u') 
+                                db 0x72 ; "aux_track_type(8)" ('r') 
+                                db 0x6E ; "aux_track_type(8)" ('n') 
+                                db 0x3A ; "aux_track_type(8)" (':') 
+                                db 0x6D ; "aux_track_type(8)" ('m') 
+                                db 0x70 ; "aux_track_type(8)" ('p') 
+                                db 0x65 ; "aux_track_type(8)" ('e') 
+                                db 0x67 ; "aux_track_type(8)" ('g') 
+                                db 0x3A ; "aux_track_type(8)" (':') 
+                                db 0x6D ; "aux_track_type(8)" ('m') 
+                                db 0x70 ; "aux_track_type(8)" ('p') 
+                                db 0x65 ; "aux_track_type(8)" ('e') 
+                                db 0x67 ; "aux_track_type(8)" ('g') 
+                                db 0x42 ; "aux_track_type(8)" ('B') 
+                                db 0x3A ; "aux_track_type(8)" (':') 
+                                db 0x63 ; "aux_track_type(8)" ('c') 
+                                db 0x69 ; "aux_track_type(8)" ('i') 
+                                db 0x63 ; "aux_track_type(8)" ('c') 
+                                db 0x70 ; "aux_track_type(8)" ('p') 
+                                db 0x3A ; "aux_track_type(8)" (':') 
+                                db 0x73 ; "aux_track_type(8)" ('s') 
+                                db 0x79 ; "aux_track_type(8)" ('y') 
+                                db 0x73 ; "aux_track_type(8)" ('s') 
+                                db 0x74 ; "aux_track_type(8)" ('t') 
+                                db 0x65 ; "aux_track_type(8)" ('e') 
+                                db 0x6D ; "aux_track_type(8)" ('m') 
+                                db 0x73 ; "aux_track_type(8)" ('s') 
+                                db 0x3A ; "aux_track_type(8)" (':') 
+                                db 0x61 ; "aux_track_type(8)" ('a') 
+                                db 0x75 ; "aux_track_type(8)" ('u') 
+                                db 0x78 ; "aux_track_type(8)" ('x') 
+                                db 0x69 ; "aux_track_type(8)" ('i') 
+                                db 0x6C ; "aux_track_type(8)" ('l') 
+                                db 0x69 ; "aux_track_type(8)" ('i') 
+                                db 0x61 ; "aux_track_type(8)" ('a') 
+                                db 0x72 ; "aux_track_type(8)" ('r') 
+                                db 0x79 ; "aux_track_type(8)" ('y') 
+                                db 0x3A ; "aux_track_type(8)" (':') 
+                                db 0x61 ; "aux_track_type(8)" ('a') 
+                                db 0x6C ; "aux_track_type(8)" ('l') 
+                                db 0x70 ; "aux_track_type(8)" ('p') 
+                                db 0x68 ; "aux_track_type(8)" ('h') 
+                                db 0x61 ; "aux_track_type(8)" ('a') 
                                 db 0x00 ; "aux_track_type(8)" 
                             auxi_end:
                             btrt2_start:
