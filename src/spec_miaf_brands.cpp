@@ -1,5 +1,6 @@
 #include "spec.h"
 #include "fourcc.h"
+#include <algorithm> // std::find
 #include <cstring>
 #include <map>
 
@@ -29,7 +30,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
 
         if(extPos > filename.length())
         {
-          out->error("Filename has no extension.");
+          out->error("Filename has no extension");
           extPos = filename.length() - 1;
         }
 
@@ -141,12 +142,12 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
           };
 
         if(!boxOrderCheck())
-          out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening BoxFileIndexBox).");
+          out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening BoxFileIndexBox)");
 
         for(auto& b : root.children)
         {
           if(b.fourcc == FOURCC("mdat"))
-            out->error("'MiPr' brand: the MediaDataBox shall not occur before the MetaBox.");
+            out->error("'MiPr' brand: the MediaDataBox shall not occur before the MetaBox");
 
           if(b.fourcc == FOURCC("meta"))
             break;
@@ -168,19 +169,19 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
             numFreeSpaceBox++;
 
             if(!seenMeta)
-              out->error("'MiPr' brand: top-level FreeSpaceBox shall be between the MetaBox and the MediaDataBox.");
+              out->error("'MiPr' brand: top-level FreeSpaceBox shall be between the MetaBox and the MediaDataBox");
           }
         }
 
         if(numFreeSpaceBox > 1)
-          out->error("'MiPr' brand: at most one top-level FreeSpaceBox is allowed.");
+          out->error("'MiPr' brand: at most one top-level FreeSpaceBox is allowed");
 
         // The primary image item conforms to a MIAF profile.
         if(!checkRuleSection(globalSpec, "7.", root))
-          out->error("'MiPr' brand: this file shall conform to MIAF (Section 7).");
+          out->error("'MiPr' brand: this file shall conform to MIAF (Section 7)");
 
         if(!checkRuleSection(globalSpec, "8.", root))
-          out->error("'MiPr' brand: this file shall conform to MIAF (Section 8).");
+          out->error("'MiPr' brand: this file shall conform to MIAF (Section 8)");
 
         found = false;
         uint32_t primaryItemId = -1;
@@ -260,7 +261,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& item : pitmSelfAndThmbs)
         {
           if(item.second < pitmSelfAndThmbs[primaryItemId])
-            out->error("'MiPr' brand: coded data offset thumbnail (item_ID=%u offset=%lld) precedes coded data for the primary item (item_ID=%u offset=%lld).",
+            out->error("'MiPr' brand: coded data offset thumbnail (item_ID=%u offset=%lld) precedes coded data for the primary item (item_ID=%u offset=%lld)",
                        item.first, item.second, primaryItemId, pitmFirstOffset);
 
           if(item.second < 128000)
@@ -359,23 +360,23 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
               numAuxTracks++;
               break;
             default:
-              out->error("'MiAn' brand: no other media tracks than video/image sequence, audio, and auxiliary allowed. Found \"%s\".", toString(hdlr).c_str());
+              out->error("'MiAn' brand: no other media tracks than video/image sequence, audio, and auxiliary allowed. Found \"%s\"", toString(hdlr).c_str());
               break;
             }
 
             if(numVideoTracks != 1)
-              out->error("'MiAn' brand: there shall be exactly one non-auxiliary video track or non-auxiliary image sequence track, found %d.", numVideoTracks);
+              out->error("'MiAn' brand: there shall be exactly one non-auxiliary video track or non-auxiliary image sequence track, found %d", numVideoTracks);
 
             if(numAudioTracks > 1)
-              out->error("'MiAn' brand: at most one audio track, found %d.", numAudioTracks);
+              out->error("'MiAn' brand: at most one audio track, found %d", numAudioTracks);
 
             if(numAuxTracks > 1 || !foundAlphaTrack)
-              out->error("'MiAn' brand: there shall be at most one auxiliary video track 'auxv' (found %d) (which shall be an alpha plane track: \"%s\").",
+              out->error("'MiAn' brand: there shall be at most one auxiliary video track 'auxv' (found %d) (which shall be an alpha plane track: \"%s\")",
                          numAuxTracks, foundAlphaTrack ? "true" : "false");
           }
 
           if(!checkRuleSection(globalSpec, "10.6", root))
-            out->error(" 'MiAn' brand: this file shall conform to the 'MiCm' brand.");
+            out->error(" 'MiAn' brand: this file shall conform to the 'MiCm' brand");
         }
       }
     },
@@ -407,7 +408,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
                 for(auto& field : metaChild.syms)
                   if(!strcmp(field.name, "handler_type"))
                     if(field.value != FOURCC("pict"))
-                      out->error("'MiBu' brand: the track shall be an image sequence ('pict') track.");
+                      out->error("'MiBu' brand: the track shall be an image sequence ('pict') track");
       }
     },
     {
@@ -435,10 +436,10 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
           return;
 
         if(!checkRuleSection(globalSpec, "10.6", root))
-          out->error("'MiAC' brand: this file shall conform to the 'MiCm' brand.");
+          out->error("'MiAC' brand: this file shall conform to the 'MiCm' brand");
 
         if(!checkRuleSection(globalSpec, "10.3", root))
-          out->error("'MiAC' brand: this file shall conform to the 'MiAn' brand.");
+          out->error("'MiAC' brand: this file shall conform to the 'MiAn' brand");
 
         {
           int alphaTrackNum = 0;
@@ -492,10 +493,10 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
                               trackHandlers.push_back((uint32_t)sym.value);
 
           if(trackHandlers.size() != 2)
-            out->error("'MiAC' brand: \"the non-auxiliary video track shall use the 'vide' handler\" implies 2 tracks but %d were found.", (int)trackHandlers.size());
+            out->error("'MiAC' brand: \"the non-auxiliary video track shall use the 'vide' handler\" implies 2 tracks but %d were found", (int)trackHandlers.size());
 
           if(!(trackHandlers[0] == FOURCC("auxv") && trackHandlers[1] == FOURCC("vide")) && !(trackHandlers[0] == FOURCC("vide") && trackHandlers[1] == FOURCC("auxv")))
-            out->error("'MiAC' brand: the non-auxiliary video track shall use the 'vide' handler, found handlers '%s' and '%s'.", toString(trackHandlers[0]).c_str(), toString(trackHandlers[1]).c_str());
+            out->error("'MiAC' brand: the non-auxiliary video track shall use the 'vide' handler, found handlers '%s' and '%s'", toString(trackHandlers[0]).c_str(), toString(trackHandlers[1]).c_str());
         }
 
         found = false;
@@ -507,7 +508,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
                 found = true;
 
         if(!found)
-          out->error("'MiAC' brand: the tracks are fragmented.");
+          out->error("'MiAC' brand: the tracks are fragmented");
       }
     },
     {
@@ -546,6 +547,38 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         // TODO: CMAF
       }
     },
+#if 0 // enable when confirmed this is what we want (changes all the rules and samples)
+    {
+      "Section 7.2.1.2\n"
+      "The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)\n"
+      "identifying conformance to this document (specified in Clause 10).",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> compatibleBrands;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                compatibleBrands.push_back(sym.value);
+
+        if(checkRuleSection(globalSpec, "10.2", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiPr")) == compatibleBrands.end())
+          out->error("File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "10.3", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiAn")) == compatibleBrands.end())
+          out->error("File conforms to 'MiAn' brand but 'MiAn' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "10.4", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiBu")) == compatibleBrands.end())
+          out->error("File conforms to 'MiBu' brand but 'MiBu' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "10.5", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiAC")) == compatibleBrands.end())
+          out->error("File conforms to 'MiAC' brand but 'MiAC' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "10.6", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiCm")) == compatibleBrands.end())
+          out->error("File conforms to 'MiCm' brand but 'MiCm' is not in the 'ftyp' compatible_brand list");
+      }
+    }
+#endif
   };
   return rulesBrands;
 }

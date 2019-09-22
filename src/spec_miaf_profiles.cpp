@@ -56,19 +56,19 @@ static void profileCommonChecks(const SpecDesc& spec, const char* profileName, u
     return;
 
   if(!checkRuleSection(spec, "8.2", root))
-    out->error("%s: self-containment (subclause 8.2) is not conform.", profileName);
+    out->error("%s: self-containment (subclause 8.2) is not conform", profileName);
 
   if(!checkRuleSection(spec, "8.3", root))
-    out->error("%s: single-layer (subclause 8.3) is not conform.", profileName);
+    out->error("%s: single-layer (subclause 8.3) is not conform", profileName);
 
   if(!checkRuleSection(spec, "8.4", root))
-    out->error("%s: grid-limit (subclause 8.4) is not conform.", profileName);
+    out->error("%s: grid-limit (subclause 8.4) is not conform", profileName);
 
   if(!checkRuleSection(spec, "8.5", root))
-    out->error("%s: single-track (subclause 8.5) is not conform.", profileName);
+    out->error("%s: single-track (subclause 8.5) is not conform", profileName);
 
   if(!checkRuleSection(spec, "8.7", root))
-    out->error("%s: matched-duration (subclause 8.7) is not conform.", profileName);
+    out->error("%s: matched-duration (subclause 8.7) is not conform", profileName);
 }
 
 const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
@@ -256,6 +256,35 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 #endif
       }
     },
+#if 0 // enable when codec rules are implemented
+    {
+      "Section 7.2.1.2\n"
+      "Files shall also carry a compatible brand to identify the MIAF profile to which\n"
+      "the file conforms, as defined in Annex A or external specifications.",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> compatibleBrands;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(strcmp(sym.name, "compatible_brand"))
+                compatibleBrands.push_back(sym.value);
+
+        if(checkRuleSection(globalSpec, "A.3", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHB")) == compatibleBrands.end())
+          out->error("File conforms to 'MiHB' brand but 'MiHB' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "A.4", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHA")) == compatibleBrands.end())
+          out->error("File conforms to 'MiHA' brand but 'MiHA' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "A.5", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHE")) == compatibleBrands.end())
+          out->error("File conforms to 'MiHE' brand but 'MiHE' is not in the 'ftyp' compatible_brand list");
+
+        if(!checkRuleSection(globalSpec, "A.6", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiAB")) == compatibleBrands.end())
+          out->error("File conforms to 'MiAB' brand but 'MiAB' is not in the 'ftyp' compatible_brand list");
+      }
+    }
+#endif
   };
 
   return rulesProfiles;
