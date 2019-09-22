@@ -1,6 +1,6 @@
-[Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found).
+[Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
 [Rule #5] construction_method=1 on a coded image item
 [Rule #23] All transformative properties shall be marked as essential
-[Rule #36] Filename has no extension.
+[Rule #36] Filename has no extension
 [Rule #36] File extension doesn't match: expecting one of 'heif hif ', got ''
 5 error(s).

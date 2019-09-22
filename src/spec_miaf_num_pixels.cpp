@@ -153,7 +153,7 @@ const std::initializer_list<RuleDesc> getRulesNumPixels()
                 foundLargerThmb = true;
 
                 if(numPixels > 200 * lastNumPixels)
-                  out->error("Next larger thumbnail has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200.",
+                  out->error("Next larger thumbnail has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200",
                              numPixels / lastNumPixels, lastNumPixels, d.itemRes[thmb].width, d.itemRes[thmb].height);
               }
 
@@ -166,7 +166,7 @@ const std::initializer_list<RuleDesc> getRulesNumPixels()
             uint64_t numPixels = d.itemRes[item.first].width * d.itemRes[item.first].height;
 
             if((lastNumPixels != 0) && (numPixels > 200 * lastNumPixels))
-              out->error("Next larger is a master image that has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200.",
+              out->error("Next larger is a master image that has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200",
                          numPixels / lastNumPixels, lastNumPixels, d.itemRes[item.first].width, d.itemRes[item.first].height);
           }
         }
@@ -214,16 +214,16 @@ const std::initializer_list<RuleDesc> getRulesNumPixels()
               for(auto& dimg : item.second)
               {
                 if(d.itemRes[dimg].width < 64)
-                  out->error("Tile widths shall be greater than or equal to 64. Found %d.", d.itemRes[dimg].width);
+                  out->error("Tile widths shall be greater than or equal to 64. Found %d", d.itemRes[dimg].width);
 
                 if(d.itemRes[dimg].height < 64)
-                  out->error("Tile heights shall be greater than or equal to 64. Found %d.", d.itemRes[dimg].height);
+                  out->error("Tile heights shall be greater than or equal to 64. Found %d", d.itemRes[dimg].height);
 
                 if(d.itemRes[dimg].width % 64)
-                  out->error("Tile widths should be a multiple of 64. Found %d.", d.itemRes[dimg].width);
+                  out->error("Tile widths should be a multiple of 64. Found %d", d.itemRes[dimg].width);
 
                 if(d.itemRes[dimg].height % 64)
-                  out->error("Tile heights should be a multiple of 64. Found %d.", d.itemRes[dimg].height);
+                  out->error("Tile heights should be a multiple of 64. Found %d", d.itemRes[dimg].height);
               }
             }
           }

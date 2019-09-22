@@ -7,7 +7,7 @@
 
 extern bool isVisualSampleEntry(uint32_t fourcc);
 
-constexpr bool boxEqual(Box const* a, Box const* b)
+static bool boxEqual(Box const* a, Box const* b)
 {
   if(a->fourcc != b->fourcc)
     return false;
@@ -64,7 +64,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
         if(box.fourcc == FOURCC("meta"))
         {
           if(box.children.empty() || box.children[0].fourcc != FOURCC("hdlr"))
-            out->error("The HandlerBox shall be the first contained box within the MetaBox.");
+            out->error("The HandlerBox shall be the first contained box within the MetaBox");
         }
     }
   },
@@ -105,7 +105,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
         };
 
       if(!foundMiaf || !foundMif1)
-        out->error("compatible_brands list shall contain 'miaf' (%s) and 'mif1' (%s).", strFound(foundMiaf), strFound(foundMif1));
+        out->error("compatible_brands list shall contain 'miaf' (%s) and 'mif1' (%s)", strFound(foundMiaf), strFound(foundMif1));
     },
   },
   {
@@ -120,10 +120,10 @@ std::initializer_list<RuleDesc> rulesGeneral =
           for(auto& metaChild : box.children)
           {
             if(metaChild.fourcc == FOURCC("xml "))
-              out->error("MetaBox shall not contain a XMLBox.");
+              out->error("MetaBox shall not contain a XMLBox");
 
             if(metaChild.fourcc == FOURCC("bxml"))
-              out->error("MetaBox shall not contain a BinaryXMLBox.");
+              out->error("MetaBox shall not contain a BinaryXMLBox");
           }
         }
       }
@@ -146,7 +146,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                   found = true;
 
                   if(field.value != FOURCC("pict"))
-                    out->error("The handler type for the MetaBox shall be 'pict'.");
+                    out->error("The handler type for the MetaBox shall be 'pict'");
                 }
 
       if(!found)
@@ -323,11 +323,11 @@ std::initializer_list<RuleDesc> rulesGeneral =
 
       auto checkIntegrity = [&] (const Box& clli) {
           if(clli.size != 12)
-            out->error("'clli' box size is %d bytes (expected 12).", clli.size);
+            out->error("'clli' box size is %d bytes (expected 12)", clli.size);
 
           for(auto& field : clli.syms)
             if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
-              out->error("Invalid 'clli' field \"%s\" (value=%lld).", field.name, field.value);
+              out->error("Invalid 'clli' field \"%s\" (value=%lld)", field.name, field.value);
         };
 
       // Look for valid 'clli' boxes
@@ -368,7 +368,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
               if(!ok)
               {
                 checkIntegrity(box);
-                out->error("Invalid 'clli' position (parent is '%s').", toString(parent.fourcc).c_str());
+                out->error("Invalid 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
               }
             }
             else
@@ -387,7 +387,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
 
       auto checkIntegrity = [&] (const Box& mdcv) {
           if(mdcv.size != 32)
-            out->error("'mdcv' box size is %d bytes (expected 32).", mdcv.size);
+            out->error("'mdcv' box size is %d bytes (expected 32)", mdcv.size);
 
           for(auto& field : mdcv.syms)
             if(strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
@@ -395,7 +395,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                && strcmp(field.name, "display_primaries_x_2") && strcmp(field.name, "display_primaries_y_2")
                && strcmp(field.name, "white_point_x") && strcmp(field.name, "white_point_y")
                && strcmp(field.name, "max_display_mastering_luminance") && strcmp(field.name, "min_display_mastering_luminance"))
-              out->error("Invalid 'mdcv' field \"%s\" (value=%lld).", field.name, field.value);
+              out->error("Invalid 'mdcv' field \"%s\" (value=%lld)", field.name, field.value);
         };
 
       // Look for valid 'mdcv' boxes
@@ -436,7 +436,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
               if(!ok)
               {
                 checkIntegrity(box);
-                out->error("Invalid 'mdcv' position (parent is '%s').", toString(parent.fourcc).c_str());
+                out->error("Invalid 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
               }
             }
             else

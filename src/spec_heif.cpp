@@ -66,7 +66,7 @@ static const SpecDesc spec =
                     found = true;
 
                     if(field.value != FOURCC("pict"))
-                      out->error("The handler type for the MetaBox shall be 'pict'.");
+                      out->error("The handler type for the MetaBox shall be 'pict'");
                   }
 
         if(!found)
