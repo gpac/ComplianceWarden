@@ -3,6 +3,8 @@
 #include <cstring>
 #include <map>
 
+bool isVisualSampleEntry(uint32_t fourcc);
+
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
 
 const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
@@ -299,8 +301,82 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         if(!found)
           return;
 
-        (void)out;
-        // TODO
+        {
+          std::vector<uint32_t> trackHandlers;
+          bool foundAlphaTrack = false;
+
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("mdia"))
+                    {
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                        {
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl"))
+                              for(auto& stblChild : minfChild.children)
+                                if(stblChild.fourcc == FOURCC("stsd"))
+                                  for(auto& stsdChild : stblChild.children)
+                                    if(isVisualSampleEntry(stsdChild.fourcc))
+                                      for(auto& sampleEntryChild : stsdChild.children)
+                                        if(sampleEntryChild.fourcc == FOURCC("auxi"))
+                                        {
+                                          std::string auxType;
+
+                                          for(auto& sym : sampleEntryChild.syms)
+                                            if(!strcmp(sym.name, "aux_track_type"))
+                                            {
+                                              auxType.push_back((char)sym.value);
+
+                                              if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                                                foundAlphaTrack = true;
+                                            }
+                                        }
+                        }
+                        else if(mdiaChild.fourcc == FOURCC("hdlr"))
+                          for(auto& sym : mdiaChild.syms)
+                            if(!strcmp(sym.name, "handler_type"))
+                              trackHandlers.push_back(sym.value);
+                    }
+
+          int numVideoTracks = 0, numAudioTracks = 0, numAuxTracks = 0;
+
+          for(auto hdlr : trackHandlers)
+          {
+            switch(hdlr)
+            {
+            case FOURCC("vide"):
+            case FOURCC("pict"):
+              numVideoTracks++;
+              break;
+            case FOURCC("soun"):
+              numAudioTracks++;
+              break;
+            case FOURCC("auxv"):
+              numAuxTracks++;
+              break;
+            default:
+              out->error("'MiAn' brand: no other media tracks than video/image sequence, audio, and auxiliary allowed. Found \"%s\".", toString(hdlr).c_str());
+              break;
+            }
+
+            if(numVideoTracks != 1)
+              out->error("'MiAn' brand: there shall be exactly one non-auxiliary video track or non-auxiliary image sequence track, found %d.", numVideoTracks);
+
+            if(numAudioTracks > 1)
+              out->error("'MiAn' brand: at most one audio track, found %d.", numAudioTracks);
+
+            if(numAuxTracks > 1 || !foundAlphaTrack)
+              out->error("'MiAn' brand: there shall be at most one auxiliary video track 'auxv' (found %d) (which shall be an alpha plane track: \"%s\").",
+                         numAuxTracks, foundAlphaTrack ? "true" : "false");
+          }
+
+          if(!checkRuleSection(globalSpec, "10.6", root))
+            out->error(" 'MiAn' brand: this file shall conform to the 'MiCm' brand.");
+        }
       }
     },
     {
@@ -364,9 +440,63 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         if(!checkRuleSection(globalSpec, "10.3", root))
           out->error("'MiAC' brand: this file shall conform to the 'MiAn' brand.");
 
-        // TODO:
-        out->error("'MiAC' brand: t>here is exactly one auxiliary alpha video track.");
-        out->error("'MiAC' brand: the non-auxiliary video track uses the 'vide' handler, and is not pre-multiplied.");
+        {
+          int alphaTrackNum = 0;
+
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl"))
+                              for(auto& stblChild : minfChild.children)
+                                if(stblChild.fourcc == FOURCC("stsd"))
+                                  for(auto& stsdChild : stblChild.children)
+                                    if(isVisualSampleEntry(stsdChild.fourcc))
+                                      for(auto& sampleEntryChild : stsdChild.children)
+                                        if(sampleEntryChild.fourcc == FOURCC("auxi"))
+                                        {
+                                          std::string auxType;
+
+                                          for(auto& sym : sampleEntryChild.syms)
+                                            if(!strcmp(sym.name, "aux_track_type"))
+                                            {
+                                              auxType.push_back((char)sym.value);
+
+                                              if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                                                alphaTrackNum++;
+                                            }
+                                        }
+
+          if(alphaTrackNum != 1)
+            out->error("'MiAC' brand: there shall be exactly one auxiliary alpha video track, found %d.", alphaTrackNum);
+        }
+
+        {
+          std::vector<uint32_t /*hdlr*/> trackHandlers;
+
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("hdlr"))
+                          for(auto& sym : mdiaChild.syms)
+                            if(!strcmp(sym.name, "handler_type"))
+                              trackHandlers.push_back((uint32_t)sym.value);
+
+          if(trackHandlers.size() != 2)
+            out->error("'MiAC' brand: \"the non-auxiliary video track shall use the 'vide' handler\" implies 2 tracks but %d were found.", (int)trackHandlers.size());
+
+          if(!(trackHandlers[0] == FOURCC("auxv") && trackHandlers[1] == FOURCC("vide")) && !(trackHandlers[0] == FOURCC("vide") && trackHandlers[1] == FOURCC("auxv")))
+            out->error("'MiAC' brand: the non-auxiliary video track shall use the 'vide' handler, found handlers '%s' and '%s'.", toString(trackHandlers[0]).c_str(), toString(trackHandlers[1]).c_str());
+        }
 
         found = false;
 
@@ -412,6 +542,8 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
 
         if(!found)
           return;
+
+        // TODO: CMAF
       }
     },
   };
