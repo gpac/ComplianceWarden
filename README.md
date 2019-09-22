@@ -1,16 +1,14 @@
 # ComplianceWarden : an pluggable MP4 compliance checker
 
-![](doc/screenshot.png)
+## Dependencies
 
-# Dependencies
-
-## Build dependencies
+### Build dependencies
 
  - GNU Bash
- - GNU g++
+ - GNU g++ version 9+
  - GNU make
 
-## Code formatter (optional)
+### Code formatter (optional)
 
 Install [uncrustify](https://github.com/uncrustify/uncrustify)
 
@@ -23,15 +21,15 @@ $ make -j $(nproc)
 $ sudo make install
 ```
 
-# Building
+## Building
 
-## Native build
+### Native build
 
 ```
 $ make
 ```
 
-## Cross-compiling
+### Cross-compiling
 
 Simply override CXX to use your target toolchain.
 
@@ -42,17 +40,17 @@ $ export CXX=x86_64-w64-mingw32-g++
 $ make
 ```
 
-## Emscripten (WASM)
+### Emscripten (WASM)
 
 ```
-em++ -std=c++14 src/app_cw.cpp src/common_boxes.cpp src/spec_dummy.cpp src/spec_miaf.cpp src/spec_heif.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC']"  -s FORCE_FILESYSTEM=1 --pre-js wasm-fs-pre.js
+em++ -std=c++14 src/app_cw.cpp src/utils.cpp src/common_boxes.cpp src/spec_dummy.cpp src/spec_heif.cpp src/spec_miaf.cpp src/spec_miaf_audio.cpp src/spec_miaf_brands.cpp src/spec_miaf_derivations.cpp src/spec_miaf_num_pixels.cpp src/spec_miaf_profiles.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC']"  -s FORCE_FILESYSTEM=1 --pre-js wasm-fs-pre.js
 ```
 
 See https://rbouqueau.github.io/ComplianceWarden-wasm/ for a demo.
 
 The HTML integration source code is hosted at https://github.com/rbouqueau/ComplianceWarden-wasm.
 
-# Code architecture
+## Code architecture
 
 ```
 check                      Top-level full-test script. Reformats + builds + tests.
@@ -67,19 +65,23 @@ scripts/cov.sh             Coverage script. Generates a coverage report reflecti
 scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ```
 
-# Testing
+## Testing
 
 ```
 ./check
 ```
 
-# Useful information
+## Useful information
 
-## Links
+### Links
 
  - ISOBMFF specification: (TODO: add link)
  - MP4 specification: (TODO: add link)
  - MIAF specification: (TODO: add link)
  - HEIF specification: (TODO: add link)
  - CMAF specification: (TODO: add link)
+
+# Acknowledgments
+
+This work was initiated as part of the MPEG MIAF conformance software.
 
