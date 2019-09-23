@@ -5,7 +5,7 @@
 ### Build dependencies
 
  - GNU Bash
- - GNU g++ version 9+
+ - GNU g++ version 7+
  - GNU make
 
 ### Code formatter (optional)
@@ -25,8 +25,14 @@ $ sudo make install
 
 ### Native build
 
+Linux, Windows:
 ```
 $ make
+```
+
+MacOS X and BSD-likes:
+```
+$ CXX=scripts/darwin.sh make
 ```
 
 ### Cross-compiling
