@@ -44,6 +44,7 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
       vprintf(fmt, args);
       va_end(args);
       printf("\n");
+      fflush(stdout);
       ++errorCount;
     }
 
@@ -63,6 +64,8 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     fprintf(stdout, "%d error(s).\n", out.errorCount);
   else
     fprintf(stdout, "No errors.\n");
+
+  fflush(stdout);
 }
 
 std::vector<SpecDesc const*>& g_allSpecs()
@@ -84,6 +87,7 @@ SpecDesc const* specFind(const char* name)
       return spec;
 
   fprintf(stderr, "Spec '%s' not found\n", name);
+  fflush(stderr);
   exit(1);
 }
 
@@ -98,6 +102,8 @@ void specListRules(const SpecDesc* spec)
     fprintf(stdout, "Rule #%04d: %s\n\n", ruleIdx, r.caption);
     ruleIdx++;
   }
+
+  fflush(stdout);
 }
 
 void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
