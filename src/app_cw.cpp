@@ -115,7 +115,10 @@ void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
   topReader.spec = spec;
 
   {
-    auto fnPtr = filename;
+    // remove path
+    auto fnPos = std::string(filename).find_last_of('/');
+    auto fn = std::string(filename).substr(fnPos + 1);
+    auto fnPtr = fn.c_str();
 
     while(*fnPtr)
     {

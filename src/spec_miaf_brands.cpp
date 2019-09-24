@@ -30,7 +30,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
 
         if(extPos > filename.length())
         {
-          out->error("Filename has no extension");
+          out->error("Filename \"%s\" has no extension", filename.c_str());
           extPos = filename.length() - 1;
         }
 
@@ -91,7 +91,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         }
 
         if(!found)
-          out->error("File extension doesn't match: expecting one of '%s', got '%s'", expected.c_str(), ext.c_str());
+          out->error("File extension for \"%s\" doesn't match: expecting one of '%s', got '%s'", filename.c_str(), expected.c_str(), ext.c_str());
       }
     },
     {
