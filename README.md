@@ -1,4 +1,4 @@
-# ComplianceWarden : an pluggable MP4 compliance checker
+# ComplianceWarden : a pluggable MP4 compliance checker
 
 ## Dependencies
 
