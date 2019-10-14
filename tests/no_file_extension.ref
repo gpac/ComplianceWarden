@@ -11,7 +11,12 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 Error rules description:
 
 [Rule #2] Section 7.2.1.2
-The FileTypeBox shall contain, in the compatible_brands list, the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) [and] brand(s) identifying conformance to this document (specified in 10).[...]Files conforming to the general restrictions in clause 7 shall include the brand 'miaf' in the compatible_brands in the FileTypeBox.
+The FileTypeBox shall contain, in the compatible_brands list,
+the following (in any order): 'mif1' (specified in ISO/IEC 23008-12)
+[and] brand(s) identifying conformance to this document (specified in 10).
+[...]
+Files conforming to the general restrictions in clause 7 shall include
+the brand 'miaf' in the compatible_brands in the FileTypeBox.
 
 [Rule #5] Section 7.2.1.7
 construction_method shall be equal to 0 for MIAF image items that are coded image items.

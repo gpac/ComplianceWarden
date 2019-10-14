@@ -70,11 +70,11 @@ std::initializer_list<RuleDesc> rulesGeneral =
   },
   {
     "Section 7.2.1.2\n"
-    "The FileTypeBox shall contain, in the compatible_brands list, "
-    "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
-    "[and] brand(s) identifying conformance to this document (specified in 10)."
-    "[...]"
-    "Files conforming to the general restrictions in clause 7 shall include "
+    "The FileTypeBox shall contain, in the compatible_brands list,\n"
+    "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12)\n"
+    "[and] brand(s) identifying conformance to this document (specified in 10).\n"
+    "[...]\n"
+    "Files conforming to the general restrictions in clause 7 shall include\n"
     "the brand 'miaf' in the compatible_brands in the FileTypeBox.",
     [] (Box const& root, IReport* out)
     {
