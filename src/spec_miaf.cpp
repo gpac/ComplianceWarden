@@ -1030,7 +1030,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
 
       for(auto& t : tracks)
       {
-        auto getMediaTimes = [findTrackId] (Box const& root, uint32_t trackId) -> std::vector<Box const*> {
+        auto getMediaTimes = [findTrackId] (Box const& root, uint32_t fourcc, uint32_t trackId) -> std::vector<Box const*> {
             std::vector<Box const*> mediaTimes;
 
             for(auto& box : root.children)
@@ -1050,15 +1050,18 @@ std::initializer_list<RuleDesc> rulesGeneral =
                             for(auto& minfChild : mdiaChild.children)
                               if(minfChild.fourcc == FOURCC("stbl"))
                                 for(auto& stblChild : minfChild.children)
-                                  if(stblChild.fourcc == FOURCC("stts"))
+                                  if(stblChild.fourcc == fourcc)
                                     mediaTimes.push_back(&stblChild);
                     }
 
             return mediaTimes;
           };
 
-        auto mediaTimesMaster = getMediaTimes(root, t.videoTrackId);
-        auto mediaTimesAlpha = getMediaTimes(root, t.alphaPlaneTrackId);
+        auto decodingTimesMaster = getMediaTimes(root, FOURCC("stts"), t.videoTrackId);
+        auto decodingTimesAlpha = getMediaTimes(root, FOURCC("stts"), t.alphaPlaneTrackId);
+
+        auto compositionOffsetsMaster = getMediaTimes(root, FOURCC("ctts"), t.videoTrackId);
+        auto compositionOffsetsAlpha = getMediaTimes(root, FOURCC("ctts"), t.alphaPlaneTrackId);
 
         struct EditListInfo
         {
@@ -1105,7 +1108,9 @@ std::initializer_list<RuleDesc> rulesGeneral =
             return true;
           };
 
-        if(!compareBoxVector(mediaTimesMaster, mediaTimesAlpha) || !compareBoxVector(editListsMaster, editListsAlpha))
+        if(!compareBoxVector(decodingTimesMaster, decodingTimesAlpha) ||
+           !compareBoxVector(compositionOffsetsMaster, compositionOffsetsAlpha) ||
+           !compareBoxVector(editListsMaster, editListsAlpha))
           out->error("Composition times for trackId=%u different from alpha plane trackId=%u", t.videoTrackId, t.alphaPlaneTrackId);
       }
     }
