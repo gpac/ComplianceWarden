@@ -53,17 +53,52 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
   };
 
   Report out;
+  std::vector<int> ruleIdxError;
+
+  auto printErrorRules = [&] () {
+      fprintf(stdout, "\nSpecification description: %s\n", spec->caption);
+      fprintf(stdout, "\nError rules description:\n");
+
+      int ruleIdx = 0, errorIdx = 0;
+
+      for(auto& rule : spec->rules)
+      {
+        while(ruleIdx > ruleIdxError[errorIdx])
+        {
+          errorIdx++;
+
+          if(errorIdx == (int)ruleIdxError.size())
+            return;
+        }
+
+        if(ruleIdxError[errorIdx] == ruleIdx)
+          fprintf(stdout, "\n[Rule #%d] %s\n", ruleIdx, rule.caption);
+
+        ruleIdx++;
+      }
+    };
 
   for(auto& rule : spec->rules)
   {
+    auto curErrorCount = out.errorCount;
+
     rule.check(file, &out);
+
+    if(curErrorCount != out.errorCount)
+      ruleIdxError.push_back(out.ruleIdx);
+
     out.ruleIdx++;
   }
 
-  if(out.errorCount)
+  if(!ruleIdxError.empty())
+  {
     fprintf(stdout, "%d error(s).\n", out.errorCount);
+    printErrorRules();
+  }
   else
+  {
     fprintf(stdout, "No errors.\n");
+  }
 
   fflush(stdout);
 }

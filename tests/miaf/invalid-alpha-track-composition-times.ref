@@ -1,2 +1,11 @@
 [Rule #22] Composition times for trackId=1 different from alpha plane trackId=2
 1 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #22] Section 7.4.6
+for every sample of the master image sequence or video track, there shall be a
+sample of the alpha plane track with the same composition time.

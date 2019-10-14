@@ -3,3 +3,21 @@
 [Rule #7] PrimaryItemBox is required
 [Rule #8] MIAF missing Image spatial extents property
 4 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #0] Section 7.2.1.4:
+The file-level MetaBox shall always be present.
+The MetaBox shall be present at the file-level
+
+[Rule #4] Section 7.2.1.5
+The handler type for the MetaBox shall be 'pict'.
+
+[Rule #7] Section 7.3.2
+The primary item shall be a MIAF master image item.
+
+[Rule #8] Section 7.3.6.3
+Every image item shall be associated with a Image spatial extents property

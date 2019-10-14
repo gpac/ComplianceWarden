@@ -1,3 +1,11 @@
 [Rule #7] MIAF master image (item_ID=AABB) shall not be a thumbnail image
 [Rule #7] MIAF master image (item_ID=AABB) shall not be a auxiliary image
 2 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #7] Section 7.3.2
+The primary item shall be a MIAF master image item.

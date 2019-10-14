@@ -1,2 +1,9 @@
 [Rule #6] The primary item shall not be a hidden image item
 1 error(s).
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+Error rules description:
+
+[Rule #6] Section 6.4.2
+The primary item shall not be a hidden image item

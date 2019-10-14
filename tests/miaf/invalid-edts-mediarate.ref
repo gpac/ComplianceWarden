@@ -2,3 +2,16 @@
 [Rule #17] 'elst' media rate shall be -1 or 1, found 2
 [Rule #18] Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
 3 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #17] Section 8.6
+the media_rate shall take either a value greater than 0 and up to and
+including 1 (forward play), or minus 1 (normal speed reverse play)
+
+[Rule #18] Section 8.6
+when there are two 'media edits' one shall specify forward playback and the other reverse
+over the same media time-range

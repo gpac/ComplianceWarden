@@ -1,2 +1,12 @@
 [Rule #21] dref content is not in the same file
 1 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #21] Section 8.2.2
+External data references in the DataReferenceBox shall not be used for image
+sequences or videos that are required, conditionally required, or explicitly
+permitted by this document, i.e. those sequences/videos shall be self-contained

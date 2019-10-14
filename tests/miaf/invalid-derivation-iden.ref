@@ -1,3 +1,21 @@
 [Rule #30] An identity derivation shall not be derived immediately from another identity (item_ID=1)
 [Rule #31] Wrong derivation at index 1: expected "grid", got "iden"
 2 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #30] Section 7.3.9
+An identity derivation shall not be derived immediately from another identity
+derivation
+
+[Rule #31] Section 7.3.11.1
+If derivations occur, they shall be in this order:
+- mandatory coded image(s)
+- optional identity derivation (subclause 7.3.11.2)
+- optional grid (subclause 7.3.11.4)
+- optional identity derivation (subclause 7.3.11.2)
+- optional overlay (subclause 7.3.11.3)
+- optional identity derivation (subclause 7.3.11.2)

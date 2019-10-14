@@ -120,7 +120,7 @@ static const SpecDesc spec =
                 }
 
         if(!found)
-          out->error("MIAF missing Image spatial extents property");
+          out->error("HEIF missing Image spatial extents property");
       },
     },
     {

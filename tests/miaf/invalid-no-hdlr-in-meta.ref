@@ -1,3 +1,14 @@
 [Rule #1] The HandlerBox shall be the first contained box within the MetaBox
 [Rule #4] 'hdlr' not found in MetaBox
 2 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #1] Section 7.2.1.1
+The HandlerBox shall be the first contained box within the MetaBox.
+
+[Rule #4] Section 7.2.1.5
+The handler type for the MetaBox shall be 'pict'.

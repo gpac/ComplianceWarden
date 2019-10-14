@@ -1,3 +1,16 @@
 [Rule #13] All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
 [Rule #14] All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
 2 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #13] Section 8.7
+If multiple tracks are present in the file, they shall have the same duration,
+and edit lists may be needed to achieve this.
+
+[Rule #14] Section 7.4.5
+When present, audio tracks shall have the same duration as the video or image
+sequence track

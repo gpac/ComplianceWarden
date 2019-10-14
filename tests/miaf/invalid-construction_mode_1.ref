@@ -1,2 +1,11 @@
 [Rule #5] construction_method=1 on a coded image item
 1 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #5] Section 7.2.1.7
+construction_method shall be equal to 0 for MIAF image items that are coded image items.
+construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.

@@ -4,3 +4,26 @@
 [Rule #36] Filename "heif_no_ext" has no extension
 [Rule #36] File extension for "heif_no_ext" doesn't match: expecting one of 'heif hif ', got ''
 5 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #2] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list, the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) [and] brand(s) identifying conformance to this document (specified in 10).[...]Files conforming to the general restrictions in clause 7 shall include the brand 'miaf' in the compatible_brands in the FileTypeBox.
+
+[Rule #5] Section 7.2.1.7
+construction_method shall be equal to 0 for MIAF image items that are coded image items.
+construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.
+
+[Rule #23] Section 7.3.9
+All transformative properties associated with coded and derived images required
+or conditionally required by this document shall be marked as essential, and
+shall be from the set that are permitted by this document or the applicable
+profile. No other essential transformative property shall be associated with
+such images.
+
+[Rule #36] Section 10.1
+A MIAF file shall use the filename extensions specified by HEIF to identify the
+presence of specific image coding formats
