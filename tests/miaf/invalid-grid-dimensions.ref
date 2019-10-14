@@ -1,24 +1,13 @@
-[Rule #31] Wrong derivation at index 0: expected "iden", got "grid"
-[Rule #31] Wrong derivation at index 1: expected "grid", got "av01"
 [Rule #33] Tile widths shall be greater than or equal to 64. Found 10
 [Rule #33] Tile heights shall be greater than or equal to 64. Found 10
 [Rule #33] Tile widths should be a multiple of 64. Found 10
 [Rule #33] Tile heights should be a multiple of 64. Found 10
-6 error(s).
+4 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
-
-[Rule #31] Section 7.3.11.1
-If derivations occur, they shall be in this order:
-- mandatory coded image(s)
-- optional identity derivation (subclause 7.3.11.2)
-- optional grid (subclause 7.3.11.4)
-- optional identity derivation (subclause 7.3.11.2)
-- optional overlay (subclause 7.3.11.3)
-- optional identity derivation (subclause 7.3.11.2)
 
 [Rule #33] Section 7.3.11.4.2
 Any grid image in a MIAF file shall also conform to the following constraints:

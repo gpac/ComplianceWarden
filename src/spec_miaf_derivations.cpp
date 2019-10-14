@@ -36,6 +36,18 @@ struct DerivationGraph
     return true;
   }
 
+  std::string display(const std::list<uint32_t>& visited)
+  {
+    std::string str, sep = " -> ";
+
+    for(auto rit = visited.rbegin(); rit != visited.rend(); ++rit)
+      str += itemTypes[*rit] + " (" + std::to_string(*rit) + ")" + sep;
+
+    str.erase(str.length() - sep.length());
+
+    return str;
+  }
+
   struct Connection
   {
     uint32_t src, dst;
@@ -127,12 +139,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
           };
 
         auto onError = [&] (const std::list<uint32_t>& visited) {
-            std::string str = "init";
-
-            for(auto v : visited)
-              str += " -> " + graph.itemTypes[v] + " (" + std::to_string(v) + ")";
-
-            out->error("Detected error in derivations: %s", str.c_str());
+            out->error("Detected error in derivations: %s", graph.display(visited).c_str());
           };
 
         for(auto& c : graph.connections)
@@ -157,29 +164,46 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
       {
         auto graph = buildDerivationGraph(root);
 
+        auto onError = [&] (const std::list<uint32_t>& visited) {
+            out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+          };
+
         auto check = [&] (const std::list<uint32_t>& visited) {
             std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
+            auto const numDerivations = (int)visited.size() - 1; // ignore the origin (stored as the termnal)
 
-            if(visited.size() > expected.size())
+            if(numDerivations > (int)expected.size())
             {
-              out->error("Too many derivations: %d (expected %d)", visited.size(), expected.size());
+              out->error("Too many derivations: %d (expected %d)", numDerivations, expected.size());
               return;
             }
 
-            auto visitedIt = visited.begin();
+            auto visitedIt = ++visited.begin(); // origin is a coded image: skip it
+            bool error = false;
 
-            for(int i = 0; i < (int)visited.size(); ++i, ++visitedIt)
-              if(graph.itemTypes[*visitedIt] != expected[i])
-                out->error("Wrong derivation at index %d: expected \"%s\", got \"%s\"", i, expected[i].c_str(), graph.itemTypes[*visitedIt].c_str());
-          };
+            for(int i = 1, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
+            {
+              // iterate over optional transformations
+              for(;;)
+              {
+                if(graph.itemTypes[*visitedIt] == expected[expectIdx])
+                  break;
 
-        auto onError = [&] (const std::list<uint32_t>& visited) {
-            std::string str = "init";
+                expectIdx++;
 
-            for(auto v : visited)
-              str += " -> " + graph.itemTypes[v] + " (" + std::to_string(v) + ")";
+                if(expectIdx == (int)expected.size())
+                {
+                  error = true;
+                  break;
+                }
+              }
 
-            out->error("Detected error in derivations: %s", str.c_str());
+              if(error)
+                break;
+            }
+
+            if(error)
+              onError(visited);
           };
 
         for(auto& c : graph.connections)
