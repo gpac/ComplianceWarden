@@ -9,7 +9,7 @@
 struct DerivationGraph
 {
   // returns false on cyclic
-  bool visit(uint32_t itemIdSrc, std::list<uint32_t> visited, std::function<void(std::list<uint32_t> &)> onError, std::function<void(std::list<uint32_t> &)> onTerminal)
+  bool visit(uint32_t itemIdSrc, std::list<uint32_t> visited, std::function<void(const std::list<uint32_t> &)> onError, std::function<void(const std::list<uint32_t> &)> onTerminal)
   {
     int newVisits = 0;
     visited.push_back(itemIdSrc);
@@ -114,7 +114,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
       {
         auto graph = buildDerivationGraph(root);
 
-        auto check = [&] (std::list<uint32_t>& visited) {
+        auto check = [&] (const std::list<uint32_t>& visited) {
             std::string last;
 
             for(auto v : visited)
@@ -126,7 +126,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
             }
           };
 
-        auto onError = [&] (std::list<uint32_t>& visited) {
+        auto onError = [&] (const std::list<uint32_t>& visited) {
             std::string str = "init";
 
             for(auto v : visited)
@@ -157,7 +157,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
       {
         auto graph = buildDerivationGraph(root);
 
-        auto check = [&] (std::list<uint32_t>& visited) {
+        auto check = [&] (const std::list<uint32_t>& visited) {
             std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
 
             if(visited.size() > expected.size())
@@ -173,7 +173,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
                 out->error("Wrong derivation at index %d: expected \"%s\", got \"%s\"", i, expected[i].c_str(), graph.itemTypes[*visitedIt].c_str());
           };
 
-        auto onError = [&] (std::list<uint32_t>& visited) {
+        auto onError = [&] (const std::list<uint32_t>& visited) {
             std::string str = "init";
 
             for(auto v : visited)
