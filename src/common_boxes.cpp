@@ -215,11 +215,12 @@ void processAudioSpecificInfoConfig(IReader* br, int size)
 
   // GetAudioObjectType()
   auto audioObjectType = br->sym("audioObjectType", 5);
-  readBits = 5;
+  readBits += 5;
 
   if(audioObjectType == 31)
   {
     br->sym("audioObjectTypeExt", 5); // audioObjectType = 32 + audioObjectTypeExt
+    readBits += 5;
   }
 
   // Skip
