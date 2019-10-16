@@ -141,8 +141,26 @@ void specListRules(const SpecDesc* spec)
   fflush(stdout);
 }
 
+void probeIsobmff(uint8_t* data, size_t size)
+{
+  ENSURE(size >= 8, "ISOBMFF probing: not enough bytes (%d bytes available). Aborting.", (int)size);
+
+  uint32_t boxSize = 0;
+
+  for(auto i = 0; i < 4; ++i)
+    boxSize = (boxSize << 8) + data[i];
+
+  ENSURE(boxSize >= 8, "ISOBMFF probing: first box size too small (%d bytes). Aborting.", (int)boxSize);
+  ENSURE(boxSize <= size, "ISOBMFF probing: first box size too big (%d bytes when file size is %d bytes). Aborting.", (int)boxSize, size);
+
+  for(auto i = 4; i < 7; ++i)
+    ENSURE(isalpha(data[i]) || isdigit(data[i]) || isspace(data[i]), "Box type is neither an alphanumerics or a space (box[%d]='%c'(%d)). Aborting.", i, (char)data[i], (int)data[i]);
+}
+
 void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
 {
+  probeIsobmff(data, size);
+
   BoxReader topReader;
   topReader.br = { data, (int)size };
   topReader.myBox.size = size;
