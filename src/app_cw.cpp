@@ -154,7 +154,7 @@ void probeIsobmff(uint8_t* data, size_t size)
   ENSURE(boxSize <= size, "ISOBMFF probing: first box size too big (%d bytes when file size is %d bytes). Aborting.", (int)boxSize, size);
 
   for(auto i = 4; i < 7; ++i)
-    ENSURE(isalpha(data[i]) || isdigit(data[i]) || isspace(data[i]), "Box type is neither an alphanumerics or a space (box[%d]='%c'(%d)). Aborting.", i, (char)data[i], (int)data[i]);
+    ENSURE(isalpha(data[i]) || isdigit(data[i]) || isspace(data[i]), "Box type is neither an alphanumerics nor a space (box[%d]=\"%c\" (%d)). Aborting.", i, (char)data[i], (int)data[i]);
 }
 
 void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
