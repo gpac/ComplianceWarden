@@ -1,8 +1,7 @@
 [Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
 [Rule #5] construction_method=1 on a coded image item
-[Rule #23] All transformative properties shall be marked as essential
 [Rule #36] File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
-4 error(s).
+3 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
@@ -20,13 +19,6 @@ the brand 'miaf' in the compatible_brands in the FileTypeBox.
 [Rule #5] Section 7.2.1.7
 construction_method shall be equal to 0 for MIAF image items that are coded image items.
 construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.
-
-[Rule #23] Section 7.3.9
-All transformative properties associated with coded and derived images required
-or conditionally required by this document shall be marked as essential, and
-shall be from the set that are permitted by this document or the applicable
-profile. No other essential transformative property shall be associated with
-such images.
 
 [Rule #36] Section 10.1
 A MIAF file shall use the filename extensions specified by HEIF to identify the

@@ -1124,17 +1124,47 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "such images.",
     [] (Box const& root, IReport* out)
     {
-      // TODO: know what a "transformative property" is
+      std::vector<uint32_t> properties { 0 }; // index is 1-based
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipco"))
+                  for(auto& ipcoChild : iprpChild.children)
+                    properties.push_back(ipcoChild.fourcc);
+
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
           for(auto& metaChild : box.children)
             if(metaChild.fourcc == FOURCC("iprp"))
               for(auto& iprpChild : metaChild.children)
                 if(iprpChild.fourcc == FOURCC("ipma"))
+                {
+                  bool essential = false;
+                  uint32_t itemId;
+
                   for(auto& sym : iprpChild.syms)
-                    if(!strcmp(sym.name, "essential"))
-                      if(sym.value == 0)
-                        out->error("All transformative properties shall be marked as essential");
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                      itemId = sym.value;
+                    else if(!strcmp(sym.name, "essential"))
+                      essential = sym.value;
+                    else if(!strcmp(sym.name, "property_index"))
+                    {
+                      if(sym.value > (int64_t)properties.size())
+                      {
+                        out->error("property_index \"%lld\" doesn't exist.");
+                        break;
+                      }
+
+                      if(properties[sym.value] == FOURCC("clap") || properties[sym.value] == FOURCC("irot") || properties[sym.value] == FOURCC("imir"))
+                        if(!essential)
+                          out->error("Transformative property \"%s\" shall be marked as essential (item_ID=%u)", toString(properties[sym.value]).c_str(), itemId);
+                    }
+                  }
+                }
     }
   },
 };
