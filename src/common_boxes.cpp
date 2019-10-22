@@ -122,6 +122,60 @@ void parseStsd(IReader* br)
     br->box();
 }
 
+void parseAvcC(IReader* br)
+{
+  br->sym("configurationVersion", 8);
+  auto AVCProfileIndication = br->sym("AVCProfileIndication", 8);
+  br->sym("profile_compatibility", 8);
+  br->sym("AVCLevelIndication", 8);
+  br->sym("reserved7", 6);
+  br->sym("lengthSizeMinusOne", 2);
+
+  br->sym("reserved8", 3);
+  auto numOfSequenceParameterSets = br->sym("numOfSequenceParameterSets", 5);
+
+  for(auto i = 0; i < numOfSequenceParameterSets; i++)
+  {
+    auto sequenceParameterSetLength = br->sym("sequenceParameterSetLength", 16);
+
+    while(sequenceParameterSetLength--)
+      br->sym("sequenceParameterSet", 8);
+  }
+
+  auto numOfPictureParameterSets = br->sym("numOfPictureParameterSets", 8);
+
+  for(auto i = 0; i < numOfPictureParameterSets; i++)
+  {
+    auto pictureParameterSetLength = br->sym("pictureParameterSetLength", 16);
+
+    while(pictureParameterSetLength--)
+      br->sym("pictureParameterSet", 8);
+  }
+
+  if(AVCProfileIndication != 66 && AVCProfileIndication != 77 && AVCProfileIndication != 88)
+  {
+    br->sym("reserved9", 6);
+    br->sym("chroma_format", 2);
+    br->sym("reserved10", 5);
+    br->sym("bit_depth_luma_minus8", 3);
+    br->sym("reserved11", 5);
+    br->sym("bit_depth_chroma_minus8", 3);
+
+    auto numOfSequenceParameterSetExt = br->sym("numOfSequenceParameterSetExt", 8);
+
+    for(auto i = 0; i < numOfSequenceParameterSetExt; i++)
+    {
+      auto sequenceParameterSetExtLength = br->sym("sequenceParameterSetExtLength", 16);
+
+      while(sequenceParameterSetExtLength--)
+        br->sym("", 8);
+    }
+  }
+
+  while(!br->empty())
+    br->box(); // clap, pasp //option MPEG4ExtensionDescriptorsBox-es
+}
+
 void processEsDescriptor(IReader* br);
 void processDecoderConfigDescriptor(IReader* br);
 void processAudioSpecificInfoConfig(IReader* br, int size);
@@ -689,6 +743,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseElst;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("avcC"):
+    return &parseAvcC;
   case FOURCC("pict"):
   case FOURCC("thmb"):
   case FOURCC("auxl"):
