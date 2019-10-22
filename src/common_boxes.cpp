@@ -173,7 +173,53 @@ void parseAvcC(IReader* br)
   }
 
   while(!br->empty())
-    br->box(); // clap, pasp //option MPEG4ExtensionDescriptorsBox-es
+    br->box(); // optional MPEG4ExtensionDescriptorsBox-es
+}
+
+void parseHvcC(IReader* br)
+{
+  br->sym("configurationVersion", 8);
+  br->sym("general_profile_space", 2);
+  br->sym("general_tier_flag", 1);
+  br->sym("general_profile_idc", 5);
+  br->sym("general_profile_compatibility_flags", 32);
+  br->sym("general_constraint_indicator_flags", 48);
+  br->sym("general_level_idc", 8);
+  br->sym("reserved", 4);
+  br->sym("min_spatial_segmentation_idc", 12);
+  br->sym("reserved", 6);
+  br->sym("parallelismType", 2);
+  br->sym("reserved", 6);
+  br->sym("chroma_format_idc", 2);
+  br->sym("reserved", 5);
+  br->sym("bit_depth_luma_minus8", 3);
+  br->sym("reserved", 5);
+  br->sym("bit_depth_chroma_minus8", 3);
+  br->sym("avgFrameRate", 16);
+  br->sym("constantFrameRate", 2);
+  br->sym("numTemporalLayers", 3);
+  br->sym("temporalIdNested", 1);
+  br->sym("lengthSizeMinusOne", 2);
+  auto numOfArrays = br->sym("numOfArrays", 8);
+  for(int j = 0; j < numOfArrays; j++)
+
+  {
+    br->sym("array_completeness", 1);
+    br->sym("reserved", 1);
+    br->sym("NAL_unit_type", 6);
+    auto numNalus = br->sym("numNalus", 16);
+
+    for(int i = 0; i < numNalus; i++)
+    {
+      auto nalUnitLength = br->sym("nalUnitLength", 16);
+
+      while(nalUnitLength--)
+        br->sym("nalUnit", 8);
+    }
+  }
+
+  while(!br->empty())
+    br->box(); // optional MPEG4ExtensionDescriptorsBox-es
 }
 
 void processEsDescriptor(IReader* br);
@@ -745,6 +791,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseStsd;
   case FOURCC("avcC"):
     return &parseAvcC;
+  case FOURCC("hvcC"):
+    return &parseHvcC;
   case FOURCC("pict"):
   case FOURCC("thmb"):
   case FOURCC("auxl"):
