@@ -2,6 +2,39 @@
 #include "fourcc.h"
 #include <cstring>
 #include <sstream>
+#include <vector>
+#include <map>
+
+enum HEVC
+{
+  HEVC_MAIN = 0x01,
+  HEVC_MAIN_STILL_PICTURE = 0x03
+};
+
+static std::map<int64_t, std::string> hevcProfiles {
+  { 0x01, "Main" },
+  { 0x03, "Main Still Picture" },
+};
+
+static std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
+{
+  std::vector<const Box*> res;
+
+  for(auto& box : root.children)
+  {
+    if(box.fourcc == fourcc)
+    {
+      res.push_back(&box);
+    }
+    else
+    {
+      auto b = findBoxes(box, fourcc);
+      res.insert(res.end(), b.begin(), b.end());
+    }
+  }
+
+  return res;
+}
 
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
 {
@@ -41,20 +74,20 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
   return true;
 }
 
-static void profileCommonChecks(const SpecDesc& spec, const char* profileName, uint32_t brandFourcc, Box const& root, IReport* out)
+static bool usesBrand(Box const& root, uint32_t brandFourcc)
 {
-  bool found = false;
-
   for(auto& box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
       for(auto& sym : box.syms)
         if(strcmp(sym.name, "compatible_brand"))
           if(sym.value == brandFourcc)
-            found = true;
+            return true;
 
-  if(!found)
-    return;
+  return false;
+}
 
+static void profileCommonChecks(const SpecDesc& spec, const char* profileName, Box const& root, IReport* out)
+{
   if(!checkRuleSection(spec, "8.2", root))
     out->error("%s: self-containment (subclause 8.2) is not conform", profileName);
 
@@ -107,24 +140,49 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
       "The brand to identify files that conform to the MIAF HEVC basic profile is 'MiHB'.",
       [] (Box const& root, IReport* out)
       {
-        profileCommonChecks(globalSpec, "MIAF HEVC Basic profile", FOURCC("MiHB"), root, out);
+        if(!usesBrand(root, FOURCC("MiHB")))
+          return;
 
-#if 0 // TODO
-        "Images coded with the following profiles at Main tier may be present and shall\n"
-        "be supported by the MIAF reader as coded image items; the level signalled by\n"
-        "the file shall be the indicated level or lower:\n"
-        "- HEVC Main Still Picture Profile, Level 6,\n"
-        "- HEVC Main Profile, Level 6.\n"
-        "NOTE: These profiles only support the 4:2:0 chroma sampling format and a bit\n"
-        "      depth of 8 bits."
-        "A.3.3 Image sequence and video coding\n"
-        "HEVC image sequences shall be stored in accordance with ISO/IEC 14496-15.\n"
-        "For image sequence tracks conforming to this MIAF profile, the requirements are\n"
-        "the same as for image items in subclause A.3.2.\n"
-        "For video tracks conforming to this MIAF profile, HEVC Main Profile at Main\n"
-        "tier level 5.1 or lower shall be indicated in the sample entry and shall be\n"
-        "supported by the MIAF reader.\n"
-#endif
+        profileCommonChecks(globalSpec, "MIAF HEVC Basic profile", root, out);
+
+        auto checkHevcProfilesLevels = [&] (std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel) {
+            for(auto& hvcc : hvcCs)
+            {
+              for(auto& sym : hvcc->syms)
+              {
+                if(!strcmp(sym.name, "general_profile_idc"))
+                {
+                  bool found = false;
+
+                  if(hevcProfiles.find(sym.value) != hevcProfiles.end())
+                  {
+                    for(auto& profile : profiles)
+                      if(hevcProfiles[sym.value] == profile)
+                        found = true;
+                  }
+
+                  if(!found)
+                    out->error("MiHB: invalid profile 0x%llx found", sym.value);
+                }
+                else if(!strcmp(sym.name, "general_level_idc"))
+                {
+                  auto const level = (double)sym.value / 30.0;
+
+                  if(level > maxLevel)
+                    out->error("MiHB: invalid level %g found, expecting %g or lower.", level, maxLevel);
+                }
+              }
+            }
+          };
+
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("moov"))
+            checkHevcProfilesLevels(findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0);
+
+          if(box.fourcc == FOURCC("meta"))
+            checkHevcProfilesLevels(findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1);
+        }
       }
     },
     {
@@ -159,7 +217,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
       "'MiHA'.",
       [] (Box const& root, IReport* out)
       {
-        profileCommonChecks(globalSpec, "MIAF HEVC Advanced profile", FOURCC("MiHA"), root, out);
+        if(!usesBrand(root, FOURCC("MiHA")))
+          return;
+
+        profileCommonChecks(globalSpec, "MIAF HEVC Advanced profile", root, out);
 
 #if 0 // TODO
         "Images conforming to the MIAF HEVC Basic profile or coded with the following\n"
@@ -206,7 +267,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
       "The brand to identify files that conform to the MIAF HEVC extended profile is 'MiHE'.",
       [] (Box const& root, IReport* out)
       {
-        profileCommonChecks(globalSpec, "MIAF HEVC Extended profile", FOURCC("MiHE"), root, out);
+        if(!usesBrand(root, FOURCC("MiHE")))
+          return;
+
+        profileCommonChecks(globalSpec, "MIAF HEVC Extended profile", root, out);
 
 #if 0 // TODO
         "A.5.2 Image item coding\n"
@@ -245,7 +309,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
       "The brand to identify files that conform to the MIAF AVC Basic profile is 'MiAB'.",
       [] (Box const& root, IReport* out)
       {
-        profileCommonChecks(globalSpec, "MIAF AVC Basic profile", FOURCC("MiAB"), root, out);
+        if(!usesBrand(root, FOURCC("MiAB")))
+          return;
+
+        profileCommonChecks(globalSpec, "MIAF AVC Basic profile", root, out);
 
 #if 0 // TODO
         "Images coded with the following profiles may be present and shall be supported by the MIAF reader as coded image items; the level signalled by the file shall be the indicated level or lower:\n"
