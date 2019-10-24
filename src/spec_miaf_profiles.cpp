@@ -1,5 +1,6 @@
 #include "spec.h"
 #include "fourcc.h"
+#include <algorithm> // find
 #include <cstring>
 #include <sstream>
 #include <vector>
@@ -13,6 +14,8 @@ enum HEVC
 
 static std::map<int64_t, std::string> hevcProfiles {
   { 0x01, "Main" },
+  { 0x02, "Main 10" },
+  { 0x02, "Main 10 Still Picture" },
   { 0x03, "Main Still Picture" },
 };
 
@@ -104,6 +107,35 @@ static void profileCommonChecks(const SpecDesc& spec, const char* profileName, B
     out->error("%s: matched-duration (subclause 8.7) is not conform", profileName);
 }
 
+static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel)
+{
+  for(auto& hvcc : hvcCs)
+  {
+    for(auto& sym : hvcc->syms)
+    {
+      if(!strcmp(sym.name, "general_profile_idc"))
+      {
+        bool found = false;
+
+        if(hevcProfiles.find(sym.value) != hevcProfiles.end())
+          for(auto& profile : profiles)
+            if(hevcProfiles[sym.value] == profile)
+              found = true;
+
+        if(!found)
+          out->error("%s: invalid profile 0x%llx found", profileName, sym.value);
+      }
+      else if(!strcmp(sym.name, "general_level_idc"))
+      {
+        auto const level = (double)sym.value / 30.0;
+
+        if(level > maxLevel)
+          out->error("%s: invalid level %g found, expecting %g or lower.", profileName, level, maxLevel);
+      }
+    }
+  }
+}
+
 const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 {
   static const SpecDesc& globalSpec = spec;
@@ -143,45 +175,17 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         if(!usesBrand(root, FOURCC("MiHB")))
           return;
 
-        profileCommonChecks(globalSpec, "MIAF HEVC Basic profile", root, out);
+        auto const profileName = "MIAF HEVC Basic profile ('MiHB')";
 
-        auto checkHevcProfilesLevels = [&] (std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel) {
-            for(auto& hvcc : hvcCs)
-            {
-              for(auto& sym : hvcc->syms)
-              {
-                if(!strcmp(sym.name, "general_profile_idc"))
-                {
-                  bool found = false;
-
-                  if(hevcProfiles.find(sym.value) != hevcProfiles.end())
-                  {
-                    for(auto& profile : profiles)
-                      if(hevcProfiles[sym.value] == profile)
-                        found = true;
-                  }
-
-                  if(!found)
-                    out->error("MiHB: invalid profile 0x%llx found", sym.value);
-                }
-                else if(!strcmp(sym.name, "general_level_idc"))
-                {
-                  auto const level = (double)sym.value / 30.0;
-
-                  if(level > maxLevel)
-                    out->error("MiHB: invalid level %g found, expecting %g or lower.", level, maxLevel);
-                }
-              }
-            }
-          };
+        profileCommonChecks(globalSpec, profileName, root, out);
 
         for(auto& box : root.children)
         {
           if(box.fourcc == FOURCC("moov"))
-            checkHevcProfilesLevels(findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0);
 
           if(box.fourcc == FOURCC("meta"))
-            checkHevcProfilesLevels(findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1);
         }
       }
     },
@@ -220,26 +224,22 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         if(!usesBrand(root, FOURCC("MiHA")))
           return;
 
-        profileCommonChecks(globalSpec, "MIAF HEVC Advanced profile", root, out);
+        auto const profileName = "MIAF HEVC Advanced profile ('MiHA')";
 
-#if 0 // TODO
-        "Images conforming to the MIAF HEVC Basic profile or coded with the following\n"
-        "HEVC profiles at Main tier may be present and shall be supported by the MIAF\n"
-        "reader and MIAF renderer; the level signalled by the file shall be the\n"
-        "indicated level or lower:\n"
-        "- Main 10, Level 6,\n"
-        "- Main 10 Intra, Level 6,\n"
-        "- Main Intra, Level 6,\n"
-        "- Main 10 Still Picture, Level 6,\n"
-        "- Main 4:2:2 10 Intra, Level 6.\n"
-        "A.4.3 Image sequence and video coding\n"
-        "For image sequence tracks conforming to this MIAF profile, the requirements are\n"
-        "the same as for image items in subclause A.4.2.\n"
-        "For video tracks conforming to this MIAF profile, the requirements of the MIAF\n"
-        "HEVC Basic profile apply or HEVC Main 10 or Main 4:2:2 10 profile at Main tier\n"
-        "level 5.1 or lower shall be indicated in the sample entry and shall be\n"
-        "supported by the MIAF reader.\n"
-#endif
+        profileCommonChecks(globalSpec, profileName, root, out);
+
+        // compliance to Basic profile suffices
+        if(checkRuleSection(globalSpec, "A.3", root))
+          return;
+
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("moov"))
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Main 10 Intra", "Main Intra", "Main 10 Still Picture", "Main 4:2:2 10 Intra" }, 6.0);
+
+          if(box.fourcc == FOURCC("meta"))
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Main 4:2:2 10" }, 5.1);
+        }
       }
     },
     {
@@ -270,11 +270,18 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         if(!usesBrand(root, FOURCC("MiHE")))
           return;
 
-        profileCommonChecks(globalSpec, "MIAF HEVC Extended profile", root, out);
+        auto const profileName = "MIAF HEVC Extended profile ('MiHE')";
+
+        profileCommonChecks(globalSpec, profileName, root, out);
+
+        // compliance to Basic or Advanced profiles suffice
+        if(checkRuleSection(globalSpec, "A.3", root) || checkRuleSection(globalSpec, "A.4", root))
+          return;
 
 #if 0 // TODO
         "A.5.2 Image item coding\n"
-        "Images conforming to the MIAF HEVC basic profile or MIAF HEVC advanced profile or coded with the following HEVC profiles at Main tier may be present and shall be supported by the MIAF reader and MIAF renderer; the level signalled by the file shall be the indicated level or lower:\n"
+        "Images conforming to the MIAF HEVC basic profile or MIAF HEVC advanced profile"
+        "or"
         "- Main 4:4:4 10, Level 6,\n"
         "- Main 4:4:4 Still Picture, Level 6,\n"
         "- Main 4:4:4 10 Intra, Level 6,\n"
@@ -282,8 +289,7 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         "- Monochrome 10, Level 6,\n"
         "- Monochrome, Level 6.\n"
         "A.5.3 Image sequence and video coding\n"
-        "For image sequence tracks conforming to this MIAF profile, the requirements are the same as for image items in subclause A.5.2.\n"
-        "For video tracks conforming to this MIAF profile, the requirements of the MIAF HEVC advanced Profile apply or HEVC Main 4:4:4 10 profile at Main tier level 5.1 or lower shall be indicated in the sample entry and shall be supported by the MIAF reader.\n"
+        "For video tracks, requirements of the MIAF HEVC advanced Profile apply or HEVC Main 4:4:4 10 profile at Main tier level 5.1"
 #endif
       }
     },
@@ -312,7 +318,9 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         if(!usesBrand(root, FOURCC("MiAB")))
           return;
 
-        profileCommonChecks(globalSpec, "MIAF AVC Basic profile", root, out);
+        auto const profileName = "MIAF AVC Basic profile ('MiAB')";
+
+        profileCommonChecks(globalSpec, profileName, root, out);
 
 #if 0 // TODO
         "Images coded with the following profiles may be present and shall be supported by the MIAF reader as coded image items; the level signalled by the file shall be the indicated level or lower:\n"
