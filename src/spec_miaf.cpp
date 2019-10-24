@@ -1143,7 +1143,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 if(iprpChild.fourcc == FOURCC("ipma"))
                 {
                   bool essential = false;
-                  uint32_t itemId;
+                  uint32_t itemId = 0;
 
                   for(auto& sym : iprpChild.syms)
                   {

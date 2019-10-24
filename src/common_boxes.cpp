@@ -201,8 +201,8 @@ void parseHvcC(IReader* br)
   br->sym("temporalIdNested", 1);
   br->sym("lengthSizeMinusOne", 2);
   auto numOfArrays = br->sym("numOfArrays", 8);
-  for(int j = 0; j < numOfArrays; j++)
 
+  for(int j = 0; j < numOfArrays; j++)
   {
     br->sym("array_completeness", 1);
     br->sym("reserved", 1);
