@@ -15,7 +15,6 @@ enum HEVC
 static std::map<int64_t, std::string> hevcProfiles {
   { 0x01, "Main" },
   { 0x02, "Main 10" },
-  { 0x02, "Main 10 Still Picture" },
   { 0x03, "Main Still Picture" },
 };
 
@@ -107,6 +106,14 @@ static void profileCommonChecks(const SpecDesc& spec, const char* profileName, B
     out->error("%s: matched-duration (subclause 8.7) is not conform", profileName);
 }
 
+static void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLevel, double maxLevel)
+{
+  auto const level = (double)rawLevel / 30.0;
+
+  if(level > maxLevel)
+    out->error("%s: invalid level %g found, expecting %g or lower.", profileName, level, maxLevel);
+}
+
 static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel)
 {
   for(auto& hvcc : hvcCs)
@@ -127,10 +134,7 @@ static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::
       }
       else if(!strcmp(sym.name, "general_level_idc"))
       {
-        auto const level = (double)sym.value / 30.0;
-
-        if(level > maxLevel)
-          out->error("%s: invalid level %g found, expecting %g or lower.", profileName, level, maxLevel);
+        checkAvcHevcLevel(out, profileName, sym.value, maxLevel);
       }
     }
   }
@@ -181,10 +185,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 
         for(auto& box : root.children)
         {
-          if(box.fourcc == FOURCC("moov"))
+          if(box.fourcc == FOURCC("meta"))
             checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0);
 
-          if(box.fourcc == FOURCC("meta"))
+          if(box.fourcc == FOURCC("moov"))
             checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1);
         }
       }
@@ -234,10 +238,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 
         for(auto& box : root.children)
         {
-          if(box.fourcc == FOURCC("moov"))
+          if(box.fourcc == FOURCC("meta"))
             checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Main 10 Intra", "Main Intra", "Main 10 Still Picture", "Main 4:2:2 10 Intra" }, 6.0);
 
-          if(box.fourcc == FOURCC("meta"))
+          if(box.fourcc == FOURCC("moov"))
             checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Main 4:2:2 10" }, 5.1);
         }
       }
@@ -322,13 +326,50 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 
         profileCommonChecks(globalSpec, profileName, root, out);
 
-#if 0 // TODO
-        "Images coded with the following profiles may be present and shall be supported by the MIAF reader as coded image items; the level signalled by the file shall be the indicated level or lower:\n"
-        "- AVC Progressive High Profile, Level 5.2,\n"
-        "- AVC Constrained High Profile, Level 5.2.\n"
-        "A.6.3 Image sequence and video coding\n"
-        "For video tracks conforming to this MIAF profile, AVC High Profile level 5.1 or lower shall be indicated in the sample entry and shall be supported by the MIAF reader.\n"
-#endif
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("meta"))
+          {
+            auto avcCs = findBoxes(box, FOURCC("avcC"));
+
+            for(auto& avcc : avcCs)
+            {
+              for(auto& sym : avcc->syms)
+              {
+                if(!strcmp(sym.name, "AVCProfileIndication"))
+                {
+                  if(sym.value > 100)
+                    out->error("%s: profile_idc (0x%llx) is higher than 100)", profileName, sym.value);
+                }
+                else if(!strcmp(sym.name, "AVCLevelIndication"))
+                {
+                  checkAvcHevcLevel(out, profileName, sym.value, 5.2);
+                }
+              }
+            }
+          }
+
+          if(box.fourcc == FOURCC("moov"))
+          {
+            auto avcCs = findBoxes(box, FOURCC("avcC"));
+
+            for(auto& avcc : avcCs)
+            {
+              for(auto& sym : avcc->syms)
+              {
+                if(!strcmp(sym.name, "AVCProfileIndication"))
+                {
+                  if(sym.value > 100)
+                    out->error("%s: profile_idc (0x%llx) is higher than 100)", profileName, sym.value);
+                }
+                else if(!strcmp(sym.name, "AVCLevelIndication"))
+                {
+                  checkAvcHevcLevel(out, profileName, sym.value, 5.1);
+                }
+              }
+            }
+          }
+        }
       }
     },
 #if 0 // enable when codec rules are implemented
