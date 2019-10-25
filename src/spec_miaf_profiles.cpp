@@ -6,16 +6,11 @@
 #include <vector>
 #include <map>
 
-enum HEVC
-{
-  HEVC_MAIN = 0x01,
-  HEVC_MAIN_STILL_PICTURE = 0x03
-};
-
 static std::map<int64_t, std::string> hevcProfiles {
   { 0x01, "Main" },
   { 0x02, "Main 10" },
   { 0x03, "Main Still Picture" },
+  { 0x04, "Range Extensions" },
 };
 
 static std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
@@ -114,7 +109,7 @@ static void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLeve
     out->error("%s: invalid level %g found, expecting %g or lower.", profileName, level, maxLevel);
 }
 
-static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel)
+static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel, bool max10bit, bool max422chroma)
 {
   for(auto& hvcc : hvcCs)
   {
@@ -131,6 +126,16 @@ static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::
 
         if(!found)
           out->error("%s: invalid profile 0x%llx found", profileName, sym.value);
+      }
+      else if(!strcmp(sym.name, "general_constraint_indicator_flags"))
+      {
+        if(max10bit)
+          if(!(sym.value & 0x20 /*6th bit: general_max_10bit_constraint_flag*/))
+            out->error("%s: expecting maximum 10 bits but general_max_10bit_constraint_flag flag is not set.", profileName);
+
+        if(max422chroma)
+          if(!(sym.value & 0x80 /*8th bit: general_max_422chroma_constraint_flag*/))
+            out->error("%s: expecting maximum 4:2:2 chroma format but general_max_422chroma_constraint_flag flag is not set.", profileName);
       }
       else if(!strcmp(sym.name, "general_level_idc"))
       {
@@ -186,10 +191,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         for(auto& box : root.children)
         {
           if(box.fourcc == FOURCC("meta"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0, false, false);
 
           if(box.fourcc == FOURCC("moov"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1, false, false);
         }
       }
     },
@@ -239,10 +244,10 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         for(auto& box : root.children)
         {
           if(box.fourcc == FOURCC("meta"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Main 10 Intra", "Main Intra", "Main 10 Still Picture", "Main 4:2:2 10 Intra" }, 6.0);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), {}, 6.0, true, true);
 
           if(box.fourcc == FOURCC("moov"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Main 4:2:2 10" }, 5.1);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Range Extensions" }, 5.1, true, true);
         }
       }
     },
@@ -282,19 +287,14 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         if(checkRuleSection(globalSpec, "A.3", root) || checkRuleSection(globalSpec, "A.4", root))
           return;
 
-#if 0 // TODO
-        "A.5.2 Image item coding\n"
-        "Images conforming to the MIAF HEVC basic profile or MIAF HEVC advanced profile"
-        "or"
-        "- Main 4:4:4 10, Level 6,\n"
-        "- Main 4:4:4 Still Picture, Level 6,\n"
-        "- Main 4:4:4 10 Intra, Level 6,\n"
-        "- Main 4:4:4, Level 6,\n"
-        "- Monochrome 10, Level 6,\n"
-        "- Monochrome, Level 6.\n"
-        "A.5.3 Image sequence and video coding\n"
-        "For video tracks, requirements of the MIAF HEVC advanced Profile apply or HEVC Main 4:4:4 10 profile at Main tier level 5.1"
-#endif
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("meta"))
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), {}, 6.0, true, false);
+
+          if(box.fourcc == FOURCC("moov"))
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Range Extensions" }, 5.1, true, false);
+        }
       }
     },
     {
@@ -334,12 +334,22 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 
             for(auto& avcc : avcCs)
             {
+              int profileIdc = 0;
+
               for(auto& sym : avcc->syms)
               {
                 if(!strcmp(sym.name, "AVCProfileIndication"))
                 {
+                  profileIdc = sym.value;
+
                   if(sym.value > 100)
                     out->error("%s: profile_idc (0x%llx) is higher than 100)", profileName, sym.value);
+                }
+                else if(!strcmp(sym.name, "profile_compatibility"))
+                {
+                  if((profileIdc == 77 || profileIdc == 88 || profileIdc == 100)
+                     && !((uint8_t)sym.value & 0b00001000))
+                    out->error("%s: AVC should be Progressive or Constrained High Profile", profileName, sym.value);
                 }
                 else if(!strcmp(sym.name, "AVCLevelIndication"))
                 {
