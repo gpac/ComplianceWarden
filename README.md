@@ -52,9 +52,9 @@ $ make
 em++ -std=c++14 src/app_cw.cpp src/utils.cpp src/common_boxes.cpp src/spec_dummy.cpp src/spec_heif.cpp src/spec_miaf.cpp src/spec_miaf_audio.cpp src/spec_miaf_brands.cpp src/spec_miaf_derivations.cpp src/spec_miaf_num_pixels.cpp src/spec_miaf_profiles.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC']" -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=1 -s ALLOW_MEMORY_GROWTH=1 --pre-js wasm-fs-pre.js
 ```
 
-See https://rbouqueau.github.io/ComplianceWarden-wasm/ for a demo.
+See https://gpac.github.io/ComplianceWarden-wasm/ for a demo.
 
-The HTML integration source code is hosted at https://github.com/rbouqueau/ComplianceWarden-wasm.
+The HTML integration source code is hosted at https://github.com/gpac/ComplianceWarden-wasm.
 
 ## Code architecture
 
