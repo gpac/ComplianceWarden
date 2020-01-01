@@ -25,22 +25,26 @@ struct BoxReader : IReader
     subReader.spec = spec;
     subReader.myBox.size = br.u(32);
     subReader.myBox.fourcc = br.u(32);
+    unsigned boxHeaderSize = 8;
 
     if(subReader.myBox.size == 1)
+    {
       subReader.myBox.size = br.u(64); // large size
+      boxHeaderSize += 8;
+    }
 
-    ENSURE(subReader.myBox.size >= 8, "BoxReader::box(): box size %d < 8 bytes (fourcc='%s')",
-           subReader.myBox.size, toString(subReader.myBox.fourcc).c_str());
+    ENSURE(subReader.myBox.size >= boxHeaderSize, "BoxReader::box(): box size %llu < %u bytes (fourcc='%s')",
+           subReader.myBox.size, boxHeaderSize, toString(subReader.myBox.fourcc).c_str());
 
-    subReader.br = br.sub(int(subReader.myBox.size - 8));
+    subReader.br = br.sub(int(subReader.myBox.size - boxHeaderSize));
     auto pos = subReader.br.m_pos;
     auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
     myBox.children.push_back(std::move(subReader.myBox));
 
-    ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - 8) * 8,
+    ENSURE((uint64_t)subReader.br.m_pos == pos + (subReader.myBox.size - boxHeaderSize) * 8,
            "Box '%s': read %d bits instead of %llu bits",
-           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, (subReader.myBox.size - 8) * 8);
+           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, (subReader.myBox.size - boxHeaderSize) * 8);
   }
 
   BitReader br;
