@@ -638,6 +638,10 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 continue;
               }
 
+              // skip auxiliary type
+              if(handlerType == FOURCC("auxv"))
+                continue;
+
               // ensure entry
               if(trackTypes.find(handlerType) == trackTypes.end())
                 trackTypes.insert({ handlerType, HandlerTypeData {}
@@ -664,8 +668,6 @@ std::initializer_list<RuleDesc> rulesGeneral =
 
                       if(trefChild.fourcc != FOURCC("thmb") && trefChild.fourcc != FOURCC("auxl"))
                         out->error("'tref' with unknown TrackReferenceTypeBox type \'%X\'", trefChild.fourcc);
-                      else if(handlerType != FOURCC("pict"))
-                        out->error("Thumbnails and Auxiliaries are expected with a 'pict' handler type, found '%s'", toString(handlerType).c_str());
 
                       trefFound = true;
                       trackTypes.find(handlerType)->second.referenceTypes.push_back(trefChild.fourcc);
@@ -691,6 +693,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
       }
 
       bool secondPredicate = true;
+
       {
         uint16_t alternate_group = 0; // no information on possible relations to other tacks, dixit ISOBMFF
 
@@ -778,8 +781,12 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "over the same media time-range", // MEDIA COMPOSITION
     [] (Box const& root, IReport* out)
     {
-      std::vector<int16_t> mediaRates;
-      std::vector<int64_t> editDurations, mediaTimes;
+      struct EditList
+      {
+        std::vector<int16_t> mediaRates;
+        std::vector<int64_t> editDurations, mediaTimes;
+      };
+      std::vector<EditList> editLists;
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("moov"))
@@ -789,28 +796,37 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 if(trakChild.fourcc == FOURCC("edts"))
                   for(auto& edtsChild : trakChild.children)
                     if(edtsChild.fourcc == FOURCC("elst"))
+                    {
+                      EditList elst;
+
                       for(auto& sym : edtsChild.syms)
                       {
                         if(!strcmp(sym.name, "media_rate_integer"))
-                          mediaRates.push_back(sym.value);
+                          elst.mediaRates.push_back(sym.value);
 
                         if(!strcmp(sym.name, "edit_duration"))
-                          editDurations.push_back(sym.value);
+                          elst.editDurations.push_back(sym.value);
 
                         if(!strcmp(sym.name, "media_time"))
-                          mediaTimes.push_back(sym.value);
+                          elst.mediaTimes.push_back(sym.value);
                       }
 
-      if(mediaRates.size() == 2)
+                      editLists.push_back(elst);
+                    }
+
+      for(auto& e : editLists)
       {
-        assert(editDurations.size() == 2 && mediaTimes.size() == 2);
+        if(e.mediaRates.size() == 2)
+        {
+          assert(e.editDurations.size() == 2 && e.mediaTimes.size() == 2);
 
-        if(mediaRates[0] != 1 || mediaRates[1] != -1)
-          out->error("Two media edits found: media rates shall be { 1, -1 }, found { %d, %d }", mediaRates[0], mediaRates[1]);
+          if(e.mediaRates[0] != 1 || e.mediaRates[1] != -1)
+            out->error("Two media edits found: media rates shall be { 1, -1 }, found { %d, %d }", e.mediaRates[0], e.mediaRates[1]);
 
-        if((mediaTimes[0] != mediaTimes[1] + mediaRates[1] * editDurations[1])
-           && (mediaTimes[0] + mediaRates[0] * editDurations[0] != mediaTimes[1]))
-          out->error("Two media edits found: one shall specify forward and the other reverse playback");
+          if((e.mediaTimes[0] != e.mediaTimes[1] + e.mediaRates[1] * e.editDurations[1])
+             && (e.mediaTimes[0] + e.mediaRates[0] * e.editDurations[0] != e.mediaTimes[1]))
+            out->error("Two media edits found: one shall specify forward and the other reverse playback");
+        }
       }
     }
   },
@@ -833,7 +849,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                     if(edtsChild.fourcc == FOURCC("elst"))
                       for(auto& sym : edtsChild.syms)
                         if(!strcmp(sym.name, "media_rate_integer"))
-                          if(sym.value != -1)
+                          if((int16_t)sym.value == -1)
                             hasReversePlayback = true;
 
       if(hasReversePlayback)
