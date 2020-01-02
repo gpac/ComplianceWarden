@@ -125,12 +125,9 @@ static const SpecDesc spec =
     },
     {
       "Section 7.2.3.3\n"
-      "CodingConstraintsBox ('ccst') shall be present once",
+      "CodingConstraintsBox ('ccst') shall be present once per sample entry",
       [] (Box const& root, IReport* out)
       {
-        bool foundSampleEntry = false;
-        bool foundCCst = false;
-
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("moov"))
             for(auto& moovChild : box.children)
@@ -144,22 +141,24 @@ static const SpecDesc spec =
                             for(auto& stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto& stsdChild : stblChild.children)
+                                {
                                   if(isVisualSampleEntry(stsdChild.fourcc))
                                   {
-                                    foundSampleEntry = true;
+                                    bool foundCcst = false;
 
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("ccst"))
                                       {
-                                        if(!foundCCst)
-                                          foundCCst = true;
+                                        if(!foundCcst)
+                                          foundCcst = true;
                                         else
                                           out->error("CodingConstraintsBox ('ccst') is present several times");
                                       }
-                                  }
 
-        if(foundSampleEntry && !foundCCst)
-          out->error("CodingConstraintsBox ('ccst') shall be present once");
+                                    if(!foundCcst)
+                                      out->error("CodingConstraintsBox ('ccst') shall be present once");
+                                  }
+                                }
       },
     },
     {
