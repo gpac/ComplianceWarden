@@ -16,7 +16,7 @@ function list_files
 }
 
 list_files | while read f; do
-	uncrustify -c "$scriptDir/uncrustify.cfg" -f "$f" -o "$f.tmp" -q
+  uncrustify -c "$scriptDir/uncrustify.cfg" -f "$f" -o "$f.tmp" -q
   if ! diff -Naur "$f" "$f.tmp" ; then
     echo "Formatting $f"
     mv "$f.tmp" "$f"
