@@ -21,8 +21,8 @@ static const SpecDesc spec =
         std::vector<const Box*> found;
 
         auto checkIntegrityPasp = [&] (const Box& pasp) {
-            if(pasp.size != 12)
-              out->error("'pasp' box size is %d bytes (expected 12)", pasp.size);
+            if(pasp.size != 16)
+              out->error("'pasp' box size is %d bytes (expected 16)", pasp.size);
 
             for(auto& field : pasp.syms)
               if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
@@ -30,8 +30,8 @@ static const SpecDesc spec =
           };
 
         auto checkIntegrityClap = [&] (const Box& clap) {
-            if(clap.size != 36)
-              out->error("'clap' box size is %d bytes (expected 36)", clap.size);
+            if(clap.size != 40)
+              out->error("'clap' box size is %d bytes (expected 40)", clap.size);
           };
 
         for(auto& box : root.children)
