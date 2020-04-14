@@ -367,8 +367,11 @@ std::initializer_list<RuleDesc> rulesGeneral =
 
               if(!ok)
               {
-                checkIntegrity(box);
-                out->error("Invalid 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
+                if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
+                {
+                  checkIntegrity(box);
+                  out->error("Invalid 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
+                }
               }
             }
             else
@@ -435,8 +438,11 @@ std::initializer_list<RuleDesc> rulesGeneral =
 
               if(!ok)
               {
-                checkIntegrity(box);
-                out->error("Invalid 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
+                if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
+                {
+                  checkIntegrity(box);
+                  out->error("Invalid 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
+                }
               }
             }
             else

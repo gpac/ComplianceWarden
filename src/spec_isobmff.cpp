@@ -85,7 +85,7 @@ static const SpecDesc spec =
               {
                 if(!findBox(&box))
                 {
-                  if(parent.fourcc != FOURCC("ipco"))
+                  if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
                   {
                     checkIntegrity(box);
                     out->error("Invalid '%s' position (parent is '%s')", toString(fourCC).c_str(), toString(parent.fourcc).c_str());
