@@ -79,13 +79,11 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 
 ## Useful information
 
-### Links
+### Versions
 
- - ISOBMFF specification: (TODO: add link)
- - MP4 specification: (TODO: add link)
- - MIAF specification: (TODO: add link)
- - HEIF specification: (TODO: add link)
- - CMAF specification: (TODO: add link)
+ - ISOBMFF specification: m17277
+ - MIAF specification: w18260
+ - HEIF specification: w18310
 
 # Acknowledgments
 
