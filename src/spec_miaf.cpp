@@ -371,7 +371,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
                 {
                   checkIntegrity(box);
-                  out->error("Invalid 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
+                  out->warning("Unexpected 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
                 }
               }
             }
@@ -442,7 +442,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
                 {
                   checkIntegrity(box);
-                  out->error("Invalid 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
+                  out->warning("Unexpected 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
                 }
               }
             }
@@ -1251,9 +1251,8 @@ std::initializer_list<RuleDesc> rulesGeneral =
                       {
                         if(std::find(displayable.begin(), displayable.end(), item_ID) != displayable.end())
                           result.push_back(item_ID);
-
-                        // else
-                        // out->error("Found no displayable image attached to 'pixi'");
+                        else
+                          out->warning("Found no displayable image attached to 'pixi'");
                       }
                   }
                 }

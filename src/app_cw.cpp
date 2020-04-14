@@ -48,6 +48,11 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
       ++errorCount;
     }
 
+    void warning(const char*, ...) override
+    {
+      /*ignored*/
+    }
+
     int ruleIdx = 0;
     int errorCount = 0;
   };

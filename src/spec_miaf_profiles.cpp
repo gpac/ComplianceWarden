@@ -58,6 +58,11 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
           ++errorCount;
         }
 
+        void warning(const char*, ...) override
+        {
+          /*ignored*/
+        }
+
         int errorCount = 0;
       };
       Report r;
