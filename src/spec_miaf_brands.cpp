@@ -40,7 +40,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
             for(auto& box : root.children)
               if(box.fourcc == FOURCC("ftyp"))
                 for(auto& sym : box.syms)
-                  if(strcmp(sym.name, "compatible_brand"))
+                  if(!strcmp(sym.name, "compatible_brand"))
                     switch(sym.value)
                     {
                     case FOURCC("avci"):
@@ -118,7 +118,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiPr"))
                   found = true;
 
@@ -295,7 +295,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiAn"))
                   found = true;
 
@@ -394,7 +394,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiBu"))
                   found = true;
 
@@ -428,7 +428,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiAC"))
                   found = true;
 
@@ -537,7 +537,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiCm"))
                   found = true;
 
@@ -559,7 +559,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 compatibleBrands.push_back(sym.value);
 
         if(checkRuleSection(globalSpec, "10.2", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiPr")) == compatibleBrands.end())

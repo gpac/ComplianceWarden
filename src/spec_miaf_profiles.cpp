@@ -76,7 +76,7 @@ static bool usesBrand(Box const& root, uint32_t brandFourcc)
   for(auto& box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
       for(auto& sym : box.syms)
-        if(strcmp(sym.name, "compatible_brand"))
+        if(!strcmp(sym.name, "compatible_brand"))
           if(sym.value == brandFourcc)
             return true;
 
@@ -394,7 +394,7 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "compatible_brand"))
                 compatibleBrands.push_back(sym.value);
 
         if(checkRuleSection(globalSpec, "A.3", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHB")) == compatibleBrands.end())
