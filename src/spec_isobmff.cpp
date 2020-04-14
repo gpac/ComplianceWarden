@@ -85,8 +85,11 @@ static const SpecDesc spec =
               {
                 if(!findBox(&box))
                 {
-                  checkIntegrity(box);
-                  out->error("Invalid '%s' position (parent is '%s')", toString(fourCC).c_str(), toString(parent.fourcc).c_str());
+                  if(parent.fourcc != FOURCC("ipco"))
+                  {
+                    checkIntegrity(box);
+                    out->error("Invalid '%s' position (parent is '%s')", toString(fourCC).c_str(), toString(parent.fourcc).c_str());
+                  }
                 }
               }
               else
