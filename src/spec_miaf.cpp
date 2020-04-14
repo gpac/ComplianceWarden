@@ -1,5 +1,6 @@
 #include "spec.h"
 #include "fourcc.h"
+#include <algorithm> // std::find
 #include <cassert>
 #include <cstring>
 #include <functional>
@@ -1188,6 +1189,78 @@ std::initializer_list<RuleDesc> rulesGeneral =
                   }
                 }
     }
+  },
+  {
+    "Section 7.3.6.6\n"
+    "The pixel information property shall be associated with every image that is\n"
+    "displayable (not hidden)",
+    [] (Box const& root, IReport* out)
+    {
+      std::vector<uint32_t> displayable, pixiIndex, result;
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto& iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe"))
+                  for(auto& sym : iinfChild.syms)
+                  {
+                    if(!strcmp(sym.name, "flags"))
+                      if(sym.value & 1)
+                        // ISOBMFF 8.11.6.1: (flags & 1) equal to 1 indicates that the item is not intended to be a part of the presentation
+                        break;
+
+                    if(!strcmp(sym.name, "item_ID"))
+                      displayable.push_back(sym.value);
+                  }
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipco"))
+                {
+                  int propertyIndex = 1;
+
+                  for(auto& ipcoChild : iprpChild.children)
+                  {
+                    if(ipcoChild.fourcc == FOURCC("pixi"))
+                      pixiIndex.push_back(propertyIndex);
+
+                    propertyIndex++;
+                  }
+                }
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipma"))
+                {
+                  int item_ID = 0;
+
+                  for(auto& sym : iprpChild.syms)
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                      item_ID = (int)sym.value;
+                    else if(!strcmp(sym.name, "property_index"))
+                      if(std::find(pixiIndex.begin(), pixiIndex.end(), sym.value) != pixiIndex.end())
+                      {
+                        if(std::find(displayable.begin(), displayable.end(), item_ID) != displayable.end())
+                          result.push_back(item_ID);
+
+                        // else
+                        // out->error("Found no displayable image attached to 'pixi'");
+                      }
+                  }
+                }
+
+      if(result.size() != displayable.size())
+        out->error("Found %d 'pixi' associated for %d displayable (not hidden) images", (int)result.size(), (int)displayable.size());
+    },
   },
   {
     "Section 7.3.6.7\n"

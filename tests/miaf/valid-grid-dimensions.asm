@@ -102,6 +102,10 @@ db "ispe"
 dd 0
 dd BE(128), BE(128) ; width, height
 ispe2_end:
+pixi_start:
+dd BE(pixi_end - pixi_start)
+db "pixi"
+pixi_end:
 ipco_end:
 ipma_start:
     dd BE(ipma_end - ipma_start)
@@ -114,7 +118,7 @@ ipma_start:
     db 0x82 ; "essential(1)" "property_index(7)" 
     db 0x00, 0x02 ; "item_ID(16)" 
     db 0x01 ; "association_count(8)" 
-    db 0x81 ; "essential(1)" "property_index(7)"
+    db 0x83 ; "essential(1)" "property_index(7)"
 ipma_end:
 iprp_end:
 

@@ -1,7 +1,7 @@
-[Rule #34] Tile widths shall be greater than or equal to 64. Found 10
-[Rule #34] Tile heights shall be greater than or equal to 64. Found 10
-[Rule #34] Tile widths should be a multiple of 64. Found 10
-[Rule #34] Tile heights should be a multiple of 64. Found 10
+[Rule #35] Tile widths shall be greater than or equal to 64. Found 10
+[Rule #35] Tile heights shall be greater than or equal to 64. Found 10
+[Rule #35] Tile widths should be a multiple of 64. Found 10
+[Rule #35] Tile heights should be a multiple of 64. Found 10
 4 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
@@ -9,7 +9,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #34] Section 7.3.11.4.2
+[Rule #35] Section 7.3.11.4.2
 Any grid image in a MIAF file shall also conform to the following constraints:
 - The tile_width shall be greater than or equal to 64, and should be a multiple
   of 64.

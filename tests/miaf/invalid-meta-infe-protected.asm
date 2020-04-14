@@ -61,7 +61,21 @@ dd BE(ispe_end - ispe_start)
 db "ispe"
 dd 0, 0, 0
 ispe_end:
+pixi_start:
+dd BE(pixi_end - pixi_start)
+db "pixi"
+pixi_end:
 ipco_end:
+ipma_start:
+    dd BE(ipma_end - ipma_start)
+    dd "ipma"
+    db 0x00 ; "version(8)" 
+    db 0x00, 0x00, 0x00 ; "flags(24)" 
+    db 0x00, 0x00, 0x00, 0x01 ; "entry_count(32)" 
+    db 0xaa, 0xbb ; "item_ID(16)" 
+    db 0x01 ; "association_count(8)" 
+    db 0x82 ; "essential(1)" "property_index(7)" 
+ipma_end:
 iprp_end:
 
 meta_end:
