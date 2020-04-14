@@ -1,4 +1,4 @@
-[Rule #30] An identity derivation shall not be derived immediately from another identity (item_ID=1)
+[Rule #31] An identity derivation shall not be derived immediately from another identity (item_ID=1)
 1 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
@@ -6,6 +6,6 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #30] Section 7.3.9
+[Rule #31] Section 7.3.9
 An identity derivation shall not be derived immediately from another identity
 derivation

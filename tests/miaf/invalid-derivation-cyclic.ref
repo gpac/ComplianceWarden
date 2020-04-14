@@ -1,7 +1,7 @@
-[Rule #30] Detected error in derivations: iden (2) -> iden (2)
-[Rule #30] Detected cycle in derivations.
 [Rule #31] Detected error in derivations: iden (2) -> iden (2)
 [Rule #31] Detected cycle in derivations.
+[Rule #32] Detected error in derivations: iden (2) -> iden (2)
+[Rule #32] Detected cycle in derivations.
 4 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
@@ -9,11 +9,11 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #30] Section 7.3.9
+[Rule #31] Section 7.3.9
 An identity derivation shall not be derived immediately from another identity
 derivation
 
-[Rule #31] Section 7.3.11.1
+[Rule #32] Section 7.3.11.1
 If derivations occur, they shall be in this order:
 - mandatory coded image(s)
 - optional identity derivation (subclause 7.3.11.2)

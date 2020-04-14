@@ -1183,6 +1183,35 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 }
     }
   },
+  {
+    "Section 7.3.6.7\n"
+    "[Transformative properties] shall be indicated to be applied in the following\n"
+    "order: clean aperture first, then rotation, then mirror.\n",
+    [] (Box const& root, IReport* out)
+    {
+      std::vector<uint32_t> actualTProps, expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipco"))
+                  for(auto& ipcoChild : iprpChild.children)
+                    if(ipcoChild.fourcc == FOURCC("clap") || ipcoChild.fourcc == FOURCC("irot") || ipcoChild.fourcc == FOURCC("imir"))
+                      actualTProps.push_back(ipcoChild.fourcc);
+
+      if(actualTProps.size() > expectedTProps.size())
+      {
+        out->error("Too many transformative properties (%d instead of %d)", (int)actualTProps.size(), (int)expectedTProps.size());
+        return;
+      }
+
+      for(size_t i = 0; i < actualTProps.size(); ++i)
+        if(actualTProps[i] != expectedTProps[i])
+          out->error("Property %d: expecting \"%s\", got \"%s\"", i, toString(expectedTProps[i]).c_str(), toString(actualTProps[i]).c_str());
+    }
+  },
 };
 
 static std::vector<RuleDesc> concat(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)

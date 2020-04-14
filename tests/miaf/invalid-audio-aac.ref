@@ -1,7 +1,7 @@
-[Rule #24] objectTypeIndication shall be an AAC codec (found 65)
-[Rule #24] Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
-[Rule #26] objectTypeIndication shall be an AAC codec (found 65)
-[Rule #26] Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
+[Rule #25] objectTypeIndication shall be an AAC codec (found 65)
+[Rule #25] Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
+[Rule #27] objectTypeIndication shall be an AAC codec (found 65)
+[Rule #27] Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
 4 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
@@ -9,10 +9,10 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #24] Section 7.4.5
+[Rule #25] Section 7.4.5
 Each stream shall be coded as either a variant of AAC as defined in
 ISO/IEC 14496-3, or as uncompressed two’s-complement
 
-[Rule #26] Section 7.4.5
+[Rule #27] Section 7.4.5
 If AAC is chosen, then each AAC elementary stream shall be encoded using
 MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2.

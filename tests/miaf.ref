@@ -1,6 +1,6 @@
 [Rule #2] compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
 [Rule #5] construction_method=1 on a coded image item
-[Rule #36] File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
+[Rule #37] File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
 3 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
@@ -20,6 +20,6 @@ the brand 'miaf' in the compatible_brands in the FileTypeBox.
 construction_method shall be equal to 0 for MIAF image items that are coded image items.
 construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.
 
-[Rule #36] Section 10.1
+[Rule #37] Section 10.1
 A MIAF file shall use the filename extensions specified by HEIF to identify the
 presence of specific image coding formats
