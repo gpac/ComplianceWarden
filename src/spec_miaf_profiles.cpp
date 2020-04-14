@@ -403,16 +403,16 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
                 compatibleBrands.push_back(sym.value);
 
         if(checkRuleSection(globalSpec, "A.3", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHB")) == compatibleBrands.end())
-          out->error("File conforms to 'MiHB' brand but 'MiHB' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiHB' brand but 'MiHB' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "A.4", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHA")) == compatibleBrands.end())
-          out->error("File conforms to 'MiHA' brand but 'MiHA' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiHA' brand but 'MiHA' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "A.5", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiHE")) == compatibleBrands.end())
-          out->error("File conforms to 'MiHE' brand but 'MiHE' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiHE' brand but 'MiHE' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "A.6", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiAB")) == compatibleBrands.end())
-          out->error("File conforms to 'MiAB' brand but 'MiAB' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiAB' brand but 'MiAB' is not in the 'ftyp' compatible_brand list");
       }
     }
 #endif

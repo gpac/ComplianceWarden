@@ -547,7 +547,6 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         // TODO: CMAF
       }
     },
-#if 0 // enable when confirmed this is what we want (changes all the rules and samples)
     {
       "Section 7.2.1.2\n"
       "The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)\n"
@@ -563,22 +562,21 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
                 compatibleBrands.push_back(sym.value);
 
         if(checkRuleSection(globalSpec, "10.2", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiPr")) == compatibleBrands.end())
-          out->error("File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "10.3", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiAn")) == compatibleBrands.end())
-          out->error("File conforms to 'MiAn' brand but 'MiAn' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiAn' brand but 'MiAn' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "10.4", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiBu")) == compatibleBrands.end())
-          out->error("File conforms to 'MiBu' brand but 'MiBu' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiBu' brand but 'MiBu' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "10.5", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiAC")) == compatibleBrands.end())
-          out->error("File conforms to 'MiAC' brand but 'MiAC' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiAC' brand but 'MiAC' is not in the 'ftyp' compatible_brand list");
 
         if(!checkRuleSection(globalSpec, "10.6", root) && std::find(compatibleBrands.begin(), compatibleBrands.end(), FOURCC("MiCm")) == compatibleBrands.end())
-          out->error("File conforms to 'MiCm' brand but 'MiCm' is not in the 'ftyp' compatible_brand list");
+          out->warning("File conforms to 'MiCm' brand but 'MiCm' is not in the 'ftyp' compatible_brand list");
       }
     }
-#endif
   };
   return rulesBrands;
 }
