@@ -1263,11 +1263,18 @@ std::initializer_list<RuleDesc> rulesGeneral =
   },
   {
     "Section 7.3.6.7\n"
-    "[Transformative properties] shall be indicated to be applied in the following\n"
-    "order: clean aperture first, then rotation, then mirror.\n",
+    "[Transformative properties][if used] shall be indicated to be applied in the\n"
+    "following order: clean aperture first, then rotation, then mirror.\n",
     [] (Box const& root, IReport* out)
     {
       std::vector<uint32_t> actualTProps, expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
+
+      auto isTransformative = [] (uint32_t fourcc) {
+          if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+            return true;
+          else
+            return false;
+        };
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -1276,18 +1283,36 @@ std::initializer_list<RuleDesc> rulesGeneral =
               for(auto& iprpChild : metaChild.children)
                 if(iprpChild.fourcc == FOURCC("ipco"))
                   for(auto& ipcoChild : iprpChild.children)
-                    if(ipcoChild.fourcc == FOURCC("clap") || ipcoChild.fourcc == FOURCC("irot") || ipcoChild.fourcc == FOURCC("imir"))
+                    if(isTransformative(ipcoChild.fourcc))
                       actualTProps.push_back(ipcoChild.fourcc);
+
+      if(actualTProps.empty())
+        return;
 
       if(actualTProps.size() > expectedTProps.size())
       {
-        out->error("Too many transformative properties (%d instead of %d)", (int)actualTProps.size(), (int)expectedTProps.size());
+        out->error("Too many transformative properties (%d instead of maximum %d)", (int)actualTProps.size(), (int)expectedTProps.size());
         return;
       }
 
-      for(size_t i = 0; i < actualTProps.size(); ++i)
-        if(actualTProps[i] != expectedTProps[i])
-          out->error("Property %d: expecting \"%s\", got \"%s\"", i, toString(expectedTProps[i]).c_str(), toString(actualTProps[i]).c_str());
+      std::string expected, actual;
+
+      for(auto& v : expectedTProps)
+        expected += toString(v) + " ";
+
+      for(auto& v : actualTProps)
+        actual += toString(v) + " ";
+
+      for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
+      {
+        if(actualTProps[i] != expectedTProps[j])
+        {
+          if(j + 1 == expectedTProps.size())
+            out->error("Property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", toString(expectedTProps[j]).c_str(), expected.c_str(), toString(actualTProps[i]).c_str(), actual.c_str());
+          else
+            i--;
+        }
+      }
     }
   },
 };

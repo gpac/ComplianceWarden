@@ -1,0 +1,12 @@
+[Rule #25] Property: expecting "imir" ({ clap irot imir }), got "clap" ({ irot clap })
+1 error(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Error rules description:
+
+[Rule #25] Section 7.3.6.7
+[Transformative properties][if used] shall be indicated to be applied in the
+following order: clean aperture first, then rotation, then mirror.
+
