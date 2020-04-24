@@ -8,6 +8,51 @@
 
 extern bool isVisualSampleEntry(uint32_t fourcc);
 
+void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
+{
+  std::vector<uint32_t> properties { 0 }; // index is 1-based
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipco"))
+              for(auto& ipcoChild : iprpChild.children)
+                properties.push_back(ipcoChild.fourcc);
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipma"))
+            {
+              bool essential = false;
+              uint32_t itemId = 0;
+
+              for(auto& sym : iprpChild.syms)
+              {
+                if(!strcmp(sym.name, "item_ID"))
+                  itemId = sym.value;
+                else if(!strcmp(sym.name, "essential"))
+                  essential = sym.value;
+                else if(!strcmp(sym.name, "property_index"))
+                {
+                  if(sym.value > (int64_t)properties.size())
+                  {
+                    out->error("property_index \"%lld\" doesn't exist (%u detected).", sym.value, properties.size());
+                    break;
+                  }
+
+                  if(properties[sym.value] == fourcc)
+                    if(!essential)
+                      out->error("Transformative property \"%s\" shall be marked as essential (item_ID=%u)", toString(properties[sym.value]).c_str(), itemId);
+                }
+              }
+            }
+}
+
 static bool boxEqual(Box const* a, Box const* b)
 {
   if(a->fourcc != b->fourcc)
@@ -1147,47 +1192,9 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "such images.",
     [] (Box const& root, IReport* out)
     {
-      std::vector<uint32_t> properties { 0 }; // index is 1-based
-
-      for(auto& box : root.children)
-        if(box.fourcc == FOURCC("meta"))
-          for(auto& metaChild : box.children)
-            if(metaChild.fourcc == FOURCC("iprp"))
-              for(auto& iprpChild : metaChild.children)
-                if(iprpChild.fourcc == FOURCC("ipco"))
-                  for(auto& ipcoChild : iprpChild.children)
-                    properties.push_back(ipcoChild.fourcc);
-
-      for(auto& box : root.children)
-        if(box.fourcc == FOURCC("meta"))
-          for(auto& metaChild : box.children)
-            if(metaChild.fourcc == FOURCC("iprp"))
-              for(auto& iprpChild : metaChild.children)
-                if(iprpChild.fourcc == FOURCC("ipma"))
-                {
-                  bool essential = false;
-                  uint32_t itemId = 0;
-
-                  for(auto& sym : iprpChild.syms)
-                  {
-                    if(!strcmp(sym.name, "item_ID"))
-                      itemId = sym.value;
-                    else if(!strcmp(sym.name, "essential"))
-                      essential = sym.value;
-                    else if(!strcmp(sym.name, "property_index"))
-                    {
-                      if(sym.value > (int64_t)properties.size())
-                      {
-                        out->error("property_index \"%lld\" doesn't exist.");
-                        break;
-                      }
-
-                      if(properties[sym.value] == FOURCC("clap") || properties[sym.value] == FOURCC("irot") || properties[sym.value] == FOURCC("imir"))
-                        if(!essential)
-                          out->error("Transformative property \"%s\" shall be marked as essential (item_ID=%u)", toString(properties[sym.value]).c_str(), itemId);
-                    }
-                  }
-                }
+      checkEssential(root, out, FOURCC("clap"));
+      checkEssential(root, out, FOURCC("irot"));
+      checkEssential(root, out, FOURCC("imir"));
     }
   },
   {

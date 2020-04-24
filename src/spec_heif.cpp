@@ -3,6 +3,7 @@
 #include "fourcc.h"
 
 extern bool isVisualSampleEntry(uint32_t fourcc);
+extern void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 
 static const SpecDesc spec =
 {
@@ -195,6 +196,54 @@ static const SpecDesc spec =
                     }
       },
     },
+    {
+      "Section 6.5.11.1\n"
+      "essential shall be equal to 1 for an 'lsel' item property.",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("lsel"));
+      }
+    },
+    {
+      "Section B.2.3.1\n"
+      "essential shall be equal to 1 for an 'hvcC' item property",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("hvcC"));
+      }
+    },
+    {
+      "Section B.2.3.3\n"
+      "essential shall be equal to 1 for an 'lhvC' item property",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("lhvC"));
+      }
+    },
+    {
+      "Section B.2.3.5.1\n"
+      "essential shall be equal to 1 for an 'tols' item property",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("tols"));
+      }
+    },
+    {
+      "Section E.2.3\n"
+      "essential shall be equal to 1 for an 'avcC' item property",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("avcC"));
+      }
+    },
+    {
+      "Section H.2.2\n"
+      "essential shall be equal to 1 for an 'jpgC' item property ",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("jpgC"));
+      }
+    }
   },
   nullptr,
 };
