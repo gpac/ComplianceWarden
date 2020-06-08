@@ -1,10 +1,12 @@
 [Rule #6] MIAF image item shall not reference any item protection ('ipro')
-1 error(s).
+[miaf] 1 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #6] Section 7.2.1.8
+[miaf][Rule #6] Section 7.2.1.8
 MIAF image items shall not reference any item protection
+[heif] No errors.
+[isobmff] No errors.

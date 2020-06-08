@@ -1,13 +1,15 @@
 [Rule #19] Found edit list for reverse playback: sync sample delta (16 - 2) is more than 4
 [Rule #19] Found edit list for reverse playback: sync sample delta (29 - 16) is more than 4
-2 error(s).
+[miaf] 2 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #19] Section 8.6
+[miaf][Rule #19] Section 8.6
 if an edit list is used to specify reverse playback (a negative media_rate) of some media
 there shall be a sync sample (as defined by ISO/IEC 14496-12) at least every 4 frames, or
 more often
+[heif] No errors.
+[isobmff] No errors.

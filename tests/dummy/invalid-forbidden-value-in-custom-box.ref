@@ -1,8 +1,8 @@
 [Rule #2] 'holy' symbol in 'dumy' box is equal to 666
-1 error(s).
+[dummy] 1 error(s).
 
 Specification description: Dummy Spec, v1.2
 
 Error rules description:
 
-[Rule #2] 'holy' symbol in 'dumy' box must not be equal to 666
+[dummy][Rule #2] 'holy' symbol in 'dumy' box must not be equal to 666

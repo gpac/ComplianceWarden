@@ -31,6 +31,9 @@ struct SpecDesc
   // human-readable description of the spec (name, version, date, etc.).
   const char* caption;
 
+  // list of specs which this spec depends on.
+  std::vector<const char*> dependencies;
+
   // list of compliance checks for this spec.
   std::vector<RuleDesc> rules;
 

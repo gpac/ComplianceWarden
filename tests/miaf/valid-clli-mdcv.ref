@@ -1,1 +1,11 @@
-No errors.
+[miaf] No errors.
+[Rule #5] CodingConstraintsBox ('ccst') shall be present once
+[heif] 1 error(s).
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+Error rules description:
+
+[heif][Rule #5] Section 7.2.3.3
+CodingConstraintsBox ('ccst') shall be present once per sample entry
+[isobmff] No errors.

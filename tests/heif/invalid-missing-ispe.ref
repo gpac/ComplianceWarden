@@ -1,9 +1,10 @@
 [Rule #4] HEIF missing Image spatial extents property
-1 error(s).
+[heif] 1 error(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
 Error rules description:
 
-[Rule #4] Section 6.5.3.1
+[heif][Rule #4] Section 6.5.3.1
 every image item be associated with a Image spatial extents property
+[isobmff] No errors.

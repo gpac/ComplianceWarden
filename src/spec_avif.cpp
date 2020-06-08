@@ -6,6 +6,7 @@ static const SpecDesc spec =
   "avif",
   "AVIF v1.0.0, 19 February 2019\n"
   "https://aomediacodec.github.io/av1-avif/",
+  { "heif" },
   {
     {
       "'ftyp' box must appear first",

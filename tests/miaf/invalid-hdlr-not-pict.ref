@@ -1,10 +1,20 @@
 [Rule #4] The handler type for the MetaBox shall be 'pict'
-1 error(s).
+[miaf] 1 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #4] Section 7.2.1.5
+[miaf][Rule #4] Section 7.2.1.5
 The handler type for the MetaBox shall be 'pict'.
+[Rule #2] The handler type for the MetaBox shall be 'pict'
+[heif] 1 error(s).
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+Error rules description:
+
+[heif][Rule #2] Section 6.2
+The handler type for the MetaBox shall be 'pict'.
+[isobmff] No errors.

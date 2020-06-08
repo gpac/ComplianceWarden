@@ -3,23 +3,24 @@
 [Rule #2] 'hdlr' not found in MetaBox
 [Rule #3] ItemInfoBox is required
 [Rule #4] HEIF missing Image spatial extents property
-5 error(s).
+[heif] 5 error(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
 Error rules description:
 
-[Rule #0] Section 10.1
+[heif][Rule #0] Section 10.1
 The FileTypeBox shall contain, in the compatible_brands list, the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) [and] brand(s) identifying conformance to this document (specified in 10).
 
-[Rule #1] Section 6.2
+[heif][Rule #1] Section 6.2
 A MetaBox ('meta'), as specified in ISO/IEC 14496-12, is required at file level.
 
-[Rule #2] Section 6.2
+[heif][Rule #2] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
 
-[Rule #3] Section 7.2.1.9
+[heif][Rule #3] Section 7.2.1.9
 ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 
-[Rule #4] Section 6.5.3.1
+[heif][Rule #4] Section 6.5.3.1
 every image item be associated with a Image spatial extents property
+[isobmff] No errors.

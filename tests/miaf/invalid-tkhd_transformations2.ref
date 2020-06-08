@@ -1,14 +1,16 @@
 [Rule #12] Matrix field of the TrackHeaderBox: "c" value (0) shall be 0x00010000 or 0xFFFF0000 ("a" is 0)
 [Rule #12] Matrix field of the TrackHeaderBox: "d" value (0) shall be 0x00010000 or 0xFFFF0000 ("b" is 0)
 [Rule #12] Matrix field of the TrackHeaderBox: "w" value (4) shall be 0x40000000
-3 error(s).
+[miaf] 3 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #12] Section 7.4.3
+[miaf][Rule #12] Section 7.4.3
 The use of the matrix field of the TrackHeaderBox shall represent only no
 transformation (identity matrix), or vertical or horizontal mirroring and/or
 rotations of 90°, 180° or 270°.
+[heif] No errors.
+[isobmff] No errors.

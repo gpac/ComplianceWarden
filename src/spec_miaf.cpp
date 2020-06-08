@@ -1345,6 +1345,7 @@ static const SpecDesc spec =
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
+  { "heif" },
   concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(spec), getRulesProfiles(spec) }),
   nullptr,
 };

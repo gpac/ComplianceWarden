@@ -32,6 +32,68 @@ void dump(Box const& box, int depth = 0)
 
 /* ***** specs ***** */
 
+std::vector<SpecDesc const*>& g_allSpecs()
+{
+  static std::vector<SpecDesc const*> allSpecs;
+  return allSpecs;
+}
+
+int registerSpec(SpecDesc const* spec)
+{
+  g_allSpecs().push_back(spec);
+  return 0;
+}
+
+SpecDesc const* specFind(const char* name)
+{
+  for(auto& spec : g_allSpecs())
+    if(strcmp(spec->name, name) == 0)
+      return spec;
+
+  fprintf(stderr, "Spec '%s' not found\n", name);
+  fflush(stderr);
+  exit(1);
+}
+
+void specListRules(const SpecDesc* spec)
+{
+  fprintf(stdout, "////////////////////// Beginning of \"%s\" specification.\n\n", spec->name);
+
+  fprintf(stdout, "================================================================================\n");
+  fprintf(stdout, "Specification name: %s\n", spec->name);
+  fprintf(stdout, "            detail: %s\n", spec->caption);
+  fprintf(stdout, "        depends on:");
+
+  if(spec->dependencies.empty())
+  {
+    fprintf(stdout, " none.\n");
+  }
+  else
+  {
+    for(auto d : spec->dependencies)
+      fprintf(stdout, " \"%s\"", d);
+
+    fprintf(stdout, " specifications.\n");
+  }
+
+  fprintf(stdout, "================================================================================\n\n");
+
+  int ruleIdx = 0;
+
+  for(auto& r : spec->rules)
+  {
+    fprintf(stdout, "[%s] Rule #%04d: %s\n\n", spec->name, ruleIdx, r.caption);
+    ruleIdx++;
+  }
+
+  fprintf(stdout, "///////////////////////// End of \"%s\" specification.\n\n", spec->name);
+
+  for(auto dep : spec->dependencies)
+    specListRules(specFind(dep));
+
+  fflush(stdout);
+}
+
 void checkCompliance(Box const& file, SpecDesc const* spec)
 {
   struct Report : IReport
@@ -77,7 +139,7 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
         }
 
         if(ruleIdxError[errorIdx] == ruleIdx)
-          fprintf(stdout, "\n[Rule #%d] %s\n", ruleIdx, rule.caption);
+          fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
 
         ruleIdx++;
       }
@@ -97,51 +159,16 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
 
   if(!ruleIdxError.empty())
   {
-    fprintf(stdout, "%d error(s).\n", out.errorCount);
+    fprintf(stdout, "[%s] %d error(s).\n", spec->name, out.errorCount);
     printErrorRules();
   }
   else
   {
-    fprintf(stdout, "No errors.\n");
+    fprintf(stdout, "[%s] No errors.\n", spec->name);
   }
 
-  fflush(stdout);
-}
-
-std::vector<SpecDesc const*>& g_allSpecs()
-{
-  static std::vector<SpecDesc const*> allSpecs;
-  return allSpecs;
-}
-
-int registerSpec(SpecDesc const* spec)
-{
-  g_allSpecs().push_back(spec);
-  return 0;
-}
-
-SpecDesc const* specFind(const char* name)
-{
-  for(auto& spec : g_allSpecs())
-    if(strcmp(spec->name, name) == 0)
-      return spec;
-
-  fprintf(stderr, "Spec '%s' not found\n", name);
-  fflush(stderr);
-  exit(1);
-}
-
-void specListRules(const SpecDesc* spec)
-{
-  fprintf(stdout, "Specification name: %s\n", spec->name);
-  fprintf(stdout, "            detail: %s\n\n", spec->caption);
-  int ruleIdx = 0;
-
-  for(auto& r : spec->rules)
-  {
-    fprintf(stdout, "Rule #%04d: %s\n\n", ruleIdx, r.caption);
-    ruleIdx++;
-  }
+  for(auto dep : spec->dependencies)
+    checkCompliance(file, specFind(dep));
 
   fflush(stdout);
 }

@@ -1,14 +1,16 @@
 [Rule #30] channelcount shall not exceed 2, found 32
 [Rule #31] Sampling rate shall not exceed 48000, found 64580
-2 error(s).
+[miaf] 2 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #30] Section 7.4.5
+[miaf][Rule #30] Section 7.4.5
 If AAC is chosen, then AAC shall not exceed two audio channels
 
-[Rule #31] Section 7.4.5
+[miaf][Rule #31] Section 7.4.5
 If AAC is chosen, then AAC elementary streams shall not exceed 48 kHz sampling rate
+[heif] No errors.
+[isobmff] No errors.

@@ -1,9 +1,10 @@
 [Rule #2] The handler type for the MetaBox shall be 'pict'
-1 error(s).
+[heif] 1 error(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
 Error rules description:
 
-[Rule #2] Section 6.2
+[heif][Rule #2] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
+[isobmff] No errors.

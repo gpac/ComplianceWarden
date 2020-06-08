@@ -46,6 +46,7 @@ static const SpecDesc spec =
 {
   "dummy",
   "Dummy Spec, v1.2",
+  {},
   {
     {
       "'ftyp' box must appear first",

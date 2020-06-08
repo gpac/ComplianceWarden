@@ -1,11 +1,13 @@
 [Rule #24] Found 0 'pixi' associated for 1 displayable (not hidden) images
-1 error(s).
+[miaf] 1 error(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 Error rules description:
 
-[Rule #24] Section 7.3.6.6
+[miaf][Rule #24] Section 7.3.6.6
 The pixel information property shall be associated with every image that is
 displayable (not hidden)
+[heif] No errors.
+[isobmff] No errors.

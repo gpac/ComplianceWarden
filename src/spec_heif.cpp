@@ -9,6 +9,7 @@ static const SpecDesc spec =
 {
   "heif",
   "HEIF - ISO/IEC 23008-12 - First edition 2017-12",
+  { "isobmff" },
   {
     {
       "Section 10.1\n"
