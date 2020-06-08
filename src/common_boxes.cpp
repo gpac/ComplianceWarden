@@ -248,7 +248,8 @@ void parseAv1C(IReader* br)
     br->sym("reserved", 4);
   }
 
-  while(!br->empty()) // configOBUs
+  // configOBUs
+  while(!br->empty())
   {
     br->sym("forbidden", 1);
     br->sym("obu_type", 4);

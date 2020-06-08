@@ -1,6 +1,8 @@
 #include "spec.h"
 #include "fourcc.h"
 
+extern void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+
 static const SpecDesc spec =
 {
   "avif",
@@ -9,11 +11,11 @@ static const SpecDesc spec =
   { "heif" },
   {
     {
-      "'ftyp' box must appear first",
+      "Section 2.2.1\n"
+      "AV1 Item Configuration Property [...] shall be marked as essential.",
       [] (Box const& root, IReport* out)
       {
-        if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))
-          out->error("first box must be ftyp");
+        checkEssential(root, out, FOURCC("av1C"));
       }
     },
   },
