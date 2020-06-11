@@ -23,6 +23,7 @@ struct BoxReader : IReader
   {
     BoxReader subReader;
     subReader.spec = spec;
+    subReader.myBox.position = myBox.position + br.m_pos / 8;
     subReader.myBox.size = br.u(32);
     subReader.myBox.fourcc = br.u(32);
     unsigned boxHeaderSize = 8;
@@ -49,7 +50,7 @@ struct BoxReader : IReader
 
   BitReader br;
 
-  Box myBox;
+  Box myBox {};
   const SpecDesc* spec = nullptr;
 
 private:
