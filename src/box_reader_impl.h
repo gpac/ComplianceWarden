@@ -25,12 +25,15 @@ struct BoxReader : IReader
     subReader.spec = spec;
     subReader.myBox.position = myBox.position + br.m_pos / 8;
     subReader.myBox.size = br.u(32);
+    subReader.myBox.syms.push_back({ "size", (int64_t)subReader.myBox.size, 32 });
     subReader.myBox.fourcc = br.u(32);
+    subReader.myBox.syms.push_back({ "fourcc", (int64_t)subReader.myBox.fourcc, 32 });
     unsigned boxHeaderSize = 8;
 
     if(subReader.myBox.size == 1)
     {
       subReader.myBox.size = br.u(64); // large size
+      subReader.myBox.syms.push_back({ "size", (int64_t)subReader.myBox.size, 64 });
       boxHeaderSize += 8;
     }
 

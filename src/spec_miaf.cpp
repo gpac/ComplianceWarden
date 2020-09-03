@@ -372,7 +372,8 @@ std::initializer_list<RuleDesc> rulesGeneral =
             out->error("'clli' box size is %d bytes (expected 12)", clli.size);
 
           for(auto& field : clli.syms)
-            if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
+            if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
+               && strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
               out->error("Invalid 'clli' field \"%s\" (value=%lld)", field.name, field.value);
         };
 
@@ -439,7 +440,8 @@ std::initializer_list<RuleDesc> rulesGeneral =
             out->error("'mdcv' box size is %d bytes (expected 32)", mdcv.size);
 
           for(auto& field : mdcv.syms)
-            if(strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
+            if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
+               && strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
                && strcmp(field.name, "display_primaries_x_1") && strcmp(field.name, "display_primaries_y_1")
                && strcmp(field.name, "display_primaries_x_2") && strcmp(field.name, "display_primaries_y_2")
                && strcmp(field.name, "white_point_x") && strcmp(field.name, "white_point_y")

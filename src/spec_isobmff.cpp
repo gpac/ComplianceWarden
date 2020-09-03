@@ -26,7 +26,8 @@ static const SpecDesc spec =
               out->error("'pasp' box size is %d bytes (expected 16)", pasp.size);
 
             for(auto& field : pasp.syms)
-              if(strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
+              if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
+                 && strcmp(field.name, "hSpacing") && strcmp(field.name, "vSpacing"))
                 out->error("Invalid 'pasp' field \"%s\" (value=%lld)", field.name, field.value);
           };
 
