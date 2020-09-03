@@ -222,80 +222,6 @@ void parseHvcC(IReader* br)
     br->box(); // optional MPEG4ExtensionDescriptorsBox-es
 }
 
-void parseAv1C(IReader* br)
-{
-  br->sym("marker", 1);
-  br->sym("version", 7);
-  br->sym("seq_profile", 3);
-  br->sym("seq_level_idx_0", 5);
-  br->sym("seq_tier_0", 1);
-  br->sym("high_bitdepth", 1);
-  br->sym("twelve_bit", 1);
-  br->sym("monochrome", 1);
-  br->sym("chroma_subsampling_x", 1);
-  br->sym("chroma_subsampling_y", 1);
-  br->sym("chroma_sample_position", 2);
-  br->sym("reserved", 3);
-
-  auto initial_presentation_delay_present = br->sym("initial_presentation_delay_present", 1);
-
-  if(initial_presentation_delay_present)
-  {
-    br->sym("initial_presentation_delay_minus_one", 4);
-  }
-  else
-  {
-    br->sym("reserved", 4);
-  }
-
-  // configOBUs
-  while(!br->empty())
-  {
-    br->sym("forbidden", 1);
-    br->sym("obu_type", 4);
-    auto obu_extension_flag = br->sym("obu_extension_flag", 1);
-    auto obu_has_size_field = br->sym("obu_has_size_field", 1);
-
-    if(!obu_has_size_field)
-      assert(0 && "obu_has_size_field shall be set");
-
-    br->sym("obu_reserved_1bit", 1);
-
-    if(obu_extension_flag)
-    {
-      br->sym("temporal_id", 3);
-      br->sym("spatial_id", 2);
-      br->sym("extension_header_reserved_3bits", 3);
-    }
-
-    auto leb128_read = [] (IReader* br, int* bytes) -> uint64_t {
-        uint64_t value = 0;
-        uint8_t Leb128Bytes = 0;
-
-        for(int i = 0; i < 8; i++)
-        {
-          uint8_t leb128_byte = br->sym("leb128_byte", 8);
-          value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
-          Leb128Bytes += 1;
-
-          if(!(leb128_byte & 0x80))
-            break;
-        }
-
-        if(bytes)
-          *bytes = Leb128Bytes;
-
-        return value;
-      };
-
-    int leb128Bytes = 0;
-    auto obuSize = leb128_read(br, &leb128Bytes);
-
-    while(obuSize-- > 0)
-      br->sym("byte", 8);
-  }
-}
-
 void processEsDescriptor(IReader* br);
 void processDecoderConfigDescriptor(IReader* br);
 void processAudioSpecificInfoConfig(IReader* br, int size);
@@ -867,8 +793,6 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseAvcC;
   case FOURCC("hvcC"):
     return &parseHvcC;
-  case FOURCC("av1C"):
-    return &parseAv1C;
   case FOURCC("pict"):
   case FOURCC("thmb"):
   case FOURCC("auxl"):
