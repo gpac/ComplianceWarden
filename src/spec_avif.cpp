@@ -220,7 +220,7 @@ struct ItemLocation
   }
 };
 
-std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IReport* out, std::vector<uint32_t> const& av1ImageItemIDs)
+std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IReport* out, uint32_t itemIDs)
 {
   std::vector<ItemLocation::Span> spans;
 
@@ -237,7 +237,7 @@ std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IRe
           {
             if(!strcmp(sym.name, "item_ID"))
             {
-              if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), sym.value) == av1ImageItemIDs.end())
+              if(sym.value == itemIDs)
                 break;
 
               itemLocs.resize(itemLocs.size() + 1);
@@ -280,6 +280,50 @@ Box const& explore(Box const& root, uint64_t targetOffset)
       return explore(box, targetOffset);
 
   return root;
+}
+
+std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t itemId)
+{
+  std::vector<uint8_t> bytes;
+  auto spans = getAv1ImageItemsDataOffsets(root, out, itemId);
+
+  for(auto span : spans)
+  {
+    auto box = explore(root, span.offset);
+    int64_t diffBits = 8 * (span.offset - box.position);
+
+    bool firstTime = true;
+
+    for(auto sym : box.syms)
+    {
+      if(diffBits > 0)
+      {
+        diffBits -= sym.numBits;
+        continue;
+      }
+
+      if(firstTime)
+      {
+        if(diffBits && diffBits + sym.numBits)
+          out->warning("Could not locate AV1 Image Item Data (diffBits=%s)", toString(diffBits).c_str());
+
+        firstTime = false;
+      }
+
+      if(strlen(sym.name) || sym.numBits != 8)
+      {
+        out->warning("Wrong symbol detected (name=%s, size=%d bits). Stop import.", sym.name, sym.numBits);
+        break;
+      }
+
+      bytes.push_back((uint8_t)sym.value);
+
+      if((int64_t)bytes.size() >= span.length)
+        break;
+    }
+  }
+
+  return bytes;
 }
 } // namespace
 
@@ -348,44 +392,9 @@ static const SpecDesc spec =
       {
         auto const av1ImageItemIDs = findAv1ImageItems(root);
 
-        // find the AV1 Image Item Data
-        auto spans = getAv1ImageItemsDataOffsets(root, out, av1ImageItemIDs);
-
-        for(auto span : spans)
+        for(auto itemId : av1ImageItemIDs)
         {
-          auto box = explore(root, span.offset);
-          int64_t diffBits = 8 * (span.offset - box.position);
-
-          bool firstTime = true;
-          std::vector<uint8_t> bytes;
-
-          for(auto sym : box.syms)
-          {
-            if(diffBits > 0)
-            {
-              diffBits -= sym.numBits;
-              continue;
-            }
-
-            if(firstTime)
-            {
-              if(diffBits && diffBits + sym.numBits)
-                out->warning("Could not locate AV1 Image Item Data (diffBits=%s)", toString(diffBits).c_str());
-
-              firstTime = false;
-            }
-
-            if(strlen(sym.name) || sym.numBits != 8)
-            {
-              out->warning("Wrong symbol detected (name=%s, size=%d bits). Stop import.", sym.name, sym.numBits);
-              break;
-            }
-
-            bytes.push_back((uint8_t)sym.value);
-
-            if((int64_t)bytes.size() >= span.length)
-              break;
-          }
+          auto bytes = getAV1ImageItemData(root, out, itemId);
 
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
