@@ -135,7 +135,8 @@ void parseAv1C(IReader* br)
     br->sym("reserved", 4);
   }
 
-  // configOBUs
+  br->sym("configOBUs", 0);
+
   while(!br->empty())
   {
     bool reduced_still_picture_header = false;
@@ -237,7 +238,7 @@ std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IRe
           {
             if(!strcmp(sym.name, "item_ID"))
             {
-              if(sym.value == itemIDs)
+              if(sym.value != itemIDs)
                 break;
 
               itemLocs.resize(itemLocs.size() + 1);
@@ -427,8 +428,31 @@ static const SpecDesc spec =
       "The AV1 Image Item Data shall have exactly one Sequence Header OBU.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out; // TODO: parse OBUs
+        auto const av1ImageItemIDs = findAv1ImageItems(root);
+
+        int seqHdrNum = 0;
+
+        for(auto itemId : av1ImageItemIDs)
+        {
+          auto bytes = getAV1ImageItemData(root, out, itemId);
+
+          BoxReader br;
+          br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+          bool reduced_still_picture_header = false;
+
+          while(!br.empty())
+            parseAv1Obus(&br, reduced_still_picture_header);
+
+          assert(br.myBox.children.empty());
+
+          for(auto& sym : br.myBox.syms)
+            if(!strcmp(sym.name, "seqhdr"))
+              seqHdrNum++;
+        }
+
+        if(seqHdrNum != 1)
+          out->error("Expected 1 sequence Header OBU but found %s", seqHdrNum);
       }
     },
     {
@@ -436,8 +460,31 @@ static const SpecDesc spec =
       "The AV1 Image Item Data should have its still_picture flag set to 1.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out; // TODO
+        auto const av1ImageItemIDs = findAv1ImageItems(root);
+
+        for(auto itemId : av1ImageItemIDs)
+        {
+          auto bytes = getAV1ImageItemData(root, out, itemId);
+
+          BoxReader br;
+          br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+          bool reduced_still_picture_header = false;
+
+          while(!br.empty())
+            parseAv1Obus(&br, reduced_still_picture_header);
+
+          assert(br.myBox.children.empty());
+
+          for(auto& sym : br.myBox.syms)
+          {
+            if(!strcmp(sym.name, "still_picture"))
+            {
+              if(sym.value == 0)
+                out->error("still_picture flag set to 0.");
+            }
+          }
+        }
       }
     },
     {
@@ -445,8 +492,23 @@ static const SpecDesc spec =
       "The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out; // TODO
+        auto const av1ImageItemIDs = findAv1ImageItems(root);
+
+        for(auto itemId : av1ImageItemIDs)
+        {
+          auto bytes = getAV1ImageItemData(root, out, itemId);
+
+          BoxReader br;
+          br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+          bool reduced_still_picture_header = false;
+
+          while(!br.empty())
+            parseAv1Obus(&br, reduced_still_picture_header);
+
+          if(!reduced_still_picture_header)
+            out->error("reduced_still_picture_header flag set to 0.");
+        }
       }
     },
     {
