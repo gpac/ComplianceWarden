@@ -6,54 +6,12 @@
 #include <functional>
 #include <map>
 
-extern bool isVisualSampleEntry(uint32_t fourcc);
+bool isVisualSampleEntry(uint32_t fourcc);
+void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 
-void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
+namespace
 {
-  std::vector<uint32_t> properties { 0 }; // index is 1-based
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iprp"))
-          for(auto& iprpChild : metaChild.children)
-            if(iprpChild.fourcc == FOURCC("ipco"))
-              for(auto& ipcoChild : iprpChild.children)
-                properties.push_back(ipcoChild.fourcc);
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iprp"))
-          for(auto& iprpChild : metaChild.children)
-            if(iprpChild.fourcc == FOURCC("ipma"))
-            {
-              bool essential = false;
-              uint32_t itemId = 0;
-
-              for(auto& sym : iprpChild.syms)
-              {
-                if(!strcmp(sym.name, "item_ID"))
-                  itemId = sym.value;
-                else if(!strcmp(sym.name, "essential"))
-                  essential = sym.value;
-                else if(!strcmp(sym.name, "property_index"))
-                {
-                  if(sym.value > (int64_t)properties.size())
-                  {
-                    out->error("property_index \"%lld\" doesn't exist (%u detected).", sym.value, properties.size());
-                    break;
-                  }
-
-                  if(properties[sym.value] == fourcc)
-                    if(!essential)
-                      out->error("Transformative property \"%s\" shall be marked as essential (item_ID=%u)", toString(properties[sym.value]).c_str(), itemId);
-                }
-              }
-            }
-}
-
-static bool boxEqual(Box const* a, Box const* b)
+bool boxEqual(Box const* a, Box const* b)
 {
   if(a->fourcc != b->fourcc)
     return false;
@@ -81,6 +39,7 @@ static bool boxEqual(Box const* a, Box const* b)
       return false;
 
   return true;
+}
 }
 
 std::initializer_list<RuleDesc> rulesGeneral =
@@ -360,6 +319,141 @@ std::initializer_list<RuleDesc> rulesGeneral =
         out->error("MIAF missing Image spatial extents property");
     },
   },
+#if 0
+  {
+    "Section 7.4.2\n"
+    "Thumbnail or auxiliary sequences shall conform either to the requirements of\n"
+    "the same MIAF codec profile as the MIAF image sequence or video to which it is\n"
+    "linked, or to the requirements of a format defined in clause 9",
+    [] (Box const& root, IReport* out)
+    {
+      // Step 1: find thumbnals or auxiliary sequences
+
+      // TODO: thmb auxl
+
+      // Step 2.a: if they abide by Clause 9 then we are safe
+
+      // Clause 9 is JPEG
+      // a)	either as an item of type 'jpeg' containing a single compressed image item conforming to the ISO/IEC 10918-1.
+      // b)	or as an item labelled as and conforming to the MIME type 'image/jpeg'.
+
+      // Step 2.b:
+
+      struct HandlerTypeData
+      {
+        uint16_t alternateGroup = 0;
+        std::vector<uint32_t> referenceTypes;
+      };
+      std::map<uint32_t /*handler_type*/, HandlerTypeData> trackTypes;
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("moov"))
+          for(auto& moovChild : box.children)
+            if(moovChild.fourcc == FOURCC("trak"))
+            {
+              uint32_t handlerType = 0;
+
+              // find the hldr
+              for(auto& trakChild : moovChild.children)
+                if(trakChild.fourcc == FOURCC("mdia"))
+                  for(auto& mdiaChild : trakChild.children)
+                    if(mdiaChild.fourcc == FOURCC("hdlr"))
+                      for(auto& sym : mdiaChild.syms)
+                        if(!strcmp(sym.name, "handler_type"))
+                          handlerType = (uint32_t)sym.value;
+
+              if(handlerType == 0)
+              {
+                out->error("'trak' with no 'hdlr': check ISOBMFF conformance");
+                continue;
+              }
+
+              // skip auxiliary type
+              if(handlerType == FOURCC("auxv"))
+                continue;
+
+              // ensure entry
+              if(trackTypes.find(handlerType) == trackTypes.end())
+                trackTypes.insert({ handlerType, HandlerTypeData {}
+                                  });
+
+              // find alternate_group
+              {
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "alternate_group"))
+                        trackTypes.find(handlerType)->second.alternateGroup = (uint16_t)sym.value;
+              }
+
+              // find tref
+              bool trefFound = false;
+              {
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tref"))
+                    for(auto& trefChild : trakChild.children)
+                    {
+                      if(trefFound)
+                        out->error("'tref' with multiple TrackReferenceTypeBox: check ISOBMFF conformance");
+
+                      if(trefChild.fourcc != FOURCC("thmb") && trefChild.fourcc != FOURCC("auxl"))
+                        out->error("'tref' with unknown TrackReferenceTypeBox type \'%X\'", trefChild.fourcc);
+
+                      trefFound = true;
+                      trackTypes.find(handlerType)->second.referenceTypes.push_back(trefChild.fourcc);
+                    }
+
+                if(!trefFound)
+                  trackTypes.find(handlerType)->second.referenceTypes.push_back(FOURCC("main"));
+              }
+            }
+
+      bool firstPredicate = true;
+
+      for(auto& e : trackTypes)
+      {
+        int found = 0;
+
+        for(auto referenceType : e.second.referenceTypes)
+          if(referenceType == FOURCC("main"))
+            found++;
+
+        if(found != 1) // shall be exactly one
+          firstPredicate = false;
+      }
+
+      bool secondPredicate = true;
+
+      {
+        uint16_t alternate_group = 0; // no information on possible relations to other tacks, dixit ISOBMFF
+
+        for(auto& e : trackTypes)
+        {
+          for(auto referenceType : e.second.referenceTypes)
+            if(referenceType != FOURCC("thmb") && referenceType != FOURCC("auxl"))
+            {
+              if(alternate_group)
+              {
+                if(alternate_group != e.second.alternateGroup)
+                  secondPredicate = false;
+              }
+              else
+              {
+                if(e.second.alternateGroup) // found an alternate_group
+                  alternate_group = e.second.alternateGroup;
+              }
+            }
+        }
+
+        if(!alternate_group)
+          secondPredicate = false; // no alternate_group found, therefore can't form a group of alternates
+      }
+
+      if(!(firstPredicate ^ secondPredicate))
+        out->error("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
+    }
+  },
+#endif
   {
     "Section 7.4.4.2.2\n"
     "Enforce 'clli' parsing and positioning",
@@ -1336,11 +1430,11 @@ static std::vector<RuleDesc> concat(const std::initializer_list<const std::initi
   return v;
 }
 
-extern const std::initializer_list<RuleDesc> getRulesAudio();
-extern const std::initializer_list<RuleDesc> getRulesDerivations();
-extern const std::initializer_list<RuleDesc> getRulesNumPixels();
-extern const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec);
-extern const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec);
+const std::initializer_list<RuleDesc> getRulesAudio();
+const std::initializer_list<RuleDesc> getRulesDerivations();
+const std::initializer_list<RuleDesc> getRulesNumPixels();
+const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec);
+const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec);
 
 static const SpecDesc spec =
 {

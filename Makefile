@@ -32,6 +32,7 @@ SRCS_CW+=src/spec_miaf_brands.cpp
 SRCS_CW+=src/spec_miaf_derivations.cpp
 SRCS_CW+=src/spec_miaf_num_pixels.cpp
 SRCS_CW+=src/spec_miaf_profiles.cpp
+SRCS_CW+=src/spec_utils.cpp
 
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)

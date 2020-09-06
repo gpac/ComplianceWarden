@@ -7,6 +7,8 @@
 #include <memory> // make_unique
 #include <stdexcept>
 
+void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+
 namespace
 {
 int parseAv1SeqHdr(IReader* br, bool& reduced_still_picture_header)
@@ -327,8 +329,6 @@ std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t
   return bytes;
 }
 } // namespace
-
-extern void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 
 static const SpecDesc spec =
 {

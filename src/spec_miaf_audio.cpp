@@ -2,10 +2,12 @@
 #include "fourcc.h"
 #include <cstring>
 
-extern bool isMpegAudio(uint8_t oti);
+bool isMpegAudio(uint8_t oti);
 
+namespace
+{
 // MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
-static bool isMiafAac(const Box& mp4a, IReport* out)
+bool isMiafAac(const Box& mp4a, IReport* out)
 {
   bool res = false;
 
@@ -42,6 +44,7 @@ static bool isMiafAac(const Box& mp4a, IReport* out)
     }
 
   return res;
+}
 }
 
 const std::initializer_list<RuleDesc> getRulesAudio()

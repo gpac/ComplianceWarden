@@ -6,6 +6,8 @@
 #include <list>
 #include <map>
 
+namespace
+{
 struct DerivationGraph
 {
   // returns false on cyclic
@@ -111,6 +113,7 @@ DerivationGraph buildDerivationGraph(Box const& root)
       }
 
   return graph;
+}
 }
 
 const std::initializer_list<RuleDesc> getRulesDerivations()

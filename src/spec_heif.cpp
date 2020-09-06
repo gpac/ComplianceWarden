@@ -2,8 +2,8 @@
 #include "spec.h"
 #include "fourcc.h"
 
-extern bool isVisualSampleEntry(uint32_t fourcc);
-extern void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+bool isVisualSampleEntry(uint32_t fourcc);
+void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 
 static const SpecDesc spec =
 {

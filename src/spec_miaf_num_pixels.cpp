@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 
+namespace
+{
 struct Resolution
 {
   int width, height;
@@ -16,8 +18,6 @@ struct Derivations
   std::map<uint32_t /*item_ID*/, std::vector<uint32_t> /*thmb/dimg item_ID*/> itemRefs;
 };
 
-namespace
-{
 Derivations getDerivationsInfo(Box const& root, uint32_t irefTypeFourcc)
 {
   Derivations d;

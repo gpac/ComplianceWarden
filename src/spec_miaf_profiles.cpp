@@ -2,52 +2,11 @@
 #include "fourcc.h"
 #include <algorithm> // find
 #include <cstring>
-#include <sstream>
 #include <vector>
 #include <map>
 
-bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
-{
-  for(auto& rule : spec.rules)
-  {
-    std::stringstream ss(rule.caption);
-    std::string line;
-    std::getline(ss, line);
-    std::stringstream ssl(line);
-    std::string word;
-    ssl >> word;
-
-    if(word != "Section")
-      throw std::runtime_error("Rule caption is misformed.");
-
-    ssl >> word;
-
-    if(word.rfind(section, 0) == 0)
-    {
-      struct Report : IReport
-      {
-        void error(const char*, ...) override
-        {
-          ++errorCount;
-        }
-
-        void warning(const char*, ...) override
-        {
-          /*ignored*/
-        }
-
-        int errorCount = 0;
-      };
-      Report r;
-      rule.check(root, &r);
-
-      if(r.errorCount)
-        return false;
-    }
-  }
-
-  return true;
-}
+bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
+std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 
 namespace
 {
@@ -57,26 +16,6 @@ std::map<int64_t, std::string> hevcProfiles {
   { 0x03, "Main Still Picture" },
   { 0x04, "Range Extensions" },
 };
-
-std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
-{
-  std::vector<const Box*> res;
-
-  for(auto& box : root.children)
-  {
-    if(box.fourcc == fourcc)
-    {
-      res.push_back(&box);
-    }
-    else
-    {
-      auto b = findBoxes(box, fourcc);
-      res.insert(res.end(), b.begin(), b.end());
-    }
-  }
-
-  return res;
-}
 
 bool usesBrand(Box const& root, uint32_t brandFourcc)
 {

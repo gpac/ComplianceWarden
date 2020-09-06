@@ -5,7 +5,6 @@
 #include <map>
 
 bool isVisualSampleEntry(uint32_t fourcc);
-
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
 
 const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)

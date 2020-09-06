@@ -4,7 +4,7 @@
 #include <functional>
 #include <vector>
 
-extern bool isVisualSampleEntry(uint32_t fourcc);
+bool isVisualSampleEntry(uint32_t fourcc);
 
 static const SpecDesc spec =
 {
