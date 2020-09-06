@@ -3,7 +3,8 @@
 #include <cassert>
 #include <cstring>
 
-static
+namespace
+{
 const Symbol* find(Box const* box, const char* name)
 {
   for(auto& sym : box->syms)
@@ -14,7 +15,7 @@ const Symbol* find(Box const* box, const char* name)
 }
 
 template<typename H, typename P>
-static bool canFind(H& haystack, P const& predicate)
+bool canFind(H& haystack, P const& predicate)
 {
   for(auto& needle : haystack)
     if(predicate(needle))
@@ -23,8 +24,6 @@ static bool canFind(H& haystack, P const& predicate)
   return false;
 }
 
-namespace
-{
 void parseDumy(IReader* br)
 {
   br->sym("holy", 32);

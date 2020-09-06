@@ -16,7 +16,9 @@ struct Derivations
   std::map<uint32_t /*item_ID*/, std::vector<uint32_t> /*thmb/dimg item_ID*/> itemRefs;
 };
 
-static Derivations getDerivationsInfo(Box const& root, uint32_t irefTypeFourcc)
+namespace
+{
+Derivations getDerivationsInfo(Box const& root, uint32_t irefTypeFourcc)
 {
   Derivations d;
 
@@ -117,6 +119,7 @@ static Derivations getDerivationsInfo(Box const& root, uint32_t irefTypeFourcc)
         }
 
   return d;
+}
 }
 
 const std::initializer_list<RuleDesc> getRulesNumPixels()

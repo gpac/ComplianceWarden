@@ -9,7 +9,7 @@
 
 namespace
 {
-static int parseAv1SeqHdr(IReader* br, bool& reduced_still_picture_header)
+int parseAv1SeqHdr(IReader* br, bool& reduced_still_picture_header)
 {
   br->sym("seq_profile", 3);
   br->sym("still_picture", 1);

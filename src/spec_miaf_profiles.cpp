@@ -6,33 +6,6 @@
 #include <vector>
 #include <map>
 
-static std::map<int64_t, std::string> hevcProfiles {
-  { 0x01, "Main" },
-  { 0x02, "Main 10" },
-  { 0x03, "Main Still Picture" },
-  { 0x04, "Range Extensions" },
-};
-
-static std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
-{
-  std::vector<const Box*> res;
-
-  for(auto& box : root.children)
-  {
-    if(box.fourcc == fourcc)
-    {
-      res.push_back(&box);
-    }
-    else
-    {
-      auto b = findBoxes(box, fourcc);
-      res.insert(res.end(), b.begin(), b.end());
-    }
-  }
-
-  return res;
-}
-
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
 {
   for(auto& rule : spec.rules)
@@ -76,7 +49,36 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
   return true;
 }
 
-static bool usesBrand(Box const& root, uint32_t brandFourcc)
+namespace
+{
+std::map<int64_t, std::string> hevcProfiles {
+  { 0x01, "Main" },
+  { 0x02, "Main 10" },
+  { 0x03, "Main Still Picture" },
+  { 0x04, "Range Extensions" },
+};
+
+std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
+{
+  std::vector<const Box*> res;
+
+  for(auto& box : root.children)
+  {
+    if(box.fourcc == fourcc)
+    {
+      res.push_back(&box);
+    }
+    else
+    {
+      auto b = findBoxes(box, fourcc);
+      res.insert(res.end(), b.begin(), b.end());
+    }
+  }
+
+  return res;
+}
+
+bool usesBrand(Box const& root, uint32_t brandFourcc)
 {
   for(auto& box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
@@ -88,7 +90,7 @@ static bool usesBrand(Box const& root, uint32_t brandFourcc)
   return false;
 }
 
-static void profileCommonChecks(const SpecDesc& spec, const char* profileName, Box const& root, IReport* out)
+void profileCommonChecks(const SpecDesc& spec, const char* profileName, Box const& root, IReport* out)
 {
   if(!checkRuleSection(spec, "8.2", root))
     out->error("%s: self-containment (subclause 8.2) is not conform", profileName);
@@ -106,7 +108,7 @@ static void profileCommonChecks(const SpecDesc& spec, const char* profileName, B
     out->error("%s: matched-duration (subclause 8.7) is not conform", profileName);
 }
 
-static void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLevel, double maxLevel)
+void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLevel, double maxLevel)
 {
   auto const level = (double)rawLevel / 30.0;
 
@@ -114,7 +116,7 @@ static void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLeve
     out->error("%s: invalid level %g found, expecting %g or lower.", profileName, level, maxLevel);
 }
 
-static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel, bool max10bit, bool max422chroma)
+void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel, bool max10bit, bool max422chroma)
 {
   for(auto& hvcc : hvcCs)
   {
@@ -149,6 +151,7 @@ static void checkHevcProfilesLevels(IReport* out, const char* profileName, std::
     }
   }
 }
+} /*anonymous namespace*/
 
 const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
 {
