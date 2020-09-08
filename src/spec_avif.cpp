@@ -477,13 +477,9 @@ static const SpecDesc spec =
           assert(br.myBox.children.empty());
 
           for(auto& sym : br.myBox.syms)
-          {
             if(!strcmp(sym.name, "still_picture"))
-            {
               if(sym.value == 0)
                 out->error("still_picture flag set to 0.");
-            }
-          }
         }
       }
     },
@@ -559,6 +555,27 @@ static const SpecDesc spec =
         // TODO: check Auxiliary
 
         // TODO: parse seq hdr until color config
+        auto const av1ImageItemIDs = findAv1ImageItems(root);
+
+        for(auto itemId : av1ImageItemIDs)
+        {
+          auto bytes = getAV1ImageItemData(root, out, itemId);
+
+          BoxReader br;
+          br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+          bool reduced_still_picture_header = false;
+
+          while(!br.empty())
+            parseAv1Obus(&br, reduced_still_picture_header);
+
+          assert(br.myBox.children.empty());
+
+          for(auto& sym : br.myBox.syms)
+            if(!strcmp(sym.name, "still_picture"))
+              if(sym.value == 0)
+                out->error("still_picture flag set to 0.");
+        }
       }
     },
 #endif
