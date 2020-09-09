@@ -12,6 +12,32 @@ std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 
 namespace
 {
+bool operator == (const Symbol& lhs, const Symbol& rhs)
+{
+  if(lhs.numBits != rhs.numBits)
+    return false;
+
+  if(lhs.value != rhs.value)
+    return false;
+
+  if(strcmp(lhs.name, rhs.name))
+    return false;
+
+  return true;
+}
+
+bool operator == (const std::vector<Symbol>& lhs, const std::vector<Symbol>& rhs)
+{
+  if(lhs.size() != rhs.size())
+    return false;
+
+  for(size_t i = 0; i < lhs.size(); ++i)
+    if(!(lhs[i] == rhs[i]))
+      return false;
+
+  return true;
+}
+
 struct AV1CodecConfigurationRecord
 {
   int64_t seq_profile;
@@ -289,13 +315,12 @@ void parseAv1Obus(IReader* br, bool& reduced_still_picture_header, AV1CodecConfi
   case OBU_SEQUENCE_HEADER:
     br->sym("seqhdr", 0);
     obuSize -= parseAv1SeqHdr(br, reduced_still_picture_header, av1c);
+    br->sym("/seqhdr", 0);
     break;
   case OBU_FRAME_HEADER: case OBU_REDUNDANT_FRAME_HEADER: case OBU_FRAME:
-    br->sym("frmhdr", 0);
     obuSize -= parseAv1UncompressedHeader(br, reduced_still_picture_header);
     break;
   case OBU_METADATA:
-    br->sym("meta", 0);
     break;
   default: break;
   }
@@ -711,8 +736,71 @@ static const SpecDesc spec =
       "Sequence Header OBU in the AV1 Image Item Data.",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out; // TODO
+        std::vector<Symbol> av1cSymbols, av1ImageItemDataSeqHdr;
+
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("meta"))
+          {
+            auto av1Cs = findBoxes(box, FOURCC("av1C"));
+
+            if(av1Cs.size() != 1)
+              out->warning("Several av1C found. Please contact us to provide a sample!");
+
+            for(auto& av1C : av1Cs)
+            {
+              bool seqHdrFound = false;
+
+              for(auto& sym : av1C->syms)
+              {
+                if(!strcmp(sym.name, "seqhdr"))
+                  seqHdrFound = true;
+
+                if(!strcmp(sym.name, "/seqhdr"))
+                  seqHdrFound = false;
+
+                if(seqHdrFound)
+                  av1cSymbols.push_back(sym);
+              }
+            }
+          }
+        }
+
+        if(av1cSymbols.empty())
+          return;
+
+        auto const av1ImageItemIDs = findAv1ImageItems(root);
+
+        for(auto itemId : av1ImageItemIDs)
+        {
+          auto bytes = getAV1ImageItemData(root, out, itemId);
+
+          BoxReader br;
+          br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+          bool reduced_still_picture_header_unused = false;
+          AV1CodecConfigurationRecord av1c {};
+
+          while(!br.empty())
+            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c);
+
+          bool seqHdrFound = false;
+
+          for(auto& sym : br.myBox.syms)
+          {
+            if(!strcmp(sym.name, "seqhdr"))
+              seqHdrFound = true;
+
+            if(!strcmp(sym.name, "/seqhdr"))
+              seqHdrFound = false;
+
+            if(seqHdrFound)
+              av1ImageItemDataSeqHdr.push_back(sym);
+          }
+        }
+
+        if(!(av1cSymbols == av1ImageItemDataSeqHdr))
+          out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data.");
       }
     },
     {
