@@ -3,6 +3,10 @@
 #include <cstdarg>
 #include <cstring>
 
+const char* g_version =
+#include "cw_version.h"
+;
+
 /* ***** utils ***** */
 
 std::vector<uint8_t> loadFile(const char* path);
@@ -225,6 +229,8 @@ void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
 
 int main(int argc, const char* argv[])
 {
+  fprintf(stderr, "%s version %s\n\n", argv[0], g_version);
+
   if(argc != 3)
   {
     fprintf(stderr, "Usage: %s <spec> <list|input.mp4>\n", argv[0]);

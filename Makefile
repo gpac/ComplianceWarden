@@ -3,7 +3,7 @@ include generic.mk
 CXXFLAGS+=-std=c++14
 CXXFLAGS+=-Wall -Wextra -Werror
 
-CXXFLAGS+=-Isrc
+CXXFLAGS+=-Isrc -I$(BIN)
 
 ifeq ($(DEBUG),1)
   CXXFLAGS+=-g3
@@ -34,8 +34,12 @@ SRCS_CW+=src/spec_miaf_num_pixels.cpp
 SRCS_CW+=src/spec_miaf_profiles.cpp
 SRCS_CW+=src/spec_utils.cpp
 
+$(BIN)/cw_version.h:
+	scripts/version.sh > $(BIN)/cw_version.h
+
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
+$(BIN)/src/app_cw.cpp.o : $(BIN)/cw_version.h 
 
 #------------------------------------------------------------------------------
 everything: $(TARGETS)
