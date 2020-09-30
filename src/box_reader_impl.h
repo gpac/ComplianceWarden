@@ -1,3 +1,5 @@
+#pragma once
+
 #include "bit_reader.h"
 #include "spec.h"
 #include "common_boxes.h"
