@@ -731,6 +731,23 @@ static const SpecDesc spec =
       }
     },
     {
+      "Section 2.1\n"
+      "Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+        {
+          if(box.fourcc == FOURCC("meta"))
+          {
+            auto av1Cs = findBoxes(box, FOURCC("av1C"));
+
+            if(!av1Cs.empty())
+              out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.");
+          }
+        }
+      }
+    },
+    {
       "Section 2.2.1\n"
       "If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the\n"
       "Sequence Header OBU in the AV1 Image Item Data.",
