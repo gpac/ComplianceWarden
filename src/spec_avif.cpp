@@ -60,15 +60,31 @@ struct AV1CodecConfigurationRecord
     readBits += remainderBits; \
   }
 
-#define AV1_COLOR_CFG_BITS 1 + (seq_profile == 2 && av1c.high_bitdepth) + !(seq_profile == 1) + 1 + color_description_present_flag * 24 + \
-  (av1c.mono_chrome ? 1 : ( \
-     !(color_primaries == 0 /*CP_BT_709*/ && transfer_characteristics == 13 /*TC_SRGB*/ && matrix_coefficients == 0) ? 1 + \
-     ((seq_profile != 0 && seq_profile != 1 && BitDepth == 12) * (1 + av1c.chroma_subsampling_x) \
-      + (av1c.chroma_subsampling_x && av1c.chroma_subsampling_y) * 2 + 1) : 0 \
-     ) \
-  )
+struct ReaderBits
+{
+  ReaderBits(IReader* delegate) : delegate(delegate) {}
 
-int parseAv1ColorConfig(IReader* br, int64_t seq_profile, AV1CodecConfigurationRecord& av1c)
+  bool empty()
+  {
+    return delegate->empty();
+  }
+
+  int64_t sym(const char* name, int bits)
+  {
+    count += bits;
+    return delegate->sym(name, bits);
+  }
+
+  void box()
+  {
+    delegate->box();
+  }
+
+  IReader* delegate = nullptr;
+  int64_t count = 0;
+};
+
+void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurationRecord& av1c)
 {
   av1c.high_bitdepth = br->sym("high_bitdepth", 1);
   int BitDepth = 8;
@@ -116,9 +132,7 @@ int parseAv1ColorConfig(IReader* br, int64_t seq_profile, AV1CodecConfigurationR
     av1c.chroma_subsampling_y = 1;
     av1c.chroma_sample_position = 0;// CSP_UNKNOWN;
     br->sym("separate_uv_delta_q", 0); // = 0;
-    auto readBits = AV1_COLOR_CFG_BITS;
-    READ_UNTIL_NEXT_BYTE(readBits);
-    return readBits;
+    return;
   }
   else if(color_primaries == 0 /*CP_BT_709*/ &&
           transfer_characteristics == 13 /*TC_SRGB*/ &&
@@ -167,14 +181,12 @@ int parseAv1ColorConfig(IReader* br, int64_t seq_profile, AV1CodecConfigurationR
   }
 
   br->sym("separate_uv_delta_q", 1);
-
-  auto readBits = AV1_COLOR_CFG_BITS;
-  READ_UNTIL_NEXT_BYTE(readBits);
-  return readBits;
 }
 
-int parseAv1SeqHdr(IReader* br, bool& reduced_still_picture_header, AV1CodecConfigurationRecord& av1c)
+int parseAv1SeqHdr(IReader* reader, bool& reduced_still_picture_header, AV1CodecConfigurationRecord& av1c)
 {
+  auto br = std::make_unique<ReaderBits>(reader);
+
   av1c.seq_profile = br->sym("seq_profile", 3);
   br->sym("still_picture", 1);
   reduced_still_picture_header = br->sym("reduced_still_picture_header", 1);
@@ -193,7 +205,7 @@ int parseAv1SeqHdr(IReader* br, bool& reduced_still_picture_header, AV1CodecConf
   }
   else
   {
-    fprintf(stderr, "AV1 Sequence Header parsing with reduced_still_picture_header=0 not implemented.");
+    fprintf(stderr, "AV1 Sequence Header parsing with reduced_still_picture_header=0 not implemented.\n");
     br->sym("", 3);
     // incomplete parsing
     return 1;
@@ -232,10 +244,10 @@ int parseAv1SeqHdr(IReader* br, bool& reduced_still_picture_header, AV1CodecConf
   br->sym("enable_superres", 1);
   br->sym("enable_cdef", 1);
   br->sym("enable_restoration", 1);
-  auto colorConfigBits = parseAv1ColorConfig(br, av1c.seq_profile, av1c);
+  parseAv1ColorConfig(br.get(), av1c.seq_profile, av1c);
   br->sym("film_grain_params_present", 1);
 
-  auto readBits = 17 + (frame_width_bits_minus_1 + 1) + (frame_height_bits_minus_1 + 1) + 3 + 3 + colorConfigBits + 1;
+  auto readBits = br->count;
   READ_UNTIL_NEXT_BYTE(readBits);
   return readBits / 8;
 }
