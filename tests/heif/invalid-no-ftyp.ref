@@ -1,13 +1,14 @@
-[Rule #0] 'ftyp' box not found
-[Rule #1] 'meta' box not found at file level
-[Rule #2] 'hdlr' not found in MetaBox
-[Rule #3] ItemInfoBox is required
-[Rule #4] HEIF missing Image spatial extents property
+[Rule #0] Error: 'ftyp' box not found
+[Rule #1] Error: 'meta' box not found at file level
+[Rule #2] Error: 'hdlr' not found in MetaBox
+[Rule #3] Error: ItemInfoBox is required
+[Rule #4] Error: HEIF missing Image spatial extents property
 [heif] 5 error(s).
+[heif] 0 warning(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
-Error rules description:
+Involved rules descriptions:
 
 [heif][Rule #0] Section 10.1
 The FileTypeBox shall contain, in the compatible_brands list, the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) [and] brand(s) identifying conformance to this document (specified in 10).

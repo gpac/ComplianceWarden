@@ -1,13 +1,19 @@
-[Rule #22] Composition times for trackId=1 different from alpha plane trackId=2
+[Rule #22] Error: Composition times for trackId=1 different from alpha plane trackId=2
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 1 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #22] Section 7.4.6
 for every sample of the master image sequence or video track, there shall be a
 sample of the alpha plane track with the same composition time.
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.

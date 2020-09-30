@@ -1,13 +1,15 @@
-[Rule #0] 'meta' box not found at file level
-[Rule #4] 'hdlr' not found in MetaBox
-[Rule #7] PrimaryItemBox is required
-[Rule #8] MIAF missing Image spatial extents property
+[Rule #0] Error: 'meta' box not found at file level
+[Rule #4] Error: 'hdlr' not found in MetaBox
+[Rule #7] Error: PrimaryItemBox is required
+[Rule #8] Error: MIAF missing Image spatial extents property
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 4 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #0] Section 7.2.1.4:
 The file-level MetaBox shall always be present.
@@ -21,15 +23,20 @@ The primary item shall be a MIAF master image item.
 
 [miaf][Rule #8] Section 7.3.6.3
 Every image item shall be associated with a Image spatial extents property
-[Rule #1] 'meta' box not found at file level
-[Rule #2] 'hdlr' not found in MetaBox
-[Rule #3] ItemInfoBox is required
-[Rule #4] HEIF missing Image spatial extents property
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
+[Rule #1] Error: 'meta' box not found at file level
+[Rule #2] Error: 'hdlr' not found in MetaBox
+[Rule #3] Error: ItemInfoBox is required
+[Rule #4] Error: HEIF missing Image spatial extents property
 [heif] 4 error(s).
+[heif] 0 warning(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
-Error rules description:
+Involved rules descriptions:
 
 [heif][Rule #1] Section 6.2
 A MetaBox ('meta'), as specified in ISO/IEC 14496-12, is required at file level.

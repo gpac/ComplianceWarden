@@ -1,13 +1,15 @@
-[Rule #26] objectTypeIndication shall be an AAC codec (found 65)
-[Rule #26] Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
-[Rule #28] objectTypeIndication shall be an AAC codec (found 65)
-[Rule #28] Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
+[Rule #26] Error: objectTypeIndication shall be an AAC codec (found 65)
+[Rule #26] Error: Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
+[Rule #28] Error: objectTypeIndication shall be an AAC codec (found 65)
+[Rule #28] Error: Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 4 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #26] Section 7.4.5
 Each stream shall be coded as either a variant of AAC as defined in
@@ -16,5 +18,9 @@ ISO/IEC 14496-3, or as uncompressed two’s-complement
 [miaf][Rule #28] Section 7.4.5
 If AAC is chosen, then each AAC elementary stream shall be encoded using
 MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2.
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.

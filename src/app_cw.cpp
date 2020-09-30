@@ -7,6 +7,8 @@ const char* g_version =
 #include "cw_version.h"
 ;
 
+const char* g_appName = "Compliance Warden";
+
 /* ***** utils ***** */
 
 std::vector<uint8_t> loadFile(const char* path);
@@ -106,7 +108,7 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     {
       va_list args;
       va_start(args, fmt);
-      printf("[Rule #%d] ", ruleIdx);
+      printf("[Rule #%d] Error: ", ruleIdx);
       vprintf(fmt, args);
       va_end(args);
       printf("\n");
@@ -114,35 +116,43 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
       ++errorCount;
     }
 
-    void warning(const char*, ...) override
+    void warning(const char* fmt, ...) override
     {
-      /*ignored*/
+      va_list args;
+      va_start(args, fmt);
+      printf("[Rule #%d] Warning: ", ruleIdx);
+      vprintf(fmt, args);
+      va_end(args);
+      printf("\n");
+      fflush(stdout);
+      ++warningCount;
     }
 
     int ruleIdx = 0;
     int errorCount = 0;
+    int warningCount = 0;
   };
 
   Report out;
-  std::vector<int> ruleIdxError;
+  std::vector<int> ruleIdxEvent;
 
   auto printErrorRules = [&] () {
       fprintf(stdout, "\nSpecification description: %s\n", spec->caption);
-      fprintf(stdout, "\nError rules description:\n");
+      fprintf(stdout, "\nInvolved rules descriptions:\n");
 
-      int ruleIdx = 0, errorIdx = 0;
+      int ruleIdx = 0, eventIdx = 0;
 
       for(auto& rule : spec->rules)
       {
-        while(ruleIdx > ruleIdxError[errorIdx])
+        while(ruleIdx > ruleIdxEvent[eventIdx])
         {
-          errorIdx++;
+          eventIdx++;
 
-          if(errorIdx == (int)ruleIdxError.size())
+          if(eventIdx == (int)ruleIdxEvent.size())
             return;
         }
 
-        if(ruleIdxError[errorIdx] == ruleIdx)
+        if(ruleIdxEvent[eventIdx] == ruleIdx)
           fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
 
         ruleIdx++;
@@ -151,19 +161,20 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
 
   for(auto& rule : spec->rules)
   {
-    auto curErrorCount = out.errorCount;
+    auto curEventCount = out.errorCount + out.warningCount;
 
     rule.check(file, &out);
 
-    if(curErrorCount != out.errorCount)
-      ruleIdxError.push_back(out.ruleIdx);
+    if(curEventCount != out.errorCount + out.warningCount)
+      ruleIdxEvent.push_back(out.ruleIdx);
 
     out.ruleIdx++;
   }
 
-  if(!ruleIdxError.empty())
+  if(!ruleIdxEvent.empty())
   {
     fprintf(stdout, "[%s] %d error(s).\n", spec->name, out.errorCount);
+    fprintf(stdout, "[%s] %d warning(s).\n", spec->name, out.warningCount);
     printErrorRules();
   }
   else
@@ -225,40 +236,16 @@ void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
   checkCompliance(topReader.myBox, spec);
 }
 
-/* ***** main ***** */
-
-int main(int argc, const char* argv[])
-{
-  fprintf(stderr, "%s version %s\n\n", argv[0], g_version);
-
-  if(argc != 3)
-  {
-    fprintf(stderr, "Usage: %s <spec> <list|input.mp4>\n", argv[0]);
-    return 1;
-  }
-
-  auto spec = specFind(argv[1]);
-
-  if(!strcmp(argv[2], "list"))
-  {
-    specListRules(spec);
-  }
-  else
-  {
-    auto buf = loadFile(argv[2]);
-    specCheck(spec, argv[2], buf.data(), (int)buf.size());
-  }
-
-  return 0;
-}
-
 /* ***** emscripten exports ***** */
+
+#ifdef CW_WASM
 
 extern "C" {
 struct SpecDesc;
 SpecDesc const* specFindC(const char* name);
 void specListRulesC(const SpecDesc* spec);
 void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size);
+void printVersion();
 }
 
 SpecDesc const* specFindC(const char* name)
@@ -275,4 +262,44 @@ void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_
 {
   specCheck(spec, filename, data, size);
 }
+
+#endif /*CW_WASM*/
+
+void printVersion()
+{
+  fprintf(stderr, "%s version %s\n", g_appName, g_version);
+}
+
+/* ***** main ***** */
+
+#ifndef CW_WASM
+
+int main(int argc, const char* argv[])
+{
+  if(argc != 3)
+  {
+    fprintf(stderr, "Usage: %s <spec> <list|input.mp4>\n", argv[0]);
+    return 1;
+  }
+
+  auto spec = specFind(argv[1]);
+
+  if(!strcmp(argv[2], "list"))
+  {
+    specListRules(spec);
+  }
+  else if(!strcmp(argv[2], "version"))
+  {
+    printVersion();
+  }
+  else
+  {
+    auto buf = loadFile(argv[2]);
+    specCheck(spec, argv[2], buf.data(), (int)buf.size());
+  }
+
+  return 0;
+}
+
+#endif /*!CW_WASM*/
 

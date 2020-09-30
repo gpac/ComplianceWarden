@@ -1,14 +1,20 @@
-[Rule #18] Two media edits found: media rates shall be { 1, -1 }, found { 1, 1 }
-[Rule #18] Two media edits found: one shall specify forward and the other reverse playback
+[Rule #18] Error: Two media edits found: media rates shall be { 1, -1 }, found { 1, 1 }
+[Rule #18] Error: Two media edits found: one shall specify forward and the other reverse playback
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 2 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #18] Section 8.6
 when there are two 'media edits' one shall specify forward playback and the other reverse
 over the same media time-range
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.

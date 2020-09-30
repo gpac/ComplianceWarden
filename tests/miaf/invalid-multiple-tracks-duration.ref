@@ -1,11 +1,13 @@
-[Rule #13] All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
-[Rule #14] All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
+[Rule #13] Error: All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
+[Rule #14] Error: All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 2 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #13] Section 8.7
 If multiple tracks are present in the file, they shall have the same duration,
@@ -14,5 +16,9 @@ and edit lists may be needed to achieve this.
 [miaf][Rule #14] Section 7.4.5
 When present, audio tracks shall have the same duration as the video or image
 sequence track
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.

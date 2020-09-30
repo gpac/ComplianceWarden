@@ -1,13 +1,15 @@
-[Rule #32] Detected error in derivations: iden (2) -> iden (2)
-[Rule #32] Detected cycle in derivations.
-[Rule #33] Detected error in derivations: iden (2) -> iden (2)
-[Rule #33] Detected cycle in derivations.
+[Rule #32] Error: Detected error in derivations: iden (2) -> iden (2)
+[Rule #32] Error: Detected cycle in derivations.
+[Rule #33] Error: Detected error in derivations: iden (2) -> iden (2)
+[Rule #33] Error: Detected cycle in derivations.
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 4 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #32] Section 7.3.9
 An identity derivation shall not be derived immediately from another identity
@@ -21,5 +23,9 @@ If derivations occur, they shall be in this order:
 - optional identity derivation (subclause 7.3.11.2)
 - optional overlay (subclause 7.3.11.3)
 - optional identity derivation (subclause 7.3.11.2)
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.

@@ -31,30 +31,30 @@ function run_test
 
 function real_mp4_aac
 {
-  $BIN/cw.exe dummy $scriptDir/aac.mp4 2>/dev/null > $tmpDir/aac.new 
+  $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
 }
 
 function real_mp4_avc
 {
-  $BIN/cw.exe dummy $scriptDir/avc.mp4 2>/dev/null > $tmpDir/avc.new
+  $BIN/cw.exe dummy $scriptDir/avc.mp4 > $tmpDir/avc.new
   compare $scriptDir/avc.ref $tmpDir/avc.new
 }
 
 function real_mp4_heif
 {
   #generated with 'isoifftool -m 0 -t avc -i avc.264 -o heif.mp4 -s 320 240'
-  $BIN/cw.exe heif $scriptDir/heif.mp4 2>/dev/null > $tmpDir/heif.new
+  $BIN/cw.exe heif $scriptDir/heif.mp4 > $tmpDir/heif.new
   compare $scriptDir/heif.ref $tmpDir/heif.new
 
-  $BIN/cw.exe miaf $scriptDir/heif.mp4 2>/dev/null > $tmpDir/miaf.new
+  $BIN/cw.exe miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new
   compare $scriptDir/miaf.ref $tmpDir/miaf.new
 }
 
 function miaf_file_extension
 {
   cp $scriptDir/heif.mp4 $tmpDir/heif_no_ext
-  $BIN/cw.exe miaf $tmpDir/heif_no_ext 2>/dev/null > $tmpDir/no_file_extension.new
+  $BIN/cw.exe miaf $tmpDir/heif_no_ext > $tmpDir/no_file_extension.new
   compare $scriptDir/no_file_extension.ref $tmpDir/no_file_extension.new
 }
 
@@ -69,7 +69,7 @@ function check_rules
   if [[ $name == *error* ]] ; then
     $BIN/cw.exe $spec $mp4path 2> $tmpDir/$name.new || :
   else
-    $BIN/cw.exe $spec $mp4path 2>/dev/null > $tmpDir/$name.new
+    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new
   fi
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }

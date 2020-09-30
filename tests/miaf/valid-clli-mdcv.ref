@@ -1,10 +1,22 @@
-[miaf] No errors.
-[Rule #5] CodingConstraintsBox ('ccst') shall be present once
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
+[miaf] 0 error(s).
+[miaf] 1 warning(s).
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+Involved rules descriptions:
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
+[Rule #5] Error: CodingConstraintsBox ('ccst') shall be present once
 [heif] 1 error(s).
+[heif] 0 warning(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
-Error rules description:
+Involved rules descriptions:
 
 [heif][Rule #5] Section 7.2.3.3
 CodingConstraintsBox ('ccst') shall be present once per sample entry

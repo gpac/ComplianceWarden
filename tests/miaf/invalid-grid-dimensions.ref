@@ -1,13 +1,15 @@
-[Rule #35] Tile widths shall be greater than or equal to 64. Found 10
-[Rule #35] Tile heights shall be greater than or equal to 64. Found 10
-[Rule #35] Tile widths should be a multiple of 64. Found 10
-[Rule #35] Tile heights should be a multiple of 64. Found 10
+[Rule #35] Error: Tile widths shall be greater than or equal to 64. Found 10
+[Rule #35] Error: Tile heights shall be greater than or equal to 64. Found 10
+[Rule #35] Error: Tile widths should be a multiple of 64. Found 10
+[Rule #35] Error: Tile heights should be a multiple of 64. Found 10
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 4 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #35] Section 7.3.11.4.2
 Any grid image in a MIAF file shall also conform to the following constraints:
@@ -15,5 +17,9 @@ Any grid image in a MIAF file shall also conform to the following constraints:
   of 64.
 - The tile_height shall be greater than or equal to 64, and should be a multiple
   of 64
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.

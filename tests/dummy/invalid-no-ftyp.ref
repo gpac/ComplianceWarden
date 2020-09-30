@@ -1,10 +1,11 @@
-[Rule #0] first box must be ftyp
-[Rule #1] moov box not found
+[Rule #0] Error: first box must be ftyp
+[Rule #1] Error: moov box not found
 [dummy] 2 error(s).
+[dummy] 0 warning(s).
 
 Specification description: Dummy Spec, v1.2
 
-Error rules description:
+Involved rules descriptions:
 
 [dummy][Rule #0] 'ftyp' box must appear first
 

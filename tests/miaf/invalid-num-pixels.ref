@@ -1,15 +1,21 @@
-[Rule #34] Next larger is a master image that has 1000000 times more pixels (resolutions: 1 vs 1000x1000). Limit is 200
+[Rule #34] Error: Next larger is a master image that has 1000000 times more pixels (resolutions: 1 vs 1000x1000). Limit is 200
+[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 [miaf] 1 error(s).
+[miaf] 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Error rules description:
+Involved rules descriptions:
 
 [miaf][Rule #34] Section 7.3.3
 There shall be no greater than a factor of 200 between the total number of pixels
 in a MIAF thumbnail image item and the next larger MIAF thumbnail image item, or
 the associated MIAF master image item if there is no larger MIAF thumbnail image
 item
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
 [heif] No errors.
 [isobmff] No errors.
