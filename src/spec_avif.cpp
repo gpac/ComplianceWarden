@@ -701,7 +701,7 @@ static const SpecDesc spec =
           for(auto& sym : br.myBox.syms)
             if(!strcmp(sym.name, "still_picture"))
               if(sym.value == 0)
-                out->error("still_picture flag set to 0.");
+                out->warning("still_picture flag set to 0.");
         }
       }
     },
@@ -726,7 +726,7 @@ static const SpecDesc spec =
             parseAv1Obus(&br, reduced_still_picture_header, av1c_unused);
 
           if(!reduced_still_picture_header)
-            out->error("reduced_still_picture_header flag set to 0.");
+            out->warning("reduced_still_picture_header flag set to 0.");
         }
       }
     },
