@@ -61,10 +61,21 @@ struct AV1CodecConfigurationRecord
            "\t\ttwelve_bit=" + std::to_string(twelve_bit) + "\n" +
            "\t\tmono_chrome=" + std::to_string(mono_chrome) + "\n" +
            "\t\tchroma_subsampling_x=" + std::to_string(chroma_subsampling_x) + "\n" +
-           "\t\t\tchroma_subsampling_y=" + std::to_string(chroma_subsampling_y) + "\n" +
+           "\t\tchroma_subsampling_y=" + std::to_string(chroma_subsampling_y) + "\n" +
            "\t\tchroma_sample_position=" + std::to_string(chroma_sample_position);
   }
 };
+
+struct av1State
+{
+  bool reduced_still_picture_header = false;
+  bool frame_id_numbers_present_flag = false;
+  int64_t delta_frame_id_length_minus_2 = 0;
+  int64_t additional_frame_id_length_minus_1 = 0;
+  AV1CodecConfigurationRecord av1c {};
+};
+
+auto const KEY_FRAME = 0;
 
 #define READ_UNTIL_NEXT_BYTE(readBits) \
   if(readBits % 8){ \
@@ -196,52 +207,106 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
   br->sym("separate_uv_delta_q", 1);
 }
 
-int parseAv1SeqHdr(IReader* reader, bool& reduced_still_picture_header, AV1CodecConfigurationRecord& av1c)
+int parseAv1SeqHdr(IReader* reader, av1State& state)
 {
   auto br = std::make_unique<ReaderBits>(reader);
 
-  av1c.seq_profile = br->sym("seq_profile", 3);
+  state.av1c.seq_profile = br->sym("seq_profile", 3);
   br->sym("still_picture", 1);
-  reduced_still_picture_header = br->sym("reduced_still_picture_header", 1);
+  state.reduced_still_picture_header = br->sym("reduced_still_picture_header", 1);
 
-  if(reduced_still_picture_header)
+  if(state.reduced_still_picture_header)
   {
     br->sym("timing_info_present_flag", 0); // =0
-    br->sym("decoder_model_info_present_flag", 0); // =0
+    auto decoder_model_info_present_flag = br->sym("decoder_model_info_present_flag", 0); // =0
+    assert(decoder_model_info_present_flag == 0);
     br->sym("initial_display_delay_present_flag", 0); // =0
     br->sym("operating_points_cnt_minus_1", 0); // =0
     br->sym("operating_point_idc_0", 0); // =0
-    av1c.seq_level_idx_0 = br->sym("seq_level_idx_0", 5);
-    av1c.seq_tier_0 = br->sym("seq_tier_0", 0); // =0
+    state.av1c.seq_level_idx_0 = br->sym("seq_level_idx_0", 5);
+    state.av1c.seq_tier_0 = br->sym("seq_tier_0", 0); // =0
     br->sym("decoder_model_present_for_this_op_0", 0); // =0
     br->sym("initial_display_delay_present_for_this_op_0", 0); // =0
   }
   else
   {
-    fprintf(stderr, "AV1 Sequence Header parsing with reduced_still_picture_header=0 not implemented.\n");
-    // incomplete parsing
-    auto readBits = br->count;
-    READ_UNTIL_NEXT_BYTE(readBits);
-    return readBits / 8;
+    auto timing_info_present_flag = br->sym("timing_info_present_flag", 1);
+    assert(timing_info_present_flag == 0); // timing info and consequence in uncompressed header not implemented
+
+    auto initial_display_delay_present_flag = br->sym("initial_display_delay_present_flag", 1);
+    assert(initial_display_delay_present_flag == 0);
+
+    auto operating_points_cnt_minus_1 = br->sym("operating_points_cnt_minus_1", 5);
+
+    for(int i = 0; i <= operating_points_cnt_minus_1; i++)
+    {
+      br->sym("operating_point_idc[i])", 12);
+      auto seq_level_idx = br->sym("seq_level_idx[i]", 5);
+      int64_t seq_tier = 0;
+
+      if(seq_level_idx > 7)
+      {
+        seq_tier = br->sym("seq_tier[i]", 1);
+      }
+      else
+      {
+        seq_tier = br->sym("seq_tier[i]", 0); // =0
+      }
+
+      if(i == 0)
+      {
+        state.av1c.seq_level_idx_0 = seq_level_idx;
+        state.av1c.seq_tier_0 = seq_tier;
+      }
+
+      // Not covered: there is an assert ensuring decoder_model_info_present_flag == false.
+      /*
+         if ( decoder_model_info_present_flag ) {
+         decoder_model_present_for_this_op[ i ] f(1)
+         if ( decoder_model_present_for_this_op[ i ] ) {
+          operating_parameters_info( i )
+         }
+         } else {
+         decoder_model_present_for_this_op[ i ] = 0
+         }
+       */
+      // Not covered: there is an assert ensuring initial_display_delay_present_flag == false.
+      /*
+         if ( initial_display_delay_present_flag ) {
+         initial_display_delay_present_for_this_op[ i ] f(1)
+         if ( initial_display_delay_present_for_this_op[ i ] ) {
+          initial_display_delay_minus_1[ i ] f(4)
+         }
+         }
+       */
+    }
   }
 
   auto frame_width_bits_minus_1 = br->sym("frame_width_bits_minus_1", 4);
   auto frame_height_bits_minus_1 = br->sym("frame_height_bits_minus_1", 4);
   br->sym("max_frame_width_minus_1", frame_width_bits_minus_1 + 1);
   br->sym("max_frame_height_minus_1", frame_height_bits_minus_1 + 1);
-  // if ( reduced_still_picture_header )
-  // frame_id_numbers_present_flag = 0
-  // else
-  // frame_id_numbers_present_flag f(1)
-  // if ( frame_id_numbers_present_flag ) {
-  // delta_frame_id_length_minus_2 f(4)
-  // additional_frame_id_length_minus_1 f(3)
-  // }
+
+  if(state.reduced_still_picture_header)
+  {
+    state.frame_id_numbers_present_flag = 0;
+  }
+  else
+  {
+    state.frame_id_numbers_present_flag = br->sym("frame_id_numbers_present_flag", 1);
+  }
+
+  if(state.frame_id_numbers_present_flag)
+  {
+    state.delta_frame_id_length_minus_2 = br->sym("delta_frame_id_length_minus_2", 4);
+    state.additional_frame_id_length_minus_1 = br->sym("additional_frame_id_length_minus_1", 3);
+  }
+
   br->sym("use_128x128_superblock", 1);
   br->sym("enable_filter_intra", 1);
   br->sym("enable_intra_edge_filter", 1);
 
-  if(reduced_still_picture_header)
+  if(state.reduced_still_picture_header)
   {
     br->sym("enable_interintra_compound", 0); // =0
     br->sym("enable_masked_compound", 0); // =0
@@ -253,12 +318,72 @@ int parseAv1SeqHdr(IReader* reader, bool& reduced_still_picture_header, AV1Codec
     br->sym("seq_force_screen_content_tools", 0); // 0, should be SELECT_SCREEN_CONTENT_TOOLS(2)
     br->sym("seq_force_integer_mv", 0); // 0, should be SELECT_INTEGER_MV(2)
     br->sym("OrderHintBits", 0); // =0
-  }// else { // incomplete parsing
+  }
+  else
+  {
+    br->sym("enable_interintra_compound", 1);
+    br->sym("enable_masked_compound", 1);
+    br->sym("enable_warped_motion", 1);
+    br->sym("enable_dual_filter", 1);
+    auto enable_order_hint = br->sym("enable_order_hint", 1);
+
+    if(enable_order_hint)
+    {
+      br->sym(" enable_jnt_comp", 1);
+      br->sym("enable_ref_frame_mvs", 1);
+    }
+    else
+    {
+      // enable_jnt_comp = 0
+      // enable_ref_frame_mvs = 0
+    }
+
+    auto seq_choose_screen_content_tools = br->sym("seq_choose_screen_content_tools", 1);
+
+    int64_t seq_force_screen_content_tools = 0;
+
+    if(seq_choose_screen_content_tools)
+    {
+      seq_force_screen_content_tools = 2; // SELECT_SCREEN_CONTENT_TOOLS
+    }
+    else
+    {
+      seq_force_screen_content_tools = br->sym("seq_force_screen_content_tools", 1);
+    }
+
+    if(seq_force_screen_content_tools > 0)
+    {
+      auto seq_choose_integer_mv = br->sym("seq_choose_integer_mv", 1);
+
+      if(seq_choose_integer_mv)
+      {
+        // seq_force_integer_mv = SELECT_INTEGER_MV
+      }
+      else
+      {
+        br->sym("seq_force_integer_mv", 1);
+      }
+    }
+    else
+    {
+      // seq_force_integer_mv = SELECT_INTEGER_MV
+    }
+
+    if(enable_order_hint)
+    {
+      br->sym("order_hint_bits_minus_1", 3);
+      // OrderHintBits = order_hint_bits_minus_1 + 1
+    }
+    else
+    {
+      // OrderHintBits = 0
+    }
+  }
 
   br->sym("enable_superres", 1);
   br->sym("enable_cdef", 1);
   br->sym("enable_restoration", 1);
-  parseAv1ColorConfig(br.get(), av1c.seq_profile, av1c);
+  parseAv1ColorConfig(br.get(), state.av1c.seq_profile, state.av1c);
   br->sym("film_grain_params_present", 1);
 
   auto readBits = br->count;
@@ -266,9 +391,18 @@ int parseAv1SeqHdr(IReader* reader, bool& reduced_still_picture_header, AV1Codec
   return readBits / 8;
 }
 
-int parseAv1UncompressedHeader(IReader* br, const bool reduced_still_picture_header)
+int parseAv1UncompressedHeader(IReader* reader, av1State const& state)
 {
-  if(reduced_still_picture_header)
+  auto br = std::make_unique<ReaderBits>(reader);
+
+  int idLen = 0;
+
+  if(state.frame_id_numbers_present_flag)
+  {
+    idLen = state.additional_frame_id_length_minus_1 + state.delta_frame_id_length_minus_2 + 3;
+  }
+
+  if(state.reduced_still_picture_header)
   {
     br->sym("key_frame", 0);
     br->sym("show_frame", 0);
@@ -276,12 +410,38 @@ int parseAv1UncompressedHeader(IReader* br, const bool reduced_still_picture_hea
   }
   else
   {
-    br->sym("show_existing_frame", 1);
+    auto show_existing_frame = br->sym("show_existing_frame", 1);
+
+    if(show_existing_frame)
+    {
+      auto frame_to_show_map_idx = br->sym("frame_to_show_map_idx", 3);
+
+      // Not covered: there is an assert in the sequence header.
+      // if ( decoder_model_info_present_flag && !equal_picture_interval ) {
+      // temporal_point_info( )
+      // }
+      // refresh_frame_flags = 0
+
+      if(state.frame_id_numbers_present_flag)
+      {
+        br->sym("display_frame_id", idLen);
+      }
+
+      assert(frame_to_show_map_idx == 0);
+      assert(0); // we don't refresh RefFrameType
+      // frame_type = RefFrameType[frame_to_show_map_idx];
+
+      auto readBits = br->count;
+      READ_UNTIL_NEXT_BYTE(readBits);
+      return readBits / 8;
+    }
+
     br->sym("frame_type", 2);
     br->sym("show_frame", 1);
-    br->sym("", 4);
-    // incomplete parsing
-    return 1;
+
+    auto readBits = br->count;
+    READ_UNTIL_NEXT_BYTE(readBits);
+    return readBits / 8;
   }
 }
 
@@ -294,7 +454,7 @@ enum
   OBU_REDUNDANT_FRAME_HEADER = 7,
 };
 
-void parseAv1Obus(IReader* br, bool& reduced_still_picture_header, AV1CodecConfigurationRecord& av1c)
+void parseAv1Obus(IReader* br, av1State& state)
 {
   br->sym("obu", 0); // virtual OBU separator
   br->sym("forbidden", 1);
@@ -340,11 +500,11 @@ void parseAv1Obus(IReader* br, bool& reduced_still_picture_header, AV1CodecConfi
   {
   case OBU_SEQUENCE_HEADER:
     br->sym("seqhdr", 0);
-    obuSize -= parseAv1SeqHdr(br, reduced_still_picture_header, av1c);
+    obuSize -= parseAv1SeqHdr(br, state);
     br->sym("/seqhdr", 0);
     break;
   case OBU_FRAME_HEADER: case OBU_REDUNDANT_FRAME_HEADER: case OBU_FRAME:
-    obuSize -= parseAv1UncompressedHeader(br, reduced_still_picture_header);
+    obuSize -= parseAv1UncompressedHeader(br, state);
     break;
   case OBU_METADATA:
     break;
@@ -383,11 +543,11 @@ void parseAv1C(IReader* br)
 
   br->sym("configOBUs", 0);
 
+  av1State state;
+
   while(!br->empty())
   {
-    AV1CodecConfigurationRecord av1c {};
-    bool reduced_still_picture_header = false;
-    parseAv1Obus(br, reduced_still_picture_header, av1c);
+    parseAv1Obus(br, state);
   }
 }
 
@@ -449,7 +609,7 @@ struct ItemLocation
 
     if(extents.size() > 1)
     {
-      out->warning("iloc with several extentions not supported");
+      out->warning("iloc with several extensions not supported");
       return 0;
     }
 
@@ -560,7 +720,7 @@ std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t
 
       if(strlen(sym.name) || sym.numBits != 8)
       {
-        out->warning("Wrong symbol detected (name=%s, size=%d bits). Stop import.", sym.name, sym.numBits);
+        out->warning("Wrong symbol detected (name=%s, size=%d bits). Stopping import.", sym.name, sym.numBits);
         break;
       }
 
@@ -645,11 +805,10 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header_unused = false;
-          AV1CodecConfigurationRecord av1c_unused {};
+          av1State stateUnused;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c_unused);
+            parseAv1Obus(&br, stateUnused);
 
           /* we know we've seen the sequence header (av1C) and the frame header*/
           bool showFrame = false, keyFrame = false;
@@ -662,10 +821,14 @@ static const SpecDesc specAvif =
 
             if(!strcmp(sym.name, "key_frame"))
               keyFrame = true;
+
+            if(!strcmp(sym.name, "frame_type"))
+              if(sym.value == KEY_FRAME)
+                keyFrame = true;
           }
 
           if(!(showFrame && keyFrame))
-            out->error("AV1 Sample shall be marked as sync (showFrame=%d, keyFrame=%s", (int)showFrame, (int)keyFrame);
+            out->error("AV1 Sample shall be marked as sync (showFrame=%d, keyFrame=%d)", (int)showFrame, (int)keyFrame);
         }
       }
     },
@@ -685,11 +848,10 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header_unused = false;
-          AV1CodecConfigurationRecord av1c_unused {};
+          av1State stateUnused;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c_unused);
+            parseAv1Obus(&br, stateUnused);
 
           assert(br.myBox.children.empty());
 
@@ -716,11 +878,10 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header_unused = false;
-          AV1CodecConfigurationRecord av1c_unused {};
+          av1State stateUnused;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c_unused);
+            parseAv1Obus(&br, stateUnused);
 
           assert(br.myBox.children.empty());
 
@@ -745,13 +906,12 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header = false;
-          AV1CodecConfigurationRecord av1c_unused {};
+          av1State state;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header, av1c_unused);
+            parseAv1Obus(&br, state);
 
-          if(!reduced_still_picture_header)
+          if(!state.reduced_still_picture_header)
             out->warning("reduced_still_picture_header flag set to 0.");
         }
       }
@@ -821,11 +981,10 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header_unused = false;
-          AV1CodecConfigurationRecord av1c {};
+          av1State state;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c);
+            parseAv1Obus(&br, state);
 
           bool seqHdrFound = false;
 
@@ -907,18 +1066,17 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header_unused = false;
-          AV1CodecConfigurationRecord av1c {};
+          av1State state;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c);
+            parseAv1Obus(&br, state);
 
-          if(memcmp(&av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
+          if(memcmp(&state.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
             out->error("The values of the AV1CodecConfigurationBox shall match"
                        "the Sequence Header OBU in the AV1 Image Item Data:\n"
                        "\tAV1CodecConfigurationBox:\n%s\n"
                        "\tSequence Header OBU in the AV1 Image Item Data:\n%s\n",
-                       av1c.toString().c_str(), av1cRef.toString().c_str());
+                       state.av1c.toString().c_str(), av1cRef.toString().c_str());
         }
       }
     },
@@ -959,11 +1117,10 @@ static const SpecDesc specAvif =
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          bool reduced_still_picture_header_unused = false;
-          AV1CodecConfigurationRecord av1c_unused {};
+          av1State stateUnused;
 
           while(!br.empty())
-            parseAv1Obus(&br, reduced_still_picture_header_unused, av1c_unused);
+            parseAv1Obus(&br, stateUnused);
 
           assert(br.myBox.children.empty());
 
