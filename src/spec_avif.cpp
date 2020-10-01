@@ -51,6 +51,19 @@ struct AV1CodecConfigurationRecord
   int64_t chroma_sample_position;
   // initial_presentation_delay
   // configOBUs[]
+
+  std::string toString()
+  {
+    return std::string("\t\tseq_profile=") + std::to_string(seq_profile) + "\n" +
+           "\t\tseq_level_idx_0=" + std::to_string(seq_level_idx_0) + "\n" +
+           "\t\tseq_tier_0=" + std::to_string(seq_tier_0) + "\n" +
+           "\t\thigh_bitdepth=" + std::to_string(high_bitdepth) + "\n" +
+           "\t\ttwelve_bit=" + std::to_string(twelve_bit) + "\n" +
+           "\t\tmono_chrome=" + std::to_string(mono_chrome) + "\n" +
+           "\t\tchroma_subsampling_x=" + std::to_string(chroma_subsampling_x) + "\n" +
+           "\t\t\tchroma_subsampling_y=" + std::to_string(chroma_subsampling_y) + "\n" +
+           "\t\tchroma_sample_position=" + std::to_string(chroma_sample_position);
+  }
 };
 
 #define READ_UNTIL_NEXT_BYTE(readBits) \
@@ -652,7 +665,7 @@ static const SpecDesc specAvif =
           }
 
           if(!(showFrame && keyFrame))
-            out->error("AV1 Sample shall be marked as sync");
+            out->error("AV1 Sample shall be marked as sync (showFrame=%d, keyFrame=%s", (int)showFrame, (int)keyFrame);
         }
       }
     },
@@ -901,7 +914,11 @@ static const SpecDesc specAvif =
             parseAv1Obus(&br, reduced_still_picture_header_unused, av1c);
 
           if(memcmp(&av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
-            out->error("The values of the AV1CodecConfigurationBox shall match the Sequence Header OBU in the AV1 Image Item Data.");
+            out->error("The values of the AV1CodecConfigurationBox shall match"
+                       "the Sequence Header OBU in the AV1 Image Item Data:\n"
+                       "\tAV1CodecConfigurationBox:\n%s\n"
+                       "\tSequence Header OBU in the AV1 Image Item Data:\n%s\n",
+                       av1c.toString().c_str(), av1cRef.toString().c_str());
         }
       }
     },
