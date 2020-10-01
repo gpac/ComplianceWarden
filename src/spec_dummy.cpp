@@ -41,7 +41,7 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
 }
 }
 
-static const SpecDesc spec =
+static const SpecDesc specDummy =
 {
   "dummy",
   "Dummy Spec, v1.2",
@@ -89,5 +89,5 @@ static const SpecDesc spec =
   &getParseFunction,
 };
 
-static auto const registered = registerSpec(&spec);
+static auto const registered = registerSpec(&specDummy);
 

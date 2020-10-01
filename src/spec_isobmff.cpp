@@ -6,7 +6,7 @@
 
 bool isVisualSampleEntry(uint32_t fourcc);
 
-static const SpecDesc spec =
+static const SpecDesc specIsobmff =
 {
   "isobmff",
   "ISO Base Media File Format\n"
@@ -106,5 +106,5 @@ static const SpecDesc spec =
   nullptr,
 };
 
-static auto const registered = registerSpec(&spec);
+static auto const registered = registerSpec(&specIsobmff);
 

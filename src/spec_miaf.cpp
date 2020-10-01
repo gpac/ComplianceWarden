@@ -1436,15 +1436,15 @@ const std::initializer_list<RuleDesc> getRulesNumPixels();
 const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec);
 const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec);
 
-static const SpecDesc spec =
+static const SpecDesc specMiaf =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
   { "heif" },
-  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(spec), getRulesProfiles(spec) }),
+  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(specMiaf), getRulesProfiles(specMiaf) }),
   nullptr,
 };
 
-static auto const registered = registerSpec(&spec);
+static auto const registered = registerSpec(&specMiaf);
 

@@ -24,7 +24,7 @@ struct BoxReader : IReader
   void box() override
   {
     BoxReader subReader;
-    subReader.spec = spec;
+    subReader.specs = specs;
     subReader.myBox.position = myBox.position + br.m_pos / 8;
     subReader.myBox.size = br.u(32);
     subReader.myBox.syms.push_back({ "size", (int64_t)subReader.myBox.size, 32 });
@@ -56,15 +56,16 @@ struct BoxReader : IReader
   BitReader br;
 
   Box myBox {};
-  const SpecDesc* spec = nullptr;
+  std::vector<const SpecDesc*> specs;
 
 private:
   ParseBoxFunc* selectBoxParseFunction(uint32_t fourcc)
   {
     // try first custom parse function
-    if(spec && spec->getParseFunction)
-      if(auto func = spec->getParseFunction(fourcc))
-        return func;
+    for(auto spec : specs)
+      if(spec->getParseFunction)
+        if(auto func = spec->getParseFunction(fourcc))
+          return func;
 
     return getParseFunction(fourcc);
   }

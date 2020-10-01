@@ -206,9 +206,10 @@ int parseAv1SeqHdr(IReader* reader, bool& reduced_still_picture_header, AV1Codec
   else
   {
     fprintf(stderr, "AV1 Sequence Header parsing with reduced_still_picture_header=0 not implemented.\n");
-    br->sym("", 3);
     // incomplete parsing
-    return 1;
+    auto readBits = br->count;
+    READ_UNTIL_NEXT_BYTE(readBits);
+    return readBits / 8;
   }
 
   auto frame_width_bits_minus_1 = br->sym("frame_width_bits_minus_1", 4);
@@ -561,7 +562,7 @@ std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t
 }
 } // namespace
 
-static const SpecDesc spec =
+static const SpecDesc specAvif =
 {
   "avif",
   "AVIF v1.0.0, 19 February 2019\n"
@@ -961,5 +962,5 @@ static const SpecDesc spec =
   getParseFunctionAvif,
 };
 
-static auto const registered = registerSpec(&spec);
+static auto const registered = registerSpec(&specAvif);
 

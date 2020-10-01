@@ -5,7 +5,7 @@
 bool isVisualSampleEntry(uint32_t fourcc);
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 
-static const SpecDesc spec =
+static const SpecDesc specHeif =
 {
   "heif",
   "HEIF - ISO/IEC 23008-12 - First edition 2017-12",
@@ -249,5 +249,5 @@ static const SpecDesc spec =
   nullptr,
 };
 
-static auto const registered = registerSpec(&spec);
+static auto const registered = registerSpec(&specHeif);
 

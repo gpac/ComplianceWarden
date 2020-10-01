@@ -212,7 +212,7 @@ void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
   topReader.br = { data, (int)size };
   topReader.myBox.size = size;
   topReader.myBox.fourcc = FOURCC("root");
-  topReader.spec = spec;
+  topReader.specs = { spec };
 
   {
     // remove path
