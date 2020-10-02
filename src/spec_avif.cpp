@@ -512,7 +512,15 @@ void parseAv1Obus(IReader* br, av1State& state)
   }
 
   while(obuSize-- > 0)
+  {
+    if(br->empty())
+    {
+      fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize);
+      break;
+    }
+
     br->sym("byte", 8);
+  }
 }
 
 void parseAv1C(IReader* br)
@@ -927,8 +935,10 @@ static const SpecDesc specAvif =
           {
             auto av1Cs = findBoxes(box, FOURCC("av1C"));
 
-            if(!av1Cs.empty())
-              out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.");
+            for(auto& av1C : av1Cs)
+              for(auto& sym : av1C->syms)
+                if(!strcmp(sym.name, "seqhdr"))
+                  out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.");
           }
         }
       }

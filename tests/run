@@ -18,6 +18,7 @@ function main
   run_test check_rules_folder isobmff mp4
   run_test check_rules_folder heif mp4
   run_test check_rules_folder miaf hif
+  run_test check_rules_folder avif avif
   run_test miaf_file_extension
 
   echo "OK"
