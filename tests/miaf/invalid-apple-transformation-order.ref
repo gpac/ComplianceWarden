@@ -16,5 +16,6 @@ following order: clean aperture first, then rotation, then mirror.
 [miaf][Rule #44] Section 7.2.1.2
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
+
 [heif] No errors.
 [isobmff] No errors.

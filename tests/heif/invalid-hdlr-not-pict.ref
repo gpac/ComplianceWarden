@@ -8,4 +8,5 @@ Involved rules descriptions:
 
 [heif][Rule #2] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
+
 [isobmff] No errors.

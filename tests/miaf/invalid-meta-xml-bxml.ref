@@ -23,6 +23,7 @@ The handler type for the MetaBox shall be 'pict'.
 [miaf][Rule #44] Section 7.2.1.2
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
+
 [Rule #2] Error: 'hdlr' not found in MetaBox
 [heif] 1 error(s).
 [heif] 0 warning(s).
@@ -33,4 +34,5 @@ Involved rules descriptions:
 
 [heif][Rule #2] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
+
 [isobmff] No errors.

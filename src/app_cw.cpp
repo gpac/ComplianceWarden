@@ -176,6 +176,7 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     fprintf(stdout, "[%s] %d error(s).\n", spec->name, out.errorCount);
     fprintf(stdout, "[%s] %d warning(s).\n", spec->name, out.warningCount);
     printErrorRules();
+    fprintf(stdout, "\n");
   }
   else
   {

@@ -24,4 +24,5 @@ ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 
 [heif][Rule #4] Section 6.5.3.1
 every image item be associated with a Image spatial extents property
+
 [isobmff] No errors.

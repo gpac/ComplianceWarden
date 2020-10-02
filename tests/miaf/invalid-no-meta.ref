@@ -27,6 +27,7 @@ Every image item shall be associated with a Image spatial extents property
 [miaf][Rule #44] Section 7.2.1.2
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
+
 [Rule #1] Error: 'meta' box not found at file level
 [Rule #2] Error: 'hdlr' not found in MetaBox
 [Rule #3] Error: ItemInfoBox is required
@@ -49,4 +50,5 @@ ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 
 [heif][Rule #4] Section 6.5.3.1
 every image item be associated with a Image spatial extents property
+
 [isobmff] No errors.
