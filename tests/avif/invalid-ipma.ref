@@ -1,0 +1,14 @@
+[Rule #0] Error: AV1 Image Item (ID=1) shall be associated with an AV1 Item Configuration Property
+[avif] 1 error(s).
+[avif] 0 warning(s).
+
+Specification description: AVIF v1.0.0, 19 February 2019
+https://aomediacodec.github.io/av1-avif/
+
+Involved rules descriptions:
+
+[avif][Rule #0] Section 2.1 AV1 Image Item
+The AV1 Image Item shall be associated with an AV1 Item Configuration Property.
+
+[heif] No errors.
+[isobmff] No errors.

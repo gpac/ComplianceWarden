@@ -515,7 +515,7 @@ void parseAv1Obus(IReader* br, av1State& state)
   {
     if(br->empty())
     {
-      fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize);
+      fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
       break;
     }
 
@@ -824,7 +824,7 @@ static const SpecDesc specAvif =
 
           for(auto& sym : br.myBox.syms)
           {
-            if(!strcmp(sym.name, "show_frame"))
+            if(!strcmp(sym.name, "show_frame") && (!sym.numBits || sym.value))
               showFrame = true;
 
             if(!strcmp(sym.name, "key_frame"))
@@ -869,7 +869,7 @@ static const SpecDesc specAvif =
         }
 
         if(seqHdrNum != 1)
-          out->error("Expected 1 sequence Header OBU but found %s", seqHdrNum);
+          out->error("Expected one sequence Header OBU but found %d", seqHdrNum);
       }
     },
     {
@@ -1082,7 +1082,7 @@ static const SpecDesc specAvif =
             parseAv1Obus(&br, state);
 
           if(memcmp(&state.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
-            out->error("The values of the AV1CodecConfigurationBox shall match"
+            out->error("The values of the AV1CodecConfigurationBox shall match\n"
                        "the Sequence Header OBU in the AV1 Image Item Data:\n"
                        "\tAV1CodecConfigurationBox:\n%s\n"
                        "\tSequence Header OBU in the AV1 Image Item Data:\n%s\n",

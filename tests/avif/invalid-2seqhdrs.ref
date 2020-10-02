@@ -1,0 +1,14 @@
+[Rule #3] Warning: still_picture flag set to 0.
+[avif] 0 error(s).
+[avif] 1 warning(s).
+
+Specification description: AVIF v1.0.0, 19 February 2019
+https://aomediacodec.github.io/av1-avif/
+
+Involved rules descriptions:
+
+[avif][Rule #3] Section 2.1
+The AV1 Image Item Data should have its still_picture flag set to 1.
+
+[heif] No errors.
+[isobmff] No errors.

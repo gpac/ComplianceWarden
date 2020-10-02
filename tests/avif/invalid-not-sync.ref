@@ -1,0 +1,18 @@
+[Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=1)
+[Rule #4] Warning: reduced_still_picture_header flag set to 0.
+[avif] 1 error(s).
+[avif] 1 warning(s).
+
+Specification description: AVIF v1.0.0, 19 February 2019
+https://aomediacodec.github.io/av1-avif/
+
+Involved rules descriptions:
+
+[avif][Rule #1] Section 2.1
+The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as sync
+
+[avif][Rule #4] Section 2.1
+The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.
+
+[heif] No errors.
+[isobmff] No errors.
