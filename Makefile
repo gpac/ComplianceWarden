@@ -35,11 +35,12 @@ SRCS_CW+=src/spec_miaf_profiles.cpp
 SRCS_CW+=src/spec_utils.cpp
 
 $(BIN)/cw_version.h:
+	@mkdir -p $(BIN)
 	scripts/version.sh > $(BIN)/cw_version.h
 
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
-$(BIN)/src/app_cw.cpp.o : $(BIN)/cw_version.h 
+$(BIN)/src/app_cw.cpp.o: $(BIN)/cw_version.h
 
 #------------------------------------------------------------------------------
 everything: $(TARGETS)

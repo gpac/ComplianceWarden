@@ -515,7 +515,7 @@ void parseAv1Obus(IReader* br, av1State& state)
   {
     if(br->empty())
     {
-      fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
+      fprintf(stderr, "Incomplete OBU (remaining to read=%lu)\n", obuSize + 1);
       break;
     }
 
