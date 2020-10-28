@@ -32,7 +32,8 @@ $ make
 
 MacOS X and BSD-likes:
 ```
-$ CXX=scripts/darwin.sh make
+$ export CXX=scripts/darwin.sh
+$ make
 ```
 
 ### Cross-compiling
@@ -77,6 +78,8 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ./check
 ```
 
+NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwin (MacOS) ```CXX=scripts/darwin.sh ./check```.
+
 ## Useful information
 
 ### Versions
@@ -88,4 +91,6 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 # Acknowledgments
 
 This work was initiated as part of the MPEG MIAF conformance software.
+
+The Alliance for Open Media (AOM) sponsored the work on AVIF.
 
