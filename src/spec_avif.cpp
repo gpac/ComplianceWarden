@@ -495,7 +495,7 @@ void parseAv1Obus(IReader* br, av1State& state)
     };
 
   int leb128Bytes = 0;
-  auto obuSize = leb128_read(br, &leb128Bytes);
+  long long unsigned obuSize = leb128_read(br, &leb128Bytes);
   switch(obu_type)
   {
   case OBU_SEQUENCE_HEADER:
@@ -515,7 +515,7 @@ void parseAv1Obus(IReader* br, av1State& state)
   {
     if(br->empty())
     {
-      fprintf(stderr, "Incomplete OBU (remaining to read=%lu)\n", obuSize + 1);
+      fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
       break;
     }
 
