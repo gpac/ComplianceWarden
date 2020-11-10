@@ -46,6 +46,7 @@ struct AV1CodecConfigurationRecord
   int64_t high_bitdepth;
   int64_t twelve_bit;
   int64_t mono_chrome;
+  int64_t color_range;
   int64_t chroma_subsampling_x;
   int64_t chroma_subsampling_y;
   int64_t chroma_sample_position;
@@ -151,7 +152,7 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
 
   if(av1c.mono_chrome)
   {
-    br->sym("color_range", 1);
+    av1c.color_range = br->sym("color_range", 1);
     av1c.chroma_subsampling_x = 1;
     av1c.chroma_subsampling_y = 1;
     av1c.chroma_sample_position = 0;// CSP_UNKNOWN;
@@ -162,13 +163,13 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
           transfer_characteristics == 13 /*TC_SRGB*/ &&
           matrix_coefficients == 0 /*MC_IDENTITY*/)
   {
-    // color_range = 1;
+    av1c.color_range = 1;
     av1c.chroma_subsampling_x = 0;
     av1c.chroma_subsampling_y = 0;
   }
   else
   {
-    br->sym("color_range", 1);
+    av1c.color_range = br->sym("color_range", 1);
 
     if(seq_profile == 0)
     {
@@ -636,7 +637,7 @@ struct ItemLocation
   }
 };
 
-std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IReport* out, uint32_t itemIDs)
+std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IReport* out, uint32_t itemID)
 {
   std::vector<ItemLocation::Span> spans;
 
@@ -653,7 +654,7 @@ std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IRe
           {
             if(!strcmp(sym.name, "item_ID"))
             {
-              if(sym.value != itemIDs)
+              if(sym.value != itemID)
                 break;
 
               itemLocs.resize(itemLocs.size() + 1);
@@ -1108,40 +1109,124 @@ static const SpecDesc specAvif =
         checkEssential(root, out, FOURCC("av1C"));
       }
     },
-#if 0
     {
-      "Section 4. Auxiliary Image Items\n"
-      "The mono_chrome field in the Sequence Header OBU shall be set to 1.",
+      "Section 3\n"
+      "The track handler for an AV1 Image Sequence shall be 'pict'.",
       [] (Box const& root, IReport* out)
       {
-        // TODO: is an AV1 Image Item OR  AV1 Image Sequence => Check against 2.1
-        // TODO: check Auxiliary
+        // This rule doesn't make sense as HEIF defines an Image Sequence as a track with
+        // handler_type 'pict'. Let's test:
+        // - when 'avis' brand is present ('should' be), there is at least one track with
+        // 'pict' handler;
+        // - and also contains a primary item that is an image item (here checked as av01
+        // although this is not clearly specified).
 
-        // TODO: parse seq hdr until color config
+        bool hasAvisBrand = false, hasOneTrackPict = false, hasPrimaryItemImage = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("avis"))
+                  hasAvisBrand = true;
+
+        uint32_t primaryItemId = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "item_ID"))
+                    primaryItemId = field.value;
+
+        auto av1ImageItemIDs = findAv1ImageItems(root);
+
+        if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), primaryItemId) != av1ImageItemIDs.end())
+          hasPrimaryItemImage = true;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("hdlr"))
+                        for(auto& sym : mdiaChild.syms)
+                          if(!strcmp(sym.name, "handler_type"))
+                            if(sym.value == FOURCC("pict"))
+                              hasOneTrackPict = true;
+
+        {
+          void (IReport::* report) (const char* fmt, ...);
+
+          if(hasAvisBrand)
+            report = &IReport::error;
+          else
+            report = &IReport::warning;
+
+          if(hasOneTrackPict ^ hasPrimaryItemImage)
+          {
+            if(hasOneTrackPict)
+              (out->*report)("Track with 'pict' handler found, but no primary item that is an AV1 image item found.");
+            else if(hasAvisBrand)
+              (out->*report)("Primary item that is an AV1 image item found, but no track with 'pict' handler found.");
+          }
+        }
+      }
+    },
+    {
+      "Section 4. Auxiliary Image Items\n"
+      "The mono_chrome field in the Sequence Header OBU shall be set to 1.\n"
+      "The color_range field in the Sequence Header OBU shall be set to 1.",
+      [] (Box const& root, IReport* out)
+      {
+        // contains both image items and meta primary image item of the sequence
         auto const av1ImageItemIDs = findAv1ImageItems(root);
 
-        for(auto itemId : av1ImageItemIDs)
+        std::vector<uint32_t> auxImages;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+                for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    if(field.value != FOURCC("auxl"))
+                      break;
+
+                  if(!strcmp(field.name, "from_item_ID"))
+                    if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), field.value) == av1ImageItemIDs.end())
+                      break;
+
+                  if(!strcmp(field.name, "to_item_ID"))
+                    auxImages.push_back(field.value);
+                }
+
+        for(auto itemId : auxImages)
         {
           auto bytes = getAV1ImageItemData(root, out, itemId);
 
           BoxReader br;
           br.br = BitReader { bytes.data(), (int)bytes.size() };
 
-          av1State stateUnused;
+          av1State state;
 
           while(!br.empty())
-            parseAv1Obus(&br, stateUnused);
+            parseAv1Obus(&br, state);
 
           assert(br.myBox.children.empty());
 
-          for(auto& sym : br.myBox.syms)
-            if(!strcmp(sym.name, "still_picture"))
-              if(sym.value == 0)
-                out->error("still_picture flag set to 0.");
+          if(!state.av1c.mono_chrome)
+            out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=%u).", itemId);
+
+          if(!state.av1c.color_range)
+            out->error("The color_range field in the Sequence Header OBU shall be set to 1 (item_ID=%u).", itemId);
         }
       }
     },
-#endif
   },
   getParseFunctionAvif,
 };
