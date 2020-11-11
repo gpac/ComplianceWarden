@@ -61,10 +61,8 @@ SpecDesc const* specFind(const char* name)
   exit(1);
 }
 
-void specListRules(const SpecDesc* spec)
+void printSpecDescription(const SpecDesc* spec)
 {
-  fprintf(stdout, "////////////////////// Beginning of \"%s\" specification.\n\n", spec->name);
-
   fprintf(stdout, "================================================================================\n");
   fprintf(stdout, "Specification name: %s\n", spec->name);
   fprintf(stdout, "            detail: %s\n", spec->caption);
@@ -83,6 +81,12 @@ void specListRules(const SpecDesc* spec)
   }
 
   fprintf(stdout, "================================================================================\n\n");
+}
+
+void specListRules(const SpecDesc* spec)
+{
+  fprintf(stdout, "////////////////////// Beginning of \"%s\" specification.\n\n", spec->name);
+  printSpecDescription(spec);
 
   int ruleIdx = 0;
 
@@ -268,36 +272,54 @@ void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_
 
 void printVersion()
 {
-  fprintf(stderr, "%s version %s\n", g_appName, g_version);
+  fprintf(stderr, "%s, version %s.\n", g_appName, g_version);
 }
 
 /* ***** main ***** */
 
 #ifndef CW_WASM
 
+void printUsageAndExit(const char* progName)
+{
+  printVersion();
+  fprintf(stderr, "\nUsage:\n");
+  fprintf(stderr, "- Run conformance:          %s <spec> input.mp4\n", progName);
+  fprintf(stderr, "- List specifications:      %s list\n", progName);
+  fprintf(stderr, "- List specification rules: %s <spec> list\n", progName);
+  fprintf(stderr, "- Print version:            %s version\n", progName);
+  exit(1);
+}
+
 int main(int argc, const char* argv[])
 {
-  if(argc != 3)
+  if(argc < 2 || argc > 3)
+    printUsageAndExit(argv[0]);
+
+  if(!strcmp(argv[1], "list"))
   {
-    fprintf(stderr, "Usage: %s <spec> <list|input.mp4>\n", argv[0]);
-    return 1;
+    for(auto& spec : g_allSpecs())
+      printSpecDescription(spec);
+
+    return 0;
   }
+  else if(!strcmp(argv[1], "version"))
+  {
+    printVersion();
+    return 0;
+  }
+  else if(argc < 3)
+    printUsageAndExit(argv[0]);
 
   auto spec = specFind(argv[1]);
 
   if(!strcmp(argv[2], "list"))
   {
     specListRules(spec);
+    return 0;
   }
-  else if(!strcmp(argv[2], "version"))
-  {
-    printVersion();
-  }
-  else
-  {
-    auto buf = loadFile(argv[2]);
-    specCheck(spec, argv[2], buf.data(), (int)buf.size());
-  }
+
+  auto buf = loadFile(argv[2]);
+  specCheck(spec, argv[2], buf.data(), (int)buf.size());
 
   return 0;
 }
