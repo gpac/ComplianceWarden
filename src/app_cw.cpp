@@ -3,9 +3,7 @@
 #include <cstdarg>
 #include <cstring>
 
-const char* g_version =
-#include "cw_version.h"
-;
+extern const char* g_version;
 
 const char* g_appName = "Compliance Warden";
 

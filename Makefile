@@ -17,6 +17,18 @@ CXXFLAGS+=-ffunction-sections -fdata-sections
 LDFLAGS+=-Wl,-gc-sections
 
 #------------------------------------------------------------------------------
+version:
+	@mkdir -p $(BIN)
+	@scripts/version.sh > $(BIN)/cw_version.cpp.new
+	@if ! diff -q $(BIN)/cw_version.cpp $(BIN)/cw_version.cpp.new >/dev/null ; then \
+		mv $(BIN)/cw_version.cpp.new $(BIN)/cw_version.cpp; \
+  else \
+    rm $(BIN)/cw_version.cpp.new; \
+	fi
+
+$(BIN)/cw_version.cpp: version
+
+#------------------------------------------------------------------------------
 SRCS_CW+=\
   src/app_cw.cpp\
   src/common_boxes.cpp\
@@ -34,14 +46,11 @@ SRCS_CW+=src/spec_miaf_num_pixels.cpp
 SRCS_CW+=src/spec_miaf_profiles.cpp
 SRCS_CW+=src/spec_utils.cpp
 
-$(BIN)/cw_version.h:
-	@mkdir -p $(BIN)
-	scripts/version.sh > $(BIN)/cw_version.h
+SRCS_CW+=$(BIN)/cw_version.cpp
 
 TARGETS+=$(BIN)/cw.exe
 $(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
-$(BIN)/src/app_cw.cpp.o: $(BIN)/cw_version.h
 
 #------------------------------------------------------------------------------
-everything: $(TARGETS)
+everything: version $(TARGETS)
 

@@ -15,9 +15,6 @@ $(BIN)/%.cpp.o: %.cpp
 	@$(CXX) $(CXXFLAGS) -c -o "$@.deps" "$<" -MP -MM -MT "$@"
 	@$(CXX) $(CXXFLAGS) -c "$<" -E | wc -l > "$@.lines" # keep track of the code mass
 
-VERSION?=HEAD
-$(BIN)/%/version.cpp.o: CXXFLAGS+=-DVERSION="\"$(VERSION)\""
-
 clean:
 	rm -rf $(BIN)
 
