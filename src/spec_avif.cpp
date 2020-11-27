@@ -958,7 +958,7 @@ static const SpecDesc specAvif =
           {
             auto av1Cs = findBoxes(box, FOURCC("av1C"));
 
-            if(av1Cs.size() != 1)
+            if(av1Cs.size() > 1)
               out->warning("Several av1C found. Please contact us to provide a sample!");
 
             for(auto& av1C : av1Cs)
@@ -1030,7 +1030,7 @@ static const SpecDesc specAvif =
           {
             auto av1Cs = findBoxes(box, FOURCC("av1C"));
 
-            if(av1Cs.size() != 1)
+            if(av1Cs.size() > 1)
               out->warning("Several av1C found. Please contact us to provide a sample!");
 
             for(auto& av1C : av1Cs)
