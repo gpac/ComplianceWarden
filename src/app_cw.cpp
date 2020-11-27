@@ -239,6 +239,12 @@ void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
   checkCompliance(topReader.myBox, spec);
 }
 
+void fprintVersion(FILE* const stream)
+{
+  fprintf(stream, "%s, version %s.\n", g_appName, g_version);
+  fflush(stream);
+}
+
 /* ***** emscripten exports ***** */
 
 #ifdef CW_WASM
@@ -266,12 +272,13 @@ void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_
   specCheck(spec, filename, data, size);
 }
 
-#endif /*CW_WASM*/
-
 void printVersion()
 {
-  fprintf(stderr, "%s, version %s.\n", g_appName, g_version);
+  fprintVersion(stdout);
+  fprintf(stdout, "%s, version %s.\n", g_appName, g_version);
 }
+
+#endif /*CW_WASM*/
 
 /* ***** main ***** */
 
@@ -279,7 +286,7 @@ void printVersion()
 
 void printUsageAndExit(const char* progName)
 {
-  printVersion();
+  fprintVersion(stderr);
   fprintf(stderr, "\nUsage:\n");
   fprintf(stderr, "- Run conformance:          %s <spec> input.mp4\n", progName);
   fprintf(stderr, "- List specifications:      %s list\n", progName);
@@ -302,7 +309,7 @@ int main(int argc, const char* argv[])
   }
   else if(!strcmp(argv[1], "version"))
   {
-    printVersion();
+    fprintVersion(stderr);
     return 0;
   }
   else if(argc < 3)
