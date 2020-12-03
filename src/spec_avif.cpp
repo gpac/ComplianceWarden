@@ -742,6 +742,92 @@ std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t
 
   return bytes;
 }
+
+std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
+{
+  std::vector<Symbol> av1cSymbols;
+
+  bool seqHdrFound = false;
+
+  for(auto& sym : av1C->syms)
+  {
+    if(!strcmp(sym.name, "seqhdr"))
+      seqHdrFound = true;
+
+    if(!strcmp(sym.name, "/seqhdr"))
+      seqHdrFound = false;
+
+    if(seqHdrFound)
+      av1cSymbols.push_back(sym);
+  }
+
+  assert(!seqHdrFound);
+
+  return av1cSymbols;
+}
+
+const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
+{
+  struct Entry
+  {
+    bool found = false;
+    const Box* box = nullptr;
+  };
+  std::map<uint32_t /*property index*/, Entry> av1cPropertyIndex;
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipco"))
+              for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
+                if(iprpChild.children[i - 1].fourcc == FOURCC("av1C"))
+                  av1cPropertyIndex.insert({ i, { false, &iprpChild.children[i - 1] }
+                                           });
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipma"))
+            {
+              uint32_t localItemId = 0;
+
+              for(auto& sym : iprpChild.syms)
+              {
+                if(!strcmp(sym.name, "item_ID"))
+                  localItemId = sym.value;
+                else if(!strcmp(sym.name, "property_index"))
+                  if(localItemId == itemId)
+                    for(auto& a : av1cPropertyIndex)
+                      if(a.first == sym.value)
+                        a.second.found = true;
+              }
+            }
+
+  int found = 0;
+  const Box* av1C = nullptr;
+
+  for(auto& a : av1cPropertyIndex)
+  {
+    if(!a.second.found)
+      continue;
+
+    found++;
+
+    if(!av1C)
+      av1C = a.second.box;
+
+    break;
+  }
+
+  if(found != 1)
+    out->error("Found %d av1C, expected 1. Only the first one will be considered.", found);
+
+  return av1C;
+}
 } // namespace
 
 static const SpecDesc specAvif =
@@ -950,43 +1036,22 @@ static const SpecDesc specAvif =
       "Sequence Header OBU in the AV1 Image Item Data.",
       [] (Box const& root, IReport* out)
       {
-        std::vector<Symbol> av1cSymbols, av1ImageItemDataSeqHdr;
-
-        for(auto& box : root.children)
-        {
-          if(box.fourcc == FOURCC("meta"))
-          {
-            auto av1Cs = findBoxes(box, FOURCC("av1C"));
-
-            if(av1Cs.size() > 1)
-              out->warning("Several av1C found. Please contact us to provide a sample!");
-
-            for(auto& av1C : av1Cs)
-            {
-              bool seqHdrFound = false;
-
-              for(auto& sym : av1C->syms)
-              {
-                if(!strcmp(sym.name, "seqhdr"))
-                  seqHdrFound = true;
-
-                if(!strcmp(sym.name, "/seqhdr"))
-                  seqHdrFound = false;
-
-                if(seqHdrFound)
-                  av1cSymbols.push_back(sym);
-              }
-            }
-          }
-        }
-
-        if(av1cSymbols.empty())
-          return;
-
         auto const av1ImageItemIDs = findAv1ImageItems(root);
 
         for(auto itemId : av1ImageItemIDs)
         {
+          std::vector<Symbol> av1cSymbols, av1ImageItemDataSeqHdr;
+
+          auto av1C = findAv1C(root, out, itemId);
+
+          if(!av1C)
+            continue;
+
+          av1cSymbols = getAv1CSeqHdr(av1C);
+
+          if(av1cSymbols.empty())
+            return;
+
           auto bytes = getAV1ImageItemData(root, out, itemId);
 
           BoxReader br;
@@ -997,23 +1062,11 @@ static const SpecDesc specAvif =
           while(!br.empty())
             parseAv1Obus(&br, state);
 
-          bool seqHdrFound = false;
+          av1ImageItemDataSeqHdr = getAv1CSeqHdr(&br.myBox);
 
-          for(auto& sym : br.myBox.syms)
-          {
-            if(!strcmp(sym.name, "seqhdr"))
-              seqHdrFound = true;
-
-            if(!strcmp(sym.name, "/seqhdr"))
-              seqHdrFound = false;
-
-            if(seqHdrFound)
-              av1ImageItemDataSeqHdr.push_back(sym);
-          }
+          if(!(av1cSymbols == av1ImageItemDataSeqHdr))
+            out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data.");
         }
-
-        if(!(av1cSymbols == av1ImageItemDataSeqHdr))
-          out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data.");
       }
     },
     {
@@ -1022,56 +1075,47 @@ static const SpecDesc specAvif =
       "Sequence Header OBU in the AV1 Image Item Data.",
       [] (Box const& root, IReport* out)
       {
-        AV1CodecConfigurationRecord av1cRef {};
-
-        for(auto& box : root.children)
-        {
-          if(box.fourcc == FOURCC("meta"))
-          {
-            auto av1Cs = findBoxes(box, FOURCC("av1C"));
-
-            if(av1Cs.size() > 1)
-              out->warning("Several av1C found. Please contact us to provide a sample!");
-
-            for(auto& av1C : av1Cs)
-            {
-              for(auto& sym : av1C->syms)
-              {
-                if(!strcmp(sym.name, "seq_profile"))
-                  av1cRef.seq_profile = sym.value;
-
-                if(!strcmp(sym.name, "seq_level_idx_0"))
-                  av1cRef.seq_level_idx_0 = sym.value;
-
-                if(!strcmp(sym.name, "seq_tier_0"))
-                  av1cRef.seq_tier_0 = sym.value;
-
-                if(!strcmp(sym.name, "high_bitdepth"))
-                  av1cRef.high_bitdepth = sym.value;
-
-                if(!strcmp(sym.name, "twelve_bit"))
-                  av1cRef.twelve_bit = sym.value;
-
-                if(!strcmp(sym.name, "monochrome"))
-                  av1cRef.mono_chrome = sym.value;
-
-                if(!strcmp(sym.name, "chroma_subsampling_x"))
-                  av1cRef.chroma_subsampling_x = sym.value;
-
-                if(!strcmp(sym.name, "chroma_subsampling_y"))
-                  av1cRef.chroma_subsampling_y = sym.value;
-
-                if(!strcmp(sym.name, "chroma_sample_position"))
-                  av1cRef.chroma_sample_position = sym.value;
-              }
-            }
-          }
-        }
-
         auto const av1ImageItemIDs = findAv1ImageItems(root);
 
         for(auto itemId : av1ImageItemIDs)
         {
+          AV1CodecConfigurationRecord av1cRef {};
+
+          auto av1C = findAv1C(root, out, itemId);
+
+          if(!av1C)
+            continue;
+
+          for(auto& sym : av1C->syms)
+          {
+            if(!strcmp(sym.name, "seq_profile"))
+              av1cRef.seq_profile = sym.value;
+
+            if(!strcmp(sym.name, "seq_level_idx_0"))
+              av1cRef.seq_level_idx_0 = sym.value;
+
+            if(!strcmp(sym.name, "seq_tier_0"))
+              av1cRef.seq_tier_0 = sym.value;
+
+            if(!strcmp(sym.name, "high_bitdepth"))
+              av1cRef.high_bitdepth = sym.value;
+
+            if(!strcmp(sym.name, "twelve_bit"))
+              av1cRef.twelve_bit = sym.value;
+
+            if(!strcmp(sym.name, "monochrome"))
+              av1cRef.mono_chrome = sym.value;
+
+            if(!strcmp(sym.name, "chroma_subsampling_x"))
+              av1cRef.chroma_subsampling_x = sym.value;
+
+            if(!strcmp(sym.name, "chroma_subsampling_y"))
+              av1cRef.chroma_subsampling_y = sym.value;
+
+            if(!strcmp(sym.name, "chroma_sample_position"))
+              av1cRef.chroma_sample_position = sym.value;
+          }
+
           auto bytes = getAV1ImageItemData(root, out, itemId);
 
           BoxReader br;
@@ -1334,7 +1378,6 @@ static const SpecDesc specAvif =
           if(std::find(alphaItemIds.begin(), alphaItemIds.end(), auxImageIds.aux) == alphaItemIds.end())
             continue;
 
-          int bitDepthMaster = -1, bitDepthAux = -1;
           auto computeBitDepth = [&] (uint32_t itemId) -> uint32_t
             {
               av1State state;
@@ -1360,8 +1403,11 @@ static const SpecDesc specAvif =
               return bitDepth;
             };
 
-          bitDepthMaster = computeBitDepth(auxImageIds.master);
-          bitDepthAux = computeBitDepth(auxImageIds.aux);
+          auto bitDepthMaster = computeBitDepth(auxImageIds.master);
+          auto bitDepthAux = computeBitDepth(auxImageIds.aux);
+
+          if(bitDepthMaster != bitDepthAux)
+            out->error("An AV1 Alpha Image Item shall be encoded with the same bit depth as the associated master AV1 Image Item");
         }
       }
     },
