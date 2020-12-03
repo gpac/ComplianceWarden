@@ -309,7 +309,7 @@ int main(int argc, const char* argv[])
   }
   else if(!strcmp(argv[1], "version"))
   {
-    fprintVersion(stderr);
+    fprintVersion(stdout);
     return 0;
   }
   else if(argc < 3)
