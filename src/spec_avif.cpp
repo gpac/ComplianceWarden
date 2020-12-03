@@ -1227,6 +1227,147 @@ static const SpecDesc specAvif =
         }
       }
     },
+    {
+      "Section 4. Alpha Image Images\n"
+      "An AV1 Alpha Image Item (respectively an AV1 Alpha Image Sequence) shall be\n"
+      "encoded with the same bit depth as the associated master AV1 Image Item\n"
+      "(respectively AV1 Image Sequence).",
+      [] (Box const& root, IReport* out)
+      {
+        // contains both image items and meta primary image item of the sequence
+        auto const av1ImageItemIDs = findAv1ImageItems(root);
+        struct AuxImageItemIds
+        {
+          uint32_t master, aux;
+        };
+        std::vector<AuxImageItemIds> auxImages;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t masterItemId = -1;
+
+                for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    if(field.value != FOURCC("auxl"))
+                      break;
+
+                  if(!strcmp(field.name, "from_item_ID"))
+                  {
+                    if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), field.value) == av1ImageItemIDs.end())
+                      break;
+
+                    masterItemId = (uint32_t)field.value;
+                  }
+
+                  if(!strcmp(field.name, "to_item_ID"))
+                    auxImages.push_back({ masterItemId, (uint32_t)field.value });
+                }
+              }
+
+        // find Alpha Image Items
+        std::vector<int> alphaPropertyIndexes;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipco"))
+                  {
+                    assert(alphaPropertyIndexes.empty());
+                    int propertyIdx = 1;
+
+                    for(auto& ipcoChild : iprpChild.children)
+                    {
+                      if(ipcoChild.fourcc == FOURCC("auxC"))
+                      {
+                        std::string auxType;
+
+                        for(auto& sym : ipcoChild.syms)
+                          if(!strcmp(sym.name, "aux_type"))
+                          {
+                            auxType.push_back((char)sym.value);
+
+                            if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                              alphaPropertyIndexes.push_back(propertyIdx);
+                          }
+                      }
+
+                      propertyIdx++;
+                    }
+                  }
+
+        // now find ItemID from alphaPropertyIndexes
+        std::vector<int> alphaItemIds;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    uint32_t itemId = 0;
+
+                    for(auto& sym : iprpChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemId = sym.value;
+                      else if(!strcmp(sym.name, "property_index"))
+                        if(std::find(alphaPropertyIndexes.begin(), alphaPropertyIndexes.end(), sym.value) != alphaPropertyIndexes.end())
+                          alphaItemIds.push_back(itemId);
+                    }
+                  }
+
+        for(auto& auxImageIds : auxImages)
+        {
+          if(std::find(alphaItemIds.begin(), alphaItemIds.end(), auxImageIds.aux) == alphaItemIds.end())
+            continue;
+
+          int bitDepthMaster = -1, bitDepthAux = -1;
+          auto computeBitDepth = [&] (uint32_t itemId) -> uint32_t
+            {
+              av1State state;
+              auto bytes = getAV1ImageItemData(root, out, itemId);
+
+              BoxReader br;
+              br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+              while(!br.empty())
+                parseAv1Obus(&br, state);
+
+              int bitDepth = 8;
+
+              if(state.av1c.seq_profile == 2 && state.av1c.high_bitdepth)
+              {
+                bitDepth = state.av1c.twelve_bit ? 12 : 10;
+              }
+              else if(state.av1c.seq_profile <= 2)
+              {
+                bitDepth = state.av1c.high_bitdepth ? 10 : 8;
+              }
+
+              return bitDepth;
+            };
+
+          bitDepthMaster = computeBitDepth(auxImageIds.master);
+          bitDepthAux = computeBitDepth(auxImageIds.aux);
+        }
+      }
+    },
+    {
+      "Section 4. Auxiliary Image Sequences\n"
+      "The mono_chrome field in the Sequence Header OBU shall be set to 1.\n"
+      "The color_range field in the Sequence Header OBU shall be set to 1.",
+      [] (Box const & /*root*/, IReport* /*out*/)
+      {
+        //TODO
+      }
+    }
   },
   getParseFunctionAvif,
 };
