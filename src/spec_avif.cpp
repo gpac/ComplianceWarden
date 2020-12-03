@@ -1202,7 +1202,13 @@ static const SpecDesc specAvif =
                       break;
 
                   if(!strcmp(field.name, "to_item_ID"))
-                    auxImages.push_back(field.value);
+                  {
+                    // TODO: move to ISOBMFF 8.11.1.1
+                    if(field.value == 0)
+                      out->warning("The item_ID value of 0 should not be used. Ignoring.");
+                    else
+                      auxImages.push_back(field.value);
+                  }
                 }
 
         for(auto itemId : auxImages)
@@ -1365,7 +1371,7 @@ static const SpecDesc specAvif =
       "The color_range field in the Sequence Header OBU shall be set to 1.",
       [] (Box const & /*root*/, IReport* /*out*/)
       {
-        //TODO
+        // TODO
       }
     }
   },
