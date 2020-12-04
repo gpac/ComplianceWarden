@@ -655,7 +655,12 @@ std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IRe
             if(!strcmp(sym.name, "item_ID"))
             {
               if(sym.value != itemID)
-                break;
+              {
+                if(itemLocs.empty())
+                  continue;
+                else
+                  break;
+              }
 
               itemLocs.resize(itemLocs.size() + 1);
 
@@ -1064,7 +1069,9 @@ static const SpecDesc specAvif =
 
           av1ImageItemDataSeqHdr = getAv1CSeqHdr(&br.myBox);
 
-          if(!(av1cSymbols == av1ImageItemDataSeqHdr))
+          if(av1ImageItemDataSeqHdr.empty())
+            out->error("No Sequence Header OBU present in the AV1 Image Item Data.");
+          else if(!(av1cSymbols == av1ImageItemDataSeqHdr))
             out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data.");
         }
       }
