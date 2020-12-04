@@ -5,7 +5,7 @@ readonly BIN=$1
 readonly scriptDir=$(dirname $0)
 
 readonly tmpDir=/tmp/test-cw-$$
-#rap "rm -rf $tmpDir" EXIT
+trap "rm -rf $tmpDir" EXIT
 mkdir -p "$tmpDir"
 
 function main
@@ -48,7 +48,7 @@ function real_mp4_heif
   $BIN/cw.exe heif $scriptDir/heif.mp4 > $tmpDir/heif.new
   compare $scriptDir/heif.ref $tmpDir/heif.new
 
-  $BIN/cw.exe miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new
+  $BIN/cw.exe miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new  || true
   compare $scriptDir/miaf.ref $tmpDir/miaf.new
 }
 
@@ -67,10 +67,10 @@ function check_rules
   local mp4path="$tmpDir/$name.$ext"
   mkdir -p $(dirname $mp4path)
   nasm $scriptDir/$name.asm -f bin -o $mp4path
-  if [[ $name == *error* ]] ; then
-    $BIN/cw.exe $spec $mp4path 2> $tmpDir/$name.new || :
+  if [[ $name == *invalid* ]] ; then
+    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new 2>&1  || true
   else
-    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new
+    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new  || true
   fi
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }

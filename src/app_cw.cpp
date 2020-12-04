@@ -102,7 +102,7 @@ void specListRules(const SpecDesc* spec)
   fflush(stdout);
 }
 
-void checkCompliance(Box const& file, SpecDesc const* spec)
+int checkCompliance(Box const& file, SpecDesc const* spec)
 {
   struct Report : IReport
   {
@@ -185,10 +185,14 @@ void checkCompliance(Box const& file, SpecDesc const* spec)
     fprintf(stdout, "[%s] No errors.\n", spec->name);
   }
 
+  auto eventCount = out.errorCount + out.warningCount;
+
   for(auto dep : spec->dependencies)
-    checkCompliance(file, specFind(dep));
+    eventCount += checkCompliance(file, specFind(dep));
 
   fflush(stdout);
+
+  return eventCount;
 }
 
 void probeIsobmff(uint8_t* data, size_t size)
@@ -207,7 +211,7 @@ void probeIsobmff(uint8_t* data, size_t size)
     ENSURE(isalpha(data[i]) || isdigit(data[i]) || isspace(data[i]), "Box type is neither an alphanumerics nor a space (box[%d]=\"%c\" (%d)). Aborting.", i, (char)data[i], (int)data[i]);
 }
 
-void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
+int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
 {
   probeIsobmff(data, size);
 
@@ -236,7 +240,7 @@ void specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
   if(0)
     dump(topReader.myBox);
 
-  checkCompliance(topReader.myBox, spec);
+  return checkCompliance(topReader.myBox, spec);
 }
 
 void fprintVersion(FILE* const stream)
@@ -324,9 +328,8 @@ int main(int argc, const char* argv[])
   }
 
   auto buf = loadFile(argv[2]);
-  specCheck(spec, argv[2], buf.data(), (int)buf.size());
 
-  return 0;
+  return specCheck(spec, argv[2], buf.data(), (int)buf.size());
 }
 
 #endif /*!CW_WASM*/
