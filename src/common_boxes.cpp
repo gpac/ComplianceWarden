@@ -79,6 +79,17 @@ void parseTkhd(IReader* br)
   br->sym("height", 32); // fixed 16.16
 }
 
+void parseStco(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entry_count = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entry_count; i++)
+    br->sym("chunk_offset", 32);
+}
+
 void parseReferenceTypeChildren(IReader* br)
 {
   while(!br->empty())
@@ -784,6 +795,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseFtyp;
   case FOURCC("tkhd"):
     return &parseTkhd;
+  case FOURCC("stco"):
+    return &parseStco;
   case FOURCC("elst"):
     return &parseElst;
   case FOURCC("stsd"):

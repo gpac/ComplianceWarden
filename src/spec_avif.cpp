@@ -1422,9 +1422,108 @@ static const SpecDesc specAvif =
       "Section 4. Auxiliary Image Sequences\n"
       "The mono_chrome field in the Sequence Header OBU shall be set to 1.\n"
       "The color_range field in the Sequence Header OBU shall be set to 1.",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* out)
       {
-        // TODO
+        std::vector<uint32_t> av1AlphaTrackIds;
+        std::map<uint32_t /*trackId*/, int64_t> av1AplhaTrackFirstOffset;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+              {
+                uint32_t trackId = 0;
+
+                for(auto& trakChild : moovChild.children)
+                {
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                  {
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "track_ID"))
+                        trackId = sym.value;
+                  }
+                  else if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                            {
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                              {
+                                for(auto& stsdChild : stblChild.children)
+                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // AV1
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("auxi"))
+                                      {
+                                        std::string auxType;
+
+                                        for(auto& sym : sampleEntryChild.syms)
+                                          if(!strcmp(sym.name, "aux_track_type"))
+                                          {
+                                            auxType.push_back((char)sym.value);
+
+                                            if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                                              av1AlphaTrackIds.push_back(trackId);
+                                          }
+                                      }
+                              }
+                              else if(stblChild.fourcc == FOURCC("stco"))
+                              {
+                                if(std::find(av1AlphaTrackIds.begin(), av1AlphaTrackIds.end(), trackId) != av1AlphaTrackIds.end())
+                                  for(auto& sym : stblChild.syms)
+                                    if(!strcmp(sym.name, "chunk_offset"))
+                                      av1AplhaTrackFirstOffset[trackId] = sym.value;
+                              }
+                            }
+                }
+              }
+
+        for(auto& offset : av1AplhaTrackFirstOffset)
+        {
+          auto box = explore(root, offset.second);
+
+          if(box.fourcc != FOURCC("mdat"))
+          {
+            out->error("AV1 Alpha track (ID=%u) computed offset is %ld. Located in box \"%s\" (\"mdat\" expected) Skipping.", offset.first, offset.second, toString(box.fourcc).c_str());
+            continue;
+          }
+
+          std::vector<uint8_t> bytes;
+          int64_t diffBits = 8 * (offset.second - box.position);
+
+          for(auto sym : box.syms)
+          {
+            if(diffBits > 0)
+            {
+              diffBits -= sym.numBits;
+              continue;
+            }
+
+            bytes.push_back((uint8_t)sym.value);
+
+            auto const maxSeqHdrProbingLen = 128;
+
+            if(bytes.size() >= maxSeqHdrProbingLen)
+              break;
+          }
+
+          BoxReader br;
+          br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+          av1State state;
+
+          while(!br.empty())
+            parseAv1Obus(&br, state);
+
+          assert(br.myBox.children.empty());
+
+          if(!state.av1c.mono_chrome)
+            out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (track_ID=%u).", offset.first);
+
+          if(!state.av1c.color_range)
+            out->error("The color_range field in the Sequence Header OBU shall be set to 1 (track_ID=%u).", offset.first);
+        }
       }
     }
   },

@@ -435,6 +435,9 @@ moov_start:
                     stco_start:
                         dd BE(stco_end - stco_start)
                         dd "stco"
+                        db 0x00 ; "version(8)" 
+                        db 0x00, 0x00, 0x00 ; "flags(24)" 
+                        dd 0x00 ; "entry_count(32)"
                     stco_end:
                 stbl_end:
             minf_end:
@@ -696,6 +699,9 @@ moov_start:
                     stco2_start:
                         dd BE(stco2_end - stco2_start)
                         dd "stco"
+                        db 0x00 ; "version(8)" 
+                        db 0x00, 0x00, 0x00 ; "flags(24)" 
+                        dd 0x00 ; "entry_count(32)"
                     stco2_end:
                 stbl2_end:
             minf2_end:
