@@ -1,6 +1,5 @@
 [Rule #5] Warning: Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.
-[avif] 0 error(s).
-[avif] 1 warning(s).
+[avif] 0 error(s), 1 warning(s).
 
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/

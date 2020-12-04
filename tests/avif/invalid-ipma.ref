@@ -1,8 +1,7 @@
 [Rule #0] Error: AV1 Image Item (ID=1) shall be associated with an AV1 Item Configuration Property
 [Rule #6] Error: Found 0 av1C, expected 1. Only the first one will be considered.
 [Rule #7] Error: Found 0 av1C, expected 1. Only the first one will be considered.
-[avif] 3 error(s).
-[avif] 0 warning(s).
+[avif] 3 error(s), 0 warning(s).
 
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/

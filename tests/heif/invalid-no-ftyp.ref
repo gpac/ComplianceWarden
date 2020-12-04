@@ -3,8 +3,7 @@
 [Rule #2] Error: 'hdlr' not found in MetaBox
 [Rule #3] Error: ItemInfoBox is required
 [Rule #4] Error: HEIF missing Image spatial extents property
-[heif] 5 error(s).
-[heif] 0 warning(s).
+[heif] 5 error(s), 0 warning(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 

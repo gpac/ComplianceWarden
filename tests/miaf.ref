@@ -2,8 +2,7 @@
 [Rule #5] Error: construction_method=1 on a coded image item
 [Rule #38] Error: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
 [Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 3 error(s).
-[miaf] 1 warning(s).
+[miaf] 3 error(s), 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019

@@ -1,8 +1,7 @@
 [Rule #19] Error: Found edit list for reverse playback: sync sample delta (16 - 2) is more than 4
 [Rule #19] Error: Found edit list for reverse playback: sync sample delta (29 - 16) is more than 4
 [Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 2 error(s).
-[miaf] 1 warning(s).
+[miaf] 2 error(s), 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019

@@ -1,7 +1,6 @@
 [Rule #0] Error: first box must be ftyp
 [Rule #1] Error: moov box not found
-[dummy] 2 error(s).
-[dummy] 0 warning(s).
+[dummy] 2 error(s), 0 warning(s).
 
 Specification description: Dummy Spec, v1.2
 

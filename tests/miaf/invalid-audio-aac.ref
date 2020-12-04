@@ -3,8 +3,7 @@
 [Rule #28] Error: objectTypeIndication shall be an AAC codec (found 65)
 [Rule #28] Error: Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
 [Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 4 error(s).
-[miaf] 1 warning(s).
+[miaf] 4 error(s), 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019

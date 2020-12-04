@@ -1,8 +1,7 @@
 [Rule #30] Error: channelcount shall not exceed 2, found 32
 [Rule #31] Error: Sampling rate shall not exceed 48000, found 64580
 [Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 2 error(s).
-[miaf] 1 warning(s).
+[miaf] 2 error(s), 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019

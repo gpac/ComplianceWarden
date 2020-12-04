@@ -21,8 +21,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=1
 		chroma_sample_position=0
 
-[avif] 1 error(s).
-[avif] 0 warning(s).
+[avif] 1 error(s), 0 warning(s).
 
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/

@@ -175,8 +175,7 @@ int checkCompliance(Box const& file, SpecDesc const* spec)
 
   if(!ruleIdxEvent.empty())
   {
-    fprintf(stdout, "[%s] %d error(s).\n", spec->name, out.errorCount);
-    fprintf(stdout, "[%s] %d warning(s).\n", spec->name, out.warningCount);
+    fprintf(stdout, "[%s] %d error(s), %d warning(s).\n", spec->name, out.errorCount, out.warningCount);
     printErrorRules();
     fprintf(stdout, "\n");
   }

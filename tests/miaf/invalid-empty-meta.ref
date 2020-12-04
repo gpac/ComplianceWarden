@@ -2,8 +2,7 @@
 [Rule #4] Error: 'hdlr' not found in MetaBox
 [Rule #7] Error: PrimaryItemBox is required
 [Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 3 error(s).
-[miaf] 1 warning(s).
+[miaf] 3 error(s), 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
@@ -25,8 +24,7 @@ identifying conformance to this document (specified in Clause 10).
 
 [Rule #2] Error: 'hdlr' not found in MetaBox
 [Rule #3] Error: ItemInfoBox is required
-[heif] 2 error(s).
-[heif] 0 warning(s).
+[heif] 2 error(s), 0 warning(s).
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 

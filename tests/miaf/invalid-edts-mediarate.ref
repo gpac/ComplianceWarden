@@ -2,8 +2,7 @@
 [Rule #17] Error: 'elst' media rate shall be -1 or 1, found 2
 [Rule #18] Error: Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
 [Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 3 error(s).
-[miaf] 1 warning(s).
+[miaf] 3 error(s), 1 warning(s).
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
