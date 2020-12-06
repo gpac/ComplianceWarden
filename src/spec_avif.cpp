@@ -735,7 +735,7 @@ std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t
 
       if(strlen(sym.name) || sym.numBits != 8)
       {
-        out->warning("Wrong symbol detected (name=%s, size=%d bits). Stopping import.", sym.name, sym.numBits);
+        out->warning("Wrong symbol detected (name=%s, size=%d bits) ; stopping import", sym.name, sym.numBits);
         break;
       }
 
@@ -991,7 +991,7 @@ static const SpecDesc specAvif =
           for(auto& sym : br.myBox.syms)
             if(!strcmp(sym.name, "still_picture"))
               if(sym.value == 0)
-                out->warning("still_picture flag set to 0.");
+                out->warning("still_picture flag set to 0");
         }
       }
     },
@@ -1015,7 +1015,7 @@ static const SpecDesc specAvif =
             parseAv1Obus(&br, state);
 
           if(!state.reduced_still_picture_header)
-            out->warning("reduced_still_picture_header flag set to 0.");
+            out->warning("reduced_still_picture_header flag set to 0");
         }
       }
     },
@@ -1033,7 +1033,7 @@ static const SpecDesc specAvif =
             for(auto& av1C : av1Cs)
               for(auto& sym : av1C->syms)
                 if(!strcmp(sym.name, "seqhdr"))
-                  out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.");
+                  out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox");
           }
         }
       }
@@ -1073,9 +1073,9 @@ static const SpecDesc specAvif =
           av1ImageItemDataSeqHdr = getAv1CSeqHdr(&br.myBox);
 
           if(av1ImageItemDataSeqHdr.empty())
-            out->error("No Sequence Header OBU present in the AV1 Image Item Data.");
+            out->error("No Sequence Header OBU present in the AV1 Image Item Data");
           else if(!(av1cSymbols == av1ImageItemDataSeqHdr))
-            out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data.");
+            out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data");
         }
       }
     },
@@ -1259,7 +1259,7 @@ static const SpecDesc specAvif =
                   {
                     // TODO: move to ISOBMFF 8.11.1.1
                     if(field.value == 0)
-                      out->warning("The item_ID value of 0 should not be used. Ignoring.");
+                      out->warning("The item_ID value of 0 should not be used - ignoring");
                     else
                       auxImages.push_back(field.value);
                   }
@@ -1280,10 +1280,10 @@ static const SpecDesc specAvif =
           assert(br.myBox.children.empty());
 
           if(!state.av1c.mono_chrome)
-            out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=%u).", itemId);
+            out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=%u)", itemId);
 
           if(!state.av1c.color_range)
-            out->error("The color_range field in the Sequence Header OBU shall be set to 1 (item_ID=%u).", itemId);
+            out->error("The color_range field in the Sequence Header OBU shall be set to 1 (item_ID=%u)", itemId);
         }
       }
     },
@@ -1455,7 +1455,7 @@ static const SpecDesc specAvif =
                               if(stblChild.fourcc == FOURCC("stsd"))
                               {
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // AV1
+                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // AV1
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("auxi"))
                                       {
@@ -1488,7 +1488,7 @@ static const SpecDesc specAvif =
 
           if(box.fourcc != FOURCC("mdat"))
           {
-            out->error("AV1 Alpha track (ID=%u) computed offset is %ld. Located in box \"%s\" (\"mdat\" expected) Skipping.", offset.first, offset.second, toString(box.fourcc).c_str());
+            out->error("AV1 Alpha track (ID=%u) computed offset is %ld ; located in box \"%s\" (expected \"mdat\") ; skipping", offset.first, offset.second, toString(box.fourcc).c_str());
             continue;
           }
 
@@ -1522,10 +1522,10 @@ static const SpecDesc specAvif =
           assert(br.myBox.children.empty());
 
           if(!state.av1c.mono_chrome)
-            out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (track_ID=%u).", offset.first);
+            out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (track_ID=%u)", offset.first);
 
           if(!state.av1c.color_range)
-            out->error("The color_range field in the Sequence Header OBU shall be set to 1 (track_ID=%u).", offset.first);
+            out->error("The color_range field in the Sequence Header OBU shall be set to 1 (track_ID=%u)", offset.first);
         }
       }
     }

@@ -6,7 +6,7 @@ Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
 [avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=1)
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0.
+[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
 
 ========================================
 [avif] 1 error(s), 1 warning(s).
