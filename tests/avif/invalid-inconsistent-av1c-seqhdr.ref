@@ -14,6 +14,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		high_bitdepth=0
 		twelve_bit=0
 		mono_chrome=0
+		color_range=0
 		chroma_subsampling_x=1
 		chroma_subsampling_y=1
 		chroma_sample_position=0
@@ -24,6 +25,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		high_bitdepth=0
 		twelve_bit=0
 		mono_chrome=0
+		color_range=0
 		chroma_subsampling_x=1
 		chroma_subsampling_y=1
 		chroma_sample_position=0
