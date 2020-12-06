@@ -46,7 +46,6 @@ struct AV1CodecConfigurationRecord
   int64_t high_bitdepth;
   int64_t twelve_bit;
   int64_t mono_chrome;
-  int64_t color_range;
   int64_t chroma_subsampling_x;
   int64_t chroma_subsampling_y;
   int64_t chroma_sample_position;
@@ -61,7 +60,6 @@ struct AV1CodecConfigurationRecord
            "\t\thigh_bitdepth=" + std::to_string(high_bitdepth) + "\n" +
            "\t\ttwelve_bit=" + std::to_string(twelve_bit) + "\n" +
            "\t\tmono_chrome=" + std::to_string(mono_chrome) + "\n" +
-           "\t\tcolor_range=" + std::to_string(color_range) + "\n" +
            "\t\tchroma_subsampling_x=" + std::to_string(chroma_subsampling_x) + "\n" +
            "\t\tchroma_subsampling_y=" + std::to_string(chroma_subsampling_y) + "\n" +
            "\t\tchroma_sample_position=" + std::to_string(chroma_sample_position);
@@ -74,6 +72,7 @@ struct av1State
   bool frame_id_numbers_present_flag = false;
   int64_t delta_frame_id_length_minus_2 = 0;
   int64_t additional_frame_id_length_minus_1 = 0;
+  int64_t color_range = 0;
   AV1CodecConfigurationRecord av1c {};
 };
 
@@ -110,7 +109,7 @@ struct ReaderBits
   int64_t count = 0;
 };
 
-void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurationRecord& av1c)
+void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurationRecord& av1c, int64_t& color_range)
 {
   av1c.high_bitdepth = br->sym("high_bitdepth", 1);
   int BitDepth = 8;
@@ -153,7 +152,7 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
 
   if(av1c.mono_chrome)
   {
-    av1c.color_range = br->sym("color_range", 1);
+    color_range = br->sym("color_range", 1);
     av1c.chroma_subsampling_x = 1;
     av1c.chroma_subsampling_y = 1;
     av1c.chroma_sample_position = 0;// CSP_UNKNOWN;
@@ -164,13 +163,13 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
           transfer_characteristics == 13 /*TC_SRGB*/ &&
           matrix_coefficients == 0 /*MC_IDENTITY*/)
   {
-    av1c.color_range = 1;
+    color_range = 1;
     av1c.chroma_subsampling_x = 0;
     av1c.chroma_subsampling_y = 0;
   }
   else
   {
-    av1c.color_range = br->sym("color_range", 1);
+    color_range = br->sym("color_range", 1);
 
     if(seq_profile == 0)
     {
@@ -385,7 +384,7 @@ int parseAv1SeqHdr(IReader* reader, av1State& state)
   br->sym("enable_superres", 1);
   br->sym("enable_cdef", 1);
   br->sym("enable_restoration", 1);
-  parseAv1ColorConfig(br.get(), state.av1c.seq_profile, state.av1c);
+  parseAv1ColorConfig(br.get(), state.av1c.seq_profile, state.av1c, state.color_range);
   br->sym("film_grain_params_present", 1);
 
   auto readBits = br->count;
@@ -1282,7 +1281,7 @@ static const SpecDesc specAvif =
           if(!state.av1c.mono_chrome)
             out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=%u)", itemId);
 
-          if(!state.av1c.color_range)
+          if(!state.color_range)
             out->error("The color_range field in the Sequence Header OBU shall be set to 1 (item_ID=%u)", itemId);
         }
       }
@@ -1455,7 +1454,7 @@ static const SpecDesc specAvif =
                               if(stblChild.fourcc == FOURCC("stsd"))
                               {
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                // AV1
+                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // AV1
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("auxi"))
                                       {
@@ -1524,7 +1523,7 @@ static const SpecDesc specAvif =
           if(!state.av1c.mono_chrome)
             out->error("The mono_chrome field in the Sequence Header OBU shall be set to 1 (track_ID=%u)", offset.first);
 
-          if(!state.av1c.color_range)
+          if(!state.color_range)
             out->error("The color_range field in the Sequence Header OBU shall be set to 1 (track_ID=%u)", offset.first);
         }
       }
