@@ -1,13 +1,20 @@
-[Rule #17] Error: 'elst' media rate shall be -1 or 1, found 0
-[Rule #17] Error: 'elst' media rate shall be -1 or 1, found 2
-[Rule #18] Error: Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
-[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 3 error(s), 1 warning(s).
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Involved rules descriptions:
+[miaf][Rule #17] Error: 'elst' media rate shall be -1 or 1, found 0
+[miaf][Rule #17] Error: 'elst' media rate shall be -1 or 1, found 2
+[miaf][Rule #18] Error: Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
+[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
+
+========================================
+[miaf] 3 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [miaf][Rule #17] Section 8.6
 the media_rate shall take either a value greater than 0 and up to and
@@ -21,5 +28,24 @@ over the same media time-range
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
 
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
 [heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

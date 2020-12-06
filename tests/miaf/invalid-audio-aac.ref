@@ -1,14 +1,21 @@
-[Rule #26] Error: objectTypeIndication shall be an AAC codec (found 65)
-[Rule #26] Error: Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
-[Rule #28] Error: objectTypeIndication shall be an AAC codec (found 65)
-[Rule #28] Error: Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
-[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 4 error(s), 1 warning(s).
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Involved rules descriptions:
+[miaf][Rule #26] Error: objectTypeIndication shall be an AAC codec (found 65)
+[miaf][Rule #26] Error: Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
+[miaf][Rule #28] Error: objectTypeIndication shall be an AAC codec (found 65)
+[miaf][Rule #28] Error: Audio shall be MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2
+[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
+
+========================================
+[miaf] 4 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [miaf][Rule #26] Section 7.4.5
 Each stream shall be coded as either a variant of AAC as defined in
@@ -22,5 +29,24 @@ MPEG-4 AAC-LC, HE-AAC Level 2, or HE-AACv2 Level 2.
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
 
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
 [heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

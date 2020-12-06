@@ -1,11 +1,28 @@
-[Rule #4] Error: HEIF missing Image spatial extents property
-[heif] 1 error(s), 0 warning(s).
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
-Involved rules descriptions:
+[heif][Rule #4] Error: HEIF missing Image spatial extents property
+
+========================================
+[heif] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [heif][Rule #4] Section 6.5.3.1
 every image item be associated with a Image spatial extents property
 
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

@@ -10,7 +10,7 @@ static const SpecDesc specIsobmff =
 {
   "isobmff",
   "ISO Base Media File Format\n"
-  "MPEG-4 part 22 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)",
+  "MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)",
   {},
   {
     {

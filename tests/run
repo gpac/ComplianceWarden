@@ -5,7 +5,7 @@ readonly BIN=$1
 readonly scriptDir=$(dirname $0)
 
 readonly tmpDir=/tmp/test-cw-$$
-#trap "rm -rf $tmpDir" EXIT
+trap "rm -rf $tmpDir" EXIT
 mkdir -p "$tmpDir"
 
 function main

@@ -1,13 +1,20 @@
-[Rule #2] Error: compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
-[Rule #5] Error: construction_method=1 on a coded image item
-[Rule #38] Error: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
-[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 3 error(s), 1 warning(s).
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Involved rules descriptions:
+[miaf][Rule #2] Error: compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
+[miaf][Rule #5] Error: construction_method=1 on a coded image item
+[miaf][Rule #38] Error: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
+[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
+
+========================================
+[miaf] 3 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [miaf][Rule #2] Section 7.2.1.2
 The FileTypeBox shall contain, in the compatible_brands list,
@@ -29,5 +36,24 @@ presence of specific image coding formats
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
 
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
 [heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

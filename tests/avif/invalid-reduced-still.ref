@@ -1,13 +1,39 @@
-[Rule #4] Warning: reduced_still_picture_header flag set to 0.
-[avif] 0 error(s), 1 warning(s).
++--------------------------------------+
+|           avif validation            |
++--------------------------------------+
 
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-Involved rules descriptions:
+[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0.
+
+========================================
+[avif] 0 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [avif][Rule #4] Section 2.1
 The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.
 
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
 [heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

@@ -1,13 +1,20 @@
-[Rule #0] Error: 'mif1' brand not found in 'ftyp' box
-[Rule #1] Error: 'meta' box not found at file level
-[Rule #2] Error: 'hdlr' not found in MetaBox
-[Rule #3] Error: ItemInfoBox is required
-[Rule #4] Error: HEIF missing Image spatial extents property
-[heif] 5 error(s), 0 warning(s).
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
-Involved rules descriptions:
+[heif][Rule #0] Error: 'mif1' brand not found in 'ftyp' box
+[heif][Rule #1] Error: 'meta' box not found at file level
+[heif][Rule #2] Error: 'hdlr' not found in MetaBox
+[heif][Rule #3] Error: ItemInfoBox is required
+[heif][Rule #4] Error: HEIF missing Image spatial extents property
+
+========================================
+[heif] 5 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [heif][Rule #0] Section 10.1
 The FileTypeBox shall contain, in the compatible_brands list, the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) [and] brand(s) identifying conformance to this document (specified in 10).
@@ -24,4 +31,14 @@ ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 [heif][Rule #4] Section 6.5.3.1
 every image item be associated with a Image spatial extents property
 
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

@@ -1,12 +1,19 @@
-[Rule #1] Error: The HandlerBox shall be the first contained box within the MetaBox
-[Rule #4] Error: 'hdlr' not found in MetaBox
-[Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
-[miaf] 2 error(s), 1 warning(s).
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-Involved rules descriptions:
+[miaf][Rule #1] Error: The HandlerBox shall be the first contained box within the MetaBox
+[miaf][Rule #4] Error: 'hdlr' not found in MetaBox
+[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
+
+========================================
+[miaf] 2 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [miaf][Rule #1] Section 7.2.1.1
 The HandlerBox shall be the first contained box within the MetaBox.
@@ -18,14 +25,31 @@ The handler type for the MetaBox shall be 'pict'.
 The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
 identifying conformance to this document (specified in Clause 10).
 
-[Rule #2] Error: 'hdlr' not found in MetaBox
-[heif] 1 error(s), 0 warning(s).
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
 
 Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
-Involved rules descriptions:
+[heif][Rule #2] Error: 'hdlr' not found in MetaBox
+
+========================================
+[heif] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [heif][Rule #2] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
 
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+

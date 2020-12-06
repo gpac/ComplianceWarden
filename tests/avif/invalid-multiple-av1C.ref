@@ -1,11 +1,18 @@
-[Rule #6] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-[Rule #7] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-[avif] 2 error(s), 0 warning(s).
++--------------------------------------+
+|           avif validation            |
++--------------------------------------+
 
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-Involved rules descriptions:
+[avif][Rule #6] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+[avif][Rule #7] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+
+========================================
+[avif] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
 
 [avif][Rule #6] Section 2.2.1
 If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the
@@ -15,5 +22,24 @@ Sequence Header OBU in the AV1 Image Item Data.
 The values of the fields in the AV1CodecConfigurationBox shall match those of the
 Sequence Header OBU in the AV1 Image Item Data.
 
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
 [heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
 [isobmff] No errors.
+========================================
+
