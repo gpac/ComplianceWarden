@@ -775,7 +775,7 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
 {
   struct Entry
   {
-    bool found = false;
+    int found = 0;
     const Box* box = nullptr;
   };
   std::map<uint32_t /*property index*/, Entry> av1cPropertyIndex;
@@ -788,7 +788,7 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
             if(iprpChild.fourcc == FOURCC("ipco"))
               for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
                 if(iprpChild.children[i - 1].fourcc == FOURCC("av1C"))
-                  av1cPropertyIndex.insert({ i, { false, &iprpChild.children[i - 1] }
+                  av1cPropertyIndex.insert({ i, { 0, &iprpChild.children[i - 1] }
                                            });
 
   for(auto& box : root.children)
@@ -808,7 +808,7 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
                   if(localItemId == itemId)
                     for(auto& a : av1cPropertyIndex)
                       if(a.first == sym.value)
-                        a.second.found = true;
+                        a.second.found++;
               }
             }
 
@@ -820,7 +820,7 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
     if(!a.second.found)
       continue;
 
-    found++;
+    found += a.second.found;
 
     if(!av1C)
       av1C = a.second.box;
@@ -828,8 +828,10 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
     break;
   }
 
-  if(found != 1)
-    out->error("Found %d av1C, expected 1. Only the first one will be considered.", found);
+  if(found == 0)
+    out->error("No av1C configuration found (expected 1)");
+  else if(found > 1)
+    out->error("Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", found);
 
   return av1C;
 }
@@ -1452,7 +1454,7 @@ static const SpecDesc specAvif =
                               if(stblChild.fourcc == FOURCC("stsd"))
                               {
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // AV1
+                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  // AV1
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("auxi"))
                                       {

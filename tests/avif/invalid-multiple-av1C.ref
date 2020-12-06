@@ -1,15 +1,11 @@
-[Rule #0] Error: AV1 Image Item (ID=1) shall be associated with an AV1 Item Configuration Property
-[Rule #6] Error: No av1C configuration found (expected 1)
-[Rule #7] Error: No av1C configuration found (expected 1)
-[avif] 3 error(s), 0 warning(s).
+[Rule #6] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+[Rule #7] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+[avif] 2 error(s), 0 warning(s).
 
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
 Involved rules descriptions:
-
-[avif][Rule #0] Section 2.1 AV1 Image Item
-The AV1 Image Item shall be associated with an AV1 Item Configuration Property.
 
 [avif][Rule #6] Section 2.2.1
 If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the
