@@ -7,12 +7,12 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #35] Error: Tile widths shall be greater than or equal to 64. Found 10
 [miaf][Rule #35] Error: Tile heights shall be greater than or equal to 64. Found 10
-[miaf][Rule #35] Error: Tile widths should be a multiple of 64. Found 10
-[miaf][Rule #35] Error: Tile heights should be a multiple of 64. Found 10
+[miaf][Rule #35] Warning: Tile widths should be a multiple of 64. Found 10
+[miaf][Rule #35] Warning: Tile heights should be a multiple of 64. Found 10
 [miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 
 ========================================
-[miaf] 4 error(s), 1 warning(s).
+[miaf] 2 error(s), 3 warning(s).
 ========================================
 
 ===== Involved rules descriptions:

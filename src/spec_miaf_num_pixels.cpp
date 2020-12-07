@@ -223,10 +223,10 @@ const std::initializer_list<RuleDesc> getRulesNumPixels()
                   out->error("Tile heights shall be greater than or equal to 64. Found %d", d.itemRes[dimg].height);
 
                 if(d.itemRes[dimg].width % 64)
-                  out->error("Tile widths should be a multiple of 64. Found %d", d.itemRes[dimg].width);
+                  out->warning("Tile widths should be a multiple of 64. Found %d", d.itemRes[dimg].width);
 
                 if(d.itemRes[dimg].height % 64)
-                  out->error("Tile heights should be a multiple of 64. Found %d", d.itemRes[dimg].height);
+                  out->warning("Tile heights should be a multiple of 64. Found %d", d.itemRes[dimg].height);
               }
             }
           }

@@ -296,7 +296,7 @@ const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
                 {
                   if((profileIdc == 77 || profileIdc == 88 || profileIdc == 100)
                      && !((uint8_t)sym.value & 0b00001000))
-                    out->error("%s: AVC should be Progressive or Constrained High Profile", profileName, sym.value);
+                    out->warning("%s: AVC should be Progressive or Constrained High Profile", profileName, sym.value);
                 }
                 else if(!strcmp(sym.name, "AVCLevelIndication"))
                 {
