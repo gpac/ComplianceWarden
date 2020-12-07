@@ -450,7 +450,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
       }
 
       if(!(firstPredicate ^ secondPredicate))
-        out->error("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
+        out->warning("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
     }
   },
 #endif
@@ -868,7 +868,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
       }
 
       if(!(firstPredicate ^ secondPredicate))
-        out->error("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
+        out->warning("There should be at most one single track of any given type (rule predicates: {%d, %d})", firstPredicate, secondPredicate);
     },
   },
   {
@@ -1409,11 +1409,15 @@ std::initializer_list<RuleDesc> rulesGeneral =
       for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
       {
         if(actualTProps[i] != expectedTProps[j])
+          i--;
+
+        if(j + 1 == expectedTProps.size())
         {
-          if(j + 1 == expectedTProps.size())
-            out->error("Property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", toString(expectedTProps[j]).c_str(), expected.c_str(), toString(actualTProps[i]).c_str(), actual.c_str());
-          else
-            i--;
+          if(actualTProps[i] != expectedTProps[j])
+            out->error("Property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", toString(expectedTProps[j]).c_str(),
+                       expected.c_str(), toString(actualTProps[i + 1]).c_str(), actual.c_str());
+          else if(i + 1 != actualTProps.size())
+            out->error("Property: expecting { %s}, got { %s}", expected.c_str(), actual.c_str());
         }
       }
     }

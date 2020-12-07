@@ -1,0 +1,69 @@
++--------------------------------------+
+|           avif validation            |
++--------------------------------------+
+
+Specification description: AVIF v1.0.0, 19 February 2019
+https://aomediacodec.github.io/av1-avif/
+
+[avif][Rule #5] Warning: Sequence Header OBUs should not be present in the AV1CodecConfigurationBox
+
+========================================
+[avif] 0 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[avif][Rule #5] Section 2.1
+Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.
+
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+[miaf][Rule #25] Error: Property: expecting { clap irot imir }, got { imir clap }
+[miaf][Rule #38] Error: File extension for "invalid-transformation-order-gpac.avif" doesn't match: expecting one of 'heif hif ', got 'avif'
+[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
+
+========================================
+[miaf] 2 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[miaf][Rule #25] Section 7.3.6.7
+[Transformative properties][if used] shall be indicated to be applied in the
+following order: clean aperture first, then rotation, then mirror.
+
+
+[miaf][Rule #38] Section 10.1
+A MIAF file shall use the filename extensions specified by HEIF to identify the
+presence of specific image coding formats
+
+[miaf][Rule #44] Section 7.2.1.2
+The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
+identifying conformance to this document (specified in Clause 10).
+
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
+[heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+
