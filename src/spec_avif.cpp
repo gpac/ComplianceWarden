@@ -1454,7 +1454,7 @@ static const SpecDesc specAvif =
                               if(stblChild.fourcc == FOURCC("stsd"))
                               {
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // AV1
+                                  if(stsdChild.fourcc == FOURCC("av01"))
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("auxi"))
                                       {
@@ -1576,6 +1576,65 @@ static const SpecDesc specAvif =
           out->warning("file \"%s\" with major brand \"%s\" shall have extension '.avif', got '.%s'", filename.c_str(), brandMajor.c_str(), ext.c_str());
       }
     },
+    {
+      "Section 5.3\n"
+      "If the image sequences are made only of AV1 Samples marked as sync, then the\n"
+      "brand avio should be used",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> av1AlphaTrackIds;
+        std::map<uint32_t /*trackId*/, int64_t> av1AplhaTrackFirstOffset;
+
+        auto isAV1 = [] (std::vector<Box> const& root) {
+            for(auto& stblChild : root)
+              if(stblChild.fourcc == FOURCC("stsd"))
+                for(auto& stsdChild : stblChild.children)
+                  if(stsdChild.fourcc == FOURCC("av01"))
+                    return true;
+
+            return false;
+          };
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            if(isAV1(minfChild.children))
+                              for(auto& stblChild : minfChild.children)
+                                if(stblChild.fourcc == FOURCC("stss"))
+                                  for(auto& sym1 : stblChild.syms)
+                                    if(!strcmp(sym1.name, "sample_number"))
+                                      // check in stts (mandatory) the number of samples
+                                      for(auto& stblChild2 : minfChild.children)
+                                        if(stblChild2.fourcc == FOURCC("stts"))
+                                          for(auto& sym2 : stblChild2.syms)
+                                            if(!strcmp(sym2.name, "entry_count"))
+                                            {
+                                              if(sym1.value != sym2.value)
+                                              {
+                                                bool found = false;
+
+                                                for(auto& box : root.children)
+                                                  if(box.fourcc == FOURCC("ftyp"))
+                                                    for(auto& sym : box.syms)
+                                                      if(!strcmp(sym.name, "compatible_brand"))
+                                                        if(sym.value == FOURCC("avio"))
+                                                          found = true;
+
+                                                if(!found)
+                                                  out->warning("image sequence made only of AV1 sync samples: brand avio should be used");
+                                              }
+                                              else
+                                                out->warning("\"stts\" box can be omitted since all track samples are sync");
+                                            }
+      }
+    }
   },
   getParseFunctionAvif,
 };
