@@ -1454,7 +1454,7 @@ static const SpecDesc specAvif =
                               if(stblChild.fourcc == FOURCC("stsd"))
                               {
                                 for(auto& stsdChild : stblChild.children)
-                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // AV1
+                                  if(stsdChild.fourcc == FOURCC("av01"))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            // AV1
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("auxi"))
                                       {
@@ -1527,7 +1527,55 @@ static const SpecDesc specAvif =
             out->error("The color_range field in the Sequence Header OBU shall be set to 1 (track_ID=%u)", offset.first);
         }
       }
-    }
+    },
+    {
+      "Section 5.1\n"
+      "If any of the brands defined in this document (e.g. avif or avis) is specified\n"
+      "in the major_brand field of the FileTypeBox, the file extension and Internet\n"
+      "Media Type should respectively be \".avif\" and \"image/avif\"",
+      [] (Box const& root, IReport* out)
+      {
+        std::string brandMajor;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "brand"))
+                switch(sym.value)
+                {
+                case FOURCC("avif"): case FOURCC("avis"): case FOURCC("avio"):
+                  brandMajor = toString(sym.value);
+                  break;
+                default: break;
+                }
+
+        if(brandMajor.empty())
+          return;
+
+        std::string filename;
+
+        auto getFileExt = [&] () {
+            for(auto& field : root.syms)
+              if(!strcmp(field.name, "filename"))
+                filename.push_back((char)field.value);
+
+            auto extPos = filename.find_last_of('.');
+
+            if(extPos > filename.length())
+            {
+              out->warning("Filename \"%s\" has no extension", filename.c_str());
+              extPos = filename.length() - 1;
+            }
+
+            return filename.substr(extPos + 1);
+          };
+
+        auto const ext = getFileExt();
+
+        if(ext != "avif")
+          out->warning("file \"%s\" with major brand \"%s\" shall have extension '.avif', got '.%s'", filename.c_str(), brandMajor.c_str(), ext.c_str());
+      }
+    },
   },
   getParseFunctionAvif,
 };
