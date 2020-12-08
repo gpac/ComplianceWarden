@@ -1355,7 +1355,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                         if(std::find(displayable.begin(), displayable.end(), item_ID) != displayable.end())
                           result.push_back(item_ID);
                         else
-                          out->warning("Found no displayable image attached to 'pixi'");
+                          out->warning("Found no displayable image attached to 'pixi' (item_ID=%d, property_index=%d)", item_ID, (int)sym.value);
                       }
                   }
                 }
