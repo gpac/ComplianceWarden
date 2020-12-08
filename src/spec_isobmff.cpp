@@ -1,5 +1,6 @@
 #include "spec.h"
 #include "fourcc.h"
+#include <algorithm>
 #include <cstring>
 #include <functional>
 #include <vector>
@@ -146,6 +147,38 @@ static const SpecDesc specIsobmff =
               itemIdsCount.push_back(itemId);
             else
               out->error("There shall be at most one occurrence of a given item_ID but %u found several times", itemId);
+      }
+    },
+    {
+      "Section: 8.11.14.1\n"
+      "There shall be at most one ItemPropertyAssociationBox with a given pair of\n"
+      "values of version and flags",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<std::pair<int64_t, int64_t>> ipmas;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    int64_t version = 0;
+
+                    for(auto& sym : iprpChild.syms)
+                      if(!strcmp(sym.name, "version"))
+                        version = sym.value;
+                      else if(!strcmp(sym.name, "flags"))
+                      {
+                        if(std::find(ipmas.begin(), ipmas.end(), std::pair<int64_t, int64_t> { version, sym.value }) == ipmas.end())
+                          ipmas.push_back({ version, sym.value });
+                        else
+                          out->error("There shall be at most one ipma with a given pair of values of version and flags but { version=%ld, flags=%ld } found several times", version, sym.value);
+
+                        break;
+                      }
+                  }
       }
     }
   },
