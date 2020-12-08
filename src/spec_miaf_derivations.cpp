@@ -107,7 +107,7 @@ DerivationGraph buildDerivationGraph(Box const& root)
 
             if(parsing)
               if(!strcmp(sym.name, "to_item_ID"))
-                graph.connections.push_back({ from_item_ID, (uint32_t)sym.value });
+                graph.connections.push_back({ (uint32_t)sym.value, from_item_ID });
           }
         }
       }
@@ -173,7 +173,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
 
         auto check = [&] (const std::list<uint32_t>& visited) {
             std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
-            auto const numDerivations = (int)visited.size();
+            auto const numDerivations = (int)visited.size() - 1; // origin is a coded image: skip it
 
             if(numDerivations > (int)expected.size())
             {
@@ -181,10 +181,10 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
               return;
             }
 
-            auto visitedIt = visited.begin();
+            auto visitedIt = ++visited.begin(); // origin is a coded image: skip it
             bool error = false;
 
-            for(int i = 1, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
+            for(int i = 0, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
             {
               // iterate over optional transformations
               for(;;)

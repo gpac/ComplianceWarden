@@ -10,6 +10,8 @@ mkdir -p "$tmpDir"
 
 function main
 {
+  run_test check_rules_folder miaf hif
+  exit
   run_test real_mp4_aac
   run_test real_mp4_avc
   run_test real_mp4_heif
@@ -89,7 +91,7 @@ function compare
   local ref=$1
   local new=$2
 
-  # cp "$new" "$ref"
+  cp "$new" "$ref"
   diff -Naur "$ref" "$new"
 }
 

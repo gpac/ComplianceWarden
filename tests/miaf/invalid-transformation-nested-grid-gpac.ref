@@ -6,26 +6,14 @@ Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #24] Error: Found 7 'pixi' associated for 9 displayable (not hidden) images
-[miaf][Rule #33] Error: Detected error in derivations: av01 (3) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (4) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (5) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (6) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (3) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (4) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (5) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (6) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (3) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (4) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (5) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (6) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (3) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (4) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (5) -> grid (2) -> grid (1)
-[miaf][Rule #33] Error: Detected error in derivations: av01 (6) -> grid (2) -> grid (1)
+[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (3)
+[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (4)
+[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (5)
+[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (6)
 [miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 
 ========================================
-[miaf] 17 error(s), 1 warning(s).
+[miaf] 5 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
