@@ -1299,7 +1299,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "displayable (not hidden)",
     [] (Box const& root, IReport* out)
     {
-      std::vector<uint32_t> displayable, pixiIndex, result;
+      std::vector<uint32_t> displayable, hidden, pixiIndex, result;
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -1354,8 +1354,8 @@ std::initializer_list<RuleDesc> rulesGeneral =
                       {
                         if(std::find(displayable.begin(), displayable.end(), item_ID) != displayable.end())
                           result.push_back(item_ID);
-                        else
-                          out->warning("Found no displayable image attached to 'pixi' (item_ID=%d, property_index=%d)", item_ID, (int)sym.value);
+                        else if(std::find(hidden.begin(), hidden.end(), item_ID) != hidden.end())
+                          out->warning("The pixel information property should be associated with hidden images (item_ID=%d, property_index=%d)", item_ID, (int)sym.value);
                       }
                   }
                 }
