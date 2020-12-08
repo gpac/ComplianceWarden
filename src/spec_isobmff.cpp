@@ -100,8 +100,54 @@ static const SpecDesc specIsobmff =
 
         parse(root, FOURCC("clap"), checkIntegrityClap);
         parse(root, FOURCC("pasp"), checkIntegrityPasp);
-      },
+      }
     },
+    {
+      "Section: 8.11.14.1\n"
+      "Each ItemPropertyAssociationBox shall be ordered by increasing item_ID,\n"
+      "and there shall be at most one occurrence of a given item_ID, in the set of\n"
+      "ItemPropertyAssociationBox boxes",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<std::vector<uint32_t>> itemIds;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    itemIds.resize(itemIds.size() + 1);
+
+                    for(auto& sym : iprpChild.syms)
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemIds.back().push_back(sym.value);
+                  }
+
+        for(auto& ipma : itemIds)
+        {
+          uint32_t lastItemId = 0;
+
+          for(auto itemId : ipma)
+          {
+            if(itemId <= lastItemId)
+              out->error("Each ItemPropertyAssociationBox shall be ordered by increasing item_ID (%u, last=%u)", itemId, lastItemId);
+
+            lastItemId = itemId;
+          }
+        }
+
+        std::vector<uint32_t> itemIdsCount;
+
+        for(auto& ipma : itemIds)
+          for(auto itemId : ipma)
+            if(std::find(itemIdsCount.begin(), itemIdsCount.end(), itemId) == itemIdsCount.end())
+              itemIdsCount.push_back(itemId);
+            else
+              out->error("There shall be at most one occurrence of a given item_ID but %u found several times", itemId);
+      }
+    }
   },
   nullptr,
 };

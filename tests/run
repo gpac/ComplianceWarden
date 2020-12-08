@@ -10,8 +10,6 @@ mkdir -p "$tmpDir"
 
 function main
 {
-  run_test check_rules_folder miaf hif
-  exit
   run_test real_mp4_aac
   run_test real_mp4_avc
   run_test real_mp4_heif
