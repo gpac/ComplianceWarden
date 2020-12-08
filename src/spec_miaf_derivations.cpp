@@ -173,7 +173,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
 
         auto check = [&] (const std::list<uint32_t>& visited) {
             std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
-            auto const numDerivations = (int)visited.size() - 1; // ignore the origin (stored as the termnal)
+            auto const numDerivations = (int)visited.size();
 
             if(numDerivations > (int)expected.size())
             {
@@ -181,7 +181,7 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
               return;
             }
 
-            auto visitedIt = ++visited.begin(); // origin is a coded image: skip it
+            auto visitedIt = visited.begin();
             bool error = false;
 
             for(int i = 1, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
