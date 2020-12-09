@@ -55,7 +55,7 @@ function real_mp4_heif
 function miaf_file_extension
 {
   cp $scriptDir/heif.mp4 $tmpDir/heif_no_ext
-  $BIN/cw.exe miaf $tmpDir/heif_no_ext > $tmpDir/no_file_extension.new
+  $BIN/cw.exe miaf $tmpDir/heif_no_ext > $tmpDir/no_file_extension.new  || true
   compare $scriptDir/no_file_extension.ref $tmpDir/no_file_extension.new
 }
 
