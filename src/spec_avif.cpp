@@ -809,6 +809,13 @@ struct BitReaderAggregate : BitReader
 void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
 {
   auto const spans = getAv1ImageItemDataOffsets(root, out, itemId);
+
+  if(spans.empty())
+  {
+    out->error("Not data offset found for item %u", itemId);
+    return;
+  }
+
   br.br = BitReaderAggregate { root.original, spans };
 
   while(!br.empty())
@@ -1446,16 +1453,31 @@ static const SpecDesc specAvif =
           }
 
           BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
+          br.br = BitReader { root.original + offset.second, (int)(box.size - (offset.second - box.position)) };
 
           av1State state;
+
+          bool seqHdrFound = false;
 
           while(!br.empty())
           {
             auto obuType = parseAv1Obus(&br, state, false);
 
             if(obuType == OBU_SEQUENCE_HEADER)
+            {
+              seqHdrFound = true;
               break;
+            }
+
+            if(obuType == OBU_FRAME_HEADER || obuType == OBU_REDUNDANT_FRAME_HEADER || obuType == OBU_FRAME)
+              /* don't parse further than our AV1 state management: if compliant we should have parsed the sequence header*/
+              break;
+          }
+
+          if(!seqHdrFound)
+          {
+            out->error("No sequence header OBU found in 'mdat' box (track_ID=%u)", offset.first);
+            return;
           }
 
           assert(br.myBox.children.empty());
@@ -1574,7 +1596,41 @@ static const SpecDesc specAvif =
                                                 out->warning("\"stts\" box can be omitted since all track samples are sync");
                                             }
       }
+    },
+#if 0
+    {
+      "Section 6.2\n"
+      "The primary image, or one of its alternates, shall be an AV1 Image Item or be a\n"
+      "derived image that references one or more items that all are AV1 Image Items.",
+      [] (Box const& root, IReport* /*out*/)
+      {
+        // find primary item
+
+        std::vector<uint32_t> primaryAndAlternateItemIds;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "item_ID"))
+                    primaryAndAlternateItemIds.push_back(field.value);
+
+        // find its alternates
+
+        // : ISOBMFF: An alternate group of entities consists of those items and tracks that are mapped to the same entity group of type 'altr'
+
+        // filter AV1 Image Items
+
+        std::vector<uint32_t> av1ItemIds = findAv1ImageItems(root);
+
+        for(auto item : primaryAndAlternateItemIds)
+        {
+          (void)item; // if
+        }
+      }
     }
+#endif
   },
   getParseFunctionAvif,
 };
