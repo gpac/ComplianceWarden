@@ -25,6 +25,7 @@ struct BoxReader : IReader
   {
     BoxReader subReader;
     subReader.specs = specs;
+    subReader.myBox.original = myBox.original + br.m_pos / 8;
     subReader.myBox.position = myBox.position + br.m_pos / 8;
     subReader.myBox.size = br.u(32);
     subReader.myBox.syms.push_back({ "size", (int64_t)subReader.myBox.size, 32 });

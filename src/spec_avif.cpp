@@ -455,7 +455,7 @@ enum
   OBU_REDUNDANT_FRAME_HEADER = 7,
 };
 
-void parseAv1Obus(IReader* br, av1State& state)
+int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
 {
   br->sym("obu", 0); // virtual OBU separator
   br->sym("forbidden", 1);
@@ -520,8 +520,15 @@ void parseAv1Obus(IReader* br, av1State& state)
       break;
     }
 
-    br->sym("byte", 8);
+    auto boxReader = dynamic_cast<BoxReader*>(br);
+
+    if(storeUnparsed)
+      br->sym("byte", 8);
+    else
+      boxReader->br.m_pos += 8; // don't store for performance reasons - data is still accessible from the original parsing (e.g Box)
   }
+
+  return obu_type;
 }
 
 void parseAv1C(IReader* br)
@@ -555,9 +562,7 @@ void parseAv1C(IReader* br)
   av1State state;
 
   while(!br->empty())
-  {
-    parseAv1Obus(br, state);
-  }
+    parseAv1Obus(br, state, true);
 }
 
 ParseBoxFunc* getParseFunctionAvif(uint32_t fourcc)
@@ -637,7 +642,7 @@ struct ItemLocation
   }
 };
 
-std::vector<ItemLocation::Span> getAv1ImageItemsDataOffsets(Box const& root, IReport* out, uint32_t itemID)
+std::vector<ItemLocation::Span> getAv1ImageItemDataOffsets(Box const& root, IReport* out, uint32_t itemID)
 {
   std::vector<ItemLocation::Span> spans;
 
@@ -702,50 +707,6 @@ Box const& explore(Box const& root, uint64_t targetOffset)
       return explore(box, targetOffset);
 
   return root;
-}
-
-std::vector<uint8_t> getAV1ImageItemData(Box const& root, IReport* out, uint32_t itemId)
-{
-  std::vector<uint8_t> bytes;
-  auto spans = getAv1ImageItemsDataOffsets(root, out, itemId);
-
-  for(auto span : spans)
-  {
-    auto box = explore(root, span.offset);
-    int64_t diffBits = 8 * (span.offset - box.position);
-
-    bool firstTime = true;
-
-    for(auto sym : box.syms)
-    {
-      if(diffBits > 0)
-      {
-        diffBits -= sym.numBits;
-        continue;
-      }
-
-      if(firstTime)
-      {
-        if(diffBits && diffBits + sym.numBits)
-          out->warning("Could not locate AV1 Image Item Data (diffBits=%s)", toString(diffBits).c_str());
-
-        firstTime = false;
-      }
-
-      if(strlen(sym.name) || sym.numBits != 8)
-      {
-        out->warning("Wrong symbol detected (name=%s, size=%d bits) ; stopping import", sym.name, sym.numBits);
-        break;
-      }
-
-      bytes.push_back((uint8_t)sym.value);
-
-      if((int64_t)bytes.size() >= span.length)
-        break;
-    }
-  }
-
-  return bytes;
 }
 
 std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
@@ -835,6 +796,30 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
 
   return av1C;
 }
+
+struct BitReaderAggregate : BitReader
+{
+  BitReaderAggregate(uint8_t* origin, std::vector<ItemLocation::Span> spans)
+    : BitReader{origin + spans[0].offset, (int)spans[0].length}
+  {
+    assert(spans.size() == 1);
+  }
+};
+
+void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
+{
+  auto const spans = getAv1ImageItemDataOffsets(root, out, itemId);
+  br.br = BitReaderAggregate { root.original, spans };
+
+  while(!br.empty())
+  {
+    auto obuType = parseAv1Obus(&br, stateUnused, false);
+
+    if(obuType == OBU_FRAME_HEADER || obuType == OBU_REDUNDANT_FRAME_HEADER || obuType == OBU_FRAME)
+      /* if compliant we now have seen the sequence header (av1C) and the frame header*/
+      return;
+  }
+}
 } // namespace
 
 static const SpecDesc specAvif =
@@ -902,17 +887,10 @@ static const SpecDesc specAvif =
 
         for(auto itemId : av1ImageItemIDs)
         {
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
-          BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
-
           av1State stateUnused;
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
-          while(!br.empty())
-            parseAv1Obus(&br, stateUnused);
-
-          /* we know we've seen the sequence header (av1C) and the frame header*/
           bool showFrame = false, keyFrame = false;
           assert(br.myBox.children.empty());
 
@@ -943,19 +921,13 @@ static const SpecDesc specAvif =
 
         for(auto itemId : av1ImageItemIDs)
         {
-          int seqHdrNum = 0;
-
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
-          BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
-
           av1State stateUnused;
-
-          while(!br.empty())
-            parseAv1Obus(&br, stateUnused);
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
           assert(br.myBox.children.empty());
+
+          int seqHdrNum = 0;
 
           for(auto& sym : br.myBox.syms)
             if(!strcmp(sym.name, "seqhdr"))
@@ -975,15 +947,9 @@ static const SpecDesc specAvif =
 
         for(auto itemId : av1ImageItemIDs)
         {
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
-          BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
-
           av1State stateUnused;
-
-          while(!br.empty())
-            parseAv1Obus(&br, stateUnused);
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
           assert(br.myBox.children.empty());
 
@@ -1003,15 +969,9 @@ static const SpecDesc specAvif =
 
         for(auto itemId : av1ImageItemIDs)
         {
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
-          BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
-
           av1State state;
-
-          while(!br.empty())
-            parseAv1Obus(&br, state);
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, state);
 
           if(!state.reduced_still_picture_header)
             out->warning("reduced_still_picture_header flag set to 0");
@@ -1047,29 +1007,21 @@ static const SpecDesc specAvif =
 
         for(auto itemId : av1ImageItemIDs)
         {
-          std::vector<Symbol> av1cSymbols, av1ImageItemDataSeqHdr;
-
           auto av1C = findAv1C(root, out, itemId);
 
           if(!av1C)
             continue;
 
-          av1cSymbols = getAv1CSeqHdr(av1C);
+          auto const av1cSymbols = getAv1CSeqHdr(av1C);
 
           if(av1cSymbols.empty())
             return;
 
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
+          av1State stateUnused;
           BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
+          probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
-          av1State state;
-
-          while(!br.empty())
-            parseAv1Obus(&br, state);
-
-          av1ImageItemDataSeqHdr = getAv1CSeqHdr(&br.myBox);
+          auto const av1ImageItemDataSeqHdr = getAv1CSeqHdr(&br.myBox);
 
           if(av1ImageItemDataSeqHdr.empty())
             out->error("No Sequence Header OBU present in the AV1 Image Item Data");
@@ -1125,15 +1077,9 @@ static const SpecDesc specAvif =
               av1cRef.chroma_sample_position = sym.value;
           }
 
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
-          BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
-
           av1State state;
-
-          while(!br.empty())
-            parseAv1Obus(&br, state);
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, state);
 
           if(memcmp(&state.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
             out->error("The values of the AV1CodecConfigurationBox shall match\n"
@@ -1266,15 +1212,9 @@ static const SpecDesc specAvif =
 
         for(auto itemId : auxImages)
         {
-          auto bytes = getAV1ImageItemData(root, out, itemId);
-
-          BoxReader br;
-          br.br = BitReader { bytes.data(), (int)bytes.size() };
-
           av1State state;
-
-          while(!br.empty())
-            parseAv1Obus(&br, state);
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, state);
 
           assert(br.myBox.children.empty());
 
@@ -1390,13 +1330,8 @@ static const SpecDesc specAvif =
           auto computeBitDepth = [&] (uint32_t itemId) -> uint32_t
             {
               av1State state;
-              auto bytes = getAV1ImageItemData(root, out, itemId);
-
               BoxReader br;
-              br.br = BitReader { bytes.data(), (int)bytes.size() };
-
-              while(!br.empty())
-                parseAv1Obus(&br, state);
+              probeAV1ImageItem(root, out, itemId, br, state);
 
               int bitDepth = 8;
 
@@ -1516,7 +1451,12 @@ static const SpecDesc specAvif =
           av1State state;
 
           while(!br.empty())
-            parseAv1Obus(&br, state);
+          {
+            auto obuType = parseAv1Obus(&br, state, false);
+
+            if(obuType == OBU_SEQUENCE_HEADER)
+              break;
+          }
 
           assert(br.myBox.children.empty());
 

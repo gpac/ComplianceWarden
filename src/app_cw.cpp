@@ -231,6 +231,8 @@ int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t 
 
   BoxReader topReader;
   topReader.br = { data, (int)size };
+  topReader.myBox.original = data;
+  topReader.myBox.position = 0;
   topReader.myBox.size = size;
   topReader.myBox.fourcc = FOURCC("root");
   topReader.specs = { spec };
