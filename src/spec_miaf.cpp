@@ -1370,7 +1370,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "following order: clean aperture first, then rotation, then mirror.\n",
     [] (Box const& root, IReport* out)
     {
-      std::vector<uint32_t> actualTProps, expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
+      std::map<uint32_t /*1-based*/, uint32_t /*fourcc*/> transformativeProperties;
 
       auto isTransformative = [] (uint32_t fourcc) {
           if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
@@ -1385,41 +1385,77 @@ std::initializer_list<RuleDesc> rulesGeneral =
             if(metaChild.fourcc == FOURCC("iprp"))
               for(auto& iprpChild : metaChild.children)
                 if(iprpChild.fourcc == FOURCC("ipco"))
+                {
+                  int index = 1;
+
                   for(auto& ipcoChild : iprpChild.children)
+                  {
                     if(isTransformative(ipcoChild.fourcc))
-                      actualTProps.push_back(ipcoChild.fourcc);
+                      transformativeProperties[index] = ipcoChild.fourcc;
 
-      if(actualTProps.empty())
-        return;
+                    index++;
+                  }
+                }
 
-      if(actualTProps.size() > expectedTProps.size())
-      {
-        out->error("Too many transformative properties (%d instead of maximum %d)", (int)actualTProps.size(), (int)expectedTProps.size());
-        return;
-      }
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipma"))
+                {
+                  int item_ID = 0;
+                  std::vector<uint32_t> actualTProps;
 
-      std::string expected, actual;
+                  auto check = [&] () {
+                      const std::vector<uint32_t> expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
 
-      for(auto& v : expectedTProps)
-        expected += toString(v) + " ";
+                      if(actualTProps.size() > expectedTProps.size())
+                      {
+                        out->error("Item_ID=%d: too many transformative properties (%d instead of maximum %d)", item_ID, (int)actualTProps.size(), (int)expectedTProps.size());
+                        return;
+                      }
 
-      for(auto& v : actualTProps)
-        actual += toString(v) + " ";
+                      std::string expected, actual;
 
-      for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
-      {
-        if(actualTProps[i] != expectedTProps[j])
-          i--;
+                      for(auto& v : expectedTProps)
+                        expected += toString(v) + " ";
 
-        if(j + 1 == expectedTProps.size())
-        {
-          if(actualTProps[i] != expectedTProps[j])
-            out->error("Property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", toString(expectedTProps[j]).c_str(),
-                       expected.c_str(), toString(actualTProps[i + 1]).c_str(), actual.c_str());
-          else if(i + 1 != actualTProps.size())
-            out->error("Property: expecting { %s}, got { %s}", expected.c_str(), actual.c_str());
-        }
-      }
+                      for(auto& v : actualTProps)
+                        actual += toString(v) + " ";
+
+                      for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
+                      {
+                        if(actualTProps[i] != expectedTProps[j])
+                          i--;
+
+                        if(j + 1 == expectedTProps.size())
+                        {
+                          if(actualTProps[i] != expectedTProps[j])
+                            out->error("Item_ID=%d property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", item_ID,
+                                       toString(expectedTProps[j]).c_str(), expected.c_str(), toString(actualTProps[i + 1]).c_str(), actual.c_str());
+                          else if(i + 1 != actualTProps.size())
+                            out->error("Item_ID=%d property: expecting { %s}, got { %s}", item_ID, expected.c_str(), actual.c_str());
+                        }
+                      }
+                    };
+
+                  for(auto& sym : iprpChild.syms)
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                    {
+                      check();
+                      actualTProps.clear();
+                      item_ID = (int)sym.value;
+                    }
+                    else if(!strcmp(sym.name, "property_index"))
+                      for(auto& p : transformativeProperties)
+                        if(p.first == sym.value)
+                          actualTProps.push_back(p.second);
+                  }
+
+                  check();
+                }
     }
   },
 };
