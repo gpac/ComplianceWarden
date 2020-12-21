@@ -23,11 +23,11 @@ The AV1 Image Item Data should have its reduced_still_picture_header flag set to
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #38] Error: File extension for "invalid-reduced-still.avif" doesn't match: expecting one of 'heif hif ', got 'avif'
+[miaf][Rule #38] Warning: File extension for "invalid-reduced-still.avif" doesn't match: expecting one of 'heif hif ', got 'avif'
 [miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 
 ========================================
-[miaf] 1 error(s), 1 warning(s).
+[miaf] 0 error(s), 2 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
