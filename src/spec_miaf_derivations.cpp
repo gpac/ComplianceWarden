@@ -5,6 +5,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <set>
 
 namespace
 {
@@ -24,7 +25,10 @@ struct DerivationGraph
            || !visit(c.dst, visited, onError, onTerminal))
         {
           visited.push_back(c.dst);
-          onError(visited);
+
+          if(onError)
+            onError(visited);
+
           return false;
         }
 
@@ -33,7 +37,8 @@ struct DerivationGraph
     }
 
     if(newVisits == 0)
-      onTerminal(visited);
+      if(onTerminal)
+        onTerminal(visited);
 
     return true;
   }
@@ -48,6 +53,28 @@ struct DerivationGraph
     str.erase(str.length() - sep.length());
 
     return str;
+  }
+
+  std::vector<std::vector<uint32_t>> getDerivationChains(uint32_t rootItemId)
+  {
+    std::vector<std::vector<uint32_t>> derivationChains;
+
+    for(auto& c : connections)
+      if(c.src == rootItemId)
+      {
+        auto sub = getDerivationChains(c.dst);
+
+        if(sub.empty())
+          sub.push_back({ c.dst }); // terminal
+
+        for(auto& derivationChain : sub)
+        {
+          derivationChain.insert(derivationChain.begin(), rootItemId);
+          derivationChains.push_back(derivationChain);
+        }
+      }
+
+    return derivationChains;
   }
 
   struct Connection
@@ -121,6 +148,149 @@ const std::initializer_list<RuleDesc> getRulesDerivations()
   static const
   std::initializer_list<RuleDesc> rulesDerivations =
   {
+    {
+      "Section 7.3.6.7\n"
+      "[Transformative properties][if used] shall be indicated to be applied in the\n"
+      "following order: clean aperture first, then rotation, then mirror.\n",
+      [] (Box const& root, IReport* out)
+      {
+        auto isTransformative = [] (uint32_t fourcc) {
+            if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+              return true;
+            else
+              return false;
+          };
+
+        // step 1: find transformative properties
+        std::map<uint32_t /*1-based*/, uint32_t /*fourcc*/> transformativeProperties;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipco"))
+                  {
+                    int index = 1;
+
+                    for(auto& ipcoChild : iprpChild.children)
+                    {
+                      if(isTransformative(ipcoChild.fourcc))
+                        transformativeProperties[index] = ipcoChild.fourcc;
+
+                      index++;
+                    }
+                  }
+
+        // step 2: find properties per item_IDs
+        std::map<uint32_t /*itemID*/, std::vector<uint32_t /*fourcc*/>> itemIdTransformativeProperties;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    int item_ID = 0;
+
+                    for(auto& sym : iprpChild.syms)
+                      if(!strcmp(sym.name, "item_ID"))
+                        item_ID = (int)sym.value;
+                      else if(!strcmp(sym.name, "property_index"))
+                        for(auto& p : transformativeProperties)
+                          if(p.first == sym.value)
+                            itemIdTransformativeProperties[item_ID].push_back(p.second);
+                  }
+
+        // step 3: build derivation chain per item_ID
+        std::multimap<uint32_t, std::vector<uint32_t>> derivationTransformationChains;
+        {
+          auto graph = buildDerivationGraph(root);
+
+          // detect infinite recursion
+          for(auto& c : graph.connections)
+          {
+            std::list<uint32_t> visited;
+
+            if(!graph.visit(c.src, visited, nullptr, nullptr))
+              out->error("Detected cycle in derivations. Aborting");
+          }
+
+          std::set<uint32_t /*item_ID*/> sourceIds; // definied as never dst by any ID
+
+          {
+            std::set<uint32_t> dst;
+
+            for(auto& c : graph.connections)
+              dst.insert(c.dst);
+
+            for(auto& c : graph.connections)
+              if(dst.find(c.src) == dst.end())
+                sourceIds.insert(c.src);
+          }
+
+          std::multimap<uint32_t /*source item_ID*/, std::vector<uint32_t /*item_IDs, including the source*/>> sourceIdDerivationChains;
+
+          for(auto sourceId : sourceIds)
+          {
+            auto derivationChains = graph.getDerivationChains(sourceId);
+
+            for(auto& d : derivationChains)
+              sourceIdDerivationChains.insert({ sourceId, d });
+          }
+
+          // transformations only
+          for(auto& derivationChain : sourceIdDerivationChains)
+          {
+            std::vector<uint32_t> propertyFourCCs;
+
+            for(auto& itemId : derivationChain.second)
+              for(auto property : itemIdTransformativeProperties[itemId])
+                propertyFourCCs.push_back(property);
+
+            derivationTransformationChains.insert({ derivationChain.first, propertyFourCCs });
+          }
+        }
+
+        // step 4: concatenate transformations and check
+        const std::vector<uint32_t> expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
+
+        for(auto& derivationChain : derivationTransformationChains)
+        {
+          auto actualTProps = derivationChain.second;
+
+          if(actualTProps.size() > expectedTProps.size())
+          {
+            out->error("Item_ID=%d: too many transformative properties (%d instead of maximum %d)", derivationChain.first, (int)actualTProps.size(), (int)expectedTProps.size());
+            return;
+          }
+
+          std::string expected, actual;
+
+          for(auto& v : expectedTProps)
+            expected += toString(v) + " ";
+
+          for(auto& v : actualTProps)
+            actual += toString(v) + " ";
+
+          for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
+          {
+            if(actualTProps[i] != expectedTProps[j])
+              i--;
+
+            if(j + 1 == expectedTProps.size())
+            {
+              if(actualTProps[i] != expectedTProps[j])
+                out->error("Item_ID=%d property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", derivationChain.first,
+                           toString(expectedTProps[j]).c_str(), expected.c_str(), toString(actualTProps[i + 1]).c_str(), actual.c_str());
+              else if(i + 1 != actualTProps.size())
+                out->error("Item_ID=%d property: expecting { %s}, got { %s}", derivationChain.first, expected.c_str(), actual.c_str());
+            }
+          }
+        }
+      }
+    },
     {
       "Section 7.3.9\n"
       "An identity derivation shall not be derived immediately from another identity\n"
