@@ -546,6 +546,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
         // TODO: CMAF
       }
     },
+#if 0
     {
       "Section 7.2.1.2\n"
       "The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)\n"
@@ -576,6 +577,7 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
           out->warning("File conforms to 'MiCm' brand but 'MiCm' is not in the 'ftyp' compatible_brand list");
       }
     }
+#endif
   };
   return rulesBrands;
 }

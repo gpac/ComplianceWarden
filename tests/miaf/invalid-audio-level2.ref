@@ -7,10 +7,9 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #30] Error: channelcount shall not exceed 2, found 32
 [miaf][Rule #31] Error: Sampling rate shall not exceed 48000, found 64580
-[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 
 ========================================
-[miaf] 2 error(s), 1 warning(s).
+[miaf] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -20,10 +19,6 @@ If AAC is chosen, then AAC shall not exceed two audio channels
 
 [miaf][Rule #31] Section 7.4.5
 If AAC is chosen, then AAC elementary streams shall not exceed 48 kHz sampling rate
-
-[miaf][Rule #44] Section 7.2.1.2
-The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
-identifying conformance to this document (specified in Clause 10).
 
 +--------------------------------------+
 |           heif validation            |

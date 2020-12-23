@@ -25,10 +25,9 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #25] Error: Item_ID=1 property: expecting { clap irot imir }, got { imir clap }
 [miaf][Rule #38] Warning: File extension for "invalid-transformation-order-gpac.avif" doesn't match: expecting one of 'heif hif ', got 'avif'
-[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 
 ========================================
-[miaf] 1 error(s), 2 warning(s).
+[miaf] 1 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -41,10 +40,6 @@ following order: clean aperture first, then rotation, then mirror.
 [miaf][Rule #38] Section 10.1
 A MIAF file shall use the filename extensions specified by HEIF to identify the
 presence of specific image coding formats
-
-[miaf][Rule #44] Section 7.2.1.2
-The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
-identifying conformance to this document (specified in Clause 10).
 
 +--------------------------------------+
 |           heif validation            |

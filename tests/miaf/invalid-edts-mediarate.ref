@@ -8,10 +8,9 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 [miaf][Rule #17] Error: 'elst' media rate shall be -1 or 1, found 0
 [miaf][Rule #17] Error: 'elst' media rate shall be -1 or 1, found 2
 [miaf][Rule #18] Error: Two media edits found: media rates shall be { 1, -1 }, found { 0, 2 }
-[miaf][Rule #44] Warning: File conforms to 'MiPr' brand but 'MiPr' is not in the 'ftyp' compatible_brand list
 
 ========================================
-[miaf] 3 error(s), 1 warning(s).
+[miaf] 3 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -23,10 +22,6 @@ including 1 (forward play), or minus 1 (normal speed reverse play)
 [miaf][Rule #18] Section 8.6
 when there are two 'media edits' one shall specify forward playback and the other reverse
 over the same media time-range
-
-[miaf][Rule #44] Section 7.2.1.2
-The FileTypeBox shall contain, in the compatible_brands list [...] brand(s)
-identifying conformance to this document (specified in Clause 10).
 
 +--------------------------------------+
 |           heif validation            |
