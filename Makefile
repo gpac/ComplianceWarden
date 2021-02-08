@@ -34,6 +34,7 @@ SRCS_CW+=\
   src/common_boxes.cpp\
   src/utils.cpp\
 
+SRCS_CW+=src/derivations.cpp
 SRCS_CW+=src/spec_avif.cpp
 SRCS_CW+=src/spec_dummy.cpp
 SRCS_CW+=src/spec_isobmff.cpp

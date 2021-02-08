@@ -1,3 +1,4 @@
+#include "derivations.h"
 #include "spec.h"
 #include "box_reader_impl.h"
 #include <algorithm> // std::find
@@ -695,7 +696,7 @@ std::vector<ItemLocation::Span> getAv1ImageItemDataOffsets(Box const& root, IRep
         }
 
   for(auto& itemLoc : itemLocs)
-    spans.push_back({ itemLoc.computeOffset(out), itemLoc.extents[0].length }); // we assume no idat-based check (construction_method = 1)
+    spans.push_back({ itemLoc.computeOffset(out), itemLoc.extents.empty() ? 0 : itemLoc.extents[0].length }); // we assume no idat-based check (construction_method = 1)
 
   return spans;
 }
@@ -1595,6 +1596,99 @@ static const SpecDesc specAvif =
                                               else
                                                 out->warning("\"stts\" box can be omitted since all track samples are sync");
                                             }
+      }
+    },
+    {
+      "Section 6\n"
+      "If transformative properties are used in derivation chains, they shall only be\n"
+      "associated with items that are not referenced by another derived item.",
+      [] (Box const& root, IReport* out)
+      {
+        auto isTransformative = [] (uint32_t fourcc) {
+            if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+              return true;
+            else
+              return false;
+          };
+
+        // locate transformative Item IDs
+        // as mentioned in Section 6 ("cropping, mirroring or rotation transformations")
+
+        std::map<uint32_t /*1-based*/, uint32_t /*fourcc*/> transformationIndices, transformationItemIDs;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipco"))
+                  {
+                    int index = 1;
+
+                    for(auto& ipcoChild : iprpChild.children)
+                    {
+                      if(isTransformative(ipcoChild.fourcc))
+                        transformationIndices[index] = ipcoChild.fourcc;
+
+                      index++;
+                    }
+                  }
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    uint32_t localItemId = 0;
+
+                    for(auto& sym : iprpChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        localItemId = sym.value;
+                      else if(!strcmp(sym.name, "property_index"))
+                        if(transformationIndices.find(sym.value) != transformationIndices.end())
+                          transformationItemIDs.insert({ localItemId, transformationIndices[sym.value] });
+                    }
+                  }
+
+        // check if they are in derivation chains
+        auto graph = buildDerivationGraph(root);
+
+        auto check = [&] (const std::list<uint32_t>& visited) {
+            bool foundTransformation = false;
+            uint32_t lastTransformation = 0, lastTransformationItemId = 0;
+
+            for(auto v : visited)
+            {
+              if(transformationItemIDs.find(v) != transformationItemIDs.end())
+              {
+                if(!foundTransformation)
+                  foundTransformation = true;
+                else
+                  out->error("Transformative properties used in derivation chains shall only be associated\n"
+                             "with items that are not referenced by another derived item.\n"
+                             "However {item_ID=%u, type=%s} was preceeded by {item_ID=%u, type=%s}.",
+                             v, toString(transformationItemIDs[v]).c_str(), lastTransformationItemId, toString(lastTransformation).c_str());
+
+                lastTransformationItemId = v;
+                lastTransformation = transformationItemIDs[v];
+              }
+            }
+          };
+
+        auto onError = [&] (const std::list<uint32_t>& visited) {
+            out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+          };
+
+        for(auto& c : graph.connections)
+        {
+          std::list<uint32_t> visited;
+
+          if(!graph.visit(c.src, visited, onError, check))
+            out->error("Detected cycle in derivations.");
+        }
       }
     },
 #if 0
