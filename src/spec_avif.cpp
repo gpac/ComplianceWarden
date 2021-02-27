@@ -1690,41 +1690,7 @@ static const SpecDesc specAvif =
             out->error("Detected cycle in derivations.");
         }
       }
-    },
-#if 0
-    {
-      "Section 6.2\n"
-      "The primary image, or one of its alternates, shall be an AV1 Image Item or be a\n"
-      "derived image that references one or more items that all are AV1 Image Items.",
-      [] (Box const& root, IReport* /*out*/)
-      {
-        // find primary item
-
-        std::vector<uint32_t> primaryAndAlternateItemIds;
-
-        for(auto& box : root.children)
-          if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
-              if(metaChild.fourcc == FOURCC("pitm"))
-                for(auto& field : metaChild.syms)
-                  if(!strcmp(field.name, "item_ID"))
-                    primaryAndAlternateItemIds.push_back(field.value);
-
-        // find its alternates
-
-        // : ISOBMFF: An alternate group of entities consists of those items and tracks that are mapped to the same entity group of type 'altr'
-
-        // filter AV1 Image Items
-
-        std::vector<uint32_t> av1ItemIds = findAv1ImageItems(root);
-
-        for(auto item : primaryAndAlternateItemIds)
-        {
-          (void)item; // if
-        }
-      }
     }
-#endif
   },
   getParseFunctionAvif,
 };
