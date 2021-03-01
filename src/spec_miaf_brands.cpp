@@ -19,6 +19,35 @@ const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec)
       "presence of specific image coding formats",
       [] (Box const& root, IReport* out)
       {
+        auto isAvcHevc = [&] () {
+            for(auto& box : root.children)
+              if(box.fourcc == FOURCC("moov"))
+                for(auto& moovChild : box.children)
+                  if(moovChild.fourcc == FOURCC("trak"))
+                    for(auto& trakChild : moovChild.children)
+                      if(trakChild.fourcc == FOURCC("mdia"))
+                        for(auto& mdiaChild : trakChild.children)
+                          if(mdiaChild.fourcc == FOURCC("minf"))
+                            for(auto& minfChild : mdiaChild.children)
+                              if(minfChild.fourcc == FOURCC("stbl"))
+                                for(auto& stblChild : minfChild.children)
+                                  if(stblChild.fourcc == FOURCC("stsd"))
+                                    for(auto& stsdChild : stblChild.children)
+                                      switch(stsdChild.fourcc)
+                                      {
+                                      case FOURCC("avc1"): case FOURCC("avc2"):
+                                      case FOURCC("avc3"): case FOURCC("avc4"):
+                                      case FOURCC("hev1"): case FOURCC("hev2"):
+                                      case FOURCC("hvc1"): case FOURCC("hvc2"):
+                                        return true;
+                                      }
+
+            return false;
+          };
+
+        if(!isAvcHevc())
+          return;
+
         std::string filename;
 
         for(auto& field : root.syms)
