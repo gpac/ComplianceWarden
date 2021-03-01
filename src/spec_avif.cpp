@@ -1573,29 +1573,39 @@ static const SpecDesc specAvif =
                                 if(stblChild.fourcc == FOURCC("stss"))
                                   for(auto& sym1 : stblChild.syms)
                                     if(!strcmp(sym1.name, "sample_number"))
+                                    {
                                       // check in stts (mandatory) the number of samples
-                                      for(auto& stblChild2 : minfChild.children)
-                                        if(stblChild2.fourcc == FOURCC("stts"))
-                                          for(auto& sym2 : stblChild2.syms)
-                                            if(!strcmp(sym2.name, "entry_count"))
-                                            {
-                                              if(sym1.value != sym2.value)
-                                              {
-                                                bool found = false;
+                                      auto getSampleNum = [&] () {
+                                          int64_t sampleNum = 0;
 
-                                                for(auto& box : root.children)
-                                                  if(box.fourcc == FOURCC("ftyp"))
-                                                    for(auto& sym : box.syms)
-                                                      if(!strcmp(sym.name, "compatible_brand"))
-                                                        if(sym.value == FOURCC("avio"))
-                                                          found = true;
+                                          for(auto& stblChild2 : minfChild.children)
+                                            if(stblChild2.fourcc == FOURCC("stts"))
+                                              for(auto& sym2 : stblChild2.syms)
+                                                if(!strcmp(sym2.name, "sample_count"))
+                                                  sampleNum += sym2.value;
 
-                                                if(!found)
-                                                  out->warning("image sequence made only of AV1 sync samples: brand avio should be used");
-                                              }
-                                              else
-                                                out->warning("\"stts\" box can be omitted since all track samples are sync");
-                                            }
+                                          return sampleNum;
+                                        };
+
+                                      auto const sampleNum = getSampleNum();
+
+                                      if(sym1.value == sampleNum)
+                                      {
+                                        bool found = false;
+
+                                        for(auto& box : root.children)
+                                          if(box.fourcc == FOURCC("ftyp"))
+                                            for(auto& sym : box.syms)
+                                              if(!strcmp(sym.name, "compatible_brand"))
+                                                if(sym.value == FOURCC("avio"))
+                                                  found = true;
+
+                                        if(!found)
+                                          out->warning("image sequence made only of AV1 sync samples: brand avio should be used");
+
+                                        out->warning("\"stts\" box can be omitted since all track samples are sync");
+                                      }
+                                    }
       }
     },
     {
