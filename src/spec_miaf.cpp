@@ -1360,7 +1360,47 @@ std::initializer_list<RuleDesc> rulesGeneral =
                 }
 
       if(result.size() != displayable.size())
-        out->error("Found %d 'pixi' associated for %d displayable (not hidden) images", (int)result.size(), (int)displayable.size());
+      {
+        std::string msg = "Found ";
+
+        if(result.empty())
+        {
+          msg += "no";
+        }
+        else
+        {
+          msg += std::to_string(result.size()) + " (ItemIds={";
+
+          for(size_t i = 0; i < result.size(); ++i)
+          {
+            if(i > 0)
+              msg += ",";
+
+            msg += std::to_string(result[i]);
+          }
+
+          msg += "})";
+        }
+
+        msg += " 'pixi' associated for " + std::to_string(displayable.size()) + " displayable (not hidden) images";
+
+        if(!displayable.empty())
+        {
+          msg += " (ItemIds={";
+
+          for(size_t i = 0; i < displayable.size(); ++i)
+          {
+            if(i > 0)
+              msg += ",";
+
+            msg += std::to_string(displayable[i]);
+          }
+
+          msg += "})";
+        }
+
+        out->error(msg.c_str());
+      }
     },
   },
   {
@@ -1479,7 +1519,7 @@ static const SpecDesc specMiaf =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
-  "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019",
+  "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // Romain + DAM2 WG03 N0032",
   { "heif" },
   concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(specMiaf), getRulesProfiles(specMiaf) }),
   nullptr,

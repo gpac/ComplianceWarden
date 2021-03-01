@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #24] Error: Found 7 'pixi' associated for 9 displayable (not hidden) images
+[miaf][Rule #24] Error: Found 7 (ItemIds={3,4,5,6,7,8,9}) 'pixi' associated for 9 displayable (not hidden) images (ItemIds={1,2,3,4,5,6,7,8,9})
 [miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (3)
 [miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (4)
 [miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (5)

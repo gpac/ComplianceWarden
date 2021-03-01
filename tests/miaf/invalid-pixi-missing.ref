@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #24] Error: Found 0 'pixi' associated for 1 displayable (not hidden) images
+[miaf][Rule #24] Error: Found no 'pixi' associated for 1 displayable (not hidden) images (ItemIds={1})
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
