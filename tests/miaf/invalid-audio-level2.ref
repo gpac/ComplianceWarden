@@ -24,7 +24,7 @@ If AAC is chosen, then AAC elementary streams shall not exceed 48 kHz sampling r
 |           heif validation            |
 +--------------------------------------+
 
-Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ========================================
 [heif] No errors.

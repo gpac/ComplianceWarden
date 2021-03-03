@@ -8,14 +8,13 @@ void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 static const SpecDesc specHeif =
 {
   "heif",
-  "HEIF - ISO/IEC 23008-12 - First edition 2017-12",
+  "HEIF - ISO/IEC 23008-12 - 2nd Edition N18310",
   { "isobmff" },
   {
     {
-      "Section 10.1\n"
-      "The FileTypeBox shall contain, in the compatible_brands list, "
-      "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12) "
-      "[and] brand(s) identifying conformance to this document (specified in 10).",
+      "Section 10..2.1.1\n"
+      "Files shall contain the brand 'mif1' in the compatible brands array of the\n"
+      "FileTypeBox.",
       [] (Box const& root, IReport* out)
       {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))
@@ -101,8 +100,8 @@ static const SpecDesc specHeif =
       },
     },
     {
-      "Section 6.5.3.1\n"
-      "every image item be associated with a Image spatial extents property",
+      "Section 7.3.6.3\n"
+      "every image item be associated with a Image spatial extents property", // FIXME: listed in MIAF w18260 but not in HEIF 2nd edition
       [] (Box const& root, IReport* out)
       {
         bool found = false;
@@ -126,8 +125,8 @@ static const SpecDesc specHeif =
       },
     },
     {
-      "Section 7.2.3.3\n"
-      "CodingConstraintsBox ('ccst') shall be present once per sample entry",
+      "Section 7.2.2.4\n"
+      "CodingConstraintsBox ('ccst') shall be present once per sample entry", // FIXME: listed in MIAF w18260 but not in HEIF 2nd edition
       [] (Box const& root, IReport* out)
       {
         for(auto& box : root.children)
@@ -137,6 +136,20 @@ static const SpecDesc specHeif =
                 for(auto& trakChild : moovChild.children)
                   if(trakChild.fourcc == FOURCC("mdia"))
                     for(auto& mdiaChild : trakChild.children)
+                    {
+                      auto isPict = [&] () {
+                          if(mdiaChild.fourcc == FOURCC("hdlr"))
+                            for(auto& sym : mdiaChild.syms)
+                              if(!strcmp(sym.name, "handler_type"))
+                                if(sym.value == FOURCC("pict"))
+                                  return true;
+
+                          return false;
+                        };
+
+                      if(!isPict())
+                        continue;
+
                       if(mdiaChild.fourcc == FOURCC("minf"))
                         for(auto& minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl"))
@@ -161,6 +174,7 @@ static const SpecDesc specHeif =
                                       out->error("CodingConstraintsBox ('ccst') shall be present once");
                                   }
                                 }
+                    }
       },
     },
     {

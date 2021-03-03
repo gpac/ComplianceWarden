@@ -20,7 +20,7 @@ Every image item shall be associated with a Image spatial extents property
 |           heif validation            |
 +--------------------------------------+
 
-Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 [heif][Rule #4] Error: HEIF missing Image spatial extents property
 
@@ -30,7 +30,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
 
 ===== Involved rules descriptions:
 
-[heif][Rule #4] Section 6.5.3.1
+[heif][Rule #4] Section 7.3.6.3
 every image item be associated with a Image spatial extents property
 
 +--------------------------------------+

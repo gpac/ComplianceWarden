@@ -28,7 +28,7 @@ The primary item shall be a MIAF master image item.
 |           heif validation            |
 +--------------------------------------+
 
-Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 [heif][Rule #2] Error: 'hdlr' not found in MetaBox
 [heif][Rule #3] Error: ItemInfoBox is required
