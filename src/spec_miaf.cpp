@@ -603,6 +603,31 @@ std::initializer_list<RuleDesc> rulesGeneral =
     "have a pixel aspect ratio of 1:1.",
     [] (Box const& root, IReport* out)
     {
+      auto checkPasp = [&] (const Box& box) {
+          uint32_t hSpacing = -1, vSpacing = -1;
+
+          for(auto& sym : box.syms)
+          {
+            if(!strcmp(sym.name, "hSpacing"))
+              hSpacing = sym.value;
+            else if(!strcmp(sym.name, "vSpacing"))
+              vSpacing = sym.value;
+          }
+
+          if(vSpacing != hSpacing)
+            out->error("Pixel aspect ratio shall be 1:1 but is %u:%u", hSpacing, vSpacing);
+        };
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipco"))
+                  for(auto& ipcoChild : iprpChild.children)
+                    if(ipcoChild.fourcc == FOURCC("pasp"))
+                      checkPasp(ipcoChild);
+
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("moov"))
           for(auto& moovChild : box.children)
@@ -619,20 +644,7 @@ std::initializer_list<RuleDesc> rulesGeneral =
                                 if(isVisualSampleEntry(stsdChild.fourcc))
                                   for(auto& sampleEntryChild : stsdChild.children)
                                     if(sampleEntryChild.fourcc == FOURCC("pasp"))
-                                    {
-                                      uint32_t hSpacing = -1, vSpacing = -1;
-
-                                      for(auto& sym : sampleEntryChild.syms)
-                                      {
-                                        if(!strcmp(sym.name, "hSpacing"))
-                                          hSpacing = sym.value;
-                                        else if(!strcmp(sym.name, "vSpacing"))
-                                          vSpacing = sym.value;
-                                      }
-
-                                      if(vSpacing != hSpacing)
-                                        out->error("Pixel aspect ratio shall be 1:1 but is %:%", hSpacing, vSpacing);
-                                    }
+                                      checkPasp(sampleEntryChild);
     },
   },
   {

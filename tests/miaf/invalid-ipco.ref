@@ -1,0 +1,44 @@
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+[miaf][Rule #11] Error: Pixel aspect ratio shall be 1:1 but is 2:1
+
+========================================
+[miaf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[miaf][Rule #11] Section 7.3.6.5
+"all images conformant with this document shall have a pixel aspect ratio of 1:1"
+The default pixel aspect ratio of an image, in the absence of association with
+a PixelAspectRatioBox property, is 1:1 (i.e. 'square'). This value of pixel
+aspect ratio is the mandatory value for all images mandated or conditionally
+mandated by this document, i.e. all images conformant with this document shall
+have a pixel aspect ratio of 1:1.
+
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - First edition 2017-12
+
+========================================
+[heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

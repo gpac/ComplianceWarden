@@ -1,3 +1,5 @@
+#pragma once
+
 #include "box.h"
 #include "fourcc.h"
 #include <functional>
