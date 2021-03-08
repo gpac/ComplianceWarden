@@ -4,7 +4,7 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #4] Error: Item ID=1: missing Image spatial extents property
+[heif][Rule #4] Error: image spatial extents property ("ispe") not detected.
 
 ========================================
 [heif] 1 error(s), 0 warning(s).

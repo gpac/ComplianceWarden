@@ -133,8 +133,9 @@ meta_start:
             db 0x00, 0x00, 0x00 ; "flags(24)" 
             db 0x00, 0x00, 0x00, 0x01 ; "entry_count(32)" 
             db 0x00, 0x02 ; "item_ID(16)" 
-            db 0x01 ; "association_count(8)" 
-            db 0x02 ; "essential(1)" "property_index(7)" 
+            db 0x02 ; "association_count(8)" 
+            db 0x01 ; "essential(1)" "property_index(7)" 
+            db 0x02 ; "essential(1)" "property_index(7)"
         ipma_end:
     iprp_end:
 meta_end:

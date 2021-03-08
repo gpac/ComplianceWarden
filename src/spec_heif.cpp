@@ -1,6 +1,7 @@
 #include <cstring>
 #include "spec.h"
 #include "fourcc.h"
+#include <algorithm> // std::find
 
 bool isVisualSampleEntry(uint32_t fourcc);
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
@@ -100,33 +101,80 @@ static const SpecDesc specHeif =
       },
     },
     {
-      "Section 7.3.6.3\n"
-      "every image item be associated with a Image spatial extents property", // FIXME: listed in MIAF w18260 but not in HEIF 2nd edition
+      "Section 6.5.3.1\n"
+      "Every image item shall be associated with one [image spatial extents property],\n"
+      "prior to the association of all transformative properties.",
       [] (Box const& root, IReport* out)
       {
-        bool found = false;
+        std::vector<uint32_t /*4cc*/> properties;
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
             for(auto& metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iprp"))
                 for(auto& iprpChild : metaChild.children)
-                {
                   if(iprpChild.fourcc == FOURCC("ipco"))
                     for(auto& ipcoChild : iprpChild.children)
-                      if(ipcoChild.fourcc == FOURCC("ispe"))
-                        found = true;
+                      properties.push_back(ipcoChild.fourcc);
 
-                  break;
-                }
+        if(std::find(properties.begin(), properties.end(), FOURCC("ispe")) == properties.end())
+          out->error("image spatial extents property (\"ispe\") not detected.");
 
-        if(!found)
-          out->error("HEIF missing Image spatial extents property");
+        auto isTransformative = [] (uint32_t fourcc) {
+            if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+              return true;
+            else
+              return false;
+          };
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    uint32_t localItemId = 0;
+                    bool foundIspe = true;
+                    auto checkIspe = [&] () {
+                        if(!foundIspe)
+                          out->error("Item ID=%u: missing Image spatial extents property", localItemId);
+                      };
+
+                    for(auto& sym : iprpChild.syms)
+                      if(!strcmp(sym.name, "item_ID"))
+                      {
+                        checkIspe();
+                        foundIspe = false;
+                        localItemId = sym.value;
+                      }
+                      else if(!strcmp(sym.name, "property_index"))
+                      {
+                        if(sym.value /*1-based*/ > (int)properties.size())
+                        {
+                          out->error("Invalid property_index=%lld", sym.value);
+                        }
+                        else
+                        {
+                          if(properties[sym.value - 1] == FOURCC("ispe"))
+                          {
+                            foundIspe = true;
+                            break;
+                          }
+                          else if(isTransformative(properties[sym.value - 1]))
+                            out->error("Item ID=%u: transformative property \"%s\" (index=%lld) found prior to \"ispe\"",
+                                       localItemId, toString(properties[sym.value - 1]).c_str(), sym.value);
+                        }
+                      }
+
+                    checkIspe();
+                  }
       },
     },
     {
-      "Section 7.2.2.4\n"
-      "CodingConstraintsBox ('ccst') shall be present once per sample entry", // FIXME: listed in MIAF w18260 but not in HEIF 2nd edition
+      "Section 7.2.3.1\n"
+      "The CodingConstraintsBox shall be present in the sample description entry for\n"
+      "tracks with handler_type equal to 'pict'",
       [] (Box const& root, IReport* out)
       {
         for(auto& box : root.children)

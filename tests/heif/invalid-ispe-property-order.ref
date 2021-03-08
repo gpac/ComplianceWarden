@@ -4,7 +4,7 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #4] Error: HEIF missing Image spatial extents property
+[heif][Rule #4] Error: Item ID=1: transformative property "imir" (index=2) found prior to "ispe"
 
 ========================================
 [heif] 1 error(s), 0 warning(s).
@@ -12,8 +12,9 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #4] Section 7.3.6.3
-every image item be associated with a Image spatial extents property
+[heif][Rule #4] Section 6.5.3.1
+Every image item shall be associated with one [image spatial extents property],
+prior to the association of all transformative properties.
 
 +--------------------------------------+
 |          isobmff validation          |

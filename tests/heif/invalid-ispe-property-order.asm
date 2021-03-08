@@ -6,7 +6,7 @@ db "ftyp"
 
 db "isom"
 dd BE(0x200)
-db "mif1", "miaf"
+db "mif1"
 
 ftyp_end:
 
@@ -26,28 +26,11 @@ dd BE(0)
 dd BE(0)
 hdlr_end:
 
-pitm_start:
-dd BE(pitm_end - pitm_start)
-db "pitm"
-dd BE(0)
-db 0x00, 0x00
-pitm_end:
-
 iinf_start:
 dd BE(iinf_end - iinf_start)
 db "iinf"
 dd BE(0)
-db 0x00, 0x01
-infe_start:
-dd BE(infe_end - infe_start)
-db "infe"
-dd BE(0)
-db 0xaa, 0xbb ; item_ID
-db 0x00, 0x00 ; protected item
-db 0x00
-db 0x00
-db 0x00
-infe_end:
+db 0x00, 0x00
 iinf_end:
 
 iprp_start:
@@ -61,21 +44,22 @@ dd BE(ispe_end - ispe_start)
 db "ispe"
 dd 0, 0, 0
 ispe_end:
-pixi_start:
-dd BE(pixi_end - pixi_start)
-db "pixi"
-pixi_end:
+imir_start:
+dd BE(imir_end - imir_start)
+dd "imir"
+db 0x01 
+imir_end:
 ipco_end:
 ipma_start:
 dd BE(ipma_end - ipma_start)
 dd "ipma"
-db 0x00 ; "version(8)" 
-db 0x00, 0x00, 0x00 ; "flags(24)" 
-db 0x00, 0x00, 0x00, 0x01 ; "entry_count(32)" 
-db 0xaa, 0xbb ; "item_ID(16)" 
-db 0x02 ; "association_count(8)" 
-db 0x81 ; "essential(1)" "property_index(7)" 
-db 0x82 ; "essential(1)" "property_index(7)" 
+db 0x00 ; version(8) 
+db 0x00, 0x00, 0x00 ; flags(24) 
+db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+db 0x00, 0x01 ; item_ID(16) 
+db 0x02 ; association_count(8) 
+db 0x02 ; essential(1) property_index(7) 
+db 0x01 ; essential(1) property_index(7) 
 ipma_end:
 iprp_end:
 

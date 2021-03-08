@@ -225,11 +225,10 @@ meta_start:
             db 0x84 ; "essential(1)" "property_index(7)" 
             db 0x85 ; "essential(1)" "property_index(7)" 
             db 0x00, 0x04 ; "item_ID(16)" 
-            db 0x04 ; "association_count(8)" 
+            db 0x03 ; "association_count(8)" 
             db 0x81 ; "essential(1)" "property_index(7)" 
             db 0x82 ; "essential(1)" "property_index(7)" 
             db 0x86 ; "essential(1)" "property_index(7)" 
-            db 0x87 ; "essential(1)" "property_index(7)" 
         ipma_end:
     iprp_end:
 meta_end:
