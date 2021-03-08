@@ -92,7 +92,7 @@ void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<
 }
 } /*anonymous namespace*/
 
-const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec)
+const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
 {
   static const SpecDesc& globalSpec = spec;
   (void)globalSpec;

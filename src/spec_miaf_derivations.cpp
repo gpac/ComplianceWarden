@@ -2,7 +2,7 @@
 #include "spec.h"
 #include <algorithm>
 
-const std::initializer_list<RuleDesc> getRulesDerivations()
+const std::initializer_list<RuleDesc> getRulesMiafDerivations()
 {
   static const
   std::initializer_list<RuleDesc> rulesDerivations =

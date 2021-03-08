@@ -32,7 +32,7 @@ https://aomediacodec.github.io/av1-avif/
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -42,7 +42,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -55,7 +55,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -65,7 +65,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -78,7 +78,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -88,7 +88,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -101,7 +101,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -111,7 +111,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -124,7 +124,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -134,7 +134,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -147,7 +147,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -157,7 +157,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -170,7 +170,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -180,7 +180,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -193,7 +193,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
-		seq_profile=0
+		seq_profile=1
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0
@@ -203,7 +203,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=1
+		seq_profile=0
 		seq_level_idx_0=0
 		seq_tier_0=0
 		high_bitdepth=0

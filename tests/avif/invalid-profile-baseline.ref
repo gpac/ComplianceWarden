@@ -5,39 +5,17 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
-the Sequence Header OBU in the AV1 Image Item Data:
-	AV1CodecConfigurationBox:
-		seq_profile=0
-		seq_level_idx_0=4
-		seq_tier_0=0
-		high_bitdepth=0
-		twelve_bit=0
-		mono_chrome=0
-		chroma_subsampling_x=1
-		chroma_subsampling_y=1
-		chroma_sample_position=0
-	Sequence Header OBU in the AV1 Image Item Data:
-		seq_profile=0
-		seq_level_idx_0=5
-		seq_tier_0=0
-		high_bitdepth=0
-		twelve_bit=0
-		mono_chrome=0
-		chroma_subsampling_x=1
-		chroma_subsampling_y=1
-		chroma_sample_position=0
-
+[avif][Rule #17] Error: Baseline profile requires AV1 Main Profile
+[avif][Rule #17] Error: Baseline profile requires AV1 level 5.1 or lower
 
 ========================================
-[avif] 1 error(s), 0 warning(s).
+[avif] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[avif][Rule #7] Section 2.2.1
-The values of the fields in the AV1CodecConfigurationBox shall match those of the
-Sequence Header OBU in the AV1 Image Item Data.
+[avif][Rule #17] Section 7.2
+AVIF Baseline Profile
 
 +--------------------------------------+
 |           miaf validation            |

@@ -122,7 +122,7 @@ Derivations getDerivationsInfo(Box const& root, uint32_t irefTypeFourcc)
 }
 }
 
-const std::initializer_list<RuleDesc> getRulesNumPixels()
+const std::initializer_list<RuleDesc> getRulesMiafNumPixels()
 {
   static const
   std::initializer_list<RuleDesc> rulesNumPixels =

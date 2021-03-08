@@ -47,7 +47,7 @@ bool isMiafAac(const Box& mp4a, IReport* out)
 }
 }
 
-const std::initializer_list<RuleDesc> getRulesAudio()
+const std::initializer_list<RuleDesc> getRulesMiafAudio()
 {
   static const
   std::initializer_list<RuleDesc> rulesAudio =

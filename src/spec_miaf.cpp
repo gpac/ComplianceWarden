@@ -42,7 +42,7 @@ bool boxEqual(Box const* a, Box const* b)
 }
 }
 
-std::initializer_list<RuleDesc> rulesGeneral =
+std::initializer_list<RuleDesc> rulesMiafGeneral =
 {
   {
     "Section 7.2.1.4:\n"
@@ -1511,21 +1511,12 @@ std::initializer_list<RuleDesc> rulesGeneral =
   },
 };
 
-static std::vector<RuleDesc> concat(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)
-{
-  std::vector<RuleDesc> v;
-
-  for(auto& r : rules)
-    v.insert(v.end(), r.begin(), r.end());
-
-  return v;
-}
-
-const std::initializer_list<RuleDesc> getRulesAudio();
-const std::initializer_list<RuleDesc> getRulesDerivations();
-const std::initializer_list<RuleDesc> getRulesNumPixels();
-const std::initializer_list<RuleDesc> getRulesBrands(const SpecDesc& spec);
-const std::initializer_list<RuleDesc> getRulesProfiles(const SpecDesc& spec);
+const std::initializer_list<RuleDesc> getRulesMiafAudio();
+const std::initializer_list<RuleDesc> getRulesMiafDerivations();
+const std::initializer_list<RuleDesc> getRulesMiafNumPixels();
+const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec);
+const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec);
+std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules);
 
 static const SpecDesc specMiaf =
 {
@@ -1533,7 +1524,7 @@ static const SpecDesc specMiaf =
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // Romain + DAM2 WG03 N0032",
   { "heif" },
-  concat({ rulesGeneral, getRulesAudio(), getRulesDerivations(), getRulesNumPixels(), getRulesBrands(specMiaf), getRulesProfiles(specMiaf) }),
+  concatRules({ rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(), getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
   nullptr,
 };
 

@@ -111,3 +111,13 @@ void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
             }
 }
 
+std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)
+{
+  std::vector<RuleDesc> v;
+
+  for(auto& r : rules)
+    v.insert(v.end(), r.begin(), r.end());
+
+  return v;
+}
+

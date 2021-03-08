@@ -45,7 +45,7 @@ function real_mp4_avc
 function real_mp4_heif
 {
   #generated with 'isoifftool -m 0 -t avc -i avc.264 -o heif.mp4 -s 320 240'
-  $BIN/cw.exe heif $scriptDir/heif.mp4 > $tmpDir/heif.new
+  $BIN/cw.exe heif $scriptDir/heif.mp4 > $tmpDir/heif.new  || true
   compare $scriptDir/heif.ref $tmpDir/heif.new
 
   $BIN/cw.exe miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new  || true
