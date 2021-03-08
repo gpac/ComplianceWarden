@@ -1430,7 +1430,7 @@ static const SpecDesc specAvif =
 
           if(box.fourcc != FOURCC("mdat"))
           {
-            out->error("AV1 Alpha track (ID=%u) computed offset is %ld ; located in box \"%s\" (expected \"mdat\") ; skipping", offset.first, offset.second, toString(box.fourcc).c_str());
+            out->error("AV1 Alpha track (ID=%u) computed offset is %lld ; located in box \"%s\" (expected \"mdat\") ; skipping", offset.first, offset.second, toString(box.fourcc).c_str());
             continue;
           }
 

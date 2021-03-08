@@ -174,7 +174,7 @@ static const SpecDesc specIsobmff =
                         if(std::find(ipmas.begin(), ipmas.end(), std::pair<int64_t, int64_t> { version, sym.value }) == ipmas.end())
                           ipmas.push_back({ version, sym.value });
                         else
-                          out->error("There shall be at most one ipma with a given pair of values of version and flags but { version=%ld, flags=%ld } found several times", version, sym.value);
+                          out->error("There shall be at most one ipma with a given pair of values of version and flags but { version=%lld, flags=%lld } found several times", version, sym.value);
 
                         break;
                       }
