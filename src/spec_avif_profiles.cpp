@@ -73,8 +73,8 @@ const std::initializer_list<RuleDesc> getRulesAvifProfiles(const SpecDesc & /*sp
               for(auto& sym : av1C->syms)
               {
                 if(!strcmp(sym.name, "seq_profile"))
-                  if(sym.value > 0 /*Main*/)
-                    out->error("Advanced profile requires AV1 Main Profile for image items");
+                  if(sym.value > 1 /*High*/)
+                    out->error("Advanced profile requires AV1 High Profile for image items");
 
                 if(!strcmp(sym.name, "seq_level_idx_0"))
                   if(sym.value > 16 /*6*/)
@@ -97,8 +97,8 @@ const std::initializer_list<RuleDesc> getRulesAvifProfiles(const SpecDesc & /*sp
               for(auto& sym : av1C->syms)
               {
                 if(!strcmp(sym.name, "seq_profile"))
-                  if(sym.value > 0 /*Main*/)
-                    out->error("Advanced profile requires AV1 Main Profile for image sequences");
+                  if(sym.value > 1 /*Main or High*/)
+                    out->error("Advanced profile requires AV1 Main or High Profiles for image sequences");
 
                 if(!strcmp(sym.name, "seq_level_idx_0"))
                   if(sym.value > 13 /*5.1*/)

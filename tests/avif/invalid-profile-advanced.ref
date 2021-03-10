@@ -5,7 +5,7 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #18] Error: Advanced profile requires AV1 Main Profile for image items
+[avif][Rule #18] Error: Advanced profile requires AV1 High Profile for image items
 [avif][Rule #18] Error: Advanced profile requires AV1 level 6 or lower for image items
 
 ========================================
