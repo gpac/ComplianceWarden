@@ -5,14 +5,30 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
+[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #3] Warning: still_picture flag set to 0
+[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
+[avif][Rule #10] Error: Track with 'pict' handler found, but no primary item that is an AV1 image item found.
 [avif][Rule #17] Error: Item ID=1 (image item): Baseline Profile requires AV1 Main Profile
-[avif][Rule #17] Error: Item ID=1 (image item): Baseline Profile requires AV1 level 5.1 or lower
+[avif][Rule #17] Error: Item ID=2 (image sequence): Baseline Profile requires AV1 Main Profile
 
 ========================================
-[avif] 2 error(s), 0 warning(s).
+[avif] 4 error(s), 2 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
+
+[avif][Rule #1] Section 2.1
+The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as sync
+
+[avif][Rule #3] Section 2.1
+The AV1 Image Item Data should have its still_picture flag set to 1.
+
+[avif][Rule #4] Section 2.1
+The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.
+
+[avif][Rule #10] Section 3
+The track handler for an AV1 Image Sequence shall be 'pict'.
 
 [avif][Rule #17] Section 7.2
 AVIF Baseline Profile (MA1B):
@@ -26,9 +42,21 @@ AVIF Baseline Profile (MA1B):
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
+[miaf][Rule #7] Error: PrimaryItemBox is required
+[miaf][Rule #24] Error: Found no 'pixi' associated for 1 displayable (not hidden) images (ItemIds={1})
+
 ========================================
-[miaf] No errors.
+[miaf] 2 error(s), 0 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[miaf][Rule #7] Section 7.3.2
+The primary item shall be a MIAF master image item.
+
+[miaf][Rule #24] Section 7.3.6.6
+The pixel information property shall be associated with every image that is
+displayable (not hidden)
 
 +--------------------------------------+
 |           heif validation            |

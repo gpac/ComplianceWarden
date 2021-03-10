@@ -5,8 +5,8 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #18] Error: Advanced profile requires AV1 High Profile for image items
-[avif][Rule #18] Error: Advanced profile requires AV1 level 6 or lower for image items
+[avif][Rule #18] Error: Item ID=1 (image item): Advanced Profile requires AV1 High Profile for image items
+[avif][Rule #18] Error: Item ID=1 (image item): Advanced Profile requires AV1 level 6 or lower for image items
 
 ========================================
 [avif] 2 error(s), 0 warning(s).
@@ -15,7 +15,10 @@ https://aomediacodec.github.io/av1-avif/
 ===== Involved rules descriptions:
 
 [avif][Rule #18] Section 7.3
-AVIF Advanced Profile
+AVIF Advanced Profile (MA1A):
+- Image items: AV1 profile shall be High Profile and level shall be 6 or lower
+- Image sequences: AV1 profile shall be Main Profile and level shall be 5.1 or
+  lower
 
 +--------------------------------------+
 |           miaf validation            |
