@@ -1193,6 +1193,9 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         if(box.fourcc == FOURCC("meta"))
           for(auto& metaChild : box.children)
             if(metaChild.fourcc == FOURCC("iref"))
+            {
+              uint32_t from_item_ID = 0;
+
               for(auto& field : metaChild.syms)
               {
                 if(!strcmp(field.name, "box_type"))
@@ -1200,18 +1203,25 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
                     break;
 
                 if(!strcmp(field.name, "from_item_ID"))
+                {
                   if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), field.value) == av1ImageItemIDs.end())
                     break;
+                  else
+                    from_item_ID = field.value;
+                }
 
                 if(!strcmp(field.name, "to_item_ID"))
                 {
-                  // TODO: move to ISOBMFF 8.11.1.1
+                  assert(from_item_ID);
+
+                  // TODO: move this check to ISOBMFF 8.11.1.1
                   if(field.value == 0)
-                    out->warning("The item_ID value of 0 should not be used - ignoring");
+                    out->warning("The to_item_ID value of 0 should not be used - ignoring");
                   else
-                    auxImages.push_back(field.value);
+                    auxImages.push_back(from_item_ID);
                 }
               }
+            }
 
       for(auto itemId : auxImages)
       {
@@ -1421,7 +1431,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto& offset : av1AplhaTrackFirstOffset)
       {
-        auto box = explore(root, offset.second);
+        auto& box = explore(root, offset.second);
 
         if(box.fourcc != FOURCC("mdat"))
         {
@@ -1432,7 +1442,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         std::vector<uint8_t> bytes;
         int64_t diffBits = 8 * (offset.second - box.position);
 
-        for(auto sym : box.syms)
+        for(auto& sym : box.syms)
         {
           if(diffBits > 0)
           {

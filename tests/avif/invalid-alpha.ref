@@ -1,0 +1,60 @@
++--------------------------------------+
+|           avif validation            |
++--------------------------------------+
+
+Specification description: AVIF v1.0.0, 19 February 2019
+https://aomediacodec.github.io/av1-avif/
+
+[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #11] Error: The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=2)
+[avif][Rule #17] Error: Baseline profile requires AV1 Main Profile
+
+========================================
+[avif] 4 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[avif][Rule #1] Section 2.1
+The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as sync
+
+[avif][Rule #11] Section 4. Auxiliary Image Items
+The mono_chrome field in the Sequence Header OBU shall be set to 1.
+The color_range field in the Sequence Header OBU shall be set to 1.
+
+[avif][Rule #17] Section 7.2
+AVIF Baseline Profile
+
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+========================================
+[miaf] No errors.
+========================================
+
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
+
+========================================
+[heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

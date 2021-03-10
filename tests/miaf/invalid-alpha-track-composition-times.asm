@@ -145,7 +145,11 @@ meta_start:
             av1C_start:
                 dd BE(av1C_end - av1C_start)
                 dd "av1C"
-                db 0x00, 0x00, 0x00, 0x00
+                db 0x81 ; marker(1) version(7) 
+                db 0x21 ; seq_profile(3) ('!') seq_level_idx_0(5) ('!') 
+                db 0x00 ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
+                db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
+                 ; configOBUs(0) 
             av1C_end:
             auxC_start:
                 dd BE(auxC_end - auxC_start)
@@ -204,7 +208,11 @@ meta_start:
             av1C2_start:
                 dd BE(av1C2_end - av1C2_start)
                 dd "av1C"
-                db 0x00, 0x00, 0x00, 0x00
+                db 0x81 ; marker(1) version(7) 
+                db 0x01 ; seq_profile(3) seq_level_idx_0(5) 
+                db 0x1C ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
+                db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
+                 ; configOBUs(0) 
             av1C2_end:
             pixi2_start:
                 dd BE(pixi2_end - pixi2_start)
