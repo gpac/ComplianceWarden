@@ -104,6 +104,32 @@ static const SpecDesc specIsobmff =
       }
     },
     {
+      "Section: 8.11.12.1\n"
+      "Zero or one 'iref' box per MetaBox",
+      [] (Box const& root, IReport* out)
+      {
+        // TODO: promote as a functuion and check arity of more boxes (e.g. meta, etc.)
+        auto arity = [] (Box const& root, uint32_t fourcc) {
+            int counter = 0;
+
+            for(auto& box : root.children)
+              if(box.fourcc == fourcc)
+                counter++;
+
+            return counter;
+          };
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+          {
+            auto const a = arity(box, FOURCC("iref"));
+
+            if(a != 0 && a != 1)
+              out->error("There shall be zero or one 'iref' box per MetaBox, found %d", a);
+          }
+      }
+    },
+    {
       "Section: 8.11.14.1\n"
       "Each ItemPropertyAssociationBox shall be ordered by increasing item_ID,\n"
       "and there shall be at most one occurrence of a given item_ID, in the set of\n"
