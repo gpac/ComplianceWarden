@@ -40,7 +40,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 ===== Involved rules descriptions:
 
 [heif][Rule #8] Sections C.2, D.2, F.2, G.2
-Filee extensions to identify the presence of specific image coding formats
+File extensions to identify the presence of specific image coding formats
 
 +--------------------------------------+
 |          isobmff validation          |

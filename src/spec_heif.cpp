@@ -270,7 +270,7 @@ static const SpecDesc specHeif =
     },
     {
       "Sections C.2, D.2, F.2, G.2\n"
-      "Filee extensions to identify the presence of specific image coding formats",
+      "File extensions to identify the presence of specific image coding formats",
       [] (Box const& root, IReport* out)
       {
         if(findBoxes(root, FOURCC("avcC")).empty() && findBoxes(root, FOURCC("hvcC")).empty())
