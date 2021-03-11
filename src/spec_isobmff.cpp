@@ -172,7 +172,7 @@ static const SpecDesc specIsobmff =
             if(std::find(itemIdsCount.begin(), itemIdsCount.end(), itemId) == itemIdsCount.end())
               itemIdsCount.push_back(itemId);
             else
-              out->error("There shall be at most one occurrence of a given item_ID but %u found several times", itemId);
+              out->error("There shall be at most one occurrence of a given item_ID but item_ID=%u found several times", itemId);
       }
     },
     {
