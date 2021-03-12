@@ -6,6 +6,7 @@
 #include <vector>
 
 bool isVisualSampleEntry(uint32_t fourcc);
+std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getImageItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 
 static const SpecDesc specIsobmff =
 {
@@ -101,6 +102,36 @@ static const SpecDesc specIsobmff =
 
         parse(root, FOURCC("clap"), checkIntegrityClap);
         parse(root, FOURCC("pasp"), checkIntegrityPasp);
+      }
+    },
+    {
+      "Section 8.11.3: Item location box\n"
+      "Data offset integrity: check we don't point out of the file",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> itemIds;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iloc"))
+                for(auto& sym : metaChild.syms)
+                  if(!strcmp(sym.name, "item_ID"))
+                    itemIds.push_back(sym.value);
+
+        const int64_t filesize = root.size;
+
+        for(auto itemId : itemIds)
+        {
+          auto spans = getImageItemDataOffsets(root, out, itemId);
+
+          for(auto& span : spans)
+          {
+            if(span.first + span.second > filesize)
+              out->error("Data offset overflow for Item_ID=%u: offset is %lld (pos=%lld,len=%lld) while file size is %llu",
+                         itemId, span.first + span.second, span.first, span.second, filesize);
+          }
+        }
       }
     },
     {

@@ -111,6 +111,99 @@ void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
             }
 }
 
+std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getImageItemDataOffsets(Box const& root, IReport* out, uint32_t itemID)
+{
+  struct ItemLocation
+  {
+    int construction_method = 0, data_reference_index = 0;
+    int64_t base_offset = 0;
+    std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> extents;
+
+    int computeOffset(IReport* out)
+    {
+      if(construction_method > 1 || extents.size() > 1)
+      {
+        out->warning("construction_method > 1 not supported");
+        return 0;
+      }
+
+      if(extents.size() > 1)
+      {
+        out->warning("iloc with several extensions not supported");
+        return 0;
+      }
+
+      if(data_reference_index > 0)
+      {
+        out->warning("data_reference_index > 0 not supported");
+        return 0;
+      }
+
+      int originOffset = base_offset;
+
+      if(!extents.empty())
+        originOffset += extents[0].first;
+
+      return originOffset;
+    }
+  };
+
+  std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans;
+
+  std::vector<ItemLocation> itemLocs;
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iloc"))
+        {
+          int64_t currOffset = 0;
+
+          for(auto& sym : metaChild.syms)
+          {
+            if(!strcmp(sym.name, "item_ID"))
+            {
+              if(sym.value != itemID)
+              {
+                if(itemLocs.empty())
+                  continue;
+                else
+                  break;
+              }
+
+              itemLocs.resize(itemLocs.size() + 1);
+
+              continue;
+            }
+
+            if(itemLocs.empty())
+              continue;
+
+            auto& itemLoc = itemLocs.back();
+
+            if(!strcmp(sym.name, "construction_method"))
+              itemLoc.construction_method = sym.value;
+
+            if(!strcmp(sym.name, "data_reference_index"))
+              itemLoc.data_reference_index = sym.value;
+
+            if(!strcmp(sym.name, "base_offset"))
+              itemLoc.base_offset = sym.value;
+
+            if(!strcmp(sym.name, "extent_offset"))
+              currOffset = sym.value;
+
+            if(!strcmp(sym.name, "extent_length"))
+              itemLoc.extents.push_back({ currOffset, sym.value });
+          }
+        }
+
+  for(auto& itemLoc : itemLocs)
+    spans.push_back({ itemLoc.computeOffset(out), itemLoc.extents.empty() ? 0 : itemLoc.extents[0].second }); // we assume no idat-based check (construction_method = 1)
+
+  return spans;
+}
+
 std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)
 {
   std::vector<RuleDesc> v;

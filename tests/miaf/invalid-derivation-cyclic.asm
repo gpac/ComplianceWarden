@@ -81,8 +81,8 @@ meta_start:
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x1B, 0x4A, 0x1D ; "extent_offset(32)" 
-        db 0x00, 0x02, 0xB0, 0x85 ; "extent_length(32)" 
+        db 0x00, 0x00, 0x00, 0x1D ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x45 ; "extent_length(32)" 
         db 0x00, 0x02 ; "item_ID(16)" 
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
@@ -93,8 +93,8 @@ meta_start:
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x00, 0x05, 0x3C ; "extent_offset(32)" 
-        db 0x00, 0x02, 0x0C, 0xD4 ; "extent_length(32)" 
+        db 0x00, 0x00, 0x00, 0x3C ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x04 ; "extent_length(32)" 
     iloc_end:
     iref_start:
         dd BE(iref_end - iref_start)

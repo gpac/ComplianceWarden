@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getImageItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 
 namespace
@@ -604,103 +605,6 @@ std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root)
   return av1ImageItemIDs;
 }
 
-struct ItemLocation
-{
-  int construction_method = 0, data_reference_index = 0;
-  int64_t base_offset = 0;
-  struct Span
-  {
-    int64_t offset = 0, length = 0;
-  };
-  std::vector<Span> extents;
-
-  int computeOffset(IReport* out)
-  {
-    if(construction_method > 1 || extents.size() > 1)
-    {
-      out->warning("construction_method > 1 not supported");
-      return 0;
-    }
-
-    if(extents.size() > 1)
-    {
-      out->warning("iloc with several extensions not supported");
-      return 0;
-    }
-
-    if(data_reference_index > 0)
-    {
-      out->warning("data_reference_index > 0 not supported");
-      return 0;
-    }
-
-    int originOffset = base_offset;
-
-    if(!extents.empty())
-      originOffset += extents[0].offset;
-
-    return originOffset;
-  }
-};
-
-std::vector<ItemLocation::Span> getAv1ImageItemDataOffsets(Box const& root, IReport* out, uint32_t itemID)
-{
-  std::vector<ItemLocation::Span> spans;
-
-  std::vector<ItemLocation> itemLocs;
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iloc"))
-        {
-          int64_t currOffset = 0;
-
-          for(auto& sym : metaChild.syms)
-          {
-            if(!strcmp(sym.name, "item_ID"))
-            {
-              if(sym.value != itemID)
-              {
-                if(itemLocs.empty())
-                  continue;
-                else
-                  break;
-              }
-
-              itemLocs.resize(itemLocs.size() + 1);
-
-              continue;
-            }
-
-            if(itemLocs.empty())
-              continue;
-
-            auto& itemLoc = itemLocs.back();
-
-            if(!strcmp(sym.name, "construction_method"))
-              itemLoc.construction_method = sym.value;
-
-            if(!strcmp(sym.name, "data_reference_index"))
-              itemLoc.data_reference_index = sym.value;
-
-            if(!strcmp(sym.name, "base_offset"))
-              itemLoc.base_offset = sym.value;
-
-            if(!strcmp(sym.name, "extent_offset"))
-              currOffset = sym.value;
-
-            if(!strcmp(sym.name, "extent_length"))
-              itemLoc.extents.push_back({ currOffset, sym.value });
-          }
-        }
-
-  for(auto& itemLoc : itemLocs)
-    spans.push_back({ itemLoc.computeOffset(out), itemLoc.extents.empty() ? 0 : itemLoc.extents[0].length }); // we assume no idat-based check (construction_method = 1)
-
-  return spans;
-}
-
 Box const& explore(Box const& root, uint64_t targetOffset)
 {
   for(auto& box : root.children)
@@ -800,8 +704,8 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
 
 struct BitReaderAggregate : BitReader
 {
-  BitReaderAggregate(uint8_t* origin, std::vector<ItemLocation::Span> spans)
-    : BitReader{origin + spans[0].offset, (int)spans[0].length}
+  BitReaderAggregate(uint8_t* origin, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans)
+    : BitReader{origin + spans[0].first, (int)spans[0].second}
   {
     assert(spans.size() == 1);
   }
@@ -809,7 +713,7 @@ struct BitReaderAggregate : BitReader
 
 void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
 {
-  auto const spans = getAv1ImageItemDataOffsets(root, out, itemId);
+  auto const spans = getImageItemDataOffsets(root, out, itemId);
 
   if(spans.empty())
   {

@@ -40,7 +40,7 @@ meta_start:
         db 0x00, 0x00, 0x01, 0x16 ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
-        db 0x00, 0x00, 0xF6, 0xB5 ; extent_length(32) 
+        db 0x00, 0x00, 0x00, 0x0B ; base_offset(32) 
     iloc_end:
     iinf_start:
         dd BE(iinf_end - iinf_start)
