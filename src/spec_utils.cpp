@@ -111,7 +111,7 @@ void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
             }
 }
 
-std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getImageItemDataOffsets(Box const& root, IReport* out, uint32_t itemID)
+std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID)
 {
   struct ItemLocation
   {

@@ -1,11 +1,75 @@
 #include <cstring>
 #include "spec.h"
 #include "fourcc.h"
+#include "bit_reader.h"
 #include <algorithm> // std::find
+#include <cassert>
 
 bool isVisualSampleEntry(uint32_t fourcc);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
+
+namespace
+{
+void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
+{
+  std::vector<uint32_t> itemIds;
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iinf"))
+          for(auto& iinfChild : metaChild.children)
+            if(iinfChild.fourcc == FOURCC("infe"))
+            {
+              uint32_t itemId = 0;
+
+              for(auto& sym : iinfChild.syms)
+                if(!strcmp(sym.name, "item_ID"))
+                  itemId = sym.value;
+                else if(!strcmp(sym.name, "item_type"))
+                  if(sym.value == fourcc)
+                    itemIds.push_back(itemId);
+            }
+
+  for(auto& itemId : itemIds)
+  {
+    auto const spans = getItemDataOffsets(root, out, itemId);
+
+    if(spans.empty())
+    {
+      out->error("Not data offset found for item ID %u", itemId);
+      continue;
+    }
+
+    if(spans.size() != 1)  // see BitReaderAggregate
+    {
+      fprintf(stderr, "Parsing don't support item with several extents: found=%llu for item ID %u\n", spans.size(), itemId);
+      continue;
+    }
+
+    if(spans[0].first + spans[0].second > (int64_t)root.size)
+    {
+      out->error("Image data (itemID=%u): found offset %lld + size %lld while file size is only %llu\n",
+                 itemId, spans[0].first, spans[0].second, root.size);
+      continue;
+    }
+
+    if(spans[0].second < 1)
+    {
+      out->error("Image data (itemID=%u): found invalid size %lld\n", itemId, spans[0].second);
+      continue;
+    }
+
+    auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+    auto version = br.u(8);
+
+    if(version != 0)
+      out->error("'%s' version shall be equal to 0, found %lld (itemId=%u)", toString(fourcc).c_str(), version, itemId);
+  }
+}
+}
 
 static const SpecDesc specHeif =
 {
@@ -259,6 +323,22 @@ static const SpecDesc specHeif =
                           out->error("The primary item shall not be a hidden image item");
                     }
       },
+    },
+    {
+      "Section 6.6.2.2.3\n"
+      "'iovl' box: version shall be equal to 0",
+      [] (Box const& root, IReport* out)
+      {
+        checkDerivationVersion(root, out, FOURCC("iovl"));
+      }
+    },
+    {
+      "Section 6.6.2.2.3\n"
+      "'grid' box: version shall be equal to 0",
+      [] (Box const& root, IReport* out)
+      {
+        checkDerivationVersion(root, out, FOURCC("grid"));
+      }
     },
     {
       "Section 6.5.11.1\n"

@@ -68,10 +68,16 @@ xxxx2_end:
 
 meta_end:
 
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00 ; derivation version
+mdat_end:
+
 ;"Other boxes may be present in the file but they shall not affect the processing"
-xxxx3_start:
-dd BE(xxxx3_end - xxxx3_start)
+xxxx4_start:
+dd BE(xxxx4_end - xxxx4_start)
 db "xxxx"
-xxxx3_end:
+xxxx4_end:
 
 ; vim: syntax=nasm

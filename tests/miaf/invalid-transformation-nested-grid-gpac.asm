@@ -49,10 +49,10 @@ meta_start:
         db 0x00, 0x00, 0x00, 0x08 ; extent_length(32) 
         db 0x00, 0x02 ; item_ID(16) 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x00, 0xE9 ; base_offset(32) 
+        dd BE(mdat_start - ftyp_start + 8) ; base_offset(32)  
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
-        db 0x00, 0x00, 0x00, 0x08 ; extent_length(32) 
+        db 0x00, 0x00, 0x00, 0x01 ; extent_length(32) 
         db 0x00, 0x03 ; item_ID(16) 
         db 0x00, 0x00 ; data_reference_index(16) 
         db 0x00, 0x00, 0x00, 0xF1 ; base_offset(32) 
@@ -365,3 +365,8 @@ meta_start:
         ipma_end:
     iprp_end:
 meta_end:
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00 ; derivation version
+mdat_end:

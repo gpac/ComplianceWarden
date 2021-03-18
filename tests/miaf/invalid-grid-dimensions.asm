@@ -35,15 +35,24 @@ pitm_end:
 
 iloc_start:
 dd BE(iloc_end - iloc_start)
-db "iloc"
-dd BE(0x01000000)
-dd BE(2) ; 2 items
-dd BE(0x00010000) ; construction_method(1)
-dw 0
-dw 0
-dd BE(0x00020000) ; construction_method(1)
-dw 0
-dw 0
+dd "iloc"
+db 0x00 ; version(8) 
+db 0x00, 0x00, 0x00 ; flags(24) 
+db 0x04 ; offset_size(4) length_size(4) 
+db 0x40 ; base_offset_size(4) ('@') reserved1(4) ('@') 
+db 0x00, 0x02 ; item_count(16) 
+db 0x00, 0x01 ; item_ID(16) 
+db 0x00, 0x00 ; data_reference_index(16) 
+dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
+db 0x00, 0x01 ; extent_count(16) 
+; extent_offset(0) 
+db 0x00, 0x00, 0x00, 0x01 ; extent_length(32) 
+db 0x00, 0x02 ; item_ID(16) 
+db 0x00, 0x00 ; data_reference_index(16) 
+dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
+db 0x00, 0x01 ; extent_count(16) 
+; extent_offset(0) 
+db 0x00, 0x00, 0x00, 0x01 ; extent_length(32) 
 iloc_end:
 
 iref_start:
@@ -123,5 +132,11 @@ ipma_end:
 iprp_end:
 
 meta_end:
+
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00 ; derivation version
+mdat_end:
 
 ; vim: syntax=nasm
