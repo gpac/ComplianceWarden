@@ -31,7 +31,7 @@ construction_method shall be equal to 0 or 1 for MIAF image items that are deriv
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #10] Warning: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
+[heif][Rule #11] Warning: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
 
 ========================================
 [heif] 0 error(s), 1 warning(s).
@@ -39,7 +39,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #10] Sections C.2, D.2, F.2, G.2
+[heif][Rule #11] Sections C.2, D.2, F.2, G.2
 File extensions to identify the presence of specific image coding formats
 
 +--------------------------------------+

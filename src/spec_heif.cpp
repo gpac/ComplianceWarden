@@ -291,6 +291,45 @@ static const SpecDesc specHeif =
       },
     },
     {
+      "Section 6.2\n"
+      "The file-level MetaBox shall identify as its primary item an item that is a\n"
+      "coded image or a derived image item",
+      [] (Box const& root, IReport* out)
+      {
+        uint32_t primaryItemId = -1;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm"))
+                for(auto& field : metaChild.syms)
+                  if(!strcmp(field.name, "item_ID"))
+                    primaryItemId = field.value;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                  {
+                    uint32_t itemId = 0;
+
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemId = sym.value;
+                      else if(!strcmp(sym.name, "item_type"))
+                        if(itemId == primaryItemId)
+                          if(!isVisualSampleEntry(sym.value) // coded item
+                             && sym.value != FOURCC("iden") && sym.value != FOURCC("grid") && sym.value != FOURCC("iovl")) // derivation
+                            out->error("primary item (Item_ID=%u) is not coded image or a derived image item (found item_type=\"%s\")",
+                                       itemId, toString(sym.value).c_str());
+                    }
+                  }
+      }
+    },
+    {
       "Section 6.4.2\n"
       "The primary item shall not be a hidden image item",
       [] (Box const& root, IReport* out)
