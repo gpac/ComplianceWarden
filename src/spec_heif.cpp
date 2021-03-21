@@ -251,11 +251,12 @@ static const SpecDesc specHeif =
                     for(auto& mdiaChild : trakChild.children)
                     {
                       auto isPict = [&] () {
-                          if(mdiaChild.fourcc == FOURCC("hdlr"))
-                            for(auto& sym : mdiaChild.syms)
-                              if(!strcmp(sym.name, "handler_type"))
-                                if(sym.value == FOURCC("pict"))
-                                  return true;
+                          for(auto& mdiaChild2 : trakChild.children)
+                            if(mdiaChild2.fourcc == FOURCC("hdlr"))
+                              for(auto& sym : mdiaChild2.syms)
+                                if(!strcmp(sym.name, "handler_type"))
+                                  if(sym.value == FOURCC("pict"))
+                                    return true;
 
                           return false;
                         };
@@ -289,6 +290,60 @@ static const SpecDesc specHeif =
                                 }
                     }
       },
+    },
+    {
+      "Section 7.2.3.1\n"
+      "The CodingConstraintsBox reserved field shall be equal to 0 in files conforming\n"
+      "to this version of this specification",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                    {
+                      auto isPict = [&] () {
+                          for(auto& mdiaChild2 : trakChild.children)
+                            if(mdiaChild2.fourcc == FOURCC("hdlr"))
+                              for(auto& sym : mdiaChild2.syms)
+                                if(!strcmp(sym.name, "handler_type"))
+                                  if(sym.value == FOURCC("pict"))
+                                    return true;
+
+                          return false;
+                        };
+
+                      if(!isPict())
+                        continue;
+
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto& stsdChild : stblChild.children)
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("ccst"))
+                                      {
+                                        if(sampleEntryChild.syms.size() != 2 + 4 /*fullBox*/ + 4)
+                                        {
+                                          out->error("invalid 'ccst' size: %llu instead of 16", sampleEntryChild.size);
+                                        }
+                                        else
+                                        {
+                                          uint32_t reserved = ((sampleEntryChild.syms[7].value & 0x03) << 16)
+                                            + (sampleEntryChild.syms[8].value << 8) + sampleEntryChild.syms[9].value;
+
+                                          if(reserved != 0)
+                                            out->error("invalid 'ccst' reserved value shall be 0, found 0x%X", reserved);
+                                        }
+                                      }
+                    }
+      }
     },
     {
       "Section 6.2\n"

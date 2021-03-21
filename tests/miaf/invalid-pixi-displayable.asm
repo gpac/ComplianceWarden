@@ -399,6 +399,14 @@ moov_start:
                             ccst_start:
                                 dd BE(ccst_end - ccst_start)
                                 dd "ccst"
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x7C ; (8) ('|') 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
                             ccst_end:
                             btrt_start:
                                 dd BE(btrt_end - btrt_start)
@@ -613,6 +621,14 @@ moov_start:
                             ccst2_start:
                                 dd BE(ccst2_end - ccst2_start)
                                 dd "ccst"
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x7C ; (8) ('|') 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
+                                db 0x00 ; (8) 
                             ccst2_end:
                             auxi_start:
                                 dd BE(auxi_end - auxi_start)
