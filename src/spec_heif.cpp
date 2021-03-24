@@ -45,7 +45,8 @@ void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
 
     if(spans.size() != 1)  // see BitReaderAggregate
     {
-      fprintf(stderr, "Parsing don't support item with several extents: found=%llu for item ID %u\n", spans.size(), itemId);
+      fprintf(stderr, "Parsing don't support item with several extents: found=%llu for item ID %u\n",
+              (long long unsigned)spans.size(), itemId);
       continue;
     }
 

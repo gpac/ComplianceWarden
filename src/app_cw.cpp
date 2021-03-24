@@ -27,7 +27,7 @@ void dump(Box const& box, int depth = 0)
     for(int i = 0; i < depth; ++i)
       printf("  ");
 
-    printf("%s: %lld\n", sym.name, sym.value);
+    printf("%s: %lld\n", sym.name, (long long)sym.value);
   }
 
   for(auto& child : box.children)
