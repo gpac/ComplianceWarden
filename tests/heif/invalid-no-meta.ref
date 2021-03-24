@@ -8,9 +8,10 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 [heif][Rule #2] Error: 'hdlr' not found in MetaBox
 [heif][Rule #3] Error: ItemInfoBox is required
 [heif][Rule #4] Error: image spatial extents property ("ispe") not detected.
+[heif][Rule #7] Error: No primary item.
 
 ========================================
-[heif] 4 error(s), 0 warning(s).
+[heif] 5 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -27,6 +28,10 @@ ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 [heif][Rule #4] Section 6.5.3.1
 Every image item shall be associated with one [image spatial extents property],
 prior to the association of all transformative properties.
+
+[heif][Rule #7] Section 6.2
+The file-level MetaBox shall identify as its primary item an item that is a
+coded image or a derived image item
 
 +--------------------------------------+
 |          isobmff validation          |

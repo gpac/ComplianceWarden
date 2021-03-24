@@ -362,6 +362,14 @@ static const SpecDesc specHeif =
                   if(!strcmp(field.name, "item_ID"))
                     primaryItemId = field.value;
 
+        if(primaryItemId == (uint32_t)-1)
+        {
+          out->error("No primary item.");
+          return;
+        }
+
+        bool found = false;
+
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
             for(auto& metaChild : box.children)
@@ -377,12 +385,22 @@ static const SpecDesc specHeif =
                         itemId = sym.value;
                       else if(!strcmp(sym.name, "item_type"))
                         if(itemId == primaryItemId)
+                        {
+                          if(found)
+                            out->error("primary item (Item_ID=%u) has several associated item_types.", primaryItemId);
+
                           if(!isVisualSampleEntry(sym.value) // coded item
                              && sym.value != FOURCC("iden") && sym.value != FOURCC("grid") && sym.value != FOURCC("iovl")) // derivation
                             out->error("primary item (Item_ID=%u) is not coded image or a derived image item (found item_type=\"%s\")",
                                        itemId, toString(sym.value).c_str());
+
+                          found = true;
+                        }
                     }
                   }
+
+        if(!found)
+          out->error("primary item (Item_ID=%u) has no associated item_type.", primaryItemId);
       }
     },
     {

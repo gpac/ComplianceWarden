@@ -30,7 +30,7 @@ pitm_start:
 dd BE(pitm_end - pitm_start)
 db "pitm"
 dd BE(0)
-db 0x00, 0x00
+db 0xaa, 0xbb
 pitm_end:
 
 iinf_start:
@@ -40,13 +40,13 @@ dd BE(0)
 db 0x00, 0x01
 infe_start:
 dd BE(infe_end - infe_start)
-db "infe"
-dd BE(0)
-db 0xaa, 0xbb ; item_ID
-db 0x00, 0x00 ; protected item
-db 0x00
-db 0x00
-db 0x00
+dd "infe"
+db 0x02 ; "version(8)" 
+db 0x00, 0x00, 0x00 ; "flags(24)" 
+db 0xaa, 0xbb ; "item_ID(16)" 
+db 0x00, 0x00 ; "item_protection_index(16)" 
+db 0x61, 0x76, 0x30, 0x31 ; "item_type(32)" ('av01') 
+db 0x00 ; "item_name(8)" 
 infe_end:
 iinf_end:
 
