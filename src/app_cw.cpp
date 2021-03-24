@@ -295,7 +295,6 @@ void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_
 void printVersion()
 {
   fprintVersion(stdout);
-  fprintf(stdout, "%s, version %s.\n", g_appName, g_version);
 }
 
 #endif /*CW_WASM*/
