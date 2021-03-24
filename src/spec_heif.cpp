@@ -103,6 +103,123 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 7.5.3.1\n"
+      "The nature of the auxiliary track is announced by the AuxiliaryTypeInfoBox that\n"
+      "shall be included in the sample entry of the auxiliary track.",
+      [] (Box const& root, IReport* out)
+      {
+        auto findTrackId = [] (Box const& root) -> uint32_t {
+            for(auto& trakChild : root.children)
+              if(trakChild.fourcc == FOURCC("tkhd"))
+                for(auto& sym : trakChild.syms)
+                  if(!strcmp(sym.name, "track_ID"))
+                    return (uint32_t)sym.value;
+
+            return 0;
+          };
+
+        struct Track
+        {
+          uint32_t videoTrackId = 0, auxlTrackId = 0;
+        };
+
+        auto findAuxlTracks = [findTrackId] (Box const& root, IReport* out) -> std::vector<Track> {
+            std::vector<Track> trackIds;
+
+            for(auto& box : root.children)
+              if(box.fourcc == FOURCC("moov"))
+                for(auto& moovChild : box.children)
+                  if(moovChild.fourcc == FOURCC("trak"))
+                  {
+                    // find the hldr
+                    uint32_t handlerType = 0;
+
+                    for(auto& trakChild : moovChild.children)
+                      if(trakChild.fourcc == FOURCC("mdia"))
+                        for(auto& mdiaChild : trakChild.children)
+                          if(mdiaChild.fourcc == FOURCC("hdlr"))
+                            for(auto& sym : mdiaChild.syms)
+                              if(!strcmp(sym.name, "handler_type"))
+                                handlerType = (uint32_t)sym.value;
+
+                    // find tref track_id
+                    uint32_t trackId = 0;
+
+                    for(auto& trakChild : moovChild.children)
+                      if(trakChild.fourcc == FOURCC("tref"))
+                        for(auto& trefChild : trakChild.children)
+                          if(trefChild.fourcc == FOURCC("auxl"))
+                            for(auto& sym : trefChild.syms)
+                              if(!strcmp(sym.name, "track_IDs"))
+                              {
+                                if(trackId)
+                                  out->error("Unexpected: found several 'tref' track_IDs (%u then %lld)", trackId, sym.value);
+
+                                trackId = (uint32_t)sym.value;
+                              }
+
+                    if(handlerType == FOURCC("pict") && trackId)
+                    {
+                      auto id = findTrackId(moovChild);
+
+                      if(id)
+                        trackIds.push_back({ trackId, id });
+                    }
+                  }
+
+            return trackIds;
+          };
+
+        auto auxlTracks = findAuxlTracks(root, out);
+
+        auto findAuxlVideoTrack = [&] (uint32_t trackId) -> uint32_t {
+            for(auto& auxl : auxlTracks)
+              if(auxl.auxlTrackId == trackId)
+                return auxl.videoTrackId;
+
+            return 0;
+          };
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+              {
+                auto const trackIdAuxl = findTrackId(moovChild);
+                auto const trackIdVideo = findAuxlVideoTrack(trackIdAuxl);
+
+                if(!trackIdVideo)
+                  continue;
+
+                bool foundAuxi = false;
+
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                    {
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto& stsdChild : stblChild.children)
+                                  if(isVisualSampleEntry(stsdChild.fourcc))
+                                    for(auto& sampleEntryChild : stsdChild.children)
+                                      if(sampleEntryChild.fourcc == FOURCC("auxi"))
+                                      {
+                                        if(!foundAuxi)
+                                          foundAuxi = true;
+                                        else
+                                          out->error("AuxiliaryTypeInfoBox ('auxi') is present several times (trackIDs: video=%u, aux=%u)", trackIdVideo, trackIdAuxl);
+                                      }
+                    }
+
+                if(!foundAuxi)
+                  out->error("AuxiliaryTypeInfoBox ('auxi') is absent (trackIDs: video=%u, aux=%u)", trackIdVideo, trackIdAuxl);
+              }
+      }
+    },
+    {
       "Section 6.2\n"
       "A MetaBox ('meta'), as specified in ISO/IEC 14496-12, is required at file level.",
       [] (Box const& root, IReport* out)

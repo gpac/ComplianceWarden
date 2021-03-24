@@ -31,8 +31,8 @@ The handler type for the MetaBox shall be 'pict'.
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #2] Error: 'hdlr' not found in MetaBox
-[heif][Rule #7] Error: primary item (Item_ID=0) has no associated item_type.
+[heif][Rule #3] Error: 'hdlr' not found in MetaBox
+[heif][Rule #8] Error: primary item (Item_ID=0) has no associated item_type.
 
 ========================================
 [heif] 2 error(s), 0 warning(s).
@@ -40,10 +40,10 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #2] Section 6.2
+[heif][Rule #3] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
 
-[heif][Rule #7] Section 6.2
+[heif][Rule #8] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 

@@ -4,21 +4,17 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #3] Error: The handler type for the MetaBox shall be 'pict'
-[heif][Rule #8] Error: No primary item.
+[heif][Rule #1] Error: AuxiliaryTypeInfoBox ('auxi') is absent (trackIDs: video=1, aux=2)
 
 ========================================
-[heif] 2 error(s), 0 warning(s).
+[heif] 1 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[heif][Rule #3] Section 6.2
-The handler type for the MetaBox shall be 'pict'.
-
-[heif][Rule #8] Section 6.2
-The file-level MetaBox shall identify as its primary item an item that is a
-coded image or a derived image item
+[heif][Rule #1] Section 7.5.3.1
+The nature of the auxiliary track is announced by the AuxiliaryTypeInfoBox that
+shall be included in the sample entry of the auxiliary track.
 
 +--------------------------------------+
 |          isobmff validation          |

@@ -4,7 +4,7 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #12] Warning: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
+[heif][Rule #13] Warning: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
 
 ========================================
 [heif] 0 error(s), 1 warning(s).
@@ -12,7 +12,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #12] Sections C.2, D.2, F.2, G.2
+[heif][Rule #13] Sections C.2, D.2, F.2, G.2
 File extensions to identify the presence of specific image coding formats
 
 +--------------------------------------+
