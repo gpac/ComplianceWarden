@@ -237,6 +237,79 @@ static const SpecDesc specIsobmff =
                       }
                   }
       }
+    },
+    {
+      "Section: 8.11.14.1\n"
+      "ItemPropertyContainerBox: flags should be equal to 0 unless there are more than\n"
+      "127 properties in the ItemPropertyContainerBox",
+      [] (Box const& root, IReport* out)
+      {
+        int64_t ipmaFlags = 0;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                    for(auto& sym : iprpChild.syms)
+                      if(!strcmp(sym.name, "flags"))
+                        ipmaFlags = sym.value;
+
+        if(ipmaFlags > 0)
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("meta"))
+              for(auto& metaChild : box.children)
+                if(metaChild.fourcc == FOURCC("iprp"))
+                  for(auto& iprpChild : metaChild.children)
+                    if(iprpChild.fourcc == FOURCC("ipco"))
+                      if(iprpChild.children.size() <= 127)
+                        out->warning("'ipma' flags should be equal to 0 unless there are more than 127 properties in"
+                                     " the ItemPropertyContainerBox (found %d)", (int)iprpChild.children.size());
+      }
+    },
+    {
+      "Section: 8.11.14.1\n"
+      "ItemPropertyContainerBox: version 0 should be used unless 32-bit item_ID values\n"
+      "are needed",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iprp"))
+                for(auto& iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma"))
+                  {
+                    int64_t ipmaVersion = -1;
+                    std::vector<uint32_t> itemIds;
+
+                    for(auto& sym : iprpChild.syms)
+                    {
+                      if(!strcmp(sym.name, "version"))
+                        ipmaVersion = sym.value;
+
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemIds.push_back(sym.value);
+                    }
+
+                    bool itemIdsRequire32bits = false;
+
+                    for(auto i : itemIds)
+                      if(i & 0xFF00)
+                        itemIdsRequire32bits = true;
+
+                    if(ipmaVersion > 0 && !itemIdsRequire32bits)
+                    {
+                      std::string itemIdsStr;
+
+                      for(auto i : itemIds)
+                        itemIdsStr += std::to_string(i) + " ";
+
+                      out->warning("'ipma' version 0 should be used unless 32-bit item_ID values are needed (Item_IDs = { %s})", itemIdsStr.c_str());
+                    }
+                  }
+      }
     }
   },
   nullptr,
