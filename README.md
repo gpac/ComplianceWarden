@@ -84,9 +84,10 @@ NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwi
 
 ### Versions
 
- - ISOBMFF specification: m17277
- - MIAF specification: w18260
- - HEIF specification: w18310
+ - ISOBMFF specification: MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+ - MIAF specification: MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+ - HEIF specification: ISO/IEC 23008-12 - 2nd Edition N18310
+ - AVIF specification: AVIF v1.0.0, 19 February 2019
 
 # Acknowledgments
 

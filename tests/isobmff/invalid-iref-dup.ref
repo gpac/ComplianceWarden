@@ -3,7 +3,7 @@
 +--------------------------------------+
 
 Specification description: ISO Base Media File Format
-MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
 [isobmff][Rule #2] Error: There shall be zero or one 'iref' box per MetaBox, found 2
 

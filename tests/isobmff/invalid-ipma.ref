@@ -3,7 +3,7 @@
 +--------------------------------------+
 
 Specification description: ISO Base Media File Format
-MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
 [isobmff][Rule #3] Error: Each ItemPropertyAssociationBox shall be ordered by increasing item_ID (1, last=2)
 [isobmff][Rule #3] Error: Each ItemPropertyAssociationBox shall be ordered by increasing item_ID (1, last=1)
