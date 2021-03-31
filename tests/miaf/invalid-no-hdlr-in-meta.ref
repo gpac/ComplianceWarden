@@ -49,9 +49,9 @@ coded image or a derived image item
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
-[isobmff][Rule #9] Error: Wrong arity for boxes { dref } in parent 'dinf': expected in range [1-2147483647], found 0
-[isobmff][Rule #9] Error: Wrong arity for boxes { hdlr } in parent 'meta': expected in range [1-1], found 0
-[isobmff][Rule #9] Error: Wrong arity for boxes { dref } in parent 'dinf': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { dref } in parents { dinf }: expected in range [1-2147483647], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { hdlr } in parents { meta }: expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { dref } in parents { dinf }: expected in range [1-1], found 0
 
 ========================================
 [isobmff] 3 error(s), 0 warning(s).

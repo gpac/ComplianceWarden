@@ -5,10 +5,12 @@
 #include <algorithm> // std::find
 #include <cassert>
 
+extern std::vector<uint32_t> visualSampleEntryFourccs;
 bool isVisualSampleEntry(uint32_t fourcc);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
+void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, std::vector<uint32_t> parent4CCs, std::pair<unsigned, unsigned> expectedAritySpan);
 
 namespace
 {
@@ -698,6 +700,25 @@ static const SpecDesc specHeif =
       [] (Box const& root, IReport* out)
       {
         checkEssential(root, out, FOURCC("jpgC"));
+      }
+    },
+    {
+      "Box structure and arity for boxes defined in HEIF\n"
+      "This is rather a safety check than a formal rule",
+      [] (Box const& root, IReport* out)
+      {
+        boxCheck(root, out, { FOURCC("ispe") }, { FOURCC("ipco") }, { 1, INT32_MAX }); // TODO: one per image item
+        boxCheck(root, out, { FOURCC("pasp") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: at most one per image item
+        boxCheck(root, out, { FOURCC("colr") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: at most one per image item
+        boxCheck(root, out, { FOURCC("pixi") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: at most one per image item
+        boxCheck(root, out, { FOURCC("rloc") }, { FOURCC("ipco") }, { 0, 1 }); // mandatory, if the item has a 'tbas' item reference to another image item
+        boxCheck(root, out, { FOURCC("auxC") }, { FOURCC("ipco") }, { 0, 1 }); // mandatory, for an image item containing an auxiliary image
+        boxCheck(root, out, { FOURCC("clap") }, { FOURCC("ipco") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("irot") }, { FOURCC("ipco") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("lsel") }, { FOURCC("ipco") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("imir") }, { FOURCC("ipco") }, { 0, 1 });
+
+        boxCheck(root, out, { FOURCC("ccst") }, visualSampleEntryFourccs, { 1, 1 });
       }
     }
   },

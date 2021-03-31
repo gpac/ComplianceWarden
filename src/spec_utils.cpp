@@ -207,6 +207,57 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
   return spans;
 }
 
+void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, std::vector<uint32_t> parent4CCs, std::pair<unsigned, unsigned> expectedAritySpan)
+{
+  std::vector<const Box*> parents;
+
+  for(auto parent4CC : parent4CCs)
+  {
+    auto b = findBoxes(root, parent4CC);
+    parents.insert(parents.end(), b.begin(), b.end());
+  }
+
+  for(auto& parent : parents)
+  {
+    unsigned arityFromParent = 0, arityFromBoxes = 0;
+
+    for(auto fourcc : oneOf4CCs)
+    {
+      unsigned localArity = 0;
+
+      if(parent->fourcc == fourcc)
+        localArity++;
+
+      for(auto& child : parent->children)
+        if(child.fourcc == fourcc)
+          localArity++;
+
+      auto boxes = findBoxes(*parent, fourcc);
+      arityFromBoxes += boxes.size();
+      arityFromParent += localArity;
+    }
+
+    {
+      std::string oneOf4CCsStr, parent4CCsStr;
+
+      for(auto fourcc : oneOf4CCs)
+        oneOf4CCsStr += toString(fourcc) + " ";
+
+      for(auto fourcc : parent4CCs)
+        parent4CCsStr += toString(fourcc) + " ";
+
+      if(arityFromBoxes != arityFromParent)
+        out->error("Found %u boxes { %s} but expected %u with parents { %s}. Check your box structure.",
+                   arityFromBoxes, oneOf4CCsStr.c_str(), arityFromParent, parent4CCsStr.c_str());
+
+      if(arityFromParent < expectedAritySpan.first || arityFromParent > expectedAritySpan.second)
+        out->error("Wrong arity for boxes { %s} in parents { %s}: expected in range [%u-%u], found %u",
+                   oneOf4CCsStr.c_str(), parent4CCsStr.c_str(),
+                   expectedAritySpan.first, expectedAritySpan.second, arityFromParent);
+    }
+  }
+}
+
 std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)
 {
   std::vector<RuleDesc> v;
