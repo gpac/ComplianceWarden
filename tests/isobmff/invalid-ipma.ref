@@ -15,7 +15,7 @@ MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR
 
 ===== Involved rules descriptions:
 
-[isobmff][Rule #3] Section: 8.11.14.1
+[isobmff][Rule #3] Section 8.11.14.1
 Each ItemPropertyAssociationBox shall be ordered by increasing item_ID,
 and there shall be at most one occurrence of a given item_ID, in the set of
 ItemPropertyAssociationBox boxes

@@ -8,7 +8,18 @@
 bool isVisualSampleEntry(uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 
-static const SpecDesc specIsobmff =
+namespace
+{
+void findZeroSizedBoxes(Box const* const root, std::vector<const Box*>& zeroSizedBoxes)
+{
+  if(root->size == 0)
+    zeroSizedBoxes.push_back(root);
+
+  for(auto& box : root->children)
+    findZeroSizedBoxes(&box, zeroSizedBoxes);
+}
+
+const SpecDesc specIsobmff =
 {
   "isobmff",
   "ISO Base Media File Format\n"
@@ -16,7 +27,7 @@ static const SpecDesc specIsobmff =
   {},
   {
     {
-      "Section: 12.1.3.2\n"
+      "Section 12.1.3.2\n"
       "CleanApertureBox 'clap' and PixelAspectRatioBox 'pasp' in VisualSampleEntry",
       [] (Box const& root, IReport* out)
       {
@@ -135,7 +146,7 @@ static const SpecDesc specIsobmff =
       }
     },
     {
-      "Section: 8.11.12.1\n"
+      "Section 8.11.12.1\n"
       "Zero or one 'iref' box per MetaBox",
       [] (Box const& root, IReport* out)
       {
@@ -161,7 +172,7 @@ static const SpecDesc specIsobmff =
       }
     },
     {
-      "Section: 8.11.14.1\n"
+      "Section 8.11.14.1\n"
       "Each ItemPropertyAssociationBox shall be ordered by increasing item_ID,\n"
       "and there shall be at most one occurrence of a given item_ID, in the set of\n"
       "ItemPropertyAssociationBox boxes",
@@ -207,7 +218,7 @@ static const SpecDesc specIsobmff =
       }
     },
     {
-      "Section: 8.11.14.1\n"
+      "Section 8.11.14.1\n"
       "There shall be at most one ItemPropertyAssociationBox with a given pair of\n"
       "values of version and flags",
       [] (Box const& root, IReport* out)
@@ -239,7 +250,7 @@ static const SpecDesc specIsobmff =
       }
     },
     {
-      "Section: 8.11.14.1\n"
+      "Section 8.11.14.1\n"
       "ItemPropertyContainerBox: flags should be equal to 0 unless there are more than\n"
       "127 properties in the ItemPropertyContainerBox",
       [] (Box const& root, IReport* out)
@@ -269,7 +280,7 @@ static const SpecDesc specIsobmff =
       }
     },
     {
-      "Section: 8.11.14.1\n"
+      "Section 8.11.14.1\n"
       "ItemPropertyContainerBox: version 0 should be used unless 32-bit item_ID values\n"
       "are needed",
       [] (Box const& root, IReport* out)
@@ -310,10 +321,27 @@ static const SpecDesc specIsobmff =
                     }
                   }
       }
+    },
+    {
+      "Section 4.2\n"
+      "if size is 0, then this box shall be in a top-level container, and be the last box in that container",
+      [] (Box const& root, IReport* out)
+      {
+        if(root.children.empty())
+          return;
+
+        std::vector<const Box*> zeroSizedBoxes;
+        findZeroSizedBoxes(&root, zeroSizedBoxes);
+
+        for(auto box : zeroSizedBoxes)
+          if(box != &root.children[root.children.size() - 1])
+            out->error("Box '%s' has size 0 but is not last int the top-level container", toString(box->fourcc).c_str());
+      }
     }
   },
   nullptr,
 };
+}
 
 static auto const registered = registerSpec(&specIsobmff);
 

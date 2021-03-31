@@ -213,12 +213,20 @@ void probeIsobmff(uint8_t* data, size_t size)
 {
   ENSURE(size >= 8, "ISOBMFF probing: not enough bytes (%d bytes available). Aborting.", (int)size);
 
-  uint32_t boxSize = 0;
+  uint64_t boxSize = 0;
 
   for(auto i = 0; i < 4; ++i)
     boxSize = (boxSize << 8) + data[i];
 
-  ENSURE(boxSize >= 8, "ISOBMFF probing: first box size too small (%d bytes). Aborting.", (int)boxSize);
+  if(boxSize == 1)
+  {
+    boxSize = 0;
+
+    for(auto i = 0; i < 4; ++i)
+      boxSize = (boxSize << 8) + data[i];
+  }
+
+  ENSURE(boxSize == 0 || boxSize >= 8, "ISOBMFF probing: first box size too small (%d bytes). Aborting.", (int)boxSize);
   ENSURE(boxSize <= size, "ISOBMFF probing: first box size too big (%d bytes when file size is %d bytes). Aborting.", (int)boxSize, size);
 
   for(auto i = 4; i < 7; ++i)

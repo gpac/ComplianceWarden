@@ -17,7 +17,7 @@ MPEG-4 part 12 - ISO/IEC 14496-12 - MPEG-4 Part 12 - m17277 (6th+FDAM1+FDAM2+COR
 [isobmff][Rule #1] Section 8.11.3: Item location box
 Data offset integrity: check we don't point out of the file
 
-[isobmff][Rule #5] Section: 8.11.14.1
+[isobmff][Rule #5] Section 8.11.14.1
 ItemPropertyContainerBox: flags should be equal to 0 unless there are more than
 127 properties in the ItemPropertyContainerBox
 
