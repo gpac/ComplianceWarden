@@ -6,13 +6,17 @@ Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
 [isobmff][Rule #2] Error: There shall be zero or one 'iref' box per MetaBox, found 2
+[isobmff][Rule #9] Error: Wrong arity for boxes { iref } in parent 'meta': expected in range [0-1], found 2
 
 ========================================
-[isobmff] 1 error(s), 0 warning(s).
+[isobmff] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
 [isobmff][Rule #2] Section 8.11.12.1
 Zero or one 'iref' box per MetaBox
+
+[isobmff][Rule #9] Table 1: box structure and arity
+This is rather a safety check than a formal rule
 

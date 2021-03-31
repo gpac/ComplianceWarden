@@ -86,18 +86,12 @@ ipma_start:
 ipma_end:
 iprp_end:
 
+meta_end:
+
 ;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"
 free2_start:
 dd BE(free2_end - free2_start)
 db "free"
 free2_end:
-
-meta_end:
-
-;"FreeSpaceBox as defined in ISO/IEC 14496-12 may be present as permitted by that specification, including at top level"
-free3_start:
-dd BE(free3_end - free3_start)
-db "free"
-free3_end:
 
 ; vim: syntax=nasm

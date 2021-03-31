@@ -95,6 +95,88 @@ db "trak"
 mdia1_start:
 dd BE(mdia1_end - mdia1_start)
 db "mdia"
+mdhd_start:
+    dd BE(mdhd_end - mdhd_start)
+    dd "mdhd"
+mdhd_end:
+minf_start:
+    dd BE(minf_end - minf_start)
+    dd "minf"
+    vmhd_start:
+        dd BE(vmhd_end - vmhd_start)
+        dd "vmhd"
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x01 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+    vmhd_end:
+    dinf_start:
+        dd BE(dinf_end - dinf_start)
+        dd "dinf"
+        dref_start:
+            dd BE(dref_end - dref_start)
+            dd "dref"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+            url_start:
+                dd BE(url_end - url_start)
+                dd "url "
+                db 0x00 ; version(8) 
+                db 0x00, 0x00, 0x01 ; flags(24) 
+            url_end:
+        dref_end:
+    dinf_end:
+    stbl_start:
+        dd BE(stbl_end - stbl_start)
+        dd "stbl"
+        stsd_start:
+            dd BE(stsd_end - stsd_start)
+            dd "stsd"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x00 ; entry_count(32) 
+        stsd_end:
+        stts_start:
+            dd BE(stts_end - stts_start)
+            dd "stts"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+            db 0x00, 0x00, 0x00, 0x01 ; sample_count(32) 
+            db 0x00, 0x00, 0x00, 0x01 ; sample_delta(32) 
+        stts_end:
+        stsc_start:
+            dd BE(stsc_end - stsc_start)
+            dd "stsc"
+            db 0x00, 0x00, 0x00, 0x00
+            db 0x00, 0x00, 0x00, 0x00
+            db 0x00, 0x00, 0x00, 0x00
+        stsc_end:
+        stsz_start:
+            dd BE(stsz_end - stsz_start)
+            dd "stsz"
+            db 0x00, 0x00, 0x00, 0x01
+            db 0x00, 0x00, 0x00, 0x01
+        stsz_end:
+        stco_start:
+            dd BE(stco_end - stco_start)
+            dd "stco"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+            db 0x00, 0x00, 0x55, 0x7D ; chunk_offset(32) 
+        stco_end:
+    stbl_end:
+minf_end:
 hdlr1_start:
 dd BE(hdlr1_end - hdlr1_start)
 db "hdlr"
@@ -134,6 +216,89 @@ db "trak"
 mdia2_start:
 dd BE(mdia2_end - mdia2_start)
 db "mdia"
+
+mdhd2_start:
+    dd BE(mdhd2_end - mdhd2_start)
+    dd "mdhd"
+mdhd2_end:
+minf2_start:
+    dd BE(minf2_end - minf2_start)
+    dd "minf"
+    vmhd2_start:
+        dd BE(vmhd2_end - vmhd2_start)
+        dd "vmhd"
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x01 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+        db 0x00 ; (8) 
+    vmhd2_end:
+    dinf2_start:
+        dd BE(dinf2_end - dinf2_start)
+        dd "dinf"
+        dref2_start:
+            dd BE(dref2_end - dref2_start)
+            dd "dref"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+            url2_start:
+                dd BE(url_end - url_start)
+                dd "url "
+                db 0x00 ; version(8) 
+                db 0x00, 0x00, 0x01 ; flags(24) 
+            url2_end:
+        dref2_end:
+    dinf2_end:
+    stbl2_start:
+        dd BE(stbl2_end - stbl2_start)
+        dd "stbl"
+        stsd2_start:
+            dd BE(stsd_end - stsd_start)
+            dd "stsd"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x00 ; entry_count(32) 
+        stsd2_end:
+        stts2_start:
+            dd BE(stts2_end - stts2_start)
+            dd "stts"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+            db 0x00, 0x00, 0x00, 0x01 ; sample_count(32) 
+            db 0x00, 0x00, 0x00, 0x01 ; sample_delta(32) 
+        stts2_end:
+        stsc2_start:
+            dd BE(stsc2_end - stsc2_start)
+            dd "stsc"
+            db 0x00, 0x00, 0x00, 0x00
+            db 0x00, 0x00, 0x00, 0x00
+            db 0x00, 0x00, 0x00, 0x00
+        stsc2_end:
+        stsz2_start:
+            dd BE(stsz2_end - stsz2_start)
+            dd "stsz"
+            db 0x00, 0x00, 0x00, 0x01
+            db 0x00, 0x00, 0x00, 0x01
+        stsz2_end:
+        stco2_start:
+            dd BE(stco2_end - stco2_start)
+            dd "stco"
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x00 ; flags(24) 
+            db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+            db 0x00, 0x00, 0x55, 0x7D ; chunk_offset(32) 
+        stco2_end:
+    stbl2_end:
+minf2_end:
 hdlr2_start:
 dd BE(hdlr2_end - hdlr2_start)
 db "hdlr"

@@ -50,6 +50,9 @@ std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
 {
   std::vector<const Box*> res;
 
+  if(root.fourcc == fourcc)
+    res.push_back(&root);
+
   for(auto& box : root.children)
   {
     if(box.fourcc == fourcc)

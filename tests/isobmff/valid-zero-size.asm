@@ -12,6 +12,19 @@ meta_start:
     dd "meta"
     db 0x00 ; version(8) 
     db 0x00, 0x00, 0x00 ; flags(24) 
+    
+    hdlr_start:
+        dd BE(hdlr_end - hdlr_start)
+        dd "hdlr"
+        db 0x00 ; version(8) 
+        db 0x00, 0x00, 0x00 ; flags(24) 
+        db 0x00, 0x00, 0x00, 0x00 ; pre_defined(32) 
+        db 0x70, 0x69, 0x63, 0x74 ; handler_type(32) ('pict') 
+        db 0x00, 0x00, 0x00, 0x00 ; reserved1(32) 
+        db 0x00, 0x00, 0x00, 0x00 ; reserved2(32) 
+        db 0x00, 0x00, 0x00, 0x00 ; reserved3(32) 
+        db 0x00 ; name(8) 
+    hdlr_end:
 meta_end:
 
 ; vim: syntax=nasm

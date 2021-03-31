@@ -6,6 +6,7 @@
 #include <vector>
 
 bool isVisualSampleEntry(uint32_t fourcc);
+std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 
 namespace
@@ -18,6 +19,17 @@ void findZeroSizedBoxes(Box const* const root, std::vector<const Box*>& zeroSize
   for(auto& box : root->children)
     findZeroSizedBoxes(&box, zeroSizedBoxes);
 }
+
+int arity(Box const& root, uint32_t fourcc)
+{
+  int counter = 0;
+
+  for(auto& box : root.children)
+    if(box.fourcc == fourcc)
+      counter++;
+
+  return counter;
+};
 
 const SpecDesc specIsobmff =
 {
@@ -150,17 +162,6 @@ const SpecDesc specIsobmff =
       "Zero or one 'iref' box per MetaBox",
       [] (Box const& root, IReport* out)
       {
-        // TODO: promote as a functuion and check arity of more boxes (e.g. meta, etc.)
-        auto arity = [] (Box const& root, uint32_t fourcc) {
-            int counter = 0;
-
-            for(auto& box : root.children)
-              if(box.fourcc == fourcc)
-                counter++;
-
-            return counter;
-          };
-
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
           {
@@ -352,6 +353,166 @@ const SpecDesc specIsobmff =
 
         if(numMoov > 1)
           out->error("There shall be one 'moov' at most, found %d", numMoov);
+      }
+    },
+    {
+      "Table 1: box structure and arity\n"
+      "This is rather a safety check than a formal rule",
+      [] (Box const& root, IReport* out)
+      {
+        typedef std::pair<unsigned, unsigned> Span;
+
+        auto boxCheck = [&] (std::vector<uint32_t> oneOf4CCs, uint32_t parent4CC, Span expectedArity) {
+            auto parents = findBoxes(root, parent4CC);
+
+            for(auto& parent : parents)
+            {
+              unsigned arityFromExpectedParent = 0, arityFromBoxes = 0;
+
+              for(auto fourcc : oneOf4CCs)
+              {
+                unsigned localArity = 0;
+
+                if(parent->fourcc == fourcc)
+                  localArity++;
+
+                for(auto& child : parent->children)
+                  if(child.fourcc == fourcc)
+                    localArity++;
+
+                auto boxes = findBoxes(*parent, fourcc);
+                arityFromBoxes += boxes.size();
+                arityFromExpectedParent += localArity;
+              }
+
+              {
+                std::string str;
+
+                for(auto fourcc : oneOf4CCs)
+                  str += toString(fourcc) + " ";
+
+                if(arityFromBoxes != arityFromExpectedParent)
+                  out->error("Found %u boxes { %s} but expected %u with parent '%s'. Check your box structure.",
+                             arityFromBoxes, str.c_str(), arityFromExpectedParent, toString(parent4CC).c_str());
+
+                if(arityFromExpectedParent < expectedArity.first || arityFromExpectedParent > expectedArity.second)
+                  out->error("Wrong arity for boxes { %s} in parent '%s': expected in range [%u-%u], found %u",
+                             str.c_str(), toString(parent4CC).c_str(), expectedArity.first, expectedArity.second, arityFromExpectedParent);
+              }
+            }
+          };
+
+        boxCheck({ FOURCC("ftyp") }, FOURCC("root"), { 1, 1 });
+        boxCheck({ FOURCC("pdin") }, FOURCC("root"), { 0, 1 });
+
+        boxCheck({ FOURCC("moov") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("mvhd") }, FOURCC("moov"), { 0, 1 });
+        boxCheck({ FOURCC("meta") }, FOURCC("moov"), { 0, 1 });
+        boxCheck({ FOURCC("trak") }, FOURCC("moov"), { 1, INT32_MAX });
+        boxCheck({ FOURCC("tkhd") }, FOURCC("trak"), { 1, 1 });
+        boxCheck({ FOURCC("tref") }, FOURCC("trak"), { 0, 1 });
+        boxCheck({ FOURCC("trgr") }, FOURCC("trak"), { 0, 1 });
+        boxCheck({ FOURCC("edts") }, FOURCC("trak"), { 0, 1 });
+        boxCheck({ FOURCC("elst") }, FOURCC("edts"), { 0, 1 });
+        boxCheck({ FOURCC("meta") }, FOURCC("trak"), { 0, 1 });
+        boxCheck({ FOURCC("mdia") }, FOURCC("trak"), { 1, 1 });
+        boxCheck({ FOURCC("mdhd") }, FOURCC("mdia"), { 1, 1 });
+        boxCheck({ FOURCC("hdlr") }, FOURCC("mdia"), { 1, 1 });
+        boxCheck({ FOURCC("elng") }, FOURCC("mdia"), { 0, 1 });
+        boxCheck({ FOURCC("minf") }, FOURCC("mdia"), { 1, 1 });
+        boxCheck({ FOURCC("vmhd"), FOURCC("smhd"), FOURCC("hmhd"), FOURCC("sthd"), FOURCC("nmhd") }, FOURCC("minf"), { 1, 1 });
+        boxCheck({ FOURCC("dinf") }, FOURCC("minf"), { 1, 1 });
+        boxCheck({ FOURCC("dref") }, FOURCC("dinf"), { 1, INT32_MAX });
+        boxCheck({ FOURCC("stbl") }, FOURCC("minf"), { 1, 1 });
+        boxCheck({ FOURCC("stsd") }, FOURCC("stbl"), { 1, 1 });
+        boxCheck({ FOURCC("stts") }, FOURCC("stbl"), { 1, 1 });
+        boxCheck({ FOURCC("ctts") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("cslg") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("stsc") }, FOURCC("stbl"), { 1, 1 });
+        boxCheck({ FOURCC("stsz"), FOURCC("stz2") }, FOURCC("stbl"), { 1, 1 });
+        boxCheck({ FOURCC("stco"), FOURCC("co64") }, FOURCC("stbl"), { 1, 1 });
+        boxCheck({ FOURCC("stss") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("stsh") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("padb") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("stdp") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("sdtp") }, FOURCC("stbl"), { 0, 1 });
+        boxCheck({ FOURCC("sbgp") }, FOURCC("stbl"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("sgpd") }, FOURCC("stbl"), { 0, INT32_MAX }); // Zero or more, with exactly one for each grouping_type in a SampleToGroupBox
+        boxCheck({ FOURCC("subs") }, FOURCC("stbl"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("saiz") }, FOURCC("stbl"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("saio") }, FOURCC("stbl"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("udta") }, FOURCC("trak"), { 0, 1 });
+        boxCheck({ FOURCC("cprt") }, FOURCC("udta"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("tsel") }, FOURCC("udta"), { 0, 1 });
+        boxCheck({ FOURCC("kind") }, FOURCC("udta"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("strk") }, FOURCC("udta"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("stri") }, FOURCC("strk"), { 1, 1 });
+        boxCheck({ FOURCC("strd") }, FOURCC("strk"), { 1, 1 });
+        boxCheck({ FOURCC("ludt") }, FOURCC("udta"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("mvex") }, FOURCC("moov"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("mehd") }, FOURCC("mvex"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("trex") }, FOURCC("mvex"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("leva") }, FOURCC("mvex"), { 1, 1 });
+        boxCheck({ FOURCC("udta") }, FOURCC("moov"), { 0, 1 });
+        boxCheck({ FOURCC("moov") }, FOURCC("udta"), { 0, INT32_MAX });
+
+        boxCheck({ FOURCC("moof") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("mfhd") }, FOURCC("moof"), { 1, 1 });
+        boxCheck({ FOURCC("meta") }, FOURCC("moof"), { 0, 1 });
+        boxCheck({ FOURCC("traf") }, FOURCC("moof"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("tfhd") }, FOURCC("traf"), { 1, 1 });
+        boxCheck({ FOURCC("trun") }, FOURCC("traf"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("sbgp") }, FOURCC("traf"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("sgpd") }, FOURCC("traf"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("subs") }, FOURCC("traf"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("saiz") }, FOURCC("traf"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("saio") }, FOURCC("traf"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("tfdt") }, FOURCC("traf"), { 0, 1 });
+        boxCheck({ FOURCC("meta") }, FOURCC("traf"), { 0, 1 });
+        boxCheck({ FOURCC("udta") }, FOURCC("traf"), { 0, 1 });
+        boxCheck({ FOURCC("udta") }, FOURCC("moof"), { 0, 1 });
+
+        boxCheck({ FOURCC("mfra") }, FOURCC("root"), { 0, 1 });
+        boxCheck({ FOURCC("tfra") }, FOURCC("mfra"), { 0, 1 }); // TODO: one per track
+        boxCheck({ FOURCC("mfro") }, FOURCC("mfra"), { 1, 1 });
+
+        boxCheck({ FOURCC("mdat") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("free") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("skip") }, FOURCC("root"), { 0, INT32_MAX });
+
+        boxCheck({ FOURCC("meta") }, FOURCC("root"), { 0, 1 });
+        boxCheck({ FOURCC("hdlr") }, FOURCC("meta"), { 1, 1 });
+        boxCheck({ FOURCC("dinf") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("dref") }, FOURCC("dinf"), { 1, 1 });
+        // boxCheck({ FOURCC("url "), FOURCC("urn ") }, FOURCC("dinf"), { 1, INT32_MAX }); //TODO: cannot be expressed for now
+        boxCheck({ FOURCC("iloc") }, FOURCC("meta"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("ipro") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("sinf") }, FOURCC("ipro"), { 1, INT32_MAX });
+        boxCheck({ FOURCC("frma") }, FOURCC("sinf"), { 1, 1 });
+        boxCheck({ FOURCC("schm") }, FOURCC("frma"), { 0, 1 }); // Zero or one in 'sinf', depending on the protection structure; Exactly one in 'rinf' and 'srpp'
+        boxCheck({ FOURCC("schi") }, FOURCC("frma"), { 0, 1 });
+        boxCheck({ FOURCC("iinf") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("xml ") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("bxml") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("pitm") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("fiin") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("paen") }, FOURCC("fiin"), { 0, 1 });
+        boxCheck({ FOURCC("fire") }, FOURCC("paen"), { 0, 1 });
+        boxCheck({ FOURCC("fpar") }, FOURCC("paen"), { 1, 1 });
+        boxCheck({ FOURCC("fecr") }, FOURCC("paen"), { 0, 1 });
+        boxCheck({ FOURCC("segr") }, FOURCC("fiin"), { 0, 1 });
+        boxCheck({ FOURCC("gitn") }, FOURCC("fiin"), { 0, 1 });
+        boxCheck({ FOURCC("idat") }, FOURCC("meta"), { 0, 1 });
+        boxCheck({ FOURCC("iref") }, FOURCC("meta"), { 0, 1 });
+
+        boxCheck({ FOURCC("meco") }, FOURCC("root"), { 0, 1 });
+        boxCheck({ FOURCC("mere") }, FOURCC("meco"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("meta") }, FOURCC("mere"), { 0, 1 });
+
+        boxCheck({ FOURCC("styp") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("sidx") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("ssix") }, FOURCC("root"), { 0, INT32_MAX });
+        boxCheck({ FOURCC("prft") }, FOURCC("root"), { 0, INT32_MAX });
       }
     },
   },

@@ -49,7 +49,21 @@ coded image or a derived image item
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
+[isobmff][Rule #9] Error: Wrong arity for boxes { tkhd } in parent 'trak': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { mdhd } in parent 'mdia': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { vmhd smhd hmhd sthd nmhd } in parent 'minf': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { dinf } in parent 'minf': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { stts } in parent 'stbl': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { stsc } in parent 'stbl': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { stsz stz2 } in parent 'stbl': expected in range [1-1], found 0
+[isobmff][Rule #9] Error: Wrong arity for boxes { stco co64 } in parent 'stbl': expected in range [1-1], found 0
+
 ========================================
-[isobmff] No errors.
+[isobmff] 8 error(s), 0 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[isobmff][Rule #9] Table 1: box structure and arity
+This is rather a safety check than a formal rule
 

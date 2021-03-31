@@ -90,6 +90,35 @@ trak_start:
 dd BE(trak_end - trak_start)
 fourcc("trak")
 
+tkhd_start:
+    dd BE(tkhd_end - tkhd_start)
+    dd "tkhd"
+    db 0x00 ; version(8) 
+    db 0x00, 0x00, 0x01 ; flags(24) 
+    db 0xD7, 0xAE, 0x43, 0xC0 ; creation_time(32) 
+    db 0xD8, 0x7E, 0xD7, 0x51 ; modification_time(32) 
+    db 0x00, 0x00, 0x00, 0x02 ; track_ID(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; reserved(32) 
+    db 0x00, 0x00, 0x09, 0x49 ; duration(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; reserved(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; reserved(32) 
+    db 0x00, 0x00 ; layer(16) 
+    db 0x00, 0x00 ; alternate_group(16) 
+    db 0x00, 0x00 ; volume(16) 
+    db 0x00, 0x00 ; reserved(16) 
+    db 0x00, 0x01, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x01, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x40, 0x00, 0x00, 0x00 ; matrix(32) 
+    db 0x01, 0xE0, 0x00, 0x00 ; width(32) 
+    db 0x01, 0x0E, 0x00, 0x00 ; height(32) 
+tkhd_end:
+
 mdia_start:
 dd BE(mdia_end - mdia_start)
 fourcc("mdia")
@@ -103,14 +132,52 @@ dd "pict"
 dd 0, 0, 0
 hdlr2_end:
 
+mdhd_start:
+    dd BE(mdhd_end - mdhd_start)
+    dd "mdhd"
+mdhd_end:
+
 minf_start:
 dd BE(minf_end - minf_start)
 fourcc("minf")
-stbl_start:
-dd BE(stbl_end - stbl_start)
+vmhd_start:
+    dd BE(vmhd_end - vmhd_start)
+    dd "vmhd"
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x01 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+    db 0x00 ; (8) 
+vmhd_end:
+dinf_start:
+    dd BE(dinf_end - dinf_start)
+    dd "dinf"
+    dref_start:
+        dd BE(dref_end - dref_start)
+        dd "dref"
+        db 0x00 ; version(8) 
+        db 0x00, 0x00, 0x00 ; flags(24) 
+        db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+        url_start:
+            dd BE(url_end - url_start)
+            dd "url "
+            db 0x00 ; version(8) 
+            db 0x00, 0x00, 0x01 ; flags(24) 
+        url_end:
+    dref_end:
+dinf_end:
+stbl2_start:
+dd BE(stbl2_end - stbl2_start)
 fourcc("stbl")
-stsd_start:
-dd BE(stsd_end - stsd_start)
+stsd2_start:
+dd BE(stsd2_end - stsd2_start)
 fourcc("stsd")
 dd BE(0)
 dd BE(1) ; entry_count
@@ -160,8 +227,40 @@ db 0x00 ; (8)
 ccst_end:
 avc1_end:
 
-stsd_end:
-stbl_end:
+stsd2_end:
+
+stts_start:
+    dd BE(stts_end - stts_start)
+    dd "stts"
+    db 0x00 ; version(8) 
+    db 0x00, 0x00, 0x00 ; flags(24) 
+    db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+    db 0x00, 0x00, 0x00, 0x01 ; sample_count(32) 
+    db 0x00, 0x00, 0x00, 0x01 ; sample_delta(32) 
+stts_end:
+stsc_start:
+    dd BE(stsc_end - stsc_start)
+    dd "stsc"
+    db 0x00, 0x00, 0x00, 0x00
+    db 0x00, 0x00, 0x00, 0x00
+    db 0x00, 0x00, 0x00, 0x00
+stsc_end:
+stsz_start:
+    dd BE(stsz_end - stsz_start)
+    dd "stsz"
+    db 0x00, 0x00, 0x00, 0x01
+    db 0x00, 0x00, 0x00, 0x01
+stsz_end:
+stco_start:
+    dd BE(stco_end - stco_start)
+    dd "stco"
+    db 0x00 ; version(8) 
+    db 0x00, 0x00, 0x00 ; flags(24) 
+    db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
+    db 0x00, 0x00, 0x55, 0x7D ; chunk_offset(32) 
+stco_end:
+
+stbl2_end:
 minf_end:
 mdia_end:
 trak_end:
