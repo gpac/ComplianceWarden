@@ -337,7 +337,23 @@ const SpecDesc specIsobmff =
           if(box != &root.children[root.children.size() - 1])
             out->error("Box '%s' has size 0 but is not last int the top-level container", toString(box->fourcc).c_str());
       }
-    }
+    },
+    {
+      "Section 6.1.2\n"
+      "The sequence of objects in the file shall contain exactly one presentation\n"
+      "metadata wrapper (the MovieBox).",
+      [] (Box const& root, IReport* out)
+      {
+        int numMoov = 0;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            numMoov++;
+
+        if(numMoov > 1)
+          out->error("There shall be one 'moov' at most, found %d", numMoov);
+      }
+    },
   },
   nullptr,
 };
