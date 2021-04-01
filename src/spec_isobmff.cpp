@@ -6,6 +6,7 @@
 #include <vector>
 
 bool isVisualSampleEntry(uint32_t fourcc);
+std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, std::vector<uint32_t> parent4CCs, std::pair<unsigned, unsigned> expectedAritySpan);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 
@@ -363,8 +364,8 @@ const SpecDesc specIsobmff =
         boxCheck(root, out, { FOURCC("ftyp") }, { FOURCC("root") }, { 1, 1 });
         boxCheck(root, out, { FOURCC("pdin") }, { FOURCC("root") }, { 0, 1 });
 
-        boxCheck(root, out, { FOURCC("moov") }, { FOURCC("root") }, { 0, INT32_MAX });
-        boxCheck(root, out, { FOURCC("mvhd") }, { FOURCC("moov") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("moov") }, { FOURCC("root") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("mvhd") }, { FOURCC("moov") }, { 1, 1 });
         boxCheck(root, out, { FOURCC("meta") }, { FOURCC("moov") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("trak") }, { FOURCC("moov") }, { 1, INT32_MAX });
         boxCheck(root, out, { FOURCC("tkhd") }, { FOURCC("trak") }, { 1, 1 });
@@ -471,6 +472,40 @@ const SpecDesc specIsobmff =
         boxCheck(root, out, { FOURCC("sidx") }, { FOURCC("root") }, { 0, INT32_MAX });
         boxCheck(root, out, { FOURCC("ssix") }, { FOURCC("root") }, { 0, INT32_MAX });
         boxCheck(root, out, { FOURCC("prft") }, { FOURCC("root") }, { 0, INT32_MAX });
+      }
+    },
+    {
+      "Section 4.3.1\n"
+      "The 'ftyp' box shall be placed as early as possible in the file (e.g. after any\n"
+      "obligatory signature, but before any significant variable-size boxes such as a\n"
+      "MovieBox, MediaDataBox, or FreeSpaceBox).",
+      [] (Box const& root, IReport* out)
+      {
+        auto ftyps = findBoxes(root, FOURCC("ftyp"));
+        auto moovs = findBoxes(root, FOURCC("moov"));
+        auto mdats = findBoxes(root, FOURCC("mdat"));
+        auto frees = findBoxes(root, FOURCC("free"));
+
+        if(ftyps.size() != 1)
+        {
+          out->error("One 'ftyp' boxes expected, found %d. Discarding test", (int)ftyps.size());
+          return;
+        }
+
+        if(moovs.size() == 1)
+          if(moovs[0]->position < ftyps[0]->position)
+            out->error("MovieBox (position=%llu) placed before FileTypeBox (position=%llu) in file",
+                       moovs[0]->position, ftyps[0]->position);
+
+        for(auto mdat : mdats)
+          if(mdat->position < ftyps[0]->position)
+            out->error("MediaDataBox (position=%llu) placed before FileTypeBox (position=%llu) in file",
+                       mdat->position, ftyps[0]->position);
+
+        for(auto free_ : frees)
+          if(free_->position < ftyps[0]->position)
+            out->error("FreeSpaceBox (position=%llu) placed before FileTypeBox (position=%llu) in file",
+                       free_->position, ftyps[0]->position);
       }
     },
   },
