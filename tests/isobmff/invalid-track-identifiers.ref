@@ -1,0 +1,19 @@
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+[isobmff][Rule #11] Error: Found non-unique track identifier 2
+
+========================================
+[isobmff] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[isobmff][Rule #11] Section 6.1.4
+The track identifiers used in an ISO file are unique within that file;
+no two tracks shall use the same identifier.
+

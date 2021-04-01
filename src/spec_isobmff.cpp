@@ -508,6 +508,37 @@ const SpecDesc specIsobmff =
                        free_->position, ftyps[0]->position);
       }
     },
+    {
+      "Section 6.1.4\n"
+      "The track identifiers used in an ISO file are unique within that file;\n"
+      "no two tracks shall use the same identifier.",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> trackIds;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "track_ID"))
+                      {
+                        bool found = false;
+
+                        for(auto id : trackIds)
+                          if(id == sym.value)
+                          {
+                            out->error("Found non-unique track identifier %u", id);
+                            found = true;
+                          }
+
+                        if(!found)
+                          trackIds.push_back(sym.value);
+                      }
+      }
+    }
   },
   nullptr,
 };
