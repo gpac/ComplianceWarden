@@ -37,6 +37,7 @@ SRCS_CW+=\
 SRCS_CW+=src/derivations.cpp
 SRCS_CW+=src/spec_avif.cpp
 SRCS_CW+=src/spec_avif_profiles.cpp
+SRCS_CW+=src/spec_avif_utils.cpp
 SRCS_CW+=src/spec_dummy.cpp
 SRCS_CW+=src/spec_isobmff.cpp
 SRCS_CW+=src/spec_heif.cpp
