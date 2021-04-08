@@ -1291,20 +1291,6 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     }
   },
   {
-    "Section 7.3.9\n"
-    "All transformative properties associated with coded and derived images required\n"
-    "or conditionally required by this document shall be marked as essential, and\n"
-    "shall be from the set that are permitted by this document or the applicable\n"
-    "profile. No other essential transformative property shall be associated with\n"
-    "such images.",
-    [] (Box const& root, IReport* out)
-    {
-      checkEssential(root, out, FOURCC("clap"));
-      checkEssential(root, out, FOURCC("irot"));
-      checkEssential(root, out, FOURCC("imir"));
-    }
-  },
-  {
     "Section 7.3.6.6\n"
     "The pixel information property shall be associated with every image that is\n"
     "displayable (not hidden)",

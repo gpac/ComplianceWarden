@@ -581,6 +581,20 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 7.3.9\n"
+      "All transformative properties associated with coded and derived images required\n"
+      "or conditionally required by this document shall be marked as essential, and\n"
+      "shall be from the set that are permitted by this document or the applicable\n"
+      "profile. No other essential transformative property shall be associated with\n"
+      "such images.",
+      [] (Box const& root, IReport* out)
+      {
+        checkEssential(root, out, FOURCC("clap"));
+        checkEssential(root, out, FOURCC("irot"));
+        checkEssential(root, out, FOURCC("imir"));
+      }
+    },
+    {
       "Sections C.2, D.2, F.2, G.2\n"
       "File extensions to identify the presence of specific image coding formats",
       [] (Box const& root, IReport* out)
