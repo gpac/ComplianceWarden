@@ -3,7 +3,6 @@
 #include "fourcc.h"
 #include "bit_reader.h"
 #include <algorithm> // std::find
-#include <cassert>
 
 extern std::vector<uint32_t> visualSampleEntryFourccs;
 bool isVisualSampleEntry(uint32_t fourcc);
