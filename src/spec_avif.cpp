@@ -655,9 +655,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
               for(auto& iprpChild : metaChild.children)
                 if(iprpChild.fourcc == FOURCC("ipco"))
                 {
-                  if(!alphaPropertyIndexes.empty()) {
-out->error("Unexpected non-empty alphaPropertyIndexes. Ignoring data.");
-continue;
+                  if(!alphaPropertyIndexes.empty())
+                  {
+                    out->error("Unexpected non-empty alphaPropertyIndexes. Ignoring data.");
+                    continue;
                   }
 
                   int propertyIdx = 1;

@@ -2,6 +2,7 @@
 #include "box_reader_impl.h" // BoxReader
 #include <cassert>
 #include <memory> // make_unique
+#include <stdexcept>
 
 namespace
 {
@@ -147,7 +148,10 @@ int parseAv1SeqHdr(IReader* reader, av1State& state)
   {
     br->sym("timing_info_present_flag", 0); // =0
     auto decoder_model_info_present_flag = br->sym("decoder_model_info_present_flag", 0); // =0
-    assert(decoder_model_info_present_flag == 0);
+
+    if(decoder_model_info_present_flag != 0)
+      throw std::runtime_error("Unimplemented decoder_model_info_present_flag != 0. Aborting.");
+
     br->sym("initial_display_delay_present_flag", 0); // =0
     br->sym("operating_points_cnt_minus_1", 0); // =0
     br->sym("operating_point_idc_0", 0); // =0
@@ -159,10 +163,14 @@ int parseAv1SeqHdr(IReader* reader, av1State& state)
   else
   {
     auto timing_info_present_flag = br->sym("timing_info_present_flag", 1);
-    assert(timing_info_present_flag == 0); // timing info and consequence in uncompressed header not implemented
+
+    if(timing_info_present_flag != 0) // timing info and consequence in uncompressed header not implemented
+      throw std::runtime_error("Unimplemented timing_info_present_flag != 0. Aborting.");
 
     auto initial_display_delay_present_flag = br->sym("initial_display_delay_present_flag", 1);
-    assert(initial_display_delay_present_flag == 0);
+
+    if(initial_display_delay_present_flag != 0)
+      throw std::runtime_error("Unimplemented initial_display_delay_present_flag != 0. Aborting.");
 
     auto operating_points_cnt_minus_1 = br->sym("operating_points_cnt_minus_1", 5);
 
@@ -355,8 +363,10 @@ int parseAv1UncompressedHeader(IReader* reader, av1State const& state)
         br->sym("display_frame_id", idLen);
       }
 
-      assert(frame_to_show_map_idx == 0);
-      assert(0); // we don't refresh RefFrameType
+      if(frame_to_show_map_idx != 0)
+        throw std::runtime_error("Unimplemented frame_to_show_map_idx != 0. Aborting.");
+
+      // we don't refresh RefFrameType
       // frame_type = RefFrameType[frame_to_show_map_idx];
 
       auto readBits = br->count;
@@ -417,7 +427,7 @@ int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
   auto obu_has_size_field = br->sym("obu_has_size_field", 1);
 
   if(!obu_has_size_field)
-    assert(0 && "obu_has_size_field shall be set");
+    throw std::runtime_error("obu_has_size_field shall be set. Aborting.");
 
   br->sym("obu_reserved_1bit", 1);
 

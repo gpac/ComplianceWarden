@@ -2,6 +2,7 @@
 #include "fourcc.h"
 #include <cstdarg>
 #include <cstring>
+#include <stdexcept>
 
 extern const char* g_version;
 
@@ -176,7 +177,14 @@ int checkCompliance(Box const& file, SpecDesc const* spec)
   {
     auto curEventCount = out.errorCount + out.warningCount;
 
-    rule.check(file, &out);
+    try
+    {
+      rule.check(file, &out);
+    }
+    catch(std::exception const& e)
+    {
+      out.error("ABORTED TEST: %s\n", e.what());
+    }
 
     if(curEventCount != out.errorCount + out.warningCount)
       ruleIdxEvent.push_back(out.ruleIdx);
