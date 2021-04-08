@@ -124,7 +124,7 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
 
     int computeOffset(IReport* out)
     {
-      if(construction_method > 1 || extents.size() > 1)
+      if(construction_method > 1)
       {
         out->warning("construction_method > 1 not supported");
         return 0;
