@@ -411,7 +411,7 @@ const SpecDesc specIsobmff =
         boxCheck(root, out, { FOURCC("mvex") }, { FOURCC("moov") }, { 0, INT32_MAX });
         boxCheck(root, out, { FOURCC("mehd") }, { FOURCC("mvex") }, { 0, INT32_MAX });
         boxCheck(root, out, { FOURCC("trex") }, { FOURCC("mvex") }, { 0, INT32_MAX });
-        boxCheck(root, out, { FOURCC("leva") }, { FOURCC("mvex") }, { 1, 1 });
+        boxCheck(root, out, { FOURCC("leva") }, { FOURCC("mvex") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("udta") }, { FOURCC("moov") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("moov") }, { FOURCC("udta") }, { 0, INT32_MAX });
 
