@@ -40,30 +40,30 @@ void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
 
     if(spans.empty())
     {
-      out->error("Not data offset found for item ID %u", itemId);
+      out->error("No data offset found for item ID %u", itemId);
       continue;
     }
 
-    if(spans.size() != 1)  // see BitReaderAggregate
+    for(auto& span : spans)
     {
-      fprintf(stderr, "Parsing don't support item with several extents: found=%llu for item ID %u\n",
-              (long long unsigned)spans.size(), itemId);
-      continue;
+      if(span.first + span.second > (int64_t)root.size)
+      {
+        out->error("Image data (itemID=%u): found offset %lld + size %lld while file size is only %llu\n",
+                   itemId, span.first, span.second, root.size);
+        continue;
+      }
     }
 
-    if(spans[0].first + spans[0].second > (int64_t)root.size)
+    for(auto& span : spans)
     {
-      out->error("Image data (itemID=%u): found offset %lld + size %lld while file size is only %llu\n",
-                 itemId, spans[0].first, spans[0].second, root.size);
-      continue;
+      if(span.second < 1)
+      {
+        out->error("Image data (itemID=%u): found invalid span size %lld\n", itemId, span.second);
+        continue;
+      }
     }
 
-    if(spans[0].second < 1)
-    {
-      out->error("Image data (itemID=%u): found invalid size %lld\n", itemId, spans[0].second);
-      continue;
-    }
-
+    // since we previously checked there is at least 1 byte, assume version in the first span
     auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
     auto version = br.u(8);
 

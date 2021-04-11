@@ -121,37 +121,7 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
     int construction_method = 0, data_reference_index = 0;
     int64_t base_offset = 0;
     std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> extents;
-
-    int computeOffset(IReport* out)
-    {
-      if(construction_method > 1)
-      {
-        out->warning("construction_method > 1 not supported");
-        return 0;
-      }
-
-      if(extents.size() > 1)
-      {
-        out->warning("iloc with several extensions not supported");
-        return 0;
-      }
-
-      if(data_reference_index > 0)
-      {
-        out->warning("data_reference_index > 0 not supported");
-        return 0;
-      }
-
-      int originOffset = base_offset;
-
-      if(!extents.empty())
-        originOffset += extents[0].first;
-
-      return originOffset;
-    }
   };
-
-  std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans;
 
   std::vector<ItemLocation> itemLocs;
 
@@ -185,10 +155,20 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
             auto& itemLoc = itemLocs.back();
 
             if(!strcmp(sym.name, "construction_method"))
+            {
               itemLoc.construction_method = sym.value;
 
+              if(itemLoc.construction_method > 1)
+                out->warning("construction_method > 1 not supported");
+            }
+
             if(!strcmp(sym.name, "data_reference_index"))
+            {
               itemLoc.data_reference_index = sym.value;
+
+              if(itemLoc.data_reference_index > 0)
+                out->warning("data_reference_index > 0 not supported");
+            }
 
             if(!strcmp(sym.name, "base_offset"))
               itemLoc.base_offset = sym.value;
@@ -201,8 +181,23 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
           }
         }
 
-  for(auto& itemLoc : itemLocs)
-    spans.push_back({ itemLoc.computeOffset(out), itemLoc.extents.empty() ? 0 : itemLoc.extents[0].second }); // we assume no idat-based check (construction_method = 1)
+  std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans;
+
+  if(itemLocs.empty())
+    return spans;
+
+  if(itemLocs.size() > 1)
+    out->error("More than one 'iloc' found for Item_ID=%u. Only considering the first one.", itemID);
+
+  auto& itemLoc = itemLocs[0];
+
+  if(itemLoc.extents.empty() && itemLoc.base_offset)
+    // allows to pass our own tests
+    spans.push_back({ itemLoc.base_offset, 0 });
+  else
+    for(auto& extent : itemLoc.extents)
+      // we assume no idat-based check (construction_method = 1)
+      spans.push_back({ itemLoc.base_offset + extent.first, extent.second });
 
   return spans;
 }

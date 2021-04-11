@@ -163,15 +163,6 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
   return av1C;
 }
 
-struct BitReaderAggregate : BitReader
-{
-  BitReaderAggregate(uint8_t* origin, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans)
-    : BitReader{origin + spans[0].first, (int)spans[0].second}
-  {
-    assert(spans.size() == 1);
-  }
-};
-
 void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
 {
   auto const spans = getItemDataOffsets(root, out, itemId);
@@ -182,7 +173,21 @@ void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader
     return;
   }
 
-  br.br = BitReaderAggregate { root.original, spans };
+  int size = 0;
+
+  for(auto span : spans)
+    size += span.second;
+
+  std::vector<uint8_t> bytes(size);
+  int offset = 0;
+
+  for(auto span : spans)
+  {
+    memcpy(bytes.data() + offset, root.original + span.first, span.second);
+    offset += span.second;
+  }
+
+  br.br = BitReader { bytes.data(), (int)bytes.size() };
 
   while(!br.empty())
   {
