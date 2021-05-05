@@ -710,12 +710,12 @@ static const SpecDesc specHeif =
         boxCheck(root, out, { FOURCC("pasp") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: at most one per image item
         boxCheck(root, out, { FOURCC("colr") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: at most one per image item
         boxCheck(root, out, { FOURCC("pixi") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: at most one per image item
-        boxCheck(root, out, { FOURCC("rloc") }, { FOURCC("ipco") }, { 0, 1 }); // mandatory, if the item has a 'tbas' item reference to another image item
-        boxCheck(root, out, { FOURCC("auxC") }, { FOURCC("ipco") }, { 0, 1 }); // mandatory, for an image item containing an auxiliary image
-        boxCheck(root, out, { FOURCC("clap") }, { FOURCC("ipco") }, { 0, 1 });
-        boxCheck(root, out, { FOURCC("irot") }, { FOURCC("ipco") }, { 0, 1 });
-        boxCheck(root, out, { FOURCC("lsel") }, { FOURCC("ipco") }, { 0, 1 });
-        boxCheck(root, out, { FOURCC("imir") }, { FOURCC("ipco") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("rloc") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // mandatory, if the item has a 'tbas' item reference to another image item
+        boxCheck(root, out, { FOURCC("auxC") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item // mandatory, for an image item containing an auxiliary image
+        boxCheck(root, out, { FOURCC("clap") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item
+        boxCheck(root, out, { FOURCC("irot") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item
+        boxCheck(root, out, { FOURCC("lsel") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item
+        boxCheck(root, out, { FOURCC("imir") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item
 
         boxCheck(root, out, { FOURCC("ccst") }, visualSampleEntryFourccs, { 1, 1 });
       }
