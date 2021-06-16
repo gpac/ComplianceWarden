@@ -127,11 +127,16 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
           if(box.fourcc == FOURCC("meta"))
             for(auto& metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t boxType = -1;
+
                 for(auto& field : metaChild.syms)
                 {
                   if(!strcmp(field.name, "box_type"))
-                    if(field.value != FOURCC("thmb"))
-                      continue;
+                    boxType = field.value;
+
+                  if(boxType != FOURCC("thmb"))
+                    continue;
 
                   if(!strcmp(field.name, "to_item_ID"))
                   {
@@ -141,6 +146,7 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
                           pitmSelfAndThmbs.insert({ sym.value, -1 });
                   }
                 }
+              }
 
         if(pitmSelfAndThmbs.empty())
           out->error("'MiPr' brand: there is at least one MIAF thumbnail image item present for the primary image item");

@@ -556,6 +556,53 @@ static const SpecDesc specHeif =
       },
     },
     {
+      "Section 6.4.4\n"
+      "A thumbnail image shall not be linked to another thumbnail image with\n"
+      "the 'thmb' item reference.",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> thmbIds;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t boxType = -1;
+
+                for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    boxType = field.value;
+
+                  if(boxType != FOURCC("thmb"))
+                    continue;
+
+                  if(!strcmp(field.name, "to_item_ID"))
+                    thmbIds.push_back(field.value);
+                }
+
+                uint32_t fromId = -1;
+
+                for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    boxType = field.value;
+
+                  if(boxType != FOURCC("thmb"))
+                    continue;
+
+                  if(!strcmp(field.name, "from_item_ID"))
+                    fromId = field.value;
+
+                  if(!strcmp(field.name, "to_item_ID"))
+                    if(std::find(thmbIds.begin(), thmbIds.end(), fromId) != thmbIds.end())
+                      out->error("Thumbnail image is linked to another thumbnail image (from item_ID=%u to item_ID=%u)", fromId, field.value);
+                }
+              }
+      }
+    },
+    {
       "Section 6.6.2.2.3\n"
       "'iovl' box: version shall be equal to 0",
       [] (Box const& root, IReport* out)

@@ -55,7 +55,7 @@ dd BE(thmb_end - thmb_start)
 dd "thmb"
 dd BE(3)      ; from_item_ID
 db 0x00, 0x01 ; reference_count
-dd BE(3)      ; to_item_ID
+dd BE(4)      ; to_item_ID
 thmb_end:
 iref_end:
 

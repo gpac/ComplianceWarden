@@ -5,7 +5,7 @@
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 [heif][Rule #8] Error: No primary item.
-[heif][Rule #10] Error: 'iovl' version shall be equal to 0, found 255 (itemId=10)
+[heif][Rule #11] Error: 'iovl' version shall be equal to 0, found 255 (itemId=10)
 
 ========================================
 [heif] 2 error(s), 0 warning(s).
@@ -17,7 +17,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
-[heif][Rule #10] Section 6.6.2.2.3
+[heif][Rule #11] Section 6.6.2.2.3
 'iovl' box: version shall be equal to 0
 
 +--------------------------------------+

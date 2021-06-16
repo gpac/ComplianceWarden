@@ -36,19 +36,11 @@ pitm_end:
 iloc_start:
 dd BE(iloc_end - iloc_start)
 db "iloc"
-db 0x01 ; "version(8)" 
-db 0x00, 0x00, 0x00 ; "flags(24)" 
-db 0x44 ; "offset_size(4)" ('D') "length_size(4)" ('D') 
-db 0x00 ; "base_offset_size(4)" "index_size(4)" 
-db 0x00, 0x02 ; "item_count(16)" 
-db 0x00, 0x00 ; "item_ID(16)" 
-db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
-db 0x00, 0x00 ; "data_reference_index(16)" 
-db 0x00, 0x00 ; "extent_count(16)" 
-db 0x00, 0x01 ; "item_ID(16)" 
-db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
-db 0x00, 0x00 ; "data_reference_index(16)" 
-db 0x00, 0x00 ; "extent_count(16)" 
+dd BE(0x01000000)
+dd BE(1) ; 1 item
+dd BE(0) ; construction_method(1)
+dw 0
+dw 0
 iloc_end:
 
 iref_start:
