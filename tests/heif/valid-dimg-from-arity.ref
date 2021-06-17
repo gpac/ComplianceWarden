@@ -4,16 +4,9 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #15] Warning: File extension for "heif.mp4" doesn't match: expecting one of 'heif hif ', got 'mp4'
-
 ========================================
-[heif] 0 error(s), 1 warning(s).
+[heif] No errors.
 ========================================
-
-===== Involved rules descriptions:
-
-[heif][Rule #15] Sections C.2, D.2, F.2, G.2
-File extensions to identify the presence of specific image coding formats
 
 +--------------------------------------+
 |          isobmff validation          |

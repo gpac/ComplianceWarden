@@ -603,6 +603,40 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 6.4\n"
+      "The number of SingleItemTypeReferenceBoxes with the box type 'dimg' and with the\n"
+      "same value of from_item_ID shall not be greater than 1",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t boxType = -1;
+
+                std::vector<uint32_t> fromIds;
+
+                for(auto& field : metaChild.syms)
+                {
+                  if(!strcmp(field.name, "box_type"))
+                    boxType = field.value;
+
+                  if(boxType != FOURCC("dimg"))
+                    continue;
+
+                  if(!strcmp(field.name, "from_item_ID"))
+                  {
+                    if(std::find(fromIds.begin(), fromIds.end(), field.value) == fromIds.end())
+                      fromIds.push_back(field.value);
+                    else
+                      out->error("The number of SingleItemTypeReferenceBoxes with the box type 'dimg' and from_item_ID=%u found more than once", field.value);
+                  }
+                }
+              }
+      }
+    },
+    {
       "Section 6.6.2.2.3\n"
       "'iovl' box: version shall be equal to 0",
       [] (Box const& root, IReport* out)
