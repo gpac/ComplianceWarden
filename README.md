@@ -31,6 +31,13 @@ $ make
 ```
 
 MacOS X and BSD-likes:
+
+```
+$ CXX=scripts/darwin.sh make
+```
+
+or
+
 ```
 $ export CXX=scripts/darwin.sh
 $ make
@@ -41,6 +48,12 @@ $ make
 Simply override CXX to use your target toolchain.
 
 Example for a Windows 64 bit target:
+
+```
+$ CXX=x86_64-w64-mingw32-g++ make
+```
+
+or
 
 ```
 $ export CXX=x86_64-w64-mingw32-g++
