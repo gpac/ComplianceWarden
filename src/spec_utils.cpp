@@ -192,12 +192,16 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
   auto& itemLoc = itemLocs[0];
 
   if(itemLoc.extents.empty() && itemLoc.base_offset)
+  {
     // allows to pass our own tests
     spans.push_back({ itemLoc.base_offset, 0 });
+  }
   else
+  {
     for(auto& extent : itemLoc.extents)
       // we assume no idat-based check (construction_method = 1)
       spans.push_back({ itemLoc.base_offset + extent.first, extent.second });
+  }
 
   return spans;
 }

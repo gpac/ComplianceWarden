@@ -105,7 +105,7 @@ const SpecDesc specIsobmff =
             return false;
           };
 
-        std::function<void(const Box &, const uint32_t, std::function<void(const Box &)> )> parse =
+        std::function<void(const Box &, const uint32_t, std::function<void(const Box &)>)> parse =
           [&] (const Box& parent, const uint32_t fourCC, std::function<void(const Box &)> checkIntegrity)
           {
             for(auto& box : parent.children)

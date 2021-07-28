@@ -9,5 +9,5 @@ struct IReader
   virtual void box() = 0;
 };
 
-using ParseBoxFunc = void(IReader * br);
+using ParseBoxFunc = void (IReader * br);
 

@@ -66,7 +66,7 @@ std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root)
   return av1ImageItemIDs;
 }
 
-Box const& explore(Box const& root, uint64_t targetOffset)
+Box const & explore(Box const& root, uint64_t targetOffset)
 {
   for(auto& box : root.children)
     if(box.position + box.size > targetOffset)
@@ -177,6 +177,9 @@ void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader
 
   for(auto span : spans)
     size += span.second;
+
+  if(size == 0)
+    return;
 
   std::vector<uint8_t> bytes(size);
   int offset = 0;

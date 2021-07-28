@@ -37,7 +37,7 @@ void dump(Box const& box, int depth = 0)
 
 /* ***** specs ***** */
 
-std::vector<SpecDesc const*>& g_allSpecs()
+std::vector<SpecDesc const*> & g_allSpecs()
 {
   static std::vector<SpecDesc const*> allSpecs;
   return allSpecs;
