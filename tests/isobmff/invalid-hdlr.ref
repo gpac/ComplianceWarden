@@ -1,0 +1,22 @@
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+[isobmff][Rule #12] Error: 'hdlr box': pre_defined shall be 0 but value is 1
+[isobmff][Rule #12] Error: 'hdlr box': reserved1 shall be 0 but value is 1
+[isobmff][Rule #12] Error: 'hdlr box': reserved2 shall be 0 but value is 1
+[isobmff][Rule #12] Error: 'hdlr box': reserved3 shall be 0 but value is 1
+[isobmff][Rule #12] Error: 'hdlr box': 'name' field shall be null-terminated
+
+========================================
+[isobmff] 5 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[isobmff][Rule #12] Section 8.4.3.1
+'hdlr box': pre_defined = 0, reserved = 0, 'name' field shall be null-terminated.
+

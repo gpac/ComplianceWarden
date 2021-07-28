@@ -18,12 +18,14 @@ dd BE(0)
 hdlr_start:
 dd BE(hdlr_end - hdlr_start)
 db "hdlr"
-dd BE(0)
-dd BE(0)
-db "dumy"
-dd BE(0)
-dd BE(0)
-dd BE(0)
+db 0x00 ; version(8) 
+db 0x00, 0x00, 0x00 ; flags(24) 
+db 0x00, 0x00, 0x00, 0x00 ; pre_defined(32) 
+db "dumy" ; handler_type(32) ('dumy') 
+db 0x00, 0x00, 0x00, 0x00 ; reserved1(32) 
+db 0x00, 0x00, 0x00, 0x00 ; reserved2(32) 
+db 0x00, 0x00, 0x00, 0x00 ; reserved3(32) 
+db 0x00 ; name(8) 
 hdlr_end:
 
 pitm_start:
