@@ -718,9 +718,12 @@ static const SpecDesc specHeif =
               };
 
             if(isSequence(root))
-              return { "heifs", "hif" };
+              return { "heifs", "hif" }
+
+            ;
             else
-              return { "heif", "hif" };
+              return { "heif", "hif" }
+            ;
           };
 
         bool found = false;
