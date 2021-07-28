@@ -1,24 +1,70 @@
-# ComplianceWarden : a pluggable MP4 compliance checker
+# ComplianceWarden : a pluggable ISOBMFF (MP4/IFF) compliance checker
 
-## Dependencies
+## Introduction
 
-### Build dependencies
+[ComplianceWarden](https://github.com/gpac/ComplianceWarden) is a compliance checker for ISOBMFF-based file format.
+It has been developed as a reference software for MPEG MIAF and AOM AVIF. ComplianceWarden
+can be extended to check MP4, CMAF, and many other file formats.
 
- - GNU Bash
- - GNU g++ version 7+
- - GNU make
+ComplianceWarden decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
 
-### Code formatter (optional)
+ComplianceWarden is distributed under the [BSD-3 license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
-Install [uncrustify](https://github.com/uncrustify/uncrustify)
+## Useful information
+
+### Online version
+
+An online version is available [here for HEIF/MIAF](https://gpac.github.io/ComplianceWarden-wasm/) and [here for AVIF](https://gpac.github.io/ComplianceWarden-wasm/avif.html). Note that the software is executed in your browser and doesn't upload any data outside your computer.
+
+### Usage
 
 ```
-$ git clone https://github.com/uncrustify/uncrustify.git
-$ cd uncrustify
-$ git checkout uncrustify-0.64
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-$ make -j $(nproc)
-$ sudo make install
+$ bin/cw.exe
+Compliance Warden, version v28-master-rev3-g01d9486.
+
+Usage:
+- Run conformance:          bin/cw.exe <spec> input.mp4
+- List specifications:      bin/cw.exe list
+- List specification rules: bin/cw.exe <spec> list
+- Print version:            bin/cw.exe version
+```
+
+### Specifications
+
+```
+$ bin/cw.exe list
+================================================================================
+Specification name: avif
+            detail: AVIF v1.0.0, 19 February 2019
+https://aomediacodec.github.io/av1-avif/
+        depends on: "miaf" specifications.
+================================================================================
+
+================================================================================
+Specification name: dummy
+            detail: Dummy Spec, v1.2
+        depends on: none.
+================================================================================
+
+================================================================================
+Specification name: isobmff
+            detail: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+        depends on: none.
+================================================================================
+
+================================================================================
+Specification name: heif
+            detail: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
+        depends on: "isobmff" specifications.
+================================================================================
+
+================================================================================
+Specification name: miaf
+            detail: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+        depends on: "heif" specifications.
+================================================================================
 ```
 
 ## Building
@@ -63,14 +109,51 @@ $ make
 ### Emscripten (WASM)
 
 ```
-em++ -std=c++14 -DCW_WASM bin/cw_version.cpp src/app_cw.cpp src/utils.cpp src/common_boxes.cpp src/derivations.cpp src/spec_avif.cpp src/spec_avif_profiles.cpp src/spec_avif_utils.cpp src/spec_dummy.cpp src/spec_heif.cpp src/spec_isobmff.cpp src/spec_miaf.cpp src/spec_miaf_audio.cpp src/spec_miaf_brands.cpp src/spec_miaf_derivations.cpp src/spec_miaf_num_pixels.cpp src/spec_miaf_profiles.cpp src/spec_utils.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC', '_printVersion']" -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 --pre-js wasm-fs-pre.js
+em++ -std=c++14 -DCW_WASM bin/cw_version.cpp src/*.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC', '_printVersion']" -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 --pre-js wasm-fs-pre.js
 ```
 
 See https://gpac.github.io/ComplianceWarden-wasm/ for a demo.
 
 The HTML integration source code is hosted at https://github.com/gpac/ComplianceWarden-wasm.
 
+## Testing
+
+ComplianceWarden includes known good tests and known bad tests. This ensures the software is stable to false positives.
+
+```
+./check
+```
+
+NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwin (MacOS) ```CXX=scripts/darwin.sh ./check```.
+
+## Contributing
+
+### Build dependencies
+
+ - GNU Bash
+ - GNU g++ version 7+
+ - GNU make
+
+### Code formatter (optional)
+
+Install [uncrustify](https://github.com/uncrustify/uncrustify)
+
+```
+$ git clone https://github.com/uncrustify/uncrustify.git
+$ cd uncrustify
+$ git checkout uncrustify-0.64
+$ cmake -DCMAKE_BUILD_TYPE=Release ..
+$ make -j $(nproc)
+$ sudo make install
+```
+
+### Adding tests
+
+Uncomment the ```# cp "$new" "$ref"``` line in the ```tests/run``` script to update the script. This avoids tests to halt when an error occurs.
+
 ## Code architecture
+
+### Repository file structure
 
 ```
 check                      Top-level full-test script. Reformats + builds + tests.
@@ -85,24 +168,26 @@ scripts/cov.sh             Coverage script. Generates a coverage report reflecti
 scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ```
 
-## Testing
+### Principles
 
-```
-./check
-```
+ComplianceWarden is made of three parts:
+ - a file parser ```common_boxes.cpp``` that can be extended (or superseeded) by each specification,
+ - some array of rules stored in ```spec_*.cpp```,
+ - an application stored in ```src/app_cw.cpp``` that probes the files, launches the tests, and produces a human-readable report.
 
-NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwin (MacOS) ```CXX=scripts/darwin.sh ./check```.
+The parsing is decoupled from the rules. This allows a lot of flexibility such as:
+ - the replacement of the parser by an external tool,
+ - the implementation of rules in a different language.
 
-## Useful information
+The result of the parsing phase is comparable to an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree). This AST is then processed by the rules.
 
-### Versions
+The datastructures are generic. This allows to easily serialize them. This is useful when plugging new languages or building new tests.
 
- - ISOBMFF specification: MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
- - MIAF specification: MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
- - HEIF specification: ISO/IEC 23008-12 - 2nd Edition N18310
- - AVIF specification: AVIF v1.0.0, 19 February 2019
+### Tests
 
-# Acknowledgments
+A test is a pair of a file format description in the [NASM syntax](https://en.wikipedia.org/wiki/Netwide_Assembler) ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.asm)) and a reference result ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.ref)).
+
+## Acknowledgments
 
 This work was initiated as part of the MPEG MIAF conformance software.
 

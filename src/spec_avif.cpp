@@ -1,4 +1,4 @@
-#include "derivations.h"
+#include "spec_utils_derivations.h"
 #include "spec.h"
 #include "box_reader_impl.h"
 #include "spec_avif_utils.h"

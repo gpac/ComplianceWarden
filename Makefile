@@ -34,7 +34,6 @@ SRCS_CW+=\
   src/common_boxes.cpp\
   src/utils.cpp\
 
-SRCS_CW+=src/derivations.cpp
 SRCS_CW+=src/spec_avif.cpp
 SRCS_CW+=src/spec_avif_profiles.cpp
 SRCS_CW+=src/spec_avif_utils.cpp
@@ -48,6 +47,7 @@ SRCS_CW+=src/spec_miaf_derivations.cpp
 SRCS_CW+=src/spec_miaf_num_pixels.cpp
 SRCS_CW+=src/spec_miaf_profiles.cpp
 SRCS_CW+=src/spec_utils.cpp
+SRCS_CW+=src/spec_utils_derivations.cpp
 
 SRCS_CW+=$(BIN)/cw_version.cpp
 
