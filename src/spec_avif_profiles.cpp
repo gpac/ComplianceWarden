@@ -194,6 +194,24 @@ const std::initializer_list<RuleDesc> getRulesAvifProfiles(const SpecDesc & /*sp
           }
         }
       }
+    },
+    {
+      "Section 5\n"
+      "AVIF files shall contain either the 'avif', 'avis', or 'avio' brand\n",
+      [] (Box const& root, IReport* out)
+      {
+        bool found = false;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "brand") || !strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("avif") || sym.value == FOURCC("avis") || sym.value == FOURCC("avio"))
+                  found = true;
+
+        if(!found)
+          out->error("'avif', 'avis', or 'avio' brand not found");
+      }
     }
   };
   return rulesProfiles;
