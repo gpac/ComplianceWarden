@@ -187,6 +187,14 @@ The datastructures are generic. This allows to easily serialize them. This is us
 
 A test is a pair of a file format description in the [NASM syntax](https://en.wikipedia.org/wiki/Netwide_Assembler) ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.asm)) and a reference result ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.ref)).
 
+## Limitations
+
+Some aspects are not activated:
+ - Brand presence checks are not fully activated. When activated lax brands (e.g. 'MiPr') emit a lot of messages that bring little value to the user. Aggressive shall/should statements need to be balanced at standardization level.
+ - Codec-level parsing is incomplete. It should be deferred in most case to an external project that can analyze both the metadata and the data (e.g. [GPAC](http://gpac.io)).
+ - Some rules related to pixel formats (color spaces, ...) (computations and consistency) may only be checked by a player. Hence they are considered outside of the scope of this project.
+ - Some rules are not implemented due to missing content (e.g. AV1 OBU Metadata content).
+
 ## Acknowledgments
 
 This work was initiated as part of the MPEG MIAF conformance software.
