@@ -8,6 +8,8 @@
 
 bool isVisualSampleEntry(uint32_t fourcc);
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
+Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset);
 
 namespace
 {
@@ -244,6 +246,58 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
           }
         }
     },
+  },
+  {
+    "Section 7.2.1.13\n"
+    "Item bodies of coded image items shall not be present in the ItemDataBox;\n"
+    "all body data for coded images (including thumbnails) shall be in a MediaDataBox",
+    [] (Box const& root, IReport* out)
+    {
+      std::vector<std::pair<uint32_t, uint32_t>> codedItems;
+
+      auto check = [&] (uint32_t itemId, uint32_t fourcc) {
+          auto spans = getItemDataOffsets(root, out, itemId);
+
+          for(auto& span : spans)
+          {
+            auto checkBox = [&] (int64_t offset) {
+                if(offset == 0)
+                  return; // TODO: parse all 'iloc' offsets
+
+                auto& box = getBoxFromOffset(root, offset);
+
+                if(box.fourcc != FOURCC("mdat"))
+                  out->error("Item bodies of coded image \"%s\" itemID=%u (offset=%lld) belongs to box \"%s\": expecting \"mdat\"",
+                             toString(fourcc).c_str(), itemId, offset, toString(box.fourcc).c_str());
+              };
+
+            checkBox(span.first);
+            checkBox(span.first + span.second - 1); // also check end of span
+          }
+        };
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto& iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe"))
+                {
+                  uint32_t itemId = 0;
+
+                  for(auto& sym : iinfChild.syms)
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                      itemId = sym.value;
+                    else if(!strcmp(sym.name, "item_type"))
+                      if(isVisualSampleEntry(sym.value))
+                        codedItems.push_back({ itemId, sym.value });
+                  }
+                }
+
+      for(auto codedItem : codedItems)
+        check(codedItem.first, codedItem.second);
+    }
   },
   {
     "Section 7.3.2\n"

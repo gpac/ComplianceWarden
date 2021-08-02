@@ -23,7 +23,7 @@ Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #25] Error: Item_ID=1 property: expecting { clap irot imir }, got { imir clap }
+[miaf][Rule #26] Error: Item_ID=1 property: expecting { clap irot imir }, got { imir clap }
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
@@ -31,7 +31,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #25] Section 7.3.6.7
+[miaf][Rule #26] Section 7.3.6.7
 [Transformative properties][if used] shall be indicated to be applied in the
 following order: clean aperture first, then rotation, then mirror.
 

@@ -7,9 +7,10 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #2] Error: compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
 [miaf][Rule #5] Error: construction_method=1 on a coded image item
+[miaf][Rule #7] Error: Item bodies of coded image "avc1" itemID=1 (offset=99) belongs to box "idat": expecting "mdat"
 
 ========================================
-[miaf] 2 error(s), 0 warning(s).
+[miaf] 3 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -24,6 +25,10 @@ the brand 'miaf' in the compatible_brands in the FileTypeBox.
 [miaf][Rule #5] Section 7.2.1.7
 construction_method shall be equal to 0 for MIAF image items that are coded image items.
 construction_method shall be equal to 0 or 1 for MIAF image items that are derived image items.
+
+[miaf][Rule #7] Section 7.2.1.13
+Item bodies of coded image items shall not be present in the ItemDataBox;
+all body data for coded images (including thumbnails) shall be in a MediaDataBox
 
 +--------------------------------------+
 |           heif validation            |

@@ -5,10 +5,10 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #32] Error: Detected error in derivations: iden (2) -> iden (2)
-[miaf][Rule #32] Error: Detected cycle in derivations.
 [miaf][Rule #33] Error: Detected error in derivations: iden (2) -> iden (2)
 [miaf][Rule #33] Error: Detected cycle in derivations.
+[miaf][Rule #34] Error: Detected error in derivations: iden (2) -> iden (2)
+[miaf][Rule #34] Error: Detected cycle in derivations.
 
 ========================================
 [miaf] 4 error(s), 0 warning(s).
@@ -16,11 +16,11 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #32] Section 7.3.9
+[miaf][Rule #33] Section 7.3.9
 An identity derivation shall not be derived immediately from another identity
 derivation
 
-[miaf][Rule #33] Section 7.3.11.1
+[miaf][Rule #34] Section 7.3.11.1
 If derivations occur, they shall be in this order:
 - mandatory coded image(s)
 - optional identity derivation (subclause 7.3.11.2)

@@ -5,14 +5,14 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (1)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (2)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (3)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (4)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (5)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (6)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (7)
-[miaf][Rule #33] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (8)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (1)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (2)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (3)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> iovl (9) -> av01 (4)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (5)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (6)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (7)
+[miaf][Rule #34] Error: Detected error in derivations: grid (11) -> grid (10) -> av01 (8)
 
 ========================================
 [miaf] 8 error(s), 0 warning(s).
@@ -20,7 +20,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #33] Section 7.3.11.1
+[miaf][Rule #34] Section 7.3.11.1
 If derivations occur, they shall be in this order:
 - mandatory coded image(s)
 - optional identity derivation (subclause 7.3.11.2)

@@ -7,8 +7,8 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #0] Error: 'meta' box not found at file level
 [miaf][Rule #4] Error: 'hdlr' not found in MetaBox
-[miaf][Rule #7] Error: PrimaryItemBox is required
-[miaf][Rule #8] Error: MIAF missing Image spatial extents property
+[miaf][Rule #8] Error: PrimaryItemBox is required
+[miaf][Rule #9] Error: MIAF missing Image spatial extents property
 
 ========================================
 [miaf] 4 error(s), 0 warning(s).
@@ -23,10 +23,10 @@ The MetaBox shall be present at the file-level
 [miaf][Rule #4] Section 7.2.1.5
 The handler type for the MetaBox shall be 'pict'.
 
-[miaf][Rule #7] Section 7.3.2
+[miaf][Rule #8] Section 7.3.2
 The primary item shall be a MIAF master image item.
 
-[miaf][Rule #8] Section 7.3.6.3
+[miaf][Rule #9] Section 7.3.6.3
 Every image item shall be associated with a Image spatial extents property
 
 +--------------------------------------+

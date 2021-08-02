@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #34] Error: Next larger is a master image that has 1000000 times more pixels (resolutions: 1 vs 1000x1000). Limit is 200
+[miaf][Rule #35] Error: Next larger is a master image that has 1000000 times more pixels (resolutions: 1 vs 1000x1000). Limit is 200
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
@@ -13,7 +13,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #34] Section 7.3.3
+[miaf][Rule #35] Section 7.3.3
 There shall be no greater than a factor of 200 between the total number of pixels
 in a MIAF thumbnail image item and the next larger MIAF thumbnail image item, or
 the associated MIAF master image item if there is no larger MIAF thumbnail image

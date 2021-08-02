@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #11] Error: Pixel aspect ratio shall be 1:1 but is 2:1
+[miaf][Rule #12] Error: Pixel aspect ratio shall be 1:1 but is 2:1
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
@@ -13,7 +13,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #11] Section 7.3.6.5
+[miaf][Rule #12] Section 7.3.6.5
 "all images conformant with this document shall have a pixel aspect ratio of 1:1"
 The default pixel aspect ratio of an image, in the absence of association with
 a PixelAspectRatioBox property, is 1:1 (i.e. 'square'). This value of pixel

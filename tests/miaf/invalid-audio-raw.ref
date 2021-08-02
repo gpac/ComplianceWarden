@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #26] Error: Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
+[miaf][Rule #27] Error: Audio shall be a variant of AAC as defined in Section 7.4.5 or as uncompressed two’s-complement
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
@@ -13,7 +13,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #26] Section 7.4.5
+[miaf][Rule #27] Section 7.4.5
 Each stream shall be coded as either a variant of AAC as defined in
 ISO/IEC 14496-3, or as uncompressed two’s-complement
 

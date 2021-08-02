@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #20] Error: data_reference_index shall be 0, found 1
+[miaf][Rule #21] Error: data_reference_index shall be 0, found 1
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
@@ -13,7 +13,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #20] Section 8.2.1
+[miaf][Rule #21] Section 8.2.1
 MIAF image items shall use data_reference_index==0, i.e. the image data shall
 be contained in the same file as the MetaBox.
 

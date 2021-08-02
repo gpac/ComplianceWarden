@@ -5,11 +5,11 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #24] Error: Found 7 (ItemIds={3,4,5,6,7,8,9}) 'pixi' associated for 9 displayable (not hidden) images (ItemIds={1,2,3,4,5,6,7,8,9})
-[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (3)
-[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (4)
-[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (5)
-[miaf][Rule #33] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (6)
+[miaf][Rule #25] Error: Found 7 (ItemIds={3,4,5,6,7,8,9}) 'pixi' associated for 9 displayable (not hidden) images (ItemIds={1,2,3,4,5,6,7,8,9})
+[miaf][Rule #34] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (3)
+[miaf][Rule #34] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (4)
+[miaf][Rule #34] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (5)
+[miaf][Rule #34] Error: Detected error in derivations: grid (1) -> grid (2) -> av01 (6)
 
 ========================================
 [miaf] 5 error(s), 0 warning(s).
@@ -17,11 +17,11 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #24] Section 7.3.6.6
+[miaf][Rule #25] Section 7.3.6.6
 The pixel information property shall be associated with every image that is
 displayable (not hidden)
 
-[miaf][Rule #33] Section 7.3.11.1
+[miaf][Rule #34] Section 7.3.11.1
 If derivations occur, they shall be in this order:
 - mandatory coded image(s)
 - optional identity derivation (subclause 7.3.11.2)
