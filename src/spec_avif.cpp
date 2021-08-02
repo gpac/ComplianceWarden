@@ -10,6 +10,7 @@
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
+Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset);
 
 namespace
 {
@@ -64,15 +65,6 @@ std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root)
             }
 
   return av1ImageItemIDs;
-}
-
-Box const & explore(Box const& root, uint64_t targetOffset)
-{
-  for(auto& box : root.children)
-    if(box.position + box.size > targetOffset)
-      return explore(box, targetOffset);
-
-  return root;
 }
 
 std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
@@ -809,7 +801,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto& offset : av1AplhaTrackFirstOffset)
       {
-        auto& box = explore(root, offset.second);
+        auto& box = getBoxFromOffset(root, offset.second);
 
         if(box.fourcc != FOURCC("mdat"))
         {

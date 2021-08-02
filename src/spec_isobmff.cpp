@@ -9,6 +9,7 @@ bool isVisualSampleEntry(uint32_t fourcc);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, std::vector<uint32_t> parent4CCs, std::pair<unsigned, unsigned> expectedAritySpan);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
+Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset);
 
 namespace
 {
@@ -130,10 +131,38 @@ const SpecDesc specIsobmff =
     },
     {
       "Section 8.11.3: Item location box\n"
-      "Data offset integrity: check we don't point out of the file",
+      "Data offset integrity: check we don't point out of the file.\n"
+      "This is rather a safety check than a formal rule.",
       [] (Box const& root, IReport* out)
       {
-        std::vector<uint32_t> itemIds;
+        const int64_t filesize = root.size;
+
+        auto check = [&] (uint32_t itemId) {
+            auto spans = getItemDataOffsets(root, out, itemId);
+
+            for(auto& span : spans)
+            {
+              if(span.first > filesize || span.first + span.second > filesize)
+              {
+                out->error("Data offset overflow for Item_ID=%u: offset is %lld (pos=%lld,len=%lld) while file size is %llu",
+                           itemId, span.first + span.second, span.first, span.second, filesize);
+                return;
+              }
+
+              auto checkBox = [&] (int64_t offset) {
+                  if(offset == 0)
+                    return; // TODO: parse all 'iloc' offsets
+
+                  auto& box = getBoxFromOffset(root, offset);
+
+                  if(box.fourcc != FOURCC("mdat") && box.fourcc != FOURCC("idat"))
+                    out->error("Data offset %lld belongs to box \"%s\": expecting \"mdat\" or \"idat\"", offset, toString(box.fourcc).c_str());
+                };
+
+              checkBox(span.first);
+              checkBox(span.first + span.second - 1); // also check end of span
+            }
+          };
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
@@ -141,21 +170,58 @@ const SpecDesc specIsobmff =
               if(metaChild.fourcc == FOURCC("iloc"))
                 for(auto& sym : metaChild.syms)
                   if(!strcmp(sym.name, "item_ID"))
-                    itemIds.push_back(sym.value);
+                    check(sym.value);
+      }
+    },
+    {
+      "Section 8.1.1: Media Data box (track)\n"
+      "Data offset integrity: check we don't point out of the file.\n"
+      "This is rather a safety check than a formal rule.",
+      [] (Box const& root, IReport* out)
+      {
+        const uint64_t filesize = root.size;
 
-        const int64_t filesize = root.size;
+        auto check = [&] (uint32_t trackId, uint64_t offset) {
+            if(offset > filesize)
+            {
+              out->error("Data offset overflow for trackID=%u: offset is %lld while file size is %llu",
+                         trackId, offset, filesize);
+              return;
+            }
 
-        for(auto itemId : itemIds)
-        {
-          auto spans = getItemDataOffsets(root, out, itemId);
+            auto& box = getBoxFromOffset(root, offset);
 
-          for(auto& span : spans)
-          {
-            if(span.first + span.second > filesize)
-              out->error("Data offset overflow for Item_ID=%u: offset is %lld (pos=%lld,len=%lld) while file size is %llu",
-                         itemId, span.first + span.second, span.first, span.second, filesize);
-          }
-        }
+            if(box.fourcc != FOURCC("mdat"))
+              out->error("Data offset %llu belongs to box \"%s\": expecting \"mdat\"", offset, toString(box.fourcc).c_str());
+          };
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+              {
+                uint32_t trackId = 0;
+
+                for(auto& trakChild : moovChild.children)
+                {
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                  {
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "track_ID"))
+                        trackId = sym.value;
+                  }
+                  else if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto& minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl"))
+                            for(auto& stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stco")) // TODO: also check the sizes
+                                for(auto& sym : stblChild.syms)
+                                  if(!strcmp(sym.name, "chunk_offset"))
+                                    check(trackId, sym.value);
+                }
+              }
       }
     },
     {
@@ -358,7 +424,7 @@ const SpecDesc specIsobmff =
     },
     {
       "Table 1: box structure and arity\n"
-      "This is rather a safety check than a formal rule",
+      "This is rather a safety check than a formal rule.",
       [] (Box const& root, IReport* out)
       {
         boxCheck(root, out, { FOURCC("ftyp") }, { FOURCC("root") }, { 1, 1 });

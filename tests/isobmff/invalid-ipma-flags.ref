@@ -5,19 +5,15 @@
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
-[isobmff][Rule #1] Error: Data offset overflow for Item_ID=1: offset is 437 (pos=286,len=151) while file size is 278
-[isobmff][Rule #5] Warning: 'ipma' flags should be equal to 0 unless there are more than 127 properties in the ItemPropertyContainerBox (found 4)
+[isobmff][Rule #6] Warning: 'ipma' flags should be equal to 0 unless there are more than 127 properties in the ItemPropertyContainerBox (found 4)
 
 ========================================
-[isobmff] 1 error(s), 1 warning(s).
+[isobmff] 0 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[isobmff][Rule #1] Section 8.11.3: Item location box
-Data offset integrity: check we don't point out of the file
-
-[isobmff][Rule #5] Section 8.11.14.1
+[isobmff][Rule #6] Section 8.11.14.1
 ItemPropertyContainerBox: flags should be equal to 0 unless there are more than
 127 properties in the ItemPropertyContainerBox
 

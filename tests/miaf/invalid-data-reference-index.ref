@@ -51,5 +51,6 @@ MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 ===== Involved rules descriptions:
 
 [isobmff][Rule #1] Section 8.11.3: Item location box
-Data offset integrity: check we don't point out of the file
+Data offset integrity: check we don't point out of the file.
+This is rather a safety check than a formal rule.
 

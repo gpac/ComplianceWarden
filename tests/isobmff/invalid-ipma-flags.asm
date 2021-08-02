@@ -53,8 +53,8 @@ meta_start:
         db 0x00, 0x00 ; data_reference_index(16) 
          ; base_offset(0) 
         db 0x00, 0x01 ; extent_count(16) 
-        db 0x00, 0x00, 0x01, 0x1E ; extent_offset(32) 
-        db 0x00, 0x00, 0x00, 0x97 ; extent_length(32) 
+        dd BE(mdat_start - ftyp_start + 8) ; extent_offset(32) 
+        db 0x00, 0x00, 0x00, 0x00 ; extent_length(32) 
     iloc_end:
     iinf_start:
         dd BE(iinf_end - iinf_start)
@@ -144,5 +144,11 @@ meta_start:
         ipma_end:
     iprp_end:
 meta_end:
+
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00
+mdat_end:
 
 ; vim: syntax=nasm

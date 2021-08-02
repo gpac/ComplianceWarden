@@ -779,7 +779,7 @@ static const SpecDesc specHeif =
     },
     {
       "Section H.2.2\n"
-      "essential shall be equal to 1 for an 'jpgC' item property ",
+      "essential shall be equal to 1 for an 'jpgC' item property",
       [] (Box const& root, IReport* out)
       {
         checkEssential(root, out, FOURCC("jpgC"));
@@ -787,7 +787,7 @@ static const SpecDesc specHeif =
     },
     {
       "Box structure and arity for boxes defined in HEIF\n"
-      "This is rather a safety check than a formal rule",
+      "This is rather a safety check than a formal rule.",
       [] (Box const& root, IReport* out)
       {
         boxCheck(root, out, { FOURCC("ispe") }, { FOURCC("ipco") }, { 1, INT32_MAX }); // TODO: one per image item
@@ -803,7 +803,7 @@ static const SpecDesc specHeif =
 
         boxCheck(root, out, { FOURCC("ccst") }, visualSampleEntryFourccs, { 1, 1 });
       }
-    }
+    },
   },
   nullptr,
 };

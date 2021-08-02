@@ -175,7 +175,7 @@ minf_start:
             db 0x00 ; version(8) 
             db 0x00, 0x00, 0x00 ; flags(24) 
             db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
-            db 0x00, 0x00, 0x55, 0x7D ; chunk_offset(32) 
+            dd BE(mdat_start - ftyp_start + 8) ; chunk_offset(32) 
         stco_end:
     stbl_end:
 minf_end:
@@ -309,7 +309,7 @@ minf2_start:
             db 0x00 ; version(8) 
             db 0x00, 0x00, 0x00 ; flags(24) 
             db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
-            db 0x00, 0x00, 0x55, 0x7D ; chunk_offset(32) 
+            dd BE(mdat_start - ftyp_start + 8) ; chunk_offset(32) 
         stco2_end:
     stbl2_end:
 minf2_end:
@@ -357,3 +357,9 @@ db 0x01, 0x0E, 0x00, 0x00 ; height(32)
 tkhd2_end:
 trak2_end:
 moov_end:
+
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00
+mdat_end:

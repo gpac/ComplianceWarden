@@ -69,6 +69,15 @@ std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
   return res;
 }
 
+Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset)
+{
+  for(auto& box : root.children)
+    if(box.position + box.size > targetOffset)
+      return getBoxFromOffset(box, targetOffset);
+
+  return root;
+}
+
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
 {
   std::vector<uint32_t> properties { 0 }; // index is 1-based

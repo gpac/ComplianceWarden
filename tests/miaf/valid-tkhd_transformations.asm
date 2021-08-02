@@ -186,7 +186,7 @@ minf_start:
             db 0x00 ; version(8) 
             db 0x00, 0x00, 0x00 ; flags(24) 
             db 0x00, 0x00, 0x00, 0x01 ; entry_count(32) 
-            db 0x00, 0x00, 0x55, 0x7D ; chunk_offset(32) 
+            dd BE(mdat_start - ftyp_start + 8) ; chunk_offset(32) 
         stco_end:
     stbl_end:
 minf_end:
@@ -213,3 +213,9 @@ dd BE(0) ; height
 tkhd_end:
 trak_end:
 moov_end:
+
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00
+mdat_end:

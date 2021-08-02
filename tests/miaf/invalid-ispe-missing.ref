@@ -41,7 +41,7 @@ The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
 [heif][Rule #21] Box structure and arity for boxes defined in HEIF
-This is rather a safety check than a formal rule
+This is rather a safety check than a formal rule.
 
 +--------------------------------------+
 |          isobmff validation          |

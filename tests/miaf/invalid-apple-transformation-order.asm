@@ -250,18 +250,19 @@ meta_start:
         db 0x00, 0x01 ; "item_ID(16)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x00, 0x00, 0x07 ; "extent_offset(32)" 
-        db 0x00, 0x00, 0x00, 0x29 ; "extent_length(32)" 
+        dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
         db 0x00, 0x02 ; "item_ID(16)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x00, 0x00, 0x30 ; "extent_offset(32)" 
-        db 0x00, 0x00, 0x00, 0x5F ; "extent_length(32)" 
+        dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
     iloc_end:
 meta_end:
 mdat_start:
     dd BE(mdat_end - mdat_start)
     dd "mdat"
+    db 0x00
 mdat_end:
 
 ; vim: syntax=nasm

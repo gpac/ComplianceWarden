@@ -43,14 +43,14 @@ meta_start:
         db 0x00, 0x02 ; item_count(16) 
         db 0x00, 0x02 ; item_ID(16) 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x00, 0x5B ; base_offset(32) 
+        dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
         db 0x00, 0x00 ; extent_count(16) 
         db 0x00, 0x01 ; item_ID(16) 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x00, 0x5B ; base_offset(32) 
+        dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
-        db 0x00, 0x00, 0x0, 0x74 ; extent_length(32) 
+        db 0x00, 0x00, 0x0, 0x01 ; extent_length(32) 
     iloc_end:
     iinf_start:
         dd BE(iinf_end - iinf_start)
@@ -162,3 +162,9 @@ meta_start:
         ipma_end:
     iprp_end:
 meta_end:
+
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00
+mdat_end:

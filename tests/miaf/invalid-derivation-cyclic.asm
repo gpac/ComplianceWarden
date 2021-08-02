@@ -81,20 +81,20 @@ meta_start:
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x00, 0x00, 0x1D ; "extent_offset(32)" 
-        db 0x00, 0x00, 0x00, 0x45 ; "extent_length(32)" 
+        dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
         db 0x00, 0x02 ; "item_ID(16)" 
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x00, 0x00, 0x00 ; "extent_offset(32)" 
-        db 0x00, 0x00, 0x00, 0x08 ; "extent_length(32)" 
+        dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
         db 0x00, 0x03 ; "item_ID(16)" 
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
-        db 0x00, 0x00, 0x00, 0x3C ; "extent_offset(32)" 
-        db 0x00, 0x00, 0x00, 0x04 ; "extent_length(32)" 
+        dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
+        db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
     iloc_end:
     iref_start:
         dd BE(iref_end - iref_start)
@@ -139,5 +139,11 @@ meta_start:
         ipma_end:
     iprp_end:
 meta_end:
+
+mdat_start:
+dd BE(mdat_end - mdat_start)
+db "mdat"
+db 0x00
+mdat_end:
 
 ; vim: syntax=nasm
