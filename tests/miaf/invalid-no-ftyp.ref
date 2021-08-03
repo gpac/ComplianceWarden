@@ -37,7 +37,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #0] Section 10..2.1.1
+[heif][Rule #0] Section 10.2.1.1
 Files shall contain the brand 'mif1' in the compatible brands array of the
 FileTypeBox.
 /!\ this rule doesn't look for 'mif1' brands rule-conformance:

@@ -80,7 +80,7 @@ static const SpecDesc specHeif =
   { "isobmff" },
   {
     {
-      "Section 10..2.1.1\n"
+      "Section 10.2.1.1\n"
       "Files shall contain the brand 'mif1' in the compatible brands array of the\n"
       "FileTypeBox.\n"
       "/!\\ this rule doesn't look for 'mif1' brands rule-conformance:\n"
