@@ -821,6 +821,62 @@ static const SpecDesc specHeif =
         boxCheck(root, out, { FOURCC("ccst") }, visualSampleEntryFourccs, { 1, 1 });
       }
     },
+    {
+      "Section 10.2.1.1\n"
+      "Other versions of the boxes shall not be present.",
+      [] (Box const& root, IReport* out)
+      {
+        auto metas = findBoxes(root, FOURCC("meta"));
+
+        for(auto meta : metas)
+        {
+          for(auto& field : meta->syms)
+            if(!strcmp(field.name, "version"))
+              if(field.value != 0)
+                out->error("'meta' version shall be 0, found %lld", field.value);
+
+          auto hdlrs = findBoxes(root, FOURCC("hdlr"));
+
+          for(auto hdlr : hdlrs)
+            for(auto& field : hdlr->syms)
+              if(!strcmp(field.name, "version"))
+                if(field.value != 0)
+                  out->error("'hdlr' version shall be 0, found %lld", field.value);
+
+          auto ilocs = findBoxes(root, FOURCC("iloc"));
+
+          for(auto iloc : ilocs)
+            for(auto& field : iloc->syms)
+              if(!strcmp(field.name, "version"))
+                if(field.value != 0 && field.value != 1 && field.value != 2)
+                  out->error("'iloc' version shall be 0, 1 or 2, found %lld", field.value);
+
+          auto iinfs = findBoxes(root, FOURCC("iinf"));
+
+          for(auto iinf : iinfs)
+            for(auto& field : iinf->syms)
+              if(!strcmp(field.name, "version"))
+                if(field.value != 0 && field.value != 1)
+                  out->error("'iinf' version shall be 0 or 1, found %lld", field.value);
+
+          auto infes = findBoxes(root, FOURCC("infe"));
+
+          for(auto infe : infes)
+            for(auto& field : infe->syms)
+              if(!strcmp(field.name, "version"))
+                if(field.value != 2 && field.value != 3)
+                  out->error("'infe' version shall be 2 or 3, found %lld", field.value);
+
+          auto pitms = findBoxes(root, FOURCC("pitm"));
+
+          for(auto pitm : pitms)
+            for(auto& field : pitm->syms)
+              if(!strcmp(field.name, "version"))
+                if(field.value != 0 && field.value != 1)
+                  out->error("'pitm' version shall be 0 or 1, found %lld", field.value);
+        }
+      }
+    }
   },
   nullptr,
 };

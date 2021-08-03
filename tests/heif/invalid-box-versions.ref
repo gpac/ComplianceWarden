@@ -1,35 +1,27 @@
 +--------------------------------------+
-|           miaf validation            |
-+--------------------------------------+
-
-Specification description: MIAF (Multi-Image Application Format)
-MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
-
-[miaf][Rule #6] Error: MIAF image item shall not reference any item protection ('infe' item_protection_index)
-
-========================================
-[miaf] 1 error(s), 0 warning(s).
-========================================
-
-===== Involved rules descriptions:
-
-[miaf][Rule #6] Section 7.2.1.8
-MIAF image items shall not reference any item protection
-
-+--------------------------------------+
 |           heif validation            |
 +--------------------------------------+
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #8] Error: primary item (Item_ID=43707) has no associated item_type.
-[heif][Rule #23] Error: 'infe' version shall be 2 or 3, found 0
+[heif][Rule #4] Error: Version 0 or 1 of ItemInfoBox is required
+[heif][Rule #4] Error: ItemInfoBox is required
+[heif][Rule #8] Error: primary item (Item_ID=1) has no associated item_type.
+[heif][Rule #23] Error: 'meta' version shall be 0, found 1
+[heif][Rule #23] Error: 'hdlr' version shall be 0, found 1
+[heif][Rule #23] Error: 'iloc' version shall be 0, 1 or 2, found 3
+[heif][Rule #23] Error: 'iinf' version shall be 0 or 1, found 2
+[heif][Rule #23] Error: 'infe' version shall be 2 or 3, found 1
+[heif][Rule #23] Error: 'pitm' version shall be 0 or 1, found 2
 
 ========================================
-[heif] 2 error(s), 0 warning(s).
+[heif] 9 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
+
+[heif][Rule #4] Section 7.2.1.9
+ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 
 [heif][Rule #8] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
