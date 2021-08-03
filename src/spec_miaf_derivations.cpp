@@ -2,6 +2,8 @@
 #include "spec.h"
 #include <algorithm>
 
+bool isVisualSampleEntry(uint32_t fourcc);
+
 const std::initializer_list<RuleDesc> getRulesMiafDerivations()
 {
   static const
@@ -68,6 +70,7 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
             }
 
             auto visitedIt = ++visited.begin(); // origin is a coded image: skip it
+
             bool error = false;
 
             for(int i = 0, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
@@ -101,6 +104,36 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
 
           if(!graph.visit(c.src, visited, onError, check))
             out->error("Detected cycle in derivations.");
+        }
+      }
+    },
+    {
+      "Section 7.3.11.1\n"
+      "All derivation chains shall originate from one or more coded images\n",
+      [] (Box const& root, IReport* out)
+      {
+        auto graph = buildDerivationGraph(root);
+
+        std::list<uint32_t> sourceItemIds;
+
+        for(auto& c : graph.connections)
+          sourceItemIds.push_back(c.src);
+
+        for(auto& c : graph.connections)
+        {
+          auto src = std::find(sourceItemIds.begin(), sourceItemIds.end(), c.dst);
+
+          if(src != sourceItemIds.end())
+            sourceItemIds.erase(src);
+        }
+
+        for(auto srcItemId : sourceItemIds)
+        {
+          auto type = graph.itemTypes[srcItemId].c_str();
+          uint32_t fourcc = type[3] + (type[2] << 8) + (type[1] << 16) + (type[0] << 24);
+
+          if(!isVisualSampleEntry(fourcc))
+            out->error("All derivation chains shall originate from one or more coded images: itemID=%u doesn't (type=%s).", srcItemId, type);
         }
       }
     },

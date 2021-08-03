@@ -89,7 +89,7 @@ function compare
   local ref=$1
   local new=$2
 
-  # cp "$new" "$ref"
+  cp "$new" "$ref"
   diff -Naur "$ref" "$new"
 }
 
