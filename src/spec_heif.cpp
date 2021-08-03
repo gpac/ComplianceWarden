@@ -262,6 +262,60 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 7.2.1\n"
+      "The following constraints on the value of matrix [of the TrackHeaderBox] shall be obeyed",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<int64_t> matrix; // a, b, u, c, d, v, x, y, w
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                    for(auto& sym : trakChild.syms)
+                      if(!strcmp(sym.name, "matrix"))
+                        matrix.push_back(sym.value);
+
+        if(!matrix.empty())
+        {
+          // either a or c but not both shall be equal to 0x00010000 or 0xFFFF0000, while the remaining one of a and c shall be equal to 0;
+          if(matrix[0])
+          {
+            if(matrix[0] != 0x00010000 && matrix[0] != 0xffff0000)
+              out->error("Matrix field of the TrackHeaderBox: \"a\" value (%llX) shall be 0x00010000 or 0xFFFF0000", matrix[0]);
+
+            if(matrix[3])
+              out->error("Matrix field of the TrackHeaderBox: \"a\" (%llX) or \"c\" (%llX) shall be equal to 0", matrix[0], matrix[3]);
+          }
+          else if(matrix[3] != 0x00010000 && matrix[3] != 0xffff0000)
+            out->error("Matrix field of the TrackHeaderBox: \"c\" value (%llX) shall be 0x00010000 or 0xFFFF0000 (\"a\" is 0)", matrix[3]);
+
+          // either b or d but not both shall be equal to 0x00010000 or 0xFFFF0000, while the remaining one of b and d shall be equal to 0;
+          if(matrix[1])
+          {
+            if(matrix[1] != 0x00010000 && matrix[1] != 0xffff0000)
+              out->error("Matrix field of the TrackHeaderBox: \"b\" value (%llX) shall be 0x00010000 or 0xFFFF0000", matrix[1]);
+
+            if(matrix[4])
+              out->error("Matrix field of the TrackHeaderBox: \"b\" (%llX) or \"d\" (%llX) shall be equal to 0", matrix[1], matrix[4]);
+          }
+          else if(matrix[4] != 0x00010000 && matrix[4] != 0xffff0000)
+            out->error("Matrix field of the TrackHeaderBox: \"d\" value (%llX) shall be 0x00010000 or 0xFFFF0000 (\"b\" is 0)", matrix[5]);
+
+          if(matrix[2])
+            out->error("Matrix field of the TrackHeaderBox: \"u\" value (%llX) shall be 0", matrix[2]);
+
+          if(matrix[5])
+            out->error("Matrix field of the TrackHeaderBox: \"v\" value (%llX) shall be 0", matrix[5]);
+
+          if(matrix[8] != 0x40000000)
+            out->error("Matrix field of the TrackHeaderBox: \"w\" value (%llX) shall be 0x40000000", matrix[8]);
+        }
+      }
+    },
+    {
       "Section 7.2.1.9\n"
       "ItemInfoBox "
       "Version 0 or 1 of this box is required by ISO/IEC 23008-12",
