@@ -82,7 +82,9 @@ static const SpecDesc specHeif =
     {
       "Section 10..2.1.1\n"
       "Files shall contain the brand 'mif1' in the compatible brands array of the\n"
-      "FileTypeBox.",
+      "FileTypeBox.\n"
+      "/!\\ this rule doesn't look for 'mif1' brands rule-conformance:\n"
+      "     if a brand is absent then its conformance rules won't be checked here /!\\",
       [] (Box const& root, IReport* out)
       {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))

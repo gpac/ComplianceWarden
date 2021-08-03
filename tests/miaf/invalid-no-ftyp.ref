@@ -19,6 +19,8 @@ the following (in any order): 'mif1' (specified in ISO/IEC 23008-12)
 [...]
 Files conforming to the general restrictions in clause 7 shall include
 the brand 'miaf' in the compatible_brands in the FileTypeBox.
+/!\ this rule doesn't look for 'mif1' and 'miaf' brands rule-conformance:
+     if a brand is absent then its conformance rules won't be checked here /!\
 
 +--------------------------------------+
 |           heif validation            |
@@ -38,6 +40,8 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 [heif][Rule #0] Section 10..2.1.1
 Files shall contain the brand 'mif1' in the compatible brands array of the
 FileTypeBox.
+/!\ this rule doesn't look for 'mif1' brands rule-conformance:
+     if a brand is absent then its conformance rules won't be checked here /!\
 
 [heif][Rule #8] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a

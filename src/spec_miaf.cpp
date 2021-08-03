@@ -81,7 +81,9 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     "the following (in any order): 'mif1' (specified in ISO/IEC 23008-12)\n"
     "[...]\n"
     "Files conforming to the general restrictions in clause 7 shall include\n"
-    "the brand 'miaf' in the compatible_brands in the FileTypeBox.",
+    "the brand 'miaf' in the compatible_brands in the FileTypeBox.\n"
+    "/!\\ this rule doesn't look for 'mif1' and 'miaf' brands rule-conformance:\n"
+    "     if a brand is absent then its conformance rules won't be checked here /!\\",
     [] (Box const& root, IReport* out)
     {
       if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp"))

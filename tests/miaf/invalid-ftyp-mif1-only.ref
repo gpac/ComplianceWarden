@@ -19,6 +19,8 @@ the following (in any order): 'mif1' (specified in ISO/IEC 23008-12)
 [...]
 Files conforming to the general restrictions in clause 7 shall include
 the brand 'miaf' in the compatible_brands in the FileTypeBox.
+/!\ this rule doesn't look for 'mif1' and 'miaf' brands rule-conformance:
+     if a brand is absent then its conformance rules won't be checked here /!\
 
 +--------------------------------------+
 |           heif validation            |

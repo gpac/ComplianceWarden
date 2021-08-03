@@ -916,8 +916,8 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
   },
   {
     "Section 5.3\n"
-    "If the image sequences are made only of AV1 Samples marked as sync, then the\n"
-    "brand avio should be used",
+    "If the image sequences are made only of AV1 Samples marked as sync, then\n"
+    "the brand avio should be used",
     [] (Box const& root, IReport* out)
     {
       std::vector<uint32_t> av1AlphaTrackIds;
