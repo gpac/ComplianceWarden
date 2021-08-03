@@ -4,14 +4,14 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "a" value (11111111) shall be 0x00010000 or 0xFFFF0000
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "a" (11111111) or "c" (11111111) shall be equal to 0
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "b" value (11111111) shall be 0x00010000 or 0xFFFF0000
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "b" (11111111) or "d" (11111111) shall be equal to 0
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "u" value (11111111) shall be 0
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "v" value (11111111) shall be 0
-[heif][Rule #4] Error: Matrix field of the TrackHeaderBox: "w" value (11111111) shall be 0x40000000
-[heif][Rule #9] Error: primary item (Item_ID=0) has no associated item_type.
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "a" value (11111111) shall be 0x00010000 or 0xFFFF0000
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "a" (11111111) or "c" (11111111) shall be equal to 0
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "b" value (11111111) shall be 0x00010000 or 0xFFFF0000
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "b" (11111111) or "d" (11111111) shall be equal to 0
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "u" value (11111111) shall be 0
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "v" value (11111111) shall be 0
+[heif][Rule #5] Error: Matrix field of the TrackHeaderBox: "w" value (11111111) shall be 0x40000000
+[heif][Rule #10] Error: primary item (Item_ID=0) has no associated item_type.
 
 ========================================
 [heif] 8 error(s), 0 warning(s).
@@ -19,10 +19,10 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #4] Section 7.2.1
+[heif][Rule #5] Section 7.2.1
 The following constraints on the value of matrix [of the TrackHeaderBox] shall be obeyed
 
-[heif][Rule #9] Section 6.2
+[heif][Rule #10] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 

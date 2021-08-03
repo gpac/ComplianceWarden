@@ -31,9 +31,9 @@ The primary item shall be a MIAF master image item.
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 [heif][Rule #3] Error: 'hdlr' not found in MetaBox
-[heif][Rule #5] Error: ItemInfoBox is required
-[heif][Rule #9] Error: No primary item.
-[heif][Rule #22] Error: Wrong arity for boxes { hdlr } in parents { meta }: expected in range [1-1], found 0
+[heif][Rule #6] Error: ItemInfoBox is required
+[heif][Rule #10] Error: No primary item.
+[heif][Rule #23] Error: Wrong arity for boxes { hdlr } in parents { meta }: expected in range [1-1], found 0
 
 ========================================
 [heif] 4 error(s), 0 warning(s).
@@ -44,14 +44,14 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 [heif][Rule #3] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
 
-[heif][Rule #5] Section 7.2.1.9
+[heif][Rule #6] Section 7.2.1.9
 ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 
-[heif][Rule #9] Section 6.2
+[heif][Rule #10] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
-[heif][Rule #22] Section 9.3.1.1Box structure and arity for boxes defined in HEIF
+[heif][Rule #23] Section 9.3.1.1Box structure and arity for boxes defined in HEIF
 This is rather a safety check than a formal rule.
 
 +--------------------------------------+

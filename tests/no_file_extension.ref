@@ -38,8 +38,8 @@ all body data for coded images (including thumbnails) shall be in a MediaDataBox
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #16] Warning: Filename "heif_no_ext" has no extension
-[heif][Rule #16] Warning: File extension for "heif_no_ext" doesn't match: expecting one of 'heif hif ', got ''
+[heif][Rule #17] Warning: Filename "heif_no_ext" has no extension
+[heif][Rule #17] Warning: File extension for "heif_no_ext" doesn't match: expecting one of 'heif hif ', got ''
 
 ========================================
 [heif] 0 error(s), 2 warning(s).
@@ -47,7 +47,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #16] Sections C.2, D.2, F.2, G.2
+[heif][Rule #17] Sections C.2, D.2, F.2, G.2
 File extensions to identify the presence of specific image coding formats
 
 +--------------------------------------+

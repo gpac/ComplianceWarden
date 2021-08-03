@@ -262,6 +262,90 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 6.6.2.1\n"
+      "A derived image item of the item_type value 'iden' (identity transformation)\n"
+      "may be used when it is desired to use transformative properties to derive\n"
+      "an image item. The derived image item shall have no item body (i.e. no extents)\n"
+      "and reference_count for the 'dimg' item  reference of a 'iden' derived image\n"
+      "item shall be equal to 1.",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> idenItemIds;
+
+        // find iden items
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                  {
+                    uint32_t itemId = 0;
+
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemId = sym.value;
+                      else if(!strcmp(sym.name, "item_type"))
+                        if(sym.value == FOURCC("iden"))
+                          idenItemIds.push_back(itemId);
+                    }
+                  }
+
+        // the derived image item shall have no item body (i.e. no extents)
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iloc"))
+              {
+                // for MIAF coded image items construction_method==0 and data_reference_index==0
+                uint32_t itemId = 0;
+
+                for(auto& sym : metaChild.syms)
+                {
+                  if(!strcmp(sym.name, "item_ID"))
+                    itemId = sym.value;
+
+                  if(std::find(idenItemIds.begin(), idenItemIds.end(), sym.value) != idenItemIds.end())
+                    if(!strcmp(sym.name, "extent_count"))
+                      if(sym.value != 0)
+                        out->error("The derived image item [ID=%u] shall have no item body (i.e. no extents), found %lld", itemId, sym.value);
+                }
+              }
+
+        // reference_count for the 'dimg' item reference of a 'iden' derived image item shall be equal to 1
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t boxType = -1, itemId = 0;
+
+                for(auto& sym : metaChild.syms)
+                {
+                  if(!strcmp(sym.name, "box_type"))
+                    boxType = sym.value;
+
+                  if(boxType != FOURCC("dimg"))
+                    continue;
+
+                  if(!strcmp(sym.name, "from_item_ID"))
+                  {
+                    if(std::find(idenItemIds.begin(), idenItemIds.end(), sym.value) == idenItemIds.end())
+                      boxType = -1; // abort
+
+                    itemId = sym.value;
+                  }
+
+                  if(!strcmp(sym.name, "reference_count"))
+                    if(sym.value != 1)
+                      out->error("reference_count for the 'dimg' item reference of a 'iden' derived image item (ID=%u) "
+                                 "shall be equal to 1: found %lld", itemId, sym.value);
+                }
+              }
+      }
+    },
+    {
       "Section 7.2.1\n"
       "The following constraints on the value of matrix [of the TrackHeaderBox] shall be obeyed",
       [] (Box const& root, IReport* out)

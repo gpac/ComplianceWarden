@@ -4,7 +4,7 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #11] Error: Thumbnail image is linked to another thumbnail image (from item_ID=1 to item_ID=1)
+[heif][Rule #12] Error: Thumbnail image is linked to another thumbnail image (from item_ID=1 to item_ID=1)
 
 ========================================
 [heif] 1 error(s), 0 warning(s).
@@ -12,7 +12,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #11] Section 6.4.4
+[heif][Rule #12] Section 6.4.4
 A thumbnail image shall not be linked to another thumbnail image with
 the 'thmb' item reference.
 

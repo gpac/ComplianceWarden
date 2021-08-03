@@ -4,16 +4,16 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #5] Error: Version 0 or 1 of ItemInfoBox is required
-[heif][Rule #5] Error: ItemInfoBox is required
-[heif][Rule #9] Error: primary item (Item_ID=1) has no associated item_type.
-[heif][Rule #24] Error: 'meta' version shall be 0, found 1
-[heif][Rule #24] Error: 'hdlr' version shall be 0, found 1
-[heif][Rule #24] Error: 'iloc' version shall be 0, 1 or 2, found 3
-[heif][Rule #24] Error: 'iinf' version shall be 0 or 1, found 2
-[heif][Rule #24] Error: 'infe' version shall be 2 or 3, found 1
-[heif][Rule #24] Error: 'pitm' version shall be 0 or 1, found 2
-[heif][Rule #25] Error: 'ftyp' minor_version shall be 0, found 512
+[heif][Rule #6] Error: Version 0 or 1 of ItemInfoBox is required
+[heif][Rule #6] Error: ItemInfoBox is required
+[heif][Rule #10] Error: primary item (Item_ID=1) has no associated item_type.
+[heif][Rule #25] Error: 'meta' version shall be 0, found 1
+[heif][Rule #25] Error: 'hdlr' version shall be 0, found 1
+[heif][Rule #25] Error: 'iloc' version shall be 0, 1 or 2, found 3
+[heif][Rule #25] Error: 'iinf' version shall be 0 or 1, found 2
+[heif][Rule #25] Error: 'infe' version shall be 2 or 3, found 1
+[heif][Rule #25] Error: 'pitm' version shall be 0 or 1, found 2
+[heif][Rule #26] Error: 'ftyp' minor_version shall be 0, found 512
 
 ========================================
 [heif] 10 error(s), 0 warning(s).
@@ -21,17 +21,17 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #5] Section 7.2.1.9
+[heif][Rule #6] Section 7.2.1.9
 ItemInfoBox Version 0 or 1 of this box is required by ISO/IEC 23008-12
 
-[heif][Rule #9] Section 6.2
+[heif][Rule #10] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
-[heif][Rule #24] Section 10.2.1.1
+[heif][Rule #25] Section 10.2.1.1
 Other versions of the boxes shall not be present.
 
-[heif][Rule #25] Section 10.1
+[heif][Rule #26] Section 10.1
 When any of the brands specified in this document is in the major_brand,
 the minor_version shall be set to zero
 

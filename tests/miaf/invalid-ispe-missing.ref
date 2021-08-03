@@ -22,9 +22,9 @@ Every image item shall be associated with a Image spatial extents property
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #6] Error: image spatial extents property ("ispe") not detected.
-[heif][Rule #9] Error: primary item (Item_ID=0) has no associated item_type.
-[heif][Rule #23] Error: Wrong arity for boxes { ispe } in parents { ipco }: expected in range [1-2147483647], found 0
+[heif][Rule #7] Error: image spatial extents property ("ispe") not detected.
+[heif][Rule #10] Error: primary item (Item_ID=0) has no associated item_type.
+[heif][Rule #24] Error: Wrong arity for boxes { ispe } in parents { ipco }: expected in range [1-2147483647], found 0
 
 ========================================
 [heif] 3 error(s), 0 warning(s).
@@ -32,15 +32,15 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #6] Section 6.5.3.1
+[heif][Rule #7] Section 6.5.3.1
 Every image item shall be associated with one [image spatial extents property],
 prior to the association of all transformative properties.
 
-[heif][Rule #9] Section 6.2
+[heif][Rule #10] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
-[heif][Rule #23] Box structure and arity for boxes defined in HEIF
+[heif][Rule #24] Box structure and arity for boxes defined in HEIF
 This is rather a safety check than a formal rule.
 
 +--------------------------------------+
