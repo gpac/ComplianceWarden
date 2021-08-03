@@ -878,7 +878,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("ftyp"))
           for(auto& sym : box.syms)
-            if(!strcmp(sym.name, "brand"))
+            if(!strcmp(sym.name, "major_brand"))
               switch(sym.value)
               {
               case FOURCC("avif"): case FOURCC("avis"): case FOURCC("avio"):

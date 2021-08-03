@@ -205,7 +205,7 @@ const std::initializer_list<RuleDesc> getRulesAvifProfiles(const SpecDesc & /*sp
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
             for(auto& sym : box.syms)
-              if(!strcmp(sym.name, "brand") || !strcmp(sym.name, "compatible_brand"))
+              if(!strcmp(sym.name, "major_brand") || !strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("avif") || sym.value == FOURCC("avis") || sym.value == FOURCC("avio"))
                   found = true;
 

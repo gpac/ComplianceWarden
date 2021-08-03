@@ -37,8 +37,8 @@ void parseRaw(IReader* br)
 
 void parseFtyp(IReader* br)
 {
-  br->sym("brand", 32);
-  br->sym("version", 32);
+  br->sym("major_brand", 32);
+  br->sym("minor_version", 32);
 
   while(!br->empty())
     br->sym("compatible_brand", 32);
