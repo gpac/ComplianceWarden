@@ -788,6 +788,21 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 9.3.1.1"
+      "Box structure and arity for boxes defined in HEIF\n"
+      "This is rather a safety check than a formal rule.",
+      [] (Box const& root, IReport* out)
+      {
+        boxCheck(root, out, { FOURCC("ftyp") }, { FOURCC("root") }, { 1, 1 });
+        boxCheck(root, out, { FOURCC("meta") }, { FOURCC("root") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("hdlr") }, { FOURCC("meta") }, { 1, 1 });
+        boxCheck(root, out, { FOURCC("iloc") }, { FOURCC("meta") }, { 0, INT32_MAX });
+        boxCheck(root, out, { FOURCC("iinf") }, { FOURCC("meta") }, { 0, 1 });
+        boxCheck(root, out, { FOURCC("infe") }, { FOURCC("iinf") }, { 0, INT32_MAX });
+        boxCheck(root, out, { FOURCC("pitm") }, { FOURCC("meta") }, { 0, 1 });
+      }
+    },
+    {
       "Box structure and arity for boxes defined in HEIF\n"
       "This is rather a safety check than a formal rule.",
       [] (Box const& root, IReport* out)

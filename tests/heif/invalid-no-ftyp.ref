@@ -10,9 +10,10 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 [heif][Rule #4] Error: ItemInfoBox is required
 [heif][Rule #5] Error: image spatial extents property ("ispe") not detected.
 [heif][Rule #8] Error: No primary item.
+[heif][Rule #21] Error: Wrong arity for boxes { ftyp } in parents { root }: expected in range [1-1], found 0
 
 ========================================
-[heif] 6 error(s), 0 warning(s).
+[heif] 7 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -39,6 +40,9 @@ prior to the association of all transformative properties.
 [heif][Rule #8] Section 6.2
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
+
+[heif][Rule #21] Section 9.3.1.1Box structure and arity for boxes defined in HEIF
+This is rather a safety check than a formal rule.
 
 +--------------------------------------+
 |          isobmff validation          |
