@@ -876,7 +876,21 @@ static const SpecDesc specHeif =
                   out->error("'pitm' version shall be 0 or 1, found %lld", field.value);
         }
       }
-    }
+    },
+    {
+      "Section 10.1\n"
+      "When any of the brands specified in this document is in the major_brand,\n"
+      "the minor_version shall be set to zero",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "minor_version"))
+                if(sym.value != 0)
+                  out->error("'ftyp' minor_version shall be 0, found %lld", sym.value);
+      }
+    },
   },
   nullptr,
 };

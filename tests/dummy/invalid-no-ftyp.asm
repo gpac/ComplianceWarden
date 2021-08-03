@@ -5,7 +5,7 @@ dd BE(ftyp_end - ftyp_start)
 db "ftip" ; error: mistyped 'ftyp'
 
 db "isom"
-dd BE(0x200)
+dd BE(0x00)
 db "isom", "iso2", "mp41"
 ftyp_end:
 

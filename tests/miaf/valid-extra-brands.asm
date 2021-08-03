@@ -5,7 +5,7 @@ dd BE(ftyp_end - ftyp_start)
 db "ftyp"
 
 db "isom"
-dd BE(0x200)
+dd BE(0x00)
 db "mif1", "miaf", "dumy", "dumy", "miaf"
 
 ftyp_end:
