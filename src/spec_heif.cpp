@@ -1243,7 +1243,7 @@ static const SpecDesc specHeif =
       }
     },
     {
-      "Section 6.4"
+      "Section 6.4\n"
       "Box structure and arity for boxes defined in HEIF\n"
       "This is rather a safety check than a formal rule.",
       [] (Box const& root, IReport* out)
@@ -1330,6 +1330,35 @@ static const SpecDesc specHeif =
               if(!strcmp(sym.name, "minor_version"))
                 if(sym.value != 0)
                   out->error("'ftyp' minor_version shall be 0, found %lld", sym.value);
+      }
+    },
+    {
+      "Section 9.4.1.1\n"
+      "Files shall contain the brand 'msf1' in the compatible brands:\n"
+      "- At least one track of handler type 'pict', as defined in 7.2, is required.\n"
+      "- It is required that 'iso8' is present among the compatible brands array.",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("msf1"))
+                {
+                  checkRuleSection(specHeif, "7.2.", root);
+
+                  bool iso8BrandFound = false;
+
+                  for(auto& box : root.children)
+                    if(box.fourcc == FOURCC("ftyp"))
+                      for(auto& sym : box.syms)
+                        if(!strcmp(sym.name, "compatible_brand"))
+                          if(sym.value == FOURCC("iso8"))
+                            iso8BrandFound = true;
+
+                  if(!iso8BrandFound)
+                    out->error("'msf1' brand: 'iso8' shall be present among the compatible brands array");
+                }
       }
     },
   },

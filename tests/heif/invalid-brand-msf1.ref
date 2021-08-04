@@ -1,0 +1,34 @@
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
+
+[heif][Rule #3] Error: The handler type for the MetaBox shall be 'pict'
+[heif][Rule #31] Error: 'msf1' brand: 'iso8' shall be present among the compatible brands array
+
+========================================
+[heif] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[heif][Rule #3] Section 6.2
+The handler type for the MetaBox shall be 'pict'.
+
+[heif][Rule #31] Section 9.4.1.1
+Files shall contain the brand 'msf1' in the compatible brands:
+- At least one track of handler type 'pict', as defined in 7.2, is required.
+- It is required that 'iso8' is present among the compatible brands array.
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

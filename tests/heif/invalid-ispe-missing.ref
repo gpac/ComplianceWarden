@@ -22,7 +22,8 @@ prior to the association of all transformative properties.
 The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
-[heif][Rule #28] Box structure and arity for boxes defined in HEIF
+[heif][Rule #28] Section 6.4
+Box structure and arity for boxes defined in HEIF
 This is rather a safety check than a formal rule.
 
 +--------------------------------------+

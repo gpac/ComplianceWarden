@@ -10,7 +10,7 @@ ftyp_start:
     db 0x61, 0x76, 0x30, 0x31 ; "compatible_brand(32)" ('av01') 
     db 0x61, 0x76, 0x69, 0x73 ; "compatible_brand(32)" ('avis') 
     db 0x6D, 0x73, 0x66, 0x31 ; "compatible_brand(32)" ('msf1')  
-    db 0x69, 0x73, 0x6F, 0x38 ; "compatible_brand(32)" ('iso8')
+    db 0x69, 0x73, 0x6F, 0x37 ; "compatible_brand(32)" ('iso7')
     db 0x6D, 0x69, 0x61, 0x66 ; "compatible_brand(32)" ('miaf') 
     db 0x4D, 0x41, 0x31, 0x42 ; "compatible_brand(32)" ('MA1B') 
 ftyp_end:
@@ -25,7 +25,7 @@ meta_start:
         db 0x00 ; "version(8)" 
         db 0x00, 0x00, 0x00 ; "flags(24)" 
         db 0x00, 0x00, 0x00, 0x00 ; "pre_defined(32)" 
-        db 0x70, 0x69, 0x63, 0x74 ; "handler_type(32)" ('pict') 
+        db 0x70, 0x69, 0x63, 0x6f ; "handler_type(32)" ('pico') 
         db 0x00, 0x00, 0x00, 0x00 ; "reserved1(32)" 
         db 0x00, 0x00, 0x00, 0x00 ; "reserved2(32)" 
         db 0x00, 0x00, 0x00, 0x00 ; "reserved3(32)" 
@@ -66,7 +66,8 @@ meta_start:
         db 0x00, 0x03 ; "item_ID(16)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         dd BE(mdat_start - ftyp_start + 8) ; "base_offset(32)" 
-        db 0x00, 0x01 ; "extent_count(16)" 
+        db 0x00, 0x02 ; "extent_count(16)" 
+        db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
         db 0x00, 0x00, 0x00, 0x00 ; "extent_length(32)" 
         db 0x00, 0x04 ; "item_ID(16)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
@@ -145,11 +146,7 @@ meta_start:
             av1C_start:
                 dd BE(av1C_end - av1C_start)
                 dd "av1C"
-                db 0x81 ; marker(1) version(7) 
-                db 0x21 ; seq_profile(3) ('!') seq_level_idx_0(5) ('!') 
-                db 0x00 ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
-                db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
-                 ; configOBUs(0) 
+                db 0x00, 0x00, 0x00, 0x00
             av1C_end:
             auxC_start:
                 dd BE(auxC_end - auxC_start)
@@ -208,11 +205,7 @@ meta_start:
             av1C2_start:
                 dd BE(av1C2_end - av1C2_start)
                 dd "av1C"
-                db 0x81 ; marker(1) version(7) 
-                db 0x01 ; seq_profile(3) seq_level_idx_0(5) 
-                db 0x1C ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
-                db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
-                 ; configOBUs(0) 
+                db 0x00, 0x00, 0x00, 0x00
             av1C2_end:
             pixi2_start:
                 dd BE(pixi2_end - pixi2_start)
@@ -701,7 +694,7 @@ moov_start:
                         db 0x00, 0x00, 0x00 ; "flags(24)" 
                         db 0x00, 0x00, 0x00, 0x01 ; "entry_count(32)" 
                         db 0x00, 0x00, 0x00, 0x30 ; "sample_count(32)" 
-                        db 0x00, 0x00, 0x03, 0xE7 ; "sample_delta(32)" 
+                        db 0x00, 0x00, 0x03, 0xE8 ; "sample_delta(32)" 
                     stts2_end:
                     stss2_start:
                         dd BE(stss2_end - stss2_start)
