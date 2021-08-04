@@ -11,6 +11,7 @@ std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, std::vector<uint32_t> parent4CCs, std::pair<unsigned, unsigned> expectedAritySpan);
+bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
 
 namespace
 {
@@ -1102,7 +1103,7 @@ static const SpecDesc specHeif =
       }
     },
     {
-      "Sections C.2, D.2, F.2, G.2\n"
+      "Section C.2, D.2, F.2, G.2\n"
       "File extensions to identify the presence of specific image coding formats",
       [] (Box const& root, IReport* out)
       {
@@ -1242,6 +1243,7 @@ static const SpecDesc specHeif =
       }
     },
     {
+      "Section 6.4"
       "Box structure and arity for boxes defined in HEIF\n"
       "This is rather a safety check than a formal rule.",
       [] (Box const& root, IReport* out)
