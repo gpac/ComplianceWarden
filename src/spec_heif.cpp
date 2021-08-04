@@ -2,6 +2,7 @@
 #include "spec.h"
 #include "fourcc.h"
 #include "bit_reader.h"
+#include "spec_utils_derivations.h"
 #include <algorithm> // std::find
 
 extern std::vector<uint32_t> visualSampleEntryFourccs;
@@ -13,7 +14,7 @@ void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, st
 
 namespace
 {
-void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
+void checkDerivation(Box const& root, IReport* out, uint32_t fourcc, std::function<void(uint32_t, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>>)> check)
 {
   std::vector<uint32_t> itemIds;
 
@@ -56,20 +57,34 @@ void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
 
     for(auto& span : spans)
     {
-      if(span.second < 1)
+      if(span.second == 0)
       {
         out->error("Image data (itemID=%u): found invalid span size %lld\n", itemId, span.second);
         continue;
       }
     }
 
-    // since we previously checked there is at least 1 byte, assume version in the first span
-    auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
-    auto version = br.u(8);
-
-    if(version != 0)
-      out->error("'%s' version shall be equal to 0, found %lld (itemId=%u)", toString(fourcc).c_str(), version, itemId);
+    check(itemId, spans);
   }
+}
+
+void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
+{
+  auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
+      if(spans[0].second == 0)
+      {
+        out->error("Image data (itemID=%u): found invalid span size %lld\n", itemId, spans[0].second);
+        return;
+      }
+
+      auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+      auto version = br.u(8);
+
+      if(version != 0)
+        out->error("'%s' version shall be equal to 0, found %lld (itemId=%u)", toString(fourcc).c_str(), version, itemId);
+    };
+
+  checkDerivation(root, out, fourcc, check);
 }
 }
 
@@ -343,6 +358,264 @@ static const SpecDesc specHeif =
                                  "shall be equal to 1: found %lld", itemId, sym.value);
                 }
               }
+      }
+    },
+    {
+      "Section 6.6.2.3.1\n"
+      "[tiles] the value of reference_count shall be equal to rows*columns",
+      [] (Box const& root, IReport* out)
+      {
+        // reference_count
+        std::map<uint32_t /*itemId*/, int> refCounts;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref"))
+              {
+                uint32_t boxType = -1, itemId = 0;
+
+                for(auto& sym : metaChild.syms)
+                {
+                  if(!strcmp(sym.name, "box_type"))
+                    boxType = sym.value;
+
+                  if(boxType != FOURCC("dimg"))
+                    continue;
+
+                  if(!strcmp(sym.name, "from_item_ID"))
+                    itemId = sym.value;
+
+                  if(!strcmp(sym.name, "reference_count"))
+                    refCounts[itemId] = sym.value;
+                }
+              }
+
+        auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
+            if(spans[0].second == 0)
+            {
+              out->error("Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
+              return;
+            }
+
+            if(spans.size() > 1)
+              out->error("ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
+
+            if(spans[0].second < 2)
+            {
+              out->error("ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans.size());
+              return;
+            }
+
+            auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+            br.u(8);
+            auto const flags = br.u(8);
+            const int fieldLength = ((flags & 1) + 1) * 2;
+
+            if(spans[0].second < 4 + fieldLength * 2)
+            {
+              out->error("ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, 4 + fieldLength * 2);
+              return;
+            }
+
+            auto const rows = 1 + br.u(8);
+            auto const columns = 1 + br.u(8);
+
+            if(rows * columns != refCounts[itemId])
+              out->error("Tile [itemId=%u]: the value of reference_count(%d) shall be equal to rows(%d)*columns(%d)=%d",
+                         itemId, refCounts[itemId], rows, columns, rows * columns);
+          };
+
+        checkDerivation(root, out, FOURCC("grid"), check);
+      }
+    },
+    {
+      "Section 6.6.2.3.1\n"
+      "Tiles: the values of to_item_ID [shall] identify the input images",
+      [] (Box const& root, IReport* out)
+      {
+        std::map<uint32_t /*itemID*/, uint32_t /*fourcc*/> itemFourccs;
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                  {
+                    uint32_t itemId = 0;
+
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemId = sym.value;
+                      else if(!strcmp(sym.name, "item_type"))
+                        itemFourccs.insert({ itemId, sym.value });
+                    }
+                  }
+
+        auto d = getDerivationsInfo(root, FOURCC("dimg"));
+
+        for(auto& item : d.itemRefs)
+          for(auto toItemId : item.second)
+          {
+            // we need to check the derivation graph in case some 'iref's are missing
+            auto graph = buildDerivationGraph(root);
+
+            auto check = [&] (const std::list<uint32_t> &) {};
+
+            auto onError = [&] (const std::list<uint32_t>& visited) {
+                out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+              };
+
+            std::list<uint32_t> visited;
+
+            if(!graph.visit(toItemId, visited, onError, check))
+              out->error("Tiles: to_item_ID=%u derivation chain is cyclic", toItemId);
+            else if(!isVisualSampleEntry(itemFourccs[toItemId]) && itemFourccs[toItemId] != FOURCC("grid") && itemFourccs[toItemId] != FOURCC("dimg"))
+              out->error("Tiles: coded image (ItemID=%u) has type \"%s\" which doesn't seem to identify an input image. Derivation graph: %s",
+                         toItemId, toString(itemFourccs[toItemId]).c_str(), graph.display(visited).c_str());
+          }
+      }
+    },
+    {
+      "Section 6.6.2.3.1\n"
+      "Tiles: all input images shall have exactly the same width and height",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> gridItemIds;
+
+        // find 'grid' items
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                  {
+                    uint32_t itemId = 0;
+
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemId = sym.value;
+                      else if(!strcmp(sym.name, "item_type"))
+                        if(sym.value == FOURCC("grid"))
+                          gridItemIds.push_back(itemId);
+                    }
+                  }
+
+        // check ispe for each grid item
+        auto d = getDerivationsInfo(root, FOURCC("dimg"));
+
+        for(auto gridItemId : gridItemIds)
+        {
+          Resolution resIspe;
+
+          for(auto& iref : d.itemRefs)
+            if(iref.first == gridItemId)
+              for(auto itemId : iref.second)
+              {
+                if(resIspe.width == Resolution().width)
+                  resIspe = d.itemRes[itemId];
+                else if(d.itemRes[itemId].width != resIspe.width || d.itemRes[itemId].height != resIspe.height)
+                  out->error("Tiles [ItemId]: all input images shall have exactly the same width and height\n"
+                             "but found %dx%d for itemID=%u in 'ispe'",
+                             gridItemId, resIspe.width, resIspe.height, d.itemRes[itemId].width, d.itemRes[itemId].height, itemId);
+              }
+        }
+      }
+    },
+    {
+      "Section 6.6.2.3.1: tiles\n"
+      "The tiled input images shall completely “cover” the reconstructed image grid\n"
+      "canvas, where tile_width*columns is greater than or equal to output_width and\n"
+      "tile_height*rows is greater than or equal to output_height.",
+      [] (Box const& root, IReport* out)
+      {
+        std::vector<uint32_t> gridItemIds;
+
+        // find 'grid' items
+
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("meta"))
+            for(auto& metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iinf"))
+                for(auto& iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe"))
+                  {
+                    uint32_t itemId = 0;
+
+                    for(auto& sym : iinfChild.syms)
+                    {
+                      if(!strcmp(sym.name, "item_ID"))
+                        itemId = sym.value;
+                      else if(!strcmp(sym.name, "item_type"))
+                        if(sym.value == FOURCC("grid"))
+                          gridItemIds.push_back(itemId);
+                    }
+                  }
+
+        // find grids resolutions and layouts
+        std::map<uint32_t /*ItemID*/, Resolution> gridResolutions;
+        std::map<uint32_t /*ItemID*/, std::pair<int /*numRows*/, int /*numCols*/>> gridLayouts;
+
+        auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
+            if(spans[0].second == 0)
+            {
+              out->error("Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
+              return;
+            }
+
+            if(spans.size() > 1)
+              out->error("ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
+
+            if(spans[0].second < 2)
+            {
+              out->error("ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans.size());
+              return;
+            }
+
+            auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+            br.u(8);
+            auto const flags = br.u(8);
+            const int fieldLength = ((flags & 1) + 1) * 2;
+
+            if(spans[0].second < 4 + fieldLength * 2)
+            {
+              out->error("ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, 4 + fieldLength * 2);
+              return;
+            }
+
+            auto const rows_minus_one = br.u(8);
+            auto const columns_minus_one = br.u(8);
+            const int output_width = br.u(fieldLength * 8);
+            const int output_height = br.u(fieldLength * 8);
+
+            gridResolutions[itemId] = Resolution { output_width, output_height };
+            gridLayouts[itemId] = { rows_minus_one + 1, columns_minus_one + 1 };
+          };
+
+        checkDerivation(root, out, FOURCC("grid"), check);
+
+        // ensure each grid item is covered: we know from previous tests that sizes are constant and consistent
+        auto d = getDerivationsInfo(root, FOURCC("dimg"));
+
+        for(auto gridItemId : gridItemIds)
+          for(auto& iref : d.itemRefs)
+            if(iref.first == gridItemId)
+            {
+              for(auto itemId : iref.second)
+                if(d.itemRes[itemId].width * gridLayouts[gridItemId].second < gridResolutions[gridItemId].width)
+                  out->error("grid (itemID=%u) width(%d) not covered by tile (ItemId=%u) width(%d)*numColumns(%d)=%d",
+                             gridItemId, itemId, gridResolutions[gridItemId].width,
+                             d.itemRes[itemId].width, gridLayouts[gridItemId].second, d.itemRes[itemId].width * gridLayouts[gridItemId].second);
+                else if(d.itemRes[itemId].height * gridLayouts[gridItemId].first < gridResolutions[gridItemId].height)
+                  out->error("grid (itemID=%u) height(%d) not covered by tile (ItemId=%u) height(%d)*numRows(%d)=%d",
+                             gridItemId, itemId, gridResolutions[gridItemId].height,
+                             d.itemRes[itemId].height, gridLayouts[gridItemId].first, d.itemRes[itemId].height * gridLayouts[gridItemId].first);
+            }
       }
     },
     {

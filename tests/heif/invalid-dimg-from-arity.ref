@@ -4,7 +4,7 @@
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
-[heif][Rule #13] Error: The number of SingleItemTypeReferenceBoxes with the box type 'dimg' and from_item_ID=2 found more than once
+[heif][Rule #17] Error: The number of SingleItemTypeReferenceBoxes with the box type 'dimg' and from_item_ID=2 found more than once
 
 ========================================
 [heif] 1 error(s), 0 warning(s).
@@ -12,7 +12,7 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 ===== Involved rules descriptions:
 
-[heif][Rule #13] Section 6.4
+[heif][Rule #17] Section 6.4
 The number of SingleItemTypeReferenceBoxes with the box type 'dimg' and with the
 same value of from_item_ID shall not be greater than 1
 

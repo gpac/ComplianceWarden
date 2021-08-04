@@ -34,9 +34,11 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 [heif][Rule #4] Error: The derived image item [ID=2] shall have no item body (i.e. no extents), found 1
 [heif][Rule #4] Error: The derived image item [ID=3] shall have no item body (i.e. no extents), found 1
 [heif][Rule #4] Error: reference_count for the 'dimg' item reference of a 'iden' derived image item (ID=2) shall be equal to 1: found 2
+[heif][Rule #6] Error: Tiles: coded image (ItemID=1) has type "iden" which doesn't seem to identify an input image. Derivation graph: iden (2) -> iden (1)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=3) has type "iden" which doesn't seem to identify an input image. Derivation graph: iden (2) -> iden (3)
 
 ========================================
-[heif] 4 error(s), 0 warning(s).
+[heif] 6 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -47,6 +49,9 @@ may be used when it is desired to use transformative properties to derive
 an image item. The derived image item shall have no item body (i.e. no extents)
 and reference_count for the 'dimg' item  reference of a 'iden' derived image
 item shall be equal to 1.
+
+[heif][Rule #6] Section 6.6.2.3.1
+Tiles: the values of to_item_ID [shall] identify the input images
 
 +--------------------------------------+
 |          isobmff validation          |

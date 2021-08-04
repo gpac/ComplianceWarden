@@ -297,9 +297,22 @@ If derivations occur, they shall be in this order:
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
+[heif][Rule #6] Error: Tiles: coded image (ItemID=9) has type "iden" which doesn't seem to identify an input image. Derivation graph: iden (18) -> iovl (17) -> iden (15) -> grid (13) -> iden (9)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=10) has type "iden" which doesn't seem to identify an input image. Derivation graph: iden (18) -> iovl (17) -> iden (15) -> grid (13) -> iden (10)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=11) has type "iden" which doesn't seem to identify an input image. Derivation graph: grid (14) -> iden (11)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=12) has type "iden" which doesn't seem to identify an input image. Derivation graph: grid (14) -> iden (12)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=15) has type "iden" which doesn't seem to identify an input image. Derivation graph: iden (18) -> iovl (17) -> iden (15)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=16) has type "iden" which doesn't seem to identify an input image. Derivation graph: iden (18) -> iovl (17) -> iden (16)
+[heif][Rule #6] Error: Tiles: coded image (ItemID=17) has type "iovl" which doesn't seem to identify an input image. Derivation graph: iden (18) -> iovl (17)
+
 ========================================
-[heif] No errors.
+[heif] 7 error(s), 0 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[heif][Rule #6] Section 6.6.2.3.1
+Tiles: the values of to_item_ID [shall] identify the input images
 
 +--------------------------------------+
 |          isobmff validation          |

@@ -54,7 +54,7 @@ db 0x00, 0x00 ; data_reference_index(16)
 dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
 db 0x00, 0x01 ; extent_count(16) 
 ; extent_offset(0) 
-db 0x00, 0x00, 0x00, 0x01 ; extent_length(32) 
+db 0x00, 0x00, 0x00, 0x08 ; extent_length(32) 
 iloc_end:
 
 iref_start:
@@ -139,6 +139,11 @@ mdat_start:
 dd BE(mdat_end - mdat_start)
 db "mdat"
 db 0x00 ; derivation version
+db 0x00 ; dimg flags
+db 0x00 ; dimg rows_minus_one
+db 0x00 ; dimg columns_minus_one
+db 0x00, 0x00 ; dimg output_width
+db 0x00, 0x00 ; dimg output_height
 mdat_end:
 
 ; vim: syntax=nasm

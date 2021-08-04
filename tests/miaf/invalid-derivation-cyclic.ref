@@ -35,9 +35,17 @@ If derivations occur, they shall be in this order:
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
+[heif][Rule #6] Error: Detected error in derivations: iden (2) -> iden (2)
+[heif][Rule #6] Error: Tiles: to_item_ID=2 derivation chain is cyclic
+
 ========================================
-[heif] No errors.
+[heif] 2 error(s), 0 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[heif][Rule #6] Section 6.6.2.3.1
+Tiles: the values of to_item_ID [shall] identify the input images
 
 +--------------------------------------+
 |          isobmff validation          |

@@ -24,3 +24,17 @@ struct DerivationGraph
 
 DerivationGraph buildDerivationGraph(Box const& root);
 
+struct Resolution
+{
+  int width = -1, height = -1;
+};
+
+struct Derivations
+{
+  std::map<int /*propertyIndex*/, Resolution> resolutions;
+  std::map<uint32_t /*item_ID*/, Resolution> itemRes;
+  std::map<uint32_t /*from_item_ID*/, std::vector<uint32_t> /*thmb/dimg to_item_ID*/> itemRefs;
+};
+
+Derivations getDerivationsInfo(Box const& root, uint32_t irefTypeFourcc);
+
