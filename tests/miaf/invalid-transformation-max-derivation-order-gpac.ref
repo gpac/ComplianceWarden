@@ -5,9 +5,29 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
+[miaf][Rule #33] Error: An identity derivation shall not be derived immediately from another identity (item_ID=16). Derivation chain: iden (18) -> iovl (17) -> iden (16) -> iden (18) -> iovl (17) -> iden (15) -> grid (13) -> iden (10) -> av01 (2)
+[miaf][Rule #33] Error: An identity derivation shall not be derived immediately from another identity (item_ID=16). Derivation chain: iden (18) -> iovl (17) -> iden (16) -> iden (18) -> iovl (17) -> iden (15) -> grid (13) -> iden (10) -> av01 (2)
+[miaf][Rule #34] Error: Too many derivations: 8 (expected 5)
+[miaf][Rule #34] Error: Too many derivations: 8 (expected 5)
+
 ========================================
-[miaf] No errors.
+[miaf] 4 error(s), 0 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[miaf][Rule #33] Section 7.3.9
+An identity derivation shall not be derived immediately from another identity
+derivation
+
+[miaf][Rule #34] Section 7.3.11.1
+If derivations occur, they shall be in this order:
+- mandatory coded image(s)
+- optional identity derivation (subclause 7.3.11.2)
+- optional grid (subclause 7.3.11.4)
+- optional identity derivation (subclause 7.3.11.2)
+- optional overlay (subclause 7.3.11.3)
+- optional identity derivation (subclause 7.3.11.2)
 
 +--------------------------------------+
 |           heif validation            |

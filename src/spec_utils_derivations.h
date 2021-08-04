@@ -10,7 +10,7 @@
 struct DerivationGraph
 {
   // returns false on cyclic
-  bool visit(uint32_t itemIdSrc, std::list<uint32_t> visited, std::function<void(const std::list<uint32_t> &)> onError, std::function<void(const std::list<uint32_t> &)> onTerminal);
+  bool visit(uint32_t itemIdSrc, std::list<uint32_t>& visited, std::function<void(const std::list<uint32_t> &)> onError, std::function<void(const std::list<uint32_t> &)> onTerminal);
   std::string display(const std::list<uint32_t>& visited);
 
   struct Connection

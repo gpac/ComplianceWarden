@@ -1052,8 +1052,8 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
               if(!foundTransformation)
                 foundTransformation = true;
               else
-                out->error("Transformative properties used in derivation chains shall only be associated\n"
-                           "with items that are not referenced by another derived item.\n"
+                out->error("Transformative properties used in derivation chains shall only be associated "
+                           "with items that are not referenced by another derived item. "
                            "However {item_ID=%u, type=%s} was preceeded by {item_ID=%u, type=%s}.",
                            v, toString(transformationItemIDs[v]).c_str(), lastTransformationItemId, toString(lastTransformation).c_str());
 
@@ -1072,7 +1072,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         std::list<uint32_t> visited;
 
         if(!graph.visit(c.src, visited, onError, check))
-          out->error("Detected cycle in derivations.");
+          out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
       }
     }
   }

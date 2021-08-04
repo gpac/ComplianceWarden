@@ -23,7 +23,8 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
             for(auto v : visited)
             {
               if(graph.itemTypes[v] == "iden" && last == "iden")
-                out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u)", v);
+                out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u). "
+                           "Derivation chain: %s", v, graph.display(visited).c_str());
 
               last = graph.itemTypes[v];
             }
@@ -38,7 +39,7 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
           std::list<uint32_t> visited;
 
           if(!graph.visit(c.src, visited, onError, check))
-            out->error("Detected cycle in derivations.");
+            out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
         }
       }
     },
@@ -103,7 +104,7 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
           std::list<uint32_t> visited;
 
           if(!graph.visit(c.src, visited, onError, check))
-            out->error("Detected cycle in derivations.");
+            out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
         }
       }
     },
@@ -133,7 +134,7 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
           uint32_t fourcc = type[3] + (type[2] << 8) + (type[1] << 16) + (type[0] << 24);
 
           if(!isVisualSampleEntry(fourcc))
-            out->error("All derivation chains shall originate from one or more coded images: itemID=%u doesn't (type=%s).", srcItemId, type);
+            out->error("All derivation chains shall originate from one or more coded images: itemID=%u doesn't (type=%s)", srcItemId, type);
         }
       }
     },

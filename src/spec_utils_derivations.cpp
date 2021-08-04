@@ -2,8 +2,9 @@
 #include <algorithm>
 #include <cstring>
 
-bool DerivationGraph::visit(uint32_t itemIdSrc, std::list<uint32_t> visited, std::function<void(const std::list<uint32_t> &)> onError, std::function<void(const std::list<uint32_t> &)> onTerminal)
+bool DerivationGraph::visit(uint32_t itemIdSrc, std::list<uint32_t>& visited, std::function<void(const std::list<uint32_t> &)> onError, std::function<void(const std::list<uint32_t> &)> onTerminal)
 {
+  auto const maxDerivations = 16;
   int newVisits = 0;
   visited.push_back(itemIdSrc);
 
@@ -11,7 +12,7 @@ bool DerivationGraph::visit(uint32_t itemIdSrc, std::list<uint32_t> visited, std
   {
     if(c.src == itemIdSrc)
     {
-      if(std::find(visited.begin(), visited.end(), c.dst) != visited.end()
+      if(c.src == c.dst || visited.size() > maxDerivations // cycles
          || !visit(c.dst, visited, onError, onTerminal))
       {
         visited.push_back(c.dst);

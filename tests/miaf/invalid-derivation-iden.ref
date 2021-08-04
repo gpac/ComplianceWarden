@@ -5,10 +5,10 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #33] Error: An identity derivation shall not be derived immediately from another identity (item_ID=2)
-[miaf][Rule #33] Error: An identity derivation shall not be derived immediately from another identity (item_ID=2)
-[miaf][Rule #35] Error: All derivation chains shall originate from one or more coded images: itemID=1 doesn't (type=iden).
-[miaf][Rule #35] Error: All derivation chains shall originate from one or more coded images: itemID=3 doesn't (type=iden).
+[miaf][Rule #33] Error: An identity derivation shall not be derived immediately from another identity (item_ID=2). Derivation chain: iden (2) -> iden (1)
+[miaf][Rule #33] Error: An identity derivation shall not be derived immediately from another identity (item_ID=2). Derivation chain: iden (2) -> iden (3)
+[miaf][Rule #35] Error: All derivation chains shall originate from one or more coded images: itemID=1 doesn't (type=iden)
+[miaf][Rule #35] Error: All derivation chains shall originate from one or more coded images: itemID=3 doesn't (type=iden)
 
 ========================================
 [miaf] 4 error(s), 0 warning(s).
