@@ -14,6 +14,28 @@ void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, st
 
 namespace
 {
+bool visitDerivationsBackward(DerivationGraph& graph, uint32_t itemIdDst, std::list<uint32_t>& visited, std::function<void(const std::list<uint32_t> &)> onError)
+{
+  auto const maxDerivations = 16;
+  visited.push_back(itemIdDst);
+
+  for(auto& c : graph.connections)
+  {
+    if(c.dst == itemIdDst)
+    {
+      if(c.dst == c.src || visited.size() > maxDerivations // cycles
+         || !visitDerivationsBackward(graph, c.src, visited, onError))
+      {
+        visited.push_back(c.src);
+        onError(visited);
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void checkDerivation(Box const& root, IReport* out, uint32_t fourcc, std::function<void(uint32_t, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>>)> check)
 {
   std::vector<uint32_t> itemIds;
@@ -462,19 +484,25 @@ static const SpecDesc specHeif =
             // we need to check the derivation graph in case some 'iref's are missing
             auto graph = buildDerivationGraph(root);
 
-            auto check = [&] (const std::list<uint32_t> &) {};
-
             auto onError = [&] (const std::list<uint32_t>& visited) {
                 out->error("Detected error in derivations: %s", graph.display(visited).c_str());
               };
 
-            std::list<uint32_t> visited;
+            std::list<uint32_t> visitedBackward;
 
-            if(!graph.visit(toItemId, visited, onError, check))
+            if(!visitDerivationsBackward(graph, toItemId, visitedBackward, onError))
+            {
               out->error("Tiles: to_item_ID=%u derivation chain is cyclic", toItemId);
-            else if(!isVisualSampleEntry(itemFourccs[toItemId]) && itemFourccs[toItemId] != FOURCC("grid") && itemFourccs[toItemId] != FOURCC("dimg"))
-              out->error("Tiles: coded image (ItemID=%u) has type \"%s\" which doesn't seem to identify an input image. Derivation graph: %s",
-                         toItemId, toString(itemFourccs[toItemId]).c_str(), graph.display(visited).c_str());
+            }
+            else
+            {
+              auto finalItemId = visitedBackward.back();
+
+              if(!isVisualSampleEntry(itemFourccs[finalItemId]))
+                out->error("Tiles: coded image (ItemID=%u derived from ItemID=%u) has type \"%s\" which doesn't seem to identify an input image. "
+                           "Backward derivation graph from ItemID=%u: %s",
+                           toItemId, finalItemId, toString(itemFourccs[finalItemId]).c_str(), toItemId, graph.display(visitedBackward).c_str());
+            }
           }
       }
     },
