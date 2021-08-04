@@ -5,9 +5,10 @@
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
 [heif][Rule #1] Error: AuxiliaryTypeInfoBox ('auxi') is absent (trackIDs: video=1, aux=2)
+[heif][Rule #33] Error: 'msf1' brand: this file shall conform to HEIF section 7, check the other errors for details
 
 ========================================
-[heif] 1 error(s), 0 warning(s).
+[heif] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -15,6 +16,10 @@ Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 [heif][Rule #1] Section 7.5.3.1
 The nature of the auxiliary track is announced by the AuxiliaryTypeInfoBox that
 shall be included in the sample entry of the auxiliary track.
+
+[heif][Rule #33] Section 10.3
+when a brand specified in ‎10.3 is among the compatible brands of a file,
+the requirements specified in Clause ‎7 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |

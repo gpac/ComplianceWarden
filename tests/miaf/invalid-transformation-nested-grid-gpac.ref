@@ -42,15 +42,20 @@ but found 1x64 for itemID=64 in 'ispe'
 but found 1x64 for itemID=64 in 'ispe'
 [heif][Rule #7] Error: Tiles [ItemId]: all input images shall have exactly the same width and height
 but found 1x64 for itemID=64 in 'ispe'
+[heif][Rule #32] Error: 'mif1' brand: this file shall conform to HEIF section 6, check the other errors for details
 
 ========================================
-[heif] 3 error(s), 0 warning(s).
+[heif] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
 [heif][Rule #7] Section 6.6.2.3.1
 Tiles: all input images shall have exactly the same width and height
+
+[heif][Rule #32] Section 10.2
+when a brand specified in ‎10.2 is among the compatible brands of a file,
+the requirements specified in Clause ‎6 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |

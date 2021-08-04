@@ -1333,7 +1333,7 @@ static const SpecDesc specHeif =
       }
     },
     {
-      "Section 9.4.1.1\n"
+      "Section 10.3.1.1\n"
       "Files shall contain the brand 'msf1' in the compatible brands:\n"
       "- At least one track of handler type 'pict', as defined in 7.2, is required.\n"
       "- It is required that 'iso8' is present among the compatible brands array.",
@@ -1345,7 +1345,8 @@ static const SpecDesc specHeif =
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("msf1"))
                 {
-                  checkRuleSection(specHeif, "7.2.", root);
+                  if(!checkRuleSection(specHeif, "7.2.", root))
+                    out->error("'msf1' brand: this file shall conform to HEIF (section 7.2)");
 
                   bool iso8BrandFound = false;
 
@@ -1359,6 +1360,36 @@ static const SpecDesc specHeif =
                   if(!iso8BrandFound)
                     out->error("'msf1' brand: 'iso8' shall be present among the compatible brands array");
                 }
+      }
+    },
+    {
+      "Section 10.2\n"
+      "when a brand specified in ‎10.2 is among the compatible brands of a file,\n"
+      "the requirements specified in Clause ‎6 shall be obeyed",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("mif1"))
+                  if(!checkRuleSection(specHeif, "6", root))
+                    out->error("'mif1' brand: this file shall conform to HEIF section 6, check the other errors for details");
+      }
+    },
+    {
+      "Section 10.3\n"
+      "when a brand specified in ‎10.3 is among the compatible brands of a file,\n"
+      "the requirements specified in Clause ‎7 shall be obeyed",
+      [] (Box const& root, IReport* out)
+      {
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("ftyp"))
+            for(auto& sym : box.syms)
+              if(!strcmp(sym.name, "compatible_brand"))
+                if(sym.value == FOURCC("msf1"))
+                  if(!checkRuleSection(specHeif, "7", root))
+                    out->error("'msf1' brand: this file shall conform to HEIF section 7, check the other errors for details");
       }
     },
   },
