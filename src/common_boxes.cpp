@@ -713,6 +713,18 @@ void parseUrx(IReader* br)
     br->sym("byte", 8);
 }
 
+void parseClap(IReader* br)
+{
+  br->sym("cleanApertureWidthN", 32);
+  br->sym("cleanApertureWidthD", 32);
+  br->sym("cleanApertureHeightN", 32);
+  br->sym("cleanApertureHeightD", 32);
+  br->sym("horizOffN", 32);
+  br->sym("horizOffD", 32);
+  br->sym("vertOffN", 32);
+  br->sym("vertOffD", 32);
+}
+
 void parseClli(IReader* br)
 {
   br->sym("max_content_light_level", 16);
@@ -845,6 +857,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseUrx;
   case FOURCC("mdat"):
     return &parseRaw;
+  case FOURCC("clap"):
+    return &parseClap;
   case FOURCC("clli"):
     return &parseClli;
   case FOURCC("mdcv"):
