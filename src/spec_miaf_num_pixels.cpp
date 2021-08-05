@@ -4,6 +4,51 @@
 #include <cstring>
 #include <vector>
 
+namespace
+{
+void validateNextLarger(Box const& root, IReport* out, uint32_t fourcc)
+{
+  auto d = getDerivationsInfo(root, fourcc);
+
+  // check
+  uint64_t lastNumPixels = 0;
+
+  for(auto& fromItem : d.itemRefs)
+  {
+    bool foundLargerItem = false;
+    lastNumPixels = 0;
+
+    for(auto& toItem : fromItem.second)
+    {
+      uint64_t numPixels = d.itemRes[toItem].width * d.itemRes[toItem].height;
+
+      if(numPixels > lastNumPixels)   // "next larger"
+      {
+        if(lastNumPixels != 0)
+        {
+          foundLargerItem = true;
+
+          if(numPixels > 200 * lastNumPixels)
+            out->error("Next larger \"%s\" has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200",
+                       toString(fourcc).c_str(), numPixels / lastNumPixels, lastNumPixels, d.itemRes[toItem].width, d.itemRes[toItem].height);
+        }
+
+        lastNumPixels = numPixels;
+      }
+    }
+
+    if(!foundLargerItem)
+    {
+      uint64_t numPixels = d.itemRes[fromItem.first].width * d.itemRes[fromItem.first].height;
+
+      if((lastNumPixels != 0) && (numPixels > 200 * lastNumPixels))
+        out->error("Next larger is a master image that has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200",
+                   numPixels / lastNumPixels, lastNumPixels, d.itemRes[fromItem.first].width, d.itemRes[fromItem.first].height);
+    }
+  }
+}
+}
+
 const std::initializer_list<RuleDesc> getRulesMiafNumPixels()
 {
   static const
@@ -17,44 +62,7 @@ const std::initializer_list<RuleDesc> getRulesMiafNumPixels()
       "item",
       [] (Box const& root, IReport* out)
       {
-        auto d = getDerivationsInfo(root, FOURCC("thmb"));
-
-        // check
-        uint64_t lastNumPixels = 0;
-
-        for(auto& item : d.itemRefs)
-        {
-          bool foundLargerThmb = false;
-          lastNumPixels = 0;
-
-          for(auto& thmb : item.second)
-          {
-            uint64_t numPixels = d.itemRes[thmb].width * d.itemRes[thmb].height;
-
-            if(numPixels > lastNumPixels)   // "next larger"
-            {
-              if(lastNumPixels != 0)
-              {
-                foundLargerThmb = true;
-
-                if(numPixels > 200 * lastNumPixels)
-                  out->error("Next larger thumbnail has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200",
-                             numPixels / lastNumPixels, lastNumPixels, d.itemRes[thmb].width, d.itemRes[thmb].height);
-              }
-
-              lastNumPixels = numPixels;
-            }
-          }
-
-          if(!foundLargerThmb)
-          {
-            uint64_t numPixels = d.itemRes[item.first].width * d.itemRes[item.first].height;
-
-            if((lastNumPixels != 0) && (numPixels > 200 * lastNumPixels))
-              out->error("Next larger is a master image that has %d times more pixels (resolutions: %llu vs %dx%d). Limit is 200",
-                         numPixels / lastNumPixels, lastNumPixels, d.itemRes[item.first].width, d.itemRes[item.first].height);
-          }
-        }
+        validateNextLarger(root, out, FOURCC("thmb"));
       }
     },
     {
@@ -121,22 +129,14 @@ const std::initializer_list<RuleDesc> getRulesMiafNumPixels()
       "group that also contains the primary item, if the sum of the pixel counts of the\n"
       "input images of the derived image item exceeds 128,000,000 pixels there shall be\n"
       "an alternate such image of the same type (i.e. overlay or grid) in the same group\n"
-      "or thumbnail, whose sum does not exceed 128,000,000 pixels",
-      [] (Box const& root, IReport* out)
-      {
-        (void)root;
-        (void)out; // TODO
-      }
-    },
-    {
-      "Section 8.4\n"
+      "or thumbnail, whose sum does not exceed 128,000,000 pixels\n\n"
       "There shall be no greater than a factor of 200 between the total number of\n"
       "pixels in the overlay, grid image or thumbnail that is less than 128,000,000\n"
       "pixels, and the next larger alternative",
       [] (Box const& root, IReport* out)
       {
-        (void)root;
-        (void)out; // TODO
+        validateNextLarger(root, out, FOURCC("grid"));
+        validateNextLarger(root, out, FOURCC("iovl"));
       }
     },
   };
