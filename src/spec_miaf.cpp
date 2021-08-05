@@ -1646,6 +1646,7 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
 const std::initializer_list<RuleDesc> getRulesMiafAudio();
 const std::initializer_list<RuleDesc> getRulesMiafDerivations();
 const std::initializer_list<RuleDesc> getRulesMiafNumPixels();
+const std::initializer_list<RuleDesc> getRulesMiafColours();
 const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec);
 const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec);
 std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules);
@@ -1656,7 +1657,7 @@ static const SpecDesc specMiaf =
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // Romain + DAM2 WG03 N0032",
   { "heif" },
-  concatRules({ rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(), getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
+  concatRules({ rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(), getRulesMiafColours(), getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
   nullptr,
 };
 

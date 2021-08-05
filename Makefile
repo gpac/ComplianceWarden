@@ -44,6 +44,7 @@ SRCS_CW+=src/spec_miaf.cpp
 SRCS_CW+=src/spec_miaf_audio.cpp
 SRCS_CW+=src/spec_miaf_brands.cpp
 SRCS_CW+=src/spec_miaf_derivations.cpp
+SRCS_CW+=src/spec_miaf_colours.cpp
 SRCS_CW+=src/spec_miaf_num_pixels.cpp
 SRCS_CW+=src/spec_miaf_profiles.cpp
 SRCS_CW+=src/spec_utils.cpp
