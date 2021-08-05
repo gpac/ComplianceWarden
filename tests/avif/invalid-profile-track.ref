@@ -42,8 +42,8 @@ AVIF Baseline Profile (MA1B):
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #8] Error: PrimaryItemBox is required
-[miaf][Rule #25] Error: Found no 'pixi' associated for 1 displayable (not hidden) images (ItemIds={1})
+[miaf][Rule #9] Error: PrimaryItemBox is required
+[miaf][Rule #26] Error: Found no 'pixi' associated for 1 displayable (not hidden) images (ItemIds={1})
 
 ========================================
 [miaf] 2 error(s), 0 warning(s).
@@ -51,10 +51,10 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #8] Section 7.3.2
+[miaf][Rule #9] Section 7.3.2
 The primary item shall be a MIAF master image item.
 
-[miaf][Rule #25] Section 7.3.6.6
+[miaf][Rule #26] Section 7.3.6.6
 The pixel information property shall be associated with every image that is
 displayable (not hidden)
 

@@ -5,8 +5,8 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #14] Error: All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
 [miaf][Rule #15] Error: All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
+[miaf][Rule #16] Error: All tracks shall have the same duration: found (10) while first track duration is 0 (expressed in 'mvhd' timescale)
 
 ========================================
 [miaf] 2 error(s), 0 warning(s).
@@ -14,11 +14,11 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #14] Section 8.7
+[miaf][Rule #15] Section 8.7
 If multiple tracks are present in the file, they shall have the same duration,
 and edit lists may be needed to achieve this.
 
-[miaf][Rule #15] Section 7.4.5
+[miaf][Rule #16] Section 7.4.5
 When present, audio tracks shall have the same duration as the video or image
 sequence track
 

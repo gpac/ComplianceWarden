@@ -302,6 +302,82 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     }
   },
   {
+    "Section 7.2.1.13\n"
+    "Exif and XMP metadata shall also be in a MediaDataBox.",
+    [] (Box const& root, IReport* out)
+    {
+      auto check = [&] (uint32_t itemId, uint32_t fourcc) {
+          auto spans = getItemDataOffsets(root, out, itemId);
+
+          for(auto& span : spans)
+          {
+            auto checkBox = [&] (int64_t offset) {
+                if(offset == 0)
+                  return; // TODO: parse all 'iloc' offsets
+
+                auto& box = getBoxFromOffset(root, offset);
+
+                if(box.fourcc != FOURCC("mdat"))
+                  out->error("[%s] itemID=%u: offset=%lld belongs to box \"%s\": expecting \"mdat\"",
+                             toString(fourcc).c_str(), itemId, offset, toString(box.fourcc).c_str());
+              };
+
+            checkBox(span.first);
+            checkBox(span.first + span.second - 1); // also check end of span
+          }
+        };
+
+      // detect Exif
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto& iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe"))
+                {
+                  uint32_t itemId = 0;
+
+                  for(auto& sym : iinfChild.syms)
+                    if(!strcmp(sym.name, "item_ID"))
+                      itemId = sym.value;
+                    else if(!strcmp(sym.name, "item_type"))
+                      if(sym.value == FOURCC("Exif"))
+                        check(itemId, FOURCC("Exif"));
+                }
+
+      // detect XMP
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto& iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe"))
+                {
+                  uint32_t itemId = 0;
+                  std::string mime;
+
+                  for(auto& sym : iinfChild.syms)
+                    if(!strcmp(sym.name, "item_ID"))
+                      itemId = sym.value;
+                    else if(!strcmp(sym.name, "item_type"))
+                    {
+                      if(sym.value != FOURCC("mime"))
+                        itemId = 0;
+                    }
+                    else if(!strcmp(sym.name, "content_type"))
+                      mime.push_back((char)sym.value);
+
+                  mime.push_back('\0');
+
+                  if(itemId)
+                    if(!strcmp(mime.c_str(), "application/rdf+xml"))
+                      check(itemId, FOURCC("XMP "));
+                }
+    }
+  },
+  {
     "Section 7.3.2\n"
     "The primary item shall be a MIAF master image item.",
     [] (Box const& root, IReport* out)

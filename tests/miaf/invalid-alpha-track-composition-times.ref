@@ -5,8 +5,8 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #23] Error: Composition times for trackId=1 different from alpha plane trackId=2
-[miaf][Rule #25] Error: Found 1 (ItemIds={3}) 'pixi' associated for 2 displayable (not hidden) images (ItemIds={3,4})
+[miaf][Rule #24] Error: Composition times for trackId=1 different from alpha plane trackId=2
+[miaf][Rule #26] Error: Found 1 (ItemIds={3}) 'pixi' associated for 2 displayable (not hidden) images (ItemIds={3,4})
 
 ========================================
 [miaf] 2 error(s), 0 warning(s).
@@ -14,11 +14,11 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #23] Section 7.4.6
+[miaf][Rule #24] Section 7.4.6
 for every sample of the master image sequence or video track, there shall be a
 sample of the alpha plane track with the same composition time.
 
-[miaf][Rule #25] Section 7.3.6.6
+[miaf][Rule #26] Section 7.3.6.6
 The pixel information property shall be associated with every image that is
 displayable (not hidden)
 

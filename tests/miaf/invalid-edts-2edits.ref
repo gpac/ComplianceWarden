@@ -5,8 +5,8 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #19] Error: Two media edits found: media rates shall be { 1, -1 }, found { 1, 1 }
-[miaf][Rule #19] Error: Two media edits found: one shall specify forward and the other reverse playback
+[miaf][Rule #20] Error: Two media edits found: media rates shall be { 1, -1 }, found { 1, 1 }
+[miaf][Rule #20] Error: Two media edits found: one shall specify forward and the other reverse playback
 
 ========================================
 [miaf] 2 error(s), 0 warning(s).
@@ -14,7 +14,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #19] Section 8.6
+[miaf][Rule #20] Section 8.6
 when there are two 'media edits' one shall specify forward playback and the other reverse
 over the same media time-range
 

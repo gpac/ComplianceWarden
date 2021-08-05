@@ -5,7 +5,7 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #17] Error: Either all tracks or none shall indicate an edit list repetition
+[miaf][Rule #18] Error: Either all tracks or none shall indicate an edit list repetition
 
 ========================================
 [miaf] 1 error(s), 0 warning(s).
@@ -13,7 +13,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ===== Involved rules descriptions:
 
-[miaf][Rule #17] Section 8.6
+[miaf][Rule #18] Section 8.6
 repeating edits may be used; either all tracks shall indicate a 'looping' edit, or none
 
 +--------------------------------------+

@@ -1075,7 +1075,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
           out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
       }
     }
-  }
+  },
 };
 
 const std::initializer_list<RuleDesc> getRulesAvifProfiles(const SpecDesc& spec);

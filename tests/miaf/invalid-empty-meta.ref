@@ -7,7 +7,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #1] Error: The HandlerBox shall be the first contained box within the MetaBox
 [miaf][Rule #4] Error: 'hdlr' not found in MetaBox
-[miaf][Rule #8] Error: PrimaryItemBox is required
+[miaf][Rule #9] Error: PrimaryItemBox is required
 
 ========================================
 [miaf] 3 error(s), 0 warning(s).
@@ -21,7 +21,7 @@ The HandlerBox shall be the first contained box within the MetaBox.
 [miaf][Rule #4] Section 7.2.1.5
 The handler type for the MetaBox shall be 'pict'.
 
-[miaf][Rule #8] Section 7.3.2
+[miaf][Rule #9] Section 7.3.2
 The primary item shall be a MIAF master image item.
 
 +--------------------------------------+
