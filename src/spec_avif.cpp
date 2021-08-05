@@ -40,6 +40,69 @@ bool operator == (const std::vector<Symbol>& lhs, const std::vector<Symbol>& rhs
   return true;
 }
 
+std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
+{
+  std::vector<Symbol> av1cSymbols;
+
+  bool seqHdrFound = false;
+
+  for(auto& sym : av1C->syms)
+  {
+    if(!strcmp(sym.name, "seqhdr"))
+      seqHdrFound = true;
+
+    if(!strcmp(sym.name, "/seqhdr"))
+      seqHdrFound = false;
+
+    if(seqHdrFound)
+      av1cSymbols.push_back(sym);
+  }
+
+  assert(!seqHdrFound);
+
+  return av1cSymbols;
+}
+
+void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
+{
+  auto const spans = getItemDataOffsets(root, out, itemId);
+
+  if(spans.empty())
+  {
+    out->error("Not data offset found for item %u", itemId);
+    return;
+  }
+
+  int size = 0;
+
+  for(auto span : spans)
+    size += span.second;
+
+  if(size == 0)
+    return;
+
+  std::vector<uint8_t> bytes(size);
+  int offset = 0;
+
+  for(auto span : spans)
+  {
+    memcpy(bytes.data() + offset, root.original + span.first, span.second);
+    offset += span.second;
+  }
+
+  br.br = BitReader { bytes.data(), (int)bytes.size() };
+
+  while(!br.empty())
+  {
+    auto obuType = parseAv1Obus(&br, stateUnused, false);
+
+    if(obuType == OBU_FRAME_HEADER || obuType == OBU_REDUNDANT_FRAME_HEADER || obuType == OBU_FRAME)
+      /* if compliant we now have seen the sequence header (av1C) and the frame header*/
+      return;
+  }
+}
+} // namespace
+
 std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root)
 {
   std::vector<uint32_t> av1ImageItemIDs;
@@ -65,29 +128,6 @@ std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root)
             }
 
   return av1ImageItemIDs;
-}
-
-std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
-{
-  std::vector<Symbol> av1cSymbols;
-
-  bool seqHdrFound = false;
-
-  for(auto& sym : av1C->syms)
-  {
-    if(!strcmp(sym.name, "seqhdr"))
-      seqHdrFound = true;
-
-    if(!strcmp(sym.name, "/seqhdr"))
-      seqHdrFound = false;
-
-    if(seqHdrFound)
-      av1cSymbols.push_back(sym);
-  }
-
-  assert(!seqHdrFound);
-
-  return av1cSymbols;
 }
 
 const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
@@ -154,46 +194,6 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
 
   return av1C;
 }
-
-void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
-{
-  auto const spans = getItemDataOffsets(root, out, itemId);
-
-  if(spans.empty())
-  {
-    out->error("Not data offset found for item %u", itemId);
-    return;
-  }
-
-  int size = 0;
-
-  for(auto span : spans)
-    size += span.second;
-
-  if(size == 0)
-    return;
-
-  std::vector<uint8_t> bytes(size);
-  int offset = 0;
-
-  for(auto span : spans)
-  {
-    memcpy(bytes.data() + offset, root.original + span.first, span.second);
-    offset += span.second;
-  }
-
-  br.br = BitReader { bytes.data(), (int)bytes.size() };
-
-  while(!br.empty())
-  {
-    auto obuType = parseAv1Obus(&br, stateUnused, false);
-
-    if(obuType == OBU_FRAME_HEADER || obuType == OBU_REDUNDANT_FRAME_HEADER || obuType == OBU_FRAME)
-      /* if compliant we now have seen the sequence header (av1C) and the frame header*/
-      return;
-  }
-}
-} // namespace
 
 std::initializer_list<RuleDesc> rulesAvifGeneral =
 {

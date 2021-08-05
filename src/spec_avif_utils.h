@@ -1,7 +1,6 @@
 #pragma once
 
 #include "box_reader.h"
-#include <cstdint>
 #include <string>
 
 enum
