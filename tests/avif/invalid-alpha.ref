@@ -7,13 +7,61 @@ https://aomediacodec.github.io/av1-avif/
 
 [avif][Rule #1] Error: [ItemId=1] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
 [avif][Rule #1] Error: [ItemId=2] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #3] Warning: [ItemId=2] still_picture flag set to 0
+[avif][Rule #7] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
+the Sequence Header OBU in the AV1 Image Item Data:
+	AV1CodecConfigurationBox:
+		seq_profile=2
+		seq_level_idx_0=1
+		seq_tier_0=0
+		high_bitdepth=1
+		twelve_bit=0
+		mono_chrome=1
+		chroma_subsampling_x=1
+		chroma_subsampling_y=1
+		chroma_sample_position=0
+	Sequence Header OBU in the AV1 Image Item Data:
+		seq_profile=0
+		seq_level_idx_0=1
+		seq_tier_0=0
+		high_bitdepth=0
+		twelve_bit=0
+		mono_chrome=1
+		chroma_subsampling_x=1
+		chroma_subsampling_y=1
+		chroma_sample_position=0
+
+[avif][Rule #7] Error: [ItemId=2] The values of the AV1CodecConfigurationBox shall match
+the Sequence Header OBU in the AV1 Image Item Data:
+	AV1CodecConfigurationBox:
+		seq_profile=1
+		seq_level_idx_0=1
+		seq_tier_0=0
+		high_bitdepth=0
+		twelve_bit=0
+		mono_chrome=0
+		chroma_subsampling_x=0
+		chroma_subsampling_y=0
+		chroma_sample_position=0
+	Sequence Header OBU in the AV1 Image Item Data:
+		seq_profile=2
+		seq_level_idx_0=1
+		seq_tier_0=0
+		high_bitdepth=1
+		twelve_bit=1
+		mono_chrome=0
+		chroma_subsampling_x=0
+		chroma_subsampling_y=0
+		chroma_sample_position=0
+
 [avif][Rule #11] Error: The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=2)
 [avif][Rule #11] Error: The color_range field in the Sequence Header OBU shall be set to 1 (item_ID=2)
+[avif][Rule #12] Error: An AV1 Alpha Image Item (ItemId=2) shall be encoded with the same bit depth (12 bits) as the associated master AV1 Image Item (8 bits) (ItemId=1)
 [avif][Rule #17] Error: Item ID=1 (image item): Baseline Profile requires AV1 Main Profile
 [avif][Rule #17] Error: Item ID=2 (image item): Baseline Profile requires AV1 Main Profile
 
 ========================================
-[avif] 6 error(s), 0 warning(s).
+[avif] 9 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -21,9 +69,21 @@ https://aomediacodec.github.io/av1-avif/
 [avif][Rule #1] Section 2.1
 The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as sync
 
+[avif][Rule #3] Section 2.1
+The AV1 Image Item Data should have its still_picture flag set to 1.
+
+[avif][Rule #7] Section 2.2.1
+The values of the fields in the AV1CodecConfigurationBox shall match those of the
+Sequence Header OBU in the AV1 Image Item Data.
+
 [avif][Rule #11] Section 4. Auxiliary Image Items
 The mono_chrome field in the Sequence Header OBU shall be set to 1.
 The color_range field in the Sequence Header OBU shall be set to 1.
+
+[avif][Rule #12] Section 4. Alpha Image Images
+An AV1 Alpha Image Item (respectively an AV1 Alpha Image Sequence) shall be
+encoded with the same bit depth as the associated master AV1 Image Item
+(respectively AV1 Image Sequence).
 
 [avif][Rule #17] Section 7.2
 AVIF Baseline Profile (MA1B):

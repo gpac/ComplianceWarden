@@ -624,7 +624,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
           for(auto& metaChild : box.children)
             if(metaChild.fourcc == FOURCC("iref"))
             {
-              uint32_t masterItemId = -1;
+              uint32_t auxItemId = -1;
 
               for(auto& field : metaChild.syms)
               {
@@ -637,16 +637,16 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
                   if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), field.value) == av1ImageItemIDs.end())
                     break;
 
-                  masterItemId = (uint32_t)field.value;
+                  auxItemId = (uint32_t)field.value;
                 }
 
                 if(!strcmp(field.name, "to_item_ID"))
-                  auxImages.push_back({ masterItemId, (uint32_t)field.value });
+                  auxImages.push_back({ (uint32_t)field.value, auxItemId });
               }
             }
 
       // find Alpha Image Items
-      std::vector<int> alphaPropertyIndexes;
+      std::vector<uint32_t> alphaPropertyIndexes;
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -734,8 +734,8 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         auto bitDepthAux = computeBitDepth(auxImageIds.aux);
 
         if(bitDepthMaster != bitDepthAux)
-          out->error("An AV1 Alpha Image Item (ItemId=%u) shall be encoded with the same bit depth as the associated master AV1 Image Item (ItemId=%u)",
-                     auxImageIds.aux, auxImageIds.master);
+          out->error("An AV1 Alpha Image Item (ItemId=%u) shall be encoded with the same bit depth (%u bits) as the associated master AV1 Image Item (%u bits) (ItemId=%u)",
+                     auxImageIds.aux, bitDepthAux, bitDepthMaster, auxImageIds.master);
       }
     }
   },
