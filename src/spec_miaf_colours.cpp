@@ -4,6 +4,8 @@
 #include <algorithm> // find
 #include <cstring> // strcmp
 
+std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc);
+std::vector<const Box*> findBoxesWithProperty(Box const& root, uint32_t itemId, uint32_t fourcc);
 std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(Box const& root, IReport* out);
 
 namespace
@@ -41,9 +43,67 @@ Codec codecDetection(Box const& root)
   return codec;
 }
 
+std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getHevcItemColorspaces(Box const& root, IReport* out)
+{
+  std::vector<std::pair<uint32_t /*ItemId*/, std::string>> ret;
+
+  auto check = [&] (uint32_t fourcc) {
+      auto const av1ImageItemIDs = findImageItems(root, fourcc);
+
+      for(auto itemId : av1ImageItemIDs)
+      {
+        auto hvcCs = findBoxesWithProperty(root, itemId, FOURCC("hvcC"));
+
+        if(hvcCs.empty())
+        {
+          out->error("[ItemId=%u] No hvcC configuration found (expected 1)", itemId);
+          continue;
+        }
+        else if(hvcCs.size() > 1)
+          out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)hvcCs.size());
+
+        auto hvcC = hvcCs[0];
+
+        for(auto& sym : hvcC->syms)
+          if(!strcmp(sym.name, "chroma_format_idc"))
+            switch(sym.value)
+            {
+            case 0:
+              ret.push_back({ itemId, "Monochrome 4:0:0" });
+              break;
+            case 1:
+              ret.push_back({ itemId, "YUV 4:2:0" });
+              break;
+            case 2:
+              ret.push_back({ itemId, "YUV 4:2:2" });
+              break;
+            case 3:
+              ret.push_back({ itemId, "YUV 4:4:4" });
+              break;
+            }
+      }
+    };
+
+  check(FOURCC("hev1"));
+  check(FOURCC("hev2"));
+  check(FOURCC("hvc1"));
+  check(FOURCC("hvc2"));
+
+  return ret;
+}
+
 std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box const& root, IReport* out)
 {
-  return getAv1ItemColorspaces(root, out);
+  switch(codecDetection(root))
+  {
+  case AV1:
+    return getAv1ItemColorspaces(root, out);
+  case HEVC:
+    return getHevcItemColorspaces(root, out);
+  default:
+    out->error("Internal codec detection error. No colorspace will be analyzed.");
+    return {};
+  }
 }
 }
 
@@ -151,37 +211,37 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
           if(item.second == "YUV 4:2:2")
           {
-            if(horizOffN % (2 * horizOffD))
+            if(horizOffD == 0 || horizOffN % (2 * horizOffD))
               out->error("[ItemId=%u] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found %u/%u",
                          item.first, horizOffN, horizOffD);
 
-            if(cleanApertureWidthN % (2 * cleanApertureWidthD))
+            if(cleanApertureWidthD == 0 || cleanApertureWidthN % (2 * cleanApertureWidthD))
               out->error("[ItemId=%u] YUV 4:2:2: the cropped width shall be an even number. Found %u/%u",
                          item.first, cleanApertureWidthN, cleanApertureWidthD);
 
-            if(vertOffN % vertOffD)
+            if(vertOffD == 0 || vertOffN % vertOffD)
               out->error("[ItemId=%u] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found %u/%u",
                          item.first, vertOffN, vertOffD);
 
-            if(cleanApertureHeightN % cleanApertureHeightD)
+            if(cleanApertureHeightD == 0 || cleanApertureHeightN % cleanApertureHeightD)
               out->error("[ItemId=%u] YUV 4:2:2: the cropped height shall be an integer number. Found %u/%u",
                          item.first, cleanApertureHeightN, cleanApertureHeightD);
           }
           else if(item.second == "YUV 4:2:0")
           {
-            if(horizOffN % (2 * horizOffD))
+            if(horizOffD == 0 || horizOffN % (2 * horizOffD))
               out->error("[ItemId=%u] YUV 4:2:0: the horizontal cropped offset shall be an even number. Found %u/%u",
                          item.first, horizOffN, horizOffD);
 
-            if(cleanApertureWidthN % (2 * cleanApertureWidthD))
+            if(cleanApertureWidthD == 0 || cleanApertureWidthN % (2 * cleanApertureWidthD))
               out->error("[ItemId=%u] YUV 4:2:0: the cropped width shall be an even number. Found %u/%u",
                          item.first, cleanApertureWidthN, cleanApertureWidthD);
 
-            if(vertOffN % (2 * vertOffD))
+            if(vertOffD == 0 || vertOffN % (2 * vertOffD))
               out->error("[ItemId=%u] YUV 4:2:0: the vertival cropped offset shall be an even number. Found %u/%u",
                          item.first, vertOffN, vertOffD);
 
-            if(cleanApertureHeightN % (2 * cleanApertureHeightD))
+            if(cleanApertureHeightD == 0 || cleanApertureHeightN % (2 * cleanApertureHeightD))
               out->error("[ItemId=%u] YUV 4:2:0: the cropped height shall be an even number. Found %u/%u",
                          item.first, cleanApertureHeightN, cleanApertureHeightD);
           }

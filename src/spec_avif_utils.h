@@ -57,5 +57,4 @@ struct av1State
 };
 
 int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed);
-std::vector<const Box*> findAv1C(Box const& root, uint32_t itemId);
 

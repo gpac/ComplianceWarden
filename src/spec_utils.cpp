@@ -2,6 +2,7 @@
 #include "fourcc.h"
 #include <cstring> // strcmp
 #include <sstream>
+#include <map>
 
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
 {
@@ -291,6 +292,56 @@ std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc
             }
 
   return imageItemIDs;
+}
+
+std::vector<const Box*> findBoxesWithProperty(Box const& root, uint32_t itemId, uint32_t fourcc)
+{
+  struct Entry
+  {
+    int found = 0;
+    const Box* box = nullptr;
+  };
+  std::map<uint32_t /*property index*/, Entry> propertyIndex;
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipco"))
+              for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
+                if(iprpChild.children[i - 1].fourcc == fourcc)
+                  propertyIndex.insert({ i, { 0, &iprpChild.children[i - 1] }
+                                       });
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipma"))
+            {
+              uint32_t localItemId = 0;
+
+              for(auto& sym : iprpChild.syms)
+              {
+                if(!strcmp(sym.name, "item_ID"))
+                  localItemId = sym.value;
+                else if(!strcmp(sym.name, "property_index"))
+                  if(localItemId == itemId)
+                    for(auto& a : propertyIndex)
+                      if(a.first == sym.value)
+                        a.second.found++;
+              }
+            }
+
+  std::vector<const Box*> propertyBoxes;
+
+  for(auto& a : propertyIndex)
+    for(int found = 0; found < a.second.found; ++found)
+      propertyBoxes.push_back(a.second.box);
+
+  return propertyBoxes;
 }
 
 std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)

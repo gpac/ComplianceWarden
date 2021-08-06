@@ -3,10 +3,10 @@
 #include <cassert>
 #include <cstring> // strcmp
 #include <memory> // make_unique
-#include <map>
 #include <stdexcept>
 
 std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc);
+std::vector<const Box*> findBoxesWithProperty(Box const& root, uint32_t itemId, uint32_t fourcc);
 
 namespace
 {
@@ -498,56 +498,6 @@ void parseAv1C(IReader* br)
     parseAv1Obus(br, state, true);
 }
 
-std::vector<const Box*> findAv1C(Box const& root, uint32_t itemId)
-{
-  struct Entry
-  {
-    int found = 0;
-    const Box* box = nullptr;
-  };
-  std::map<uint32_t /*property index*/, Entry> av1cPropertyIndex;
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iprp"))
-          for(auto& iprpChild : metaChild.children)
-            if(iprpChild.fourcc == FOURCC("ipco"))
-              for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
-                if(iprpChild.children[i - 1].fourcc == FOURCC("av1C"))
-                  av1cPropertyIndex.insert({ i, { 0, &iprpChild.children[i - 1] }
-                                           });
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iprp"))
-          for(auto& iprpChild : metaChild.children)
-            if(iprpChild.fourcc == FOURCC("ipma"))
-            {
-              uint32_t localItemId = 0;
-
-              for(auto& sym : iprpChild.syms)
-              {
-                if(!strcmp(sym.name, "item_ID"))
-                  localItemId = sym.value;
-                else if(!strcmp(sym.name, "property_index"))
-                  if(localItemId == itemId)
-                    for(auto& a : av1cPropertyIndex)
-                      if(a.first == sym.value)
-                        a.second.found++;
-              }
-            }
-
-  std::vector<const Box*> av1Cs;
-
-  for(auto& a : av1cPropertyIndex)
-    for(int found = 0; found < a.second.found; ++found)
-      av1Cs.push_back(a.second.box);
-
-  return av1Cs;
-}
-
 std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(Box const& root, IReport* out)
 {
   std::vector<std::pair<uint32_t /*ItemId*/, std::string>> ret;
@@ -558,7 +508,7 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(B
   {
     AV1CodecConfigurationRecord av1cRef {};
 
-    auto av1Cs = findAv1C(root, itemId);
+    auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
 
     if(av1Cs.empty())
     {

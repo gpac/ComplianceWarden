@@ -125,7 +125,7 @@ meta_start:
                 db 0x5A ; "general_level_idc(8)" ('Z') 
                 db 0xF0, 0x00 ; "reserved(4)" "min_spatial_segmentation_idc(12)" 
                 db 0xFC ; "reserved(6)" "parallelismType(2)" 
-                db 0xFD ; "reserved(6)" "chroma_format_idc(2)" 
+                db 0xFE ; "reserved(6)" "chroma_format_idc(2)" 
                 db 0xF8 ; "reserved(5)" "bit_depth_luma_minus8(3)" 
                 db 0xF8 ; "reserved(5)" "bit_depth_chroma_minus8(3)" 
                 db 0x00, 0x00 ; "avgFrameRate(16)" 

@@ -9,6 +9,7 @@
 
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc);
+std::vector<const Box*> findBoxesWithProperty(Box const& root, uint32_t itemId, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset);
@@ -284,7 +285,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto itemId : av1ImageItemIDs)
       {
-        auto av1Cs = findAv1C(root, itemId);
+        auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
 
         if(av1Cs.empty())
         {
@@ -326,7 +327,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
       {
         AV1CodecConfigurationRecord av1cRef {};
 
-        auto av1Cs = findAv1C(root, itemId);
+        auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
 
         if(av1Cs.empty())
         {
