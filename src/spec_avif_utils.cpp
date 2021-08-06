@@ -1,8 +1,12 @@
 #include "spec_avif_utils.h"
 #include "box_reader_impl.h" // BoxReader
 #include <cassert>
+#include <cstring> // strcmp
 #include <memory> // make_unique
+#include <map>
 #include <stdexcept>
+
+std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc);
 
 namespace
 {
@@ -382,40 +386,6 @@ int parseAv1UncompressedHeader(IReader* reader, av1State const& state)
     return readBits / 8;
   }
 }
-
-void parseAv1C(IReader* br)
-{
-  br->sym("marker", 1);
-  br->sym("version", 7);
-  br->sym("seq_profile", 3);
-  br->sym("seq_level_idx_0", 5);
-  br->sym("seq_tier_0", 1);
-  br->sym("high_bitdepth", 1);
-  br->sym("twelve_bit", 1);
-  br->sym("monochrome", 1);
-  br->sym("chroma_subsampling_x", 1);
-  br->sym("chroma_subsampling_y", 1);
-  br->sym("chroma_sample_position", 2);
-  br->sym("reserved", 3);
-
-  auto initial_presentation_delay_present = br->sym("initial_presentation_delay_present", 1);
-
-  if(initial_presentation_delay_present)
-  {
-    br->sym("initial_presentation_delay_minus_one", 4);
-  }
-  else
-  {
-    br->sym("reserved", 4);
-  }
-
-  br->sym("configOBUs", 0);
-
-  av1State state;
-
-  while(!br->empty())
-    parseAv1Obus(br, state, true);
-}
 } // anonymous namespace
 
 int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
@@ -494,14 +464,140 @@ int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
   return obu_type;
 }
 
-ParseBoxFunc* getParseFunctionAvif(uint32_t fourcc)
+void parseAv1C(IReader* br)
 {
-  switch(fourcc)
+  br->sym("marker", 1);
+  br->sym("version", 7);
+  br->sym("seq_profile", 3);
+  br->sym("seq_level_idx_0", 5);
+  br->sym("seq_tier_0", 1);
+  br->sym("high_bitdepth", 1);
+  br->sym("twelve_bit", 1);
+  br->sym("monochrome", 1);
+  br->sym("chroma_subsampling_x", 1);
+  br->sym("chroma_subsampling_y", 1);
+  br->sym("chroma_sample_position", 2);
+  br->sym("reserved", 3);
+
+  auto initial_presentation_delay_present = br->sym("initial_presentation_delay_present", 1);
+
+  if(initial_presentation_delay_present)
   {
-  case FOURCC("av1C"):
-    return &parseAv1C;
-  default:
-    return nullptr;
+    br->sym("initial_presentation_delay_minus_one", 4);
   }
+  else
+  {
+    br->sym("reserved", 4);
+  }
+
+  br->sym("configOBUs", 0);
+
+  av1State state;
+
+  while(!br->empty())
+    parseAv1Obus(br, state, true);
+}
+
+std::vector<const Box*> findAv1C(Box const& root, uint32_t itemId)
+{
+  struct Entry
+  {
+    int found = 0;
+    const Box* box = nullptr;
+  };
+  std::map<uint32_t /*property index*/, Entry> av1cPropertyIndex;
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipco"))
+              for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
+                if(iprpChild.children[i - 1].fourcc == FOURCC("av1C"))
+                  av1cPropertyIndex.insert({ i, { 0, &iprpChild.children[i - 1] }
+                                           });
+
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iprp"))
+          for(auto& iprpChild : metaChild.children)
+            if(iprpChild.fourcc == FOURCC("ipma"))
+            {
+              uint32_t localItemId = 0;
+
+              for(auto& sym : iprpChild.syms)
+              {
+                if(!strcmp(sym.name, "item_ID"))
+                  localItemId = sym.value;
+                else if(!strcmp(sym.name, "property_index"))
+                  if(localItemId == itemId)
+                    for(auto& a : av1cPropertyIndex)
+                      if(a.first == sym.value)
+                        a.second.found++;
+              }
+            }
+
+  std::vector<const Box*> av1Cs;
+
+  for(auto& a : av1cPropertyIndex)
+    for(int found = 0; found < a.second.found; ++found)
+      av1Cs.push_back(a.second.box);
+
+  return av1Cs;
+}
+
+std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(Box const& root, IReport* out)
+{
+  std::vector<std::pair<uint32_t /*ItemId*/, std::string>> ret;
+
+  auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
+
+  for(auto itemId : av1ImageItemIDs)
+  {
+    AV1CodecConfigurationRecord av1cRef {};
+
+    auto av1Cs = findAv1C(root, itemId);
+
+    if(av1Cs.empty())
+    {
+      // out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
+      continue;
+    }
+    else if(av1Cs.size() > 1)
+      out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)av1Cs.size());
+
+    auto av1C = av1Cs[0];
+
+    for(auto& sym : av1C->syms)
+    {
+      if(!strcmp(sym.name, "monochrome"))
+        av1cRef.mono_chrome = sym.value;
+
+      if(!strcmp(sym.name, "chroma_subsampling_x"))
+        av1cRef.chroma_subsampling_x = sym.value;
+
+      if(!strcmp(sym.name, "chroma_subsampling_y"))
+        av1cRef.chroma_subsampling_y = sym.value;
+
+      if(!strcmp(sym.name, "chroma_sample_position"))
+        av1cRef.chroma_sample_position = sym.value;
+    }
+
+    if(av1cRef.chroma_subsampling_x == 0 && av1cRef.chroma_subsampling_y == 0 && av1cRef.mono_chrome == 0)
+      ret.push_back({ itemId, "YUV 4:4:4" });
+    else if(av1cRef.chroma_subsampling_x == 1 && av1cRef.chroma_subsampling_y == 0 && av1cRef.mono_chrome == 0)
+      ret.push_back({ itemId, "YUV 4:2:2" });
+    else if(av1cRef.chroma_subsampling_x == 1 && av1cRef.chroma_subsampling_y == 1 && av1cRef.mono_chrome == 0)
+      ret.push_back({ itemId, "YUV 4:2:0" });
+    else if(av1cRef.chroma_subsampling_x == 1 && av1cRef.chroma_subsampling_y == 1 && av1cRef.mono_chrome == 1)
+      ret.push_back({ itemId, "Monochrome 4:0:0" });
+    else
+      out->error("[ItemId=%u] Inconsistent AV1 colorspace: chroma_subsampling_x=%lld chroma_subsampling_y=%lld mono_chrome=%lld",
+                 itemId, av1cRef.chroma_subsampling_x, av1cRef.chroma_subsampling_y, av1cRef.mono_chrome);
+  }
+
+  return ret;
 }
 

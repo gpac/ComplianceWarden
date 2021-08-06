@@ -266,6 +266,33 @@ void boxCheck(Box const& root, IReport* out, std::vector<uint32_t> oneOf4CCs, st
   }
 }
 
+std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc)
+{
+  std::vector<uint32_t> imageItemIDs;
+
+  // Find AV1 Image Items
+  for(auto& box : root.children)
+    if(box.fourcc == FOURCC("meta"))
+      for(auto& metaChild : box.children)
+        if(metaChild.fourcc == FOURCC("iinf"))
+          for(auto& iinfChild : metaChild.children)
+            if(iinfChild.fourcc == FOURCC("infe"))
+            {
+              uint32_t itemId = 0;
+
+              for(auto& sym : iinfChild.syms)
+              {
+                if(!strcmp(sym.name, "item_ID"))
+                  itemId = sym.value;
+                else if(!strcmp(sym.name, "item_type"))
+                  if(sym.value == fourcc)
+                    imageItemIDs.push_back(itemId);
+              }
+            }
+
+  return imageItemIDs;
+}
+
 std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)
 {
   std::vector<RuleDesc> v;

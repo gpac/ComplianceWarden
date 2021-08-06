@@ -2,6 +2,7 @@
 
 #include "box_reader.h"
 #include <string>
+#include <vector>
 
 enum
 {
@@ -15,6 +16,7 @@ enum
 auto const AV1_KEY_FRAME = 0;
 
 struct IReader;
+struct Box;
 
 struct AV1CodecConfigurationRecord
 {
@@ -55,5 +57,5 @@ struct av1State
 };
 
 int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed);
-ParseBoxFunc* getParseFunctionAvif(uint32_t fourcc);
+std::vector<const Box*> findAv1C(Box const& root, uint32_t itemId);
 

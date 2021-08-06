@@ -1,40 +1,17 @@
 +--------------------------------------+
-|           avif validation            |
-+--------------------------------------+
-
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
-
-[avif][Rule #6] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-[avif][Rule #7] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-
-========================================
-[avif] 2 error(s), 0 warning(s).
-========================================
-
-===== Involved rules descriptions:
-
-[avif][Rule #6] Section 2.2.1
-If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the
-Sequence Header OBU in the AV1 Image Item Data.
-
-[avif][Rule #7] Section 2.2.1
-The values of the fields in the AV1CodecConfigurationBox shall match those of the
-Sequence Header OBU in the AV1 Image Item Data.
-
-+--------------------------------------+
 |           miaf validation            |
 +--------------------------------------+
 
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #40] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-[miaf][Rule #41] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-[miaf][Rule #42] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+[miaf][Rule #40] Warning: This rule is only implemented for HEVC and AV1 codecs.
+[miaf][Rule #41] Warning: This rule is only implemented for HEVC and AV1 codecs.
+[miaf][Rule #42] Warning: This rule is only implemented for HEVC and AV1 codecs.
+[miaf][Rule #43] Warning: This rule is only implemented for HEVC and AV1 codecs.
 
 ========================================
-[miaf] 3 error(s), 0 warning(s).
+[miaf] 0 error(s), 4 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -54,6 +31,10 @@ The tile size is restricted according to the chroma sampling format of the
 input images; the cropping shall select an integer number of samples for
 all planes, and result in an output image that also includes an integer number
 of samples for all planes
+
+[miaf][Rule #43] Section 7.3.5.1
+Depth maps and alpha planes [...] if [...] encoded in colour [...] shall be
+encoded in a colour format with a luma plane and chroma planes
 
 +--------------------------------------+
 |           heif validation            |

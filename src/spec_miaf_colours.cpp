@@ -4,15 +4,20 @@
 #include <algorithm> // find
 #include <cstring> // strcmp
 
-// here are the AV1-specific imported functions and structures
-#include "spec_avif_utils.h"
-std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root);
-const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId);
+std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(Box const& root, IReport* out);
 
 namespace
 {
-bool isAvif(Box const& root)
+enum CodecDetection
 {
+  TRUE,
+  FALSE,
+  NONE,
+};
+CodecDetection isAvifOrMiafHevc(Box const& root)
+{
+  CodecDetection supported = NONE;
+
   for(auto& box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
       for(auto& sym : box.syms)
@@ -20,65 +25,23 @@ bool isAvif(Box const& root)
           switch(sym.value)
           {
           case FOURCC("avif"): case FOURCC("avis"): case FOURCC("avio"):
-            return true;
+            return TRUE;
+          case FOURCC("heic"): case FOURCC("heix"): case FOURCC("heim"):
+          case FOURCC("heis"): case FOURCC("hevc"): case FOURCC("hevx"):
+          case FOURCC("hevm"): case FOURCC("hevs"):
+            return NONE;
+          case FOURCC("avci"): case FOURCC("avcs"):
+            supported = FALSE;
+            break;
           default: break;
           }
 
-  return false;
+  return supported;
 }
 
 std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box const& root, IReport* out)
 {
-  std::vector<std::pair<uint32_t /*ItemId*/, std::string>> ret;
-
-  auto const av1ImageItemIDs = findAv1ImageItems(root);
-
-  for(auto itemId : av1ImageItemIDs)
-  {
-    AV1CodecConfigurationRecord av1cRef {};
-
-    struct VoidReport : IReport
-    {
-      void error(const char*, ...) override {}
-
-      void warning(const char*, ...) override {}
-    };
-    VoidReport voidReport;
-
-    auto av1C = findAv1C(root, &voidReport, itemId);
-
-    if(!av1C)
-      continue;
-
-    for(auto& sym : av1C->syms)
-    {
-      if(!strcmp(sym.name, "monochrome"))
-        av1cRef.mono_chrome = sym.value;
-
-      if(!strcmp(sym.name, "chroma_subsampling_x"))
-        av1cRef.chroma_subsampling_x = sym.value;
-
-      if(!strcmp(sym.name, "chroma_subsampling_y"))
-        av1cRef.chroma_subsampling_y = sym.value;
-
-      if(!strcmp(sym.name, "chroma_sample_position"))
-        av1cRef.chroma_sample_position = sym.value;
-    }
-
-    if(av1cRef.chroma_subsampling_x == 0 && av1cRef.chroma_subsampling_y == 0 && av1cRef.mono_chrome == 0)
-      ret.push_back({ itemId, "YUV 4:4:4" });
-    else if(av1cRef.chroma_subsampling_x == 1 && av1cRef.chroma_subsampling_y == 0 && av1cRef.mono_chrome == 0)
-      ret.push_back({ itemId, "YUV 4:2:2" });
-    else if(av1cRef.chroma_subsampling_x == 1 && av1cRef.chroma_subsampling_y == 1 && av1cRef.mono_chrome == 0)
-      ret.push_back({ itemId, "YUV 4:2:0" });
-    else if(av1cRef.chroma_subsampling_x == 1 && av1cRef.chroma_subsampling_y == 1 && av1cRef.mono_chrome == 1)
-      ret.push_back({ itemId, "Monochrome 4:0:0" });
-    else
-      out->error("[ItemId=%u] Inconsistent AV1 colorspace: chroma_subsampling_x=%lld chroma_subsampling_y=%lld mono_chrome=%lld",
-                 itemId, av1cRef.chroma_subsampling_x, av1cRef.chroma_subsampling_y, av1cRef.mono_chrome);
-  }
-
-  return ret;
+  return getAv1ItemColorspaces(root, out);
 }
 }
 
@@ -96,7 +59,12 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "widths shall be even numbers",
       [] (Box const& root, IReport* out)
       {
-        if(!isAvif(root))
+        auto const supported = isAvifOrMiafHevc(root);
+
+        if(supported == FALSE)
+          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+
+        if(supported != TRUE)
           return;
 
         std::map<uint32_t /*1-based*/, const Box*> clapIndices;
@@ -224,7 +192,12 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "chroma sampling format, and the same decoder configuration",
       [] (Box const& root, IReport* out)
       {
-        if(!isAvif(root))
+        auto const supported = isAvifOrMiafHevc(root);
+
+        if(supported == FALSE)
+          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+
+        if(supported != TRUE)
           return;
 
         std::vector<uint32_t> gridItemIds;
@@ -297,7 +270,12 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "of samples for all planes",
       [] (Box const& root, IReport* out)
       {
-        if(!isAvif(root))
+        auto const supported = isAvifOrMiafHevc(root);
+
+        if(supported == FALSE)
+          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+
+        if(supported != TRUE)
           return;
 
         std::vector<uint32_t> gridItemIds;
@@ -397,12 +375,17 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "Section 7.3.5.1\n"
       "Depth maps and alpha planes [...] if [...] encoded in colour [...] shall be\n"
       "encoded in a colour format with a luma plane and chroma planes",
-      [] (Box const& root, IReport*)
+      [] (Box const& root, IReport* out)
       {
-        if(!isAvif(root))
+        auto const supported = isAvifOrMiafHevc(root);
+
+        if(supported == FALSE)
+          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+
+        if(supported != TRUE)
           return;
 
-        // nothing to do for AV1
+        // nothing to do for AV1, AVC and HEVC which are YCbCr-based
       }
     }
   };

@@ -8,6 +8,7 @@
 #include <map>
 
 void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
+std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset);
@@ -103,98 +104,6 @@ void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader
 }
 } // namespace
 
-std::vector<uint32_t /*itemId*/> findAv1ImageItems(Box const& root)
-{
-  std::vector<uint32_t> av1ImageItemIDs;
-
-  // Find AV1 Image Items
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iinf"))
-          for(auto& iinfChild : metaChild.children)
-            if(iinfChild.fourcc == FOURCC("infe"))
-            {
-              uint32_t itemId = 0;
-
-              for(auto& sym : iinfChild.syms)
-              {
-                if(!strcmp(sym.name, "item_ID"))
-                  itemId = sym.value;
-                else if(!strcmp(sym.name, "item_type"))
-                  if(sym.value == FOURCC("av01"))
-                    av1ImageItemIDs.push_back(itemId);
-              }
-            }
-
-  return av1ImageItemIDs;
-}
-
-const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
-{
-  struct Entry
-  {
-    int found = 0;
-    const Box* box = nullptr;
-  };
-  std::map<uint32_t /*property index*/, Entry> av1cPropertyIndex;
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iprp"))
-          for(auto& iprpChild : metaChild.children)
-            if(iprpChild.fourcc == FOURCC("ipco"))
-              for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
-                if(iprpChild.children[i - 1].fourcc == FOURCC("av1C"))
-                  av1cPropertyIndex.insert({ i, { 0, &iprpChild.children[i - 1] }
-                                           });
-
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
-        if(metaChild.fourcc == FOURCC("iprp"))
-          for(auto& iprpChild : metaChild.children)
-            if(iprpChild.fourcc == FOURCC("ipma"))
-            {
-              uint32_t localItemId = 0;
-
-              for(auto& sym : iprpChild.syms)
-              {
-                if(!strcmp(sym.name, "item_ID"))
-                  localItemId = sym.value;
-                else if(!strcmp(sym.name, "property_index"))
-                  if(localItemId == itemId)
-                    for(auto& a : av1cPropertyIndex)
-                      if(a.first == sym.value)
-                        a.second.found++;
-              }
-            }
-
-  int found = 0;
-  const Box* av1C = nullptr;
-
-  for(auto& a : av1cPropertyIndex)
-  {
-    if(!a.second.found)
-      continue;
-
-    found += a.second.found;
-
-    if(!av1C)
-      av1C = a.second.box;
-
-    break;
-  }
-
-  if(found == 0)
-    out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
-  else if(found > 1)
-    out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, found);
-
-  return av1C;
-}
-
 std::initializer_list<RuleDesc> rulesAvifGeneral =
 {
   {
@@ -202,7 +111,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item shall be associated with an AV1 Item Configuration Property.",
     [] (Box const& root, IReport* out)
     {
-      auto av1ImageItemIDs = findAv1ImageItems(root);
+      auto av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       // AV1 Image Item shall be associated with an AV1 Item Configuration Property
       std::vector<uint32_t> av1cPropertyIndex; /* 1-based */
@@ -251,7 +160,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as sync",
     [] (Box const& root, IReport* out)
     {
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
       {
@@ -285,7 +194,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item Data shall have exactly one Sequence Header OBU.",
     [] (Box const& root, IReport* out)
     {
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
       {
@@ -311,7 +220,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item Data should have its still_picture flag set to 1.",
     [] (Box const& root, IReport* out)
     {
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
       {
@@ -333,7 +242,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.",
     [] (Box const& root, IReport* out)
     {
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
       {
@@ -371,14 +280,21 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "Sequence Header OBU in the AV1 Image Item Data.",
     [] (Box const& root, IReport* out)
     {
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
       {
-        auto av1C = findAv1C(root, out, itemId);
+        auto av1Cs = findAv1C(root, itemId);
 
-        if(!av1C)
+        if(av1Cs.empty())
+        {
+          out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
           continue;
+        }
+        else if(av1Cs.size() > 1)
+          out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)av1Cs.size());
+
+        auto av1C = av1Cs[0];
 
         auto const av1cSymbols = getAv1CSeqHdr(av1C);
 
@@ -404,16 +320,23 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "Sequence Header OBU in the AV1 Image Item Data.",
     [] (Box const& root, IReport* out)
     {
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
       {
         AV1CodecConfigurationRecord av1cRef {};
 
-        auto av1C = findAv1C(root, out, itemId);
+        auto av1Cs = findAv1C(root, itemId);
 
-        if(!av1C)
+        if(av1Cs.empty())
+        {
+          out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
           continue;
+        }
+        else if(av1Cs.size() > 1)
+          out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)av1Cs.size());
+
+        auto av1C = av1Cs[0];
 
         for(auto& sym : av1C->syms)
         {
@@ -507,7 +430,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
                 if(!strcmp(field.name, "item_ID"))
                   primaryItemId = field.value;
 
-      auto av1ImageItemIDs = findAv1ImageItems(root);
+      auto av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       if(std::find(av1ImageItemIDs.begin(), av1ImageItemIDs.end(), primaryItemId) != av1ImageItemIDs.end())
         hasPrimaryItemImage = true;
@@ -550,7 +473,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     [] (Box const& root, IReport* out)
     {
       // contains both image items and meta primary image item of the sequence
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       std::vector<uint32_t> auxImages;
 
@@ -612,7 +535,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     [] (Box const& root, IReport* out)
     {
       // contains both image items and meta primary image item of the sequence
-      auto const av1ImageItemIDs = findAv1ImageItems(root);
+      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
       struct AuxImageItemIds
       {
         uint32_t master, aux;
@@ -1089,7 +1012,7 @@ static const SpecDesc specAvif =
   "https://aomediacodec.github.io/av1-avif/",
   { "miaf" },
   concatRules({ rulesAvifGeneral, getRulesAvifProfiles(specAvif) }),
-  getParseFunctionAvif,
+  nullptr,
 };
 
 static auto const registered = registerSpec(&specAvif);

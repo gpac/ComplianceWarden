@@ -11,9 +11,6 @@ void checkEssential(Box const& root, IReport* out, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffsets(Box const& root, IReport* out, uint32_t itemID);
 Box const & getBoxFromOffset(Box const& root, uint64_t targetOffset);
 
-// FIXME: for colours checks we need to parse the av1C box...
-ParseBoxFunc* getParseFunctionAvif(uint32_t fourcc);
-
 namespace
 {
 bool boxEqual(Box const* a, Box const* b)
@@ -1658,10 +1655,10 @@ static const SpecDesc specMiaf =
 {
   "miaf",
   "MIAF (Multi-Image Application Format)\n"
-  "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // Romain + DAM2 WG03 N0032",
+  "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // TODO: + DAM2 WG03 N0032",
   { "heif" },
   concatRules({ rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(), getRulesMiafColours(), getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
-  getParseFunctionAvif,
+  nullptr,
 };
 
 static auto const registered = registerSpec(&specMiaf);

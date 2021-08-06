@@ -4,6 +4,8 @@
 #include <vector>
 #include <cassert>
 
+void parseAv1C(IReader* br);
+
 std::string toString(uint32_t fourcc)
 {
   char fourccStr[5] = {};
@@ -815,6 +817,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseAvcC;
   case FOURCC("hvcC"):
     return &parseHvcC;
+  case FOURCC("av1C"):
+    return &parseAv1C;
   case FOURCC("pict"):
   case FOURCC("thmb"):
   case FOURCC("auxl"):
