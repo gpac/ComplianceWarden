@@ -394,7 +394,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         if(av1ImageItemDataSeqHdr.empty())
           out->error("[ItemId=%u] No Sequence Header OBU present in the AV1 Image Item Data", itemId);
         else if(!(av1cSymbols == av1ImageItemDataSeqHdr))
-          out->error("[ItemId=%u] The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data, itemId");
+          out->error("[ItemId=%u] The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data", itemId);
       }
     }
   },

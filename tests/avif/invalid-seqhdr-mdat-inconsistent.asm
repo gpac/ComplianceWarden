@@ -37,7 +37,7 @@ meta_start:
         db 0x00, 0x01 ; item_count(16) 
         db 0x00, 0x01 ; item_ID(16) 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x01, 0x0D ; base_offset(32) 
+        dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
         db 0x00, 0x00, 0x00, 0x0B ; base_offset(32) 
@@ -105,6 +105,16 @@ meta_start:
                 db 0x05 ; seq_profile(3) seq_level_idx_0(5) 
                 db 0x0C ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
                 db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
+                ; OBUs
+                db 0x0A ; (8) 
+                db 0x07 ; (8) 
+                db 0x09 ; (8) 
+                db 0x6A ; (8) ('j') 
+                db 0x65 ; (8) ('e') 
+                db 0x9E ; (8) 
+                db 0x3F ; (8) ('?') 
+                db 0xC8 ; (8) 
+                db 0x04 ; (8) 
             av1C_end:
         ipco_end:
         ipma_start:

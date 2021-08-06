@@ -6,6 +6,8 @@ Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
 [avif][Rule #3] Warning: [ItemId=1] still_picture flag set to 0
+[avif][Rule #5] Warning: Sequence Header OBUs should not be present in the AV1CodecConfigurationBox
+[avif][Rule #6] Error: [ItemId=1] The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data
 [avif][Rule #7] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
@@ -31,13 +33,20 @@ the Sequence Header OBU in the AV1 Image Item Data:
 
 
 ========================================
-[avif] 1 error(s), 1 warning(s).
+[avif] 2 error(s), 2 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
 [avif][Rule #3] Section 2.1
 The AV1 Image Item Data should have its still_picture flag set to 1.
+
+[avif][Rule #5] Section 2.1
+Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.
+
+[avif][Rule #6] Section 2.2.1
+If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the
+Sequence Header OBU in the AV1 Image Item Data.
 
 [avif][Rule #7] Section 2.2.1
 The values of the fields in the AV1CodecConfigurationBox shall match those of the

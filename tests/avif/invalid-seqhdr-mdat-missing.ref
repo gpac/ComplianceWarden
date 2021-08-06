@@ -8,6 +8,8 @@ https://aomediacodec.github.io/av1-avif/
 [avif][Rule #1] Error: [ItemId=1] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
 [avif][Rule #2] Error: [ItemId=1] Expected 1 sequence Header OBU in Image Item Data but found 0
 [avif][Rule #4] Warning: [ItemId=1] reduced_still_picture_header flag set to 0
+[avif][Rule #5] Warning: Sequence Header OBUs should not be present in the AV1CodecConfigurationBox
+[avif][Rule #6] Error: [ItemId=1] No Sequence Header OBU present in the AV1 Image Item Data
 [avif][Rule #7] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
@@ -33,7 +35,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 
 
 ========================================
-[avif] 3 error(s), 1 warning(s).
+[avif] 4 error(s), 2 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -46,6 +48,13 @@ The AV1 Image Item Data shall have exactly one Sequence Header OBU.
 
 [avif][Rule #4] Section 2.1
 The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.
+
+[avif][Rule #5] Section 2.1
+Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.
+
+[avif][Rule #6] Section 2.2.1
+If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the
+Sequence Header OBU in the AV1 Image Item Data.
 
 [avif][Rule #7] Section 2.2.1
 The values of the fields in the AV1CodecConfigurationBox shall match those of the
