@@ -223,13 +223,13 @@ meta_start:
                 dd BE(clap_end - clap_start)
                 dd "clap"
                 db 0x00, 0x00, 0x00, 0x00 ; "cleanApertureWidthN(32)"
-                db 0x00, 0x00, 0x00, 0x00 ; "cleanApertureWidthD(32)"
+                db 0x00, 0x00, 0x00, 0x01 ; "cleanApertureWidthD(32)"
                 db 0x00, 0x00, 0x00, 0x00 ; "cleanApertureHeightN(32)"
-                db 0x00, 0x00, 0x00, 0x00 ; "cleanApertureHeightD(32)"
+                db 0x00, 0x00, 0x00, 0x01 ; "cleanApertureHeightD(32)"
                 db 0x00, 0x00, 0x00, 0x00 ; "horizOffN(32)"
-                db 0x00, 0x00, 0x00, 0x00 ; "horizOffD(32)"
+                db 0x00, 0x00, 0x00, 0x01 ; "horizOffD(32)"
                 db 0x00, 0x00, 0x00, 0x00 ; "vertOffN(32)"
-                db 0x00, 0x00, 0x00, 0x00 ; "vertOffD(32)"
+                db 0x00, 0x00, 0x00, 0x01 ; "vertOffD(32)"
             clap_end:
         ipco_end:
         ipma_start:
