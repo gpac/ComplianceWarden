@@ -109,7 +109,7 @@ $ make
 ### Emscripten (WASM)
 
 ```
-em++ -std=c++14 -DCW_WASM bin/cw_version.cpp src/*.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC', '_printVersion']" -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 --pre-js wasm-fs-pre.js
+em++ -std=c++14 -DCW_WASM bin/cw_version.cpp src/*.cpp -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC', '_printVersion', '_free']" -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 --pre-js wasm-fs-pre.js
 ```
 
 See https://gpac.github.io/ComplianceWarden-wasm/ for a demo.
