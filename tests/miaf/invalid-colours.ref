@@ -1,0 +1,69 @@
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+[miaf][Rule #40] Error: [ItemId=2] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #40] Error: [ItemId=3] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #40] Error: [ItemId=4] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #40] Error: [ItemId=5] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #40] Error: [ItemId=6] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #40] Error: [ItemId=7] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #41] Error: [ItemId=2] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #41] Error: [ItemId=3] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #41] Error: [ItemId=4] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #41] Error: [ItemId=5] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #41] Error: [ItemId=6] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #41] Error: [ItemId=7] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #42] Error: [ItemId=2] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #42] Error: [ItemId=3] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #42] Error: [ItemId=4] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #42] Error: [ItemId=5] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #42] Error: [ItemId=6] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+[miaf][Rule #42] Error: [ItemId=7] Inconsistent AV1 colorspace: chroma_subsampling_x=0 chroma_subsampling_y=1 mono_chrome=0
+
+========================================
+[miaf] 18 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[miaf][Rule #40] Section 7.3.6.7
+Clean aperture:- when the image is 4:2:2 the horizontal cropped offset and width shall be
+  even numbers and the vertical values shall be integers
+- when the image is 4:2:0 both the horizontal and vertical cropped offsets and
+widths shall be even numbers
+
+[miaf][Rule #41] Section 7.3.11.4.1
+All input images of a grid image item shall use the same coding format,
+chroma sampling format, and the same decoder configuration
+
+[miaf][Rule #42] Section 7.3.11.4.1
+The tile size is restricted according to the chroma sampling format of the
+input images; the cropping shall select an integer number of samples for
+all planes, and result in an output image that also includes an integer number
+of samples for all planes
+
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
+
+========================================
+[heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

@@ -1,0 +1,91 @@
++--------------------------------------+
+|           miaf validation            |
++--------------------------------------+
+
+Specification description: MIAF (Multi-Image Application Format)
+MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
+
+[miaf][Rule #38] Warning: Tile widths should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile heights should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile widths should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile heights should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile widths should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile heights should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile widths should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile heights should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile widths should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile heights should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile widths should be a multiple of 64. Found 65
+[miaf][Rule #38] Warning: Tile heights should be a multiple of 64. Found 65
+[miaf][Rule #40] Error: [ItemId=2] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=2] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
+[miaf][Rule #40] Error: [ItemId=2] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=2] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
+[miaf][Rule #40] Error: [ItemId=3] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=3] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
+[miaf][Rule #40] Error: [ItemId=3] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=3] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
+[miaf][Rule #40] Error: [ItemId=4] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=4] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
+[miaf][Rule #40] Error: [ItemId=4] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=4] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
+[miaf][Rule #40] Error: [ItemId=5] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=5] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
+[miaf][Rule #40] Error: [ItemId=5] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=5] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
+[miaf][Rule #40] Error: [ItemId=6] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=6] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
+[miaf][Rule #40] Error: [ItemId=6] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=6] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
+[miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
+[miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
+[miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
+[miaf][Rule #42] Error: [gridItemId=1] for YUV 4:2:0 width(65) should be even
+
+========================================
+[miaf] 25 error(s), 12 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[miaf][Rule #38] Section 7.3.11.4.2
+Any grid image in a MIAF file shall also conform to the following constraints:
+- The tile_width shall be greater than or equal to 64, and should be a multiple
+  of 64.
+- The tile_height shall be greater than or equal to 64, and should be a multiple
+  of 64
+
+[miaf][Rule #40] Section 7.3.6.7
+Clean aperture:- when the image is 4:2:2 the horizontal cropped offset and width shall be
+  even numbers and the vertical values shall be integers
+- when the image is 4:2:0 both the horizontal and vertical cropped offsets and
+widths shall be even numbers
+
+[miaf][Rule #42] Section 7.3.11.4.1
+The tile size is restricted according to the chroma sampling format of the
+input images; the cropping shall select an integer number of samples for
+all planes, and result in an output image that also includes an integer number
+of samples for all planes
+
++--------------------------------------+
+|           heif validation            |
++--------------------------------------+
+
+Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
+
+========================================
+[heif] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+
