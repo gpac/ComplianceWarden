@@ -5,8 +5,8 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #6] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
-[avif][Rule #7] Error: Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+[avif][Rule #6] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
+[avif][Rule #7] Error: [ItemId=1] Found 2 av1C (expected 1) - for conformance, only the first associated av1C will be considered
 
 ========================================
 [avif] 2 error(s), 0 warning(s).

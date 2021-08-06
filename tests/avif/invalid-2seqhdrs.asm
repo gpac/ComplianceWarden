@@ -40,7 +40,7 @@ meta_start:
         db 0x00, 0x00, 0x01, 0x0D ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
-        db 0x00, 0x00, 0x00, 0x0B ; base_offset(32) 
+        db 0x00, 0x00, 0x00, 0x14 ; base_offset(32) 
     iloc_end:
     iinf_start:
         dd BE(iinf_end - iinf_start)
@@ -125,6 +125,15 @@ meta_end:
 mdat_start:
     dd BE(mdat_end - mdat_start)
     dd "mdat"
+    db 0x0A ; (8) 
+    db 0x07 ; (8) 
+    db 0x09 ; (8) 
+    db 0x6A ; (8) ('j') 
+    db 0x65 ; (8) ('e') 
+    db 0x9E ; (8) 
+    db 0x3F ; (8) ('?') 
+    db 0xC8 ; (8) 
+    db 0x04 ; (8) 
     db 0x0A ; (8) 
     db 0x07 ; (8) 
     db 0x09 ; (8) 

@@ -5,9 +5,9 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #3] Warning: still_picture flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
+[avif][Rule #1] Error: [ItemId=1] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #3] Warning: [ItemId=1] still_picture flag set to 0
+[avif][Rule #4] Warning: [ItemId=1] reduced_still_picture_header flag set to 0
 [avif][Rule #10] Error: Track with 'pict' handler found, but no primary item that is an AV1 image item found.
 [avif][Rule #17] Error: Item ID=1 (image item): Baseline Profile requires AV1 Main Profile
 [avif][Rule #17] Error: Item ID=2 (image sequence): Baseline Profile requires AV1 Main Profile

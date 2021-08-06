@@ -188,9 +188,9 @@ const Box* findAv1C(Box const& root, IReport* out, uint32_t itemId)
   }
 
   if(found == 0)
-    out->error("No av1C configuration found (expected 1)");
+    out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
   else if(found > 1)
-    out->error("Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", found);
+    out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, found);
 
   return av1C;
 }
@@ -276,7 +276,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         }
 
         if(!(showFrame && keyFrame))
-          out->error("AV1 Sample shall be marked as sync (showFrame=%d, keyFrame=%d)", (int)showFrame, (int)keyFrame);
+          out->error("[ItemId=%u] AV1 Sample shall be marked as sync (showFrame=%d, keyFrame=%d)", itemId, (int)showFrame, (int)keyFrame);
       }
     }
   },
@@ -302,7 +302,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
             seqHdrNum++;
 
         if(seqHdrNum != 1)
-          out->error("Expected 1 sequence Header OBU but found %d", seqHdrNum);
+          out->error("[ItemId=%u] Expected 1 sequence Header OBU in Image Item Data but found %d", itemId, seqHdrNum);
       }
     }
   },
@@ -324,7 +324,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         for(auto& sym : br.myBox.syms)
           if(!strcmp(sym.name, "still_picture"))
             if(sym.value == 0)
-              out->warning("still_picture flag set to 0");
+              out->warning("[ItemId=%u] still_picture flag set to 0", itemId);
       }
     }
   },
@@ -342,7 +342,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         probeAV1ImageItem(root, out, itemId, br, state);
 
         if(!state.reduced_still_picture_header)
-          out->warning("reduced_still_picture_header flag set to 0");
+          out->warning("[ItemId=%u] reduced_still_picture_header flag set to 0", itemId);
       }
     }
   },
@@ -383,7 +383,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         auto const av1cSymbols = getAv1CSeqHdr(av1C);
 
         if(av1cSymbols.empty())
-          return;
+          return; // no seq hdr in av1C
 
         av1State stateUnused;
         BoxReader br;
@@ -392,9 +392,9 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         auto const av1ImageItemDataSeqHdr = getAv1CSeqHdr(&br.myBox);
 
         if(av1ImageItemDataSeqHdr.empty())
-          out->error("No Sequence Header OBU present in the AV1 Image Item Data");
+          out->error("[ItemId=%u] No Sequence Header OBU present in the AV1 Image Item Data", itemId);
         else if(!(av1cSymbols == av1ImageItemDataSeqHdr))
-          out->error("The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data");
+          out->error("[ItemId=%u] The Sequence Header OBU present in the AV1CodecConfigurationBox shall match the one in the AV1 Image Item Data, itemId");
       }
     }
   },
@@ -450,11 +450,11 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         probeAV1ImageItem(root, out, itemId, br, state);
 
         if(memcmp(&state.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
-          out->error("The values of the AV1CodecConfigurationBox shall match\n"
+          out->error("[ItemId=%u] The values of the AV1CodecConfigurationBox shall match\n"
                      "the Sequence Header OBU in the AV1 Image Item Data:\n"
                      "\tAV1CodecConfigurationBox:\n%s\n"
                      "\tSequence Header OBU in the AV1 Image Item Data:\n%s\n",
-                     av1cRef.toString().c_str(), state.av1c.toString().c_str());
+                     itemId, av1cRef.toString().c_str(), state.av1c.toString().c_str());
       }
     }
   },
@@ -581,7 +581,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
                   // TODO: move this check to ISOBMFF 8.11.1.1
                   if(field.value == 0)
-                    out->warning("The to_item_ID value of 0 should not be used - ignoring");
+                    out->warning("The to_item_ID value of 0 should not be used - ignoring (from_item_ID=%u)", from_item_ID);
                   else
                     auxImages.push_back(from_item_ID);
                 }
@@ -734,7 +734,8 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         auto bitDepthAux = computeBitDepth(auxImageIds.aux);
 
         if(bitDepthMaster != bitDepthAux)
-          out->error("An AV1 Alpha Image Item shall be encoded with the same bit depth as the associated master AV1 Image Item");
+          out->error("An AV1 Alpha Image Item (ItemId=%u) shall be encoded with the same bit depth as the associated master AV1 Image Item (ItemId=%u)",
+                     auxImageIds.aux, auxImageIds.master);
       }
     }
   },

@@ -5,7 +5,7 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=0

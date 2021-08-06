@@ -6,8 +6,8 @@ Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
 [avif][Rule #0] Error: AV1 Image Item (ID=1) shall be associated with an AV1 Item Configuration Property
-[avif][Rule #6] Error: No av1C configuration found (expected 1)
-[avif][Rule #7] Error: No av1C configuration found (expected 1)
+[avif][Rule #6] Error: [ItemId=1] No av1C configuration found (expected 1)
+[avif][Rule #7] Error: [ItemId=1] No av1C configuration found (expected 1)
 
 ========================================
 [avif] 3 error(s), 0 warning(s).

@@ -5,8 +5,8 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=1] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=2] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
 [avif][Rule #11] Error: The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=2)
 [avif][Rule #17] Error: Item ID=1 (image item): Baseline Profile requires AV1 Main Profile
 [avif][Rule #17] Error: Item ID=2 (image item): Baseline Profile requires AV1 Main Profile

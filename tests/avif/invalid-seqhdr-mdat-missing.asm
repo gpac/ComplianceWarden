@@ -3,9 +3,9 @@
 ftyp_start:
     dd BE(ftyp_end - ftyp_start)
     dd "ftyp"
-    db 0x61, 0x76, 0x69, 0x67 ; brand(32) ('avig') 
+    db 0x61, 0x76, 0x69, 0x66 ; brand(32) ('avif') 
     db 0x00, 0x00, 0x00, 0x00 ; version(32) 
-    db 0x61, 0x76, 0x69, 0x67 ; compatible_brand(32) ('avig') 
+    db 0x61, 0x76, 0x69, 0x66 ; compatible_brand(32) ('avif') 
     db 0x6D, 0x69, 0x66, 0x31 ; compatible_brand(32) ('mif1') 
     db 0x6D, 0x69, 0x61, 0x66 ; compatible_brand(32) ('miaf') 
     db 0x4D, 0x41, 0x31, 0x42 ; compatible_brand(32) ('MA1B') 
@@ -37,10 +37,10 @@ meta_start:
         db 0x00, 0x01 ; item_count(16) 
         db 0x00, 0x01 ; item_ID(16) 
         db 0x00, 0x00 ; data_reference_index(16) 
-        dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
+        db 0x00, 0x00, 0x01, 0x0D ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
-        db 0x00, 0x00, 0x00, 0x0B ; base_offset(32) 
+        db 0x00, 0x00, 0x00, 0x03 ; base_offset(32) 
     iloc_end:
     iinf_start:
         dd BE(iinf_end - iinf_start)
@@ -125,17 +125,9 @@ meta_end:
 mdat_start:
     dd BE(mdat_end - mdat_start)
     dd "mdat"
-    db 0x0A ; (8) 
-    db 0x07 ; (8) 
-    db 0x19 ; (8) 
-    db 0x6A ; (8) ('j') 
-    db 0x65 ; (8) ('e') 
-    db 0x9E ; (8) 
-    db 0x3F ; (8) ('?') 
-    db 0xC8 ; (8) 
-    db 0x04 ; (8) 
-    db 0x32 ; (8) ('2') 
-    db 0x00 ; (8) 
+    db 0x32
+    db 0x01
+    db 0x40
 mdat_end:
 
 ; vim: syntax=nasm

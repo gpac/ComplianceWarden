@@ -5,31 +5,31 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #1] Error: AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #2] Error: Expected 1 sequence Header OBU but found 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: reduced_still_picture_header flag set to 0
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #1] Error: [ItemId=1] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=2] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=3] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=4] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=5] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=6] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=7] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #1] Error: [ItemId=8] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
+[avif][Rule #2] Error: [ItemId=1] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=2] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=3] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=4] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=5] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=6] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=7] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #2] Error: [ItemId=8] Expected 1 sequence Header OBU in Image Item Data but found 0
+[avif][Rule #4] Warning: [ItemId=1] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=2] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=3] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=4] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=5] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=6] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=7] reduced_still_picture_header flag set to 0
+[avif][Rule #4] Warning: [ItemId=8] reduced_still_picture_header flag set to 0
+[avif][Rule #7] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -52,7 +52,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=2] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -75,7 +75,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=3] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -98,7 +98,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=4] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -121,7 +121,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=5] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -144,7 +144,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=6] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -167,7 +167,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=7] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
@@ -190,7 +190,7 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
-[avif][Rule #7] Error: The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #7] Error: [ItemId=8] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=1
