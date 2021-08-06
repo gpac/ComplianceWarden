@@ -265,7 +265,7 @@ int parseAv1SeqHdr(IReader* reader, av1State& state)
 
     if(enable_order_hint)
     {
-      br->sym(" enable_jnt_comp", 1);
+      br->sym("enable_jnt_comp", 1);
       br->sym("enable_ref_frame_mvs", 1);
     }
     else

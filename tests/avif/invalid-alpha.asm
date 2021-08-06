@@ -289,7 +289,7 @@ mdat_start:
     db 0x90 ; (8) 
     db 0x20 ; (8) (' ') 
     db 0x20 ; (8) (' ') 
-    db 0x69 ; (8) ('i') 
+    db 0x61 ; (8) ('a') 
 mdat_end:
 
 ; vim: syntax=nasm
