@@ -5,10 +5,10 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
-[miaf][Rule #40] Warning: This rule is only implemented for HEVC and AV1 codecs.
-[miaf][Rule #41] Warning: This rule is only implemented for HEVC and AV1 codecs.
-[miaf][Rule #42] Warning: This rule is only implemented for HEVC and AV1 codecs.
-[miaf][Rule #43] Warning: This rule is only implemented for HEVC and AV1 codecs.
+[miaf][Rule #40] Warning: This rule doesn't support the AVC codec.
+[miaf][Rule #41] Warning: This rule doesn't support the AVC codec.
+[miaf][Rule #42] Warning: This rule doesn't support the AVC codec.
+[miaf][Rule #43] Warning: This rule doesn't support the AVC codec.
 
 ========================================
 [miaf] 0 error(s), 4 warning(s).

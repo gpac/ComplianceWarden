@@ -8,15 +8,17 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(B
 
 namespace
 {
-enum CodecDetection
+enum Codec
 {
-  TRUE,
-  FALSE,
-  NONE,
+  HEVC,
+  AV1,
+  AVC,
+  UNKNOWN,
 };
-CodecDetection isAvifOrMiafHevc(Box const& root)
+
+Codec codecDetection(Box const& root)
 {
-  CodecDetection supported = NONE;
+  Codec codec = UNKNOWN;
 
   for(auto& box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
@@ -25,18 +27,18 @@ CodecDetection isAvifOrMiafHevc(Box const& root)
           switch(sym.value)
           {
           case FOURCC("avif"): case FOURCC("avis"): case FOURCC("avio"):
-            return TRUE;
+            return AV1;
           case FOURCC("heic"): case FOURCC("heix"): case FOURCC("heim"):
           case FOURCC("heis"): case FOURCC("hevc"): case FOURCC("hevx"):
           case FOURCC("hevm"): case FOURCC("hevs"):
-            return NONE;
+            return HEVC;
           case FOURCC("avci"): case FOURCC("avcs"):
-            supported = FALSE;
+            codec = AVC;
             break;
           default: break;
           }
 
-  return supported;
+  return codec;
 }
 
 std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box const& root, IReport* out)
@@ -59,12 +61,12 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "widths shall be even numbers",
       [] (Box const& root, IReport* out)
       {
-        auto const supported = isAvifOrMiafHevc(root);
+        auto const codec = codecDetection(root);
 
-        if(supported == FALSE)
-          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+        if(codec == AVC)
+          out->warning("This rule doesn't support the AVC codec.");
 
-        if(supported != TRUE)
+        if(codec != AV1 && codec != HEVC)
           return;
 
         std::map<uint32_t /*1-based*/, const Box*> clapIndices;
@@ -192,12 +194,12 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "chroma sampling format, and the same decoder configuration",
       [] (Box const& root, IReport* out)
       {
-        auto const supported = isAvifOrMiafHevc(root);
+        auto const codec = codecDetection(root);
 
-        if(supported == FALSE)
-          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+        if(codec == AVC)
+          out->warning("This rule doesn't support the AVC codec.");
 
-        if(supported != TRUE)
+        if(codec != AV1 && codec != HEVC)
           return;
 
         std::vector<uint32_t> gridItemIds;
@@ -270,12 +272,12 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "of samples for all planes",
       [] (Box const& root, IReport* out)
       {
-        auto const supported = isAvifOrMiafHevc(root);
+        auto const codec = codecDetection(root);
 
-        if(supported == FALSE)
-          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+        if(codec == AVC)
+          out->warning("This rule doesn't support the AVC codec.");
 
-        if(supported != TRUE)
+        if(codec != AV1 && codec != HEVC)
           return;
 
         std::vector<uint32_t> gridItemIds;
@@ -377,15 +379,15 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
       "encoded in a colour format with a luma plane and chroma planes",
       [] (Box const& root, IReport* out)
       {
-        auto const supported = isAvifOrMiafHevc(root);
+        auto const codec = codecDetection(root);
 
-        if(supported == FALSE)
-          out->warning("This rule is only implemented for HEVC and AV1 codecs.");
+        if(codec == AVC)
+          out->warning("This rule doesn't support the AVC codec.");
 
-        if(supported != TRUE)
+        if(codec != AV1 && codec != HEVC)
           return;
 
-        // nothing to do for AV1, AVC and HEVC which are YCbCr-based
+        // AV1, AVC and HEVC are YCbCr-based: nothing to do
       }
     }
   };
