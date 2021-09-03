@@ -5,13 +5,17 @@
 Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
+[miaf][Rule #10] Error: [ItemID=1] MIAF missing Image spatial extents property
 [miaf][Rule #26] Error: Found no 'pixi' associated for 1 displayable (not hidden) images (ItemIds={1})
 
 ========================================
-[miaf] 1 error(s), 0 warning(s).
+[miaf] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
+
+[miaf][Rule #10] Section 7.3.6.3
+Every image item shall be associated with a Image spatial extents property
 
 [miaf][Rule #26] Section 7.3.6.6
 The pixel information property shall be associated with every image that is

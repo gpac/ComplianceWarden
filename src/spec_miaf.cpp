@@ -430,7 +430,31 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     "Every image item shall be associated with a Image spatial extents property",
     [] (Box const& root, IReport* out)
     {
-      bool found = false;
+      // find image items
+      std::map<uint32_t /*Item_ID*/, bool> imageItemIdsIspeFound;
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto& iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe"))
+                {
+                  uint32_t itemId = 0;
+
+                  for(auto& sym : iinfChild.syms)
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                      itemId = sym.value;
+                    else if(!strcmp(sym.name, "item_type"))
+                      if(isVisualSampleEntry(sym.value) // coded image item
+                         || sym.value == FOURCC("iden") || sym.value == FOURCC("grid") || sym.value == FOURCC("iovl")) // derived image item
+                        imageItemIdsIspeFound.insert({ itemId, false });
+                  }
+                }
+
+      // extract 'ispe' indices
+      std::vector<uint32_t> ispePropertyIndex;
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -439,15 +463,36 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
               for(auto& iprpChild : metaChild.children)
               {
                 if(iprpChild.fourcc == FOURCC("ipco"))
-                  for(auto& ipcoChild : iprpChild.children)
-                    if(ipcoChild.fourcc == FOURCC("ispe"))
-                      found = true;
-
-                break;
+                  for(uint32_t i = 1; i <= iprpChild.children.size(); ++i)
+                    if(iprpChild.children[i - 1].fourcc == FOURCC("ispe"))
+                      ispePropertyIndex.push_back(i);
               }
 
-      if(!found)
-        out->error("MIAF missing Image spatial extents property");
+      // check property associations
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iprp"))
+              for(auto& iprpChild : metaChild.children)
+                if(iprpChild.fourcc == FOURCC("ipma"))
+                {
+                  uint32_t localItemId = 0;
+
+                  for(auto& sym : iprpChild.syms)
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                      localItemId = sym.value;
+                    else if(!strcmp(sym.name, "property_index"))
+                      if(imageItemIdsIspeFound.find(localItemId) != imageItemIdsIspeFound.end())
+                        if(std::find(ispePropertyIndex.begin(), ispePropertyIndex.end(), sym.value) != ispePropertyIndex.end())
+                          imageItemIdsIspeFound[localItemId] = true;
+                  }
+                }
+
+      // iterate to find images unmatched with an 'ispe'
+      for(auto image : imageItemIdsIspeFound)
+        if(!image.second)
+          out->error("[ItemID=%u] MIAF missing Image spatial extents property", image.first);
     },
   },
 #if 0
