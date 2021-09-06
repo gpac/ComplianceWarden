@@ -607,25 +607,51 @@ const SpecDesc specIsobmff =
     },
     {
       "Section 8.4.3.1\n"
-      "'hdlr box': pre_defined = 0, reserved = 0, 'name' field shall be null-terminated.",
+      "'hdlr box': pre_defined = 0.",
+      [] (Box const& root, IReport* out)
+      {
+        auto check = [&] (const Box* box) {
+            for(auto& sym : box->syms)
+              if(!strcmp(sym.name, "pre_defined"))
+                if(sym.value != 0)
+                  out->error("'hdlr box': pre_defined shall be 0 but value is %lld", sym.value);
+          };
+
+        auto boxes = findBoxes(root, FOURCC("hdlr"));
+
+        for(auto box : boxes)
+          check(box);
+      }
+    },
+    {
+      "Section 8.4.3.1\n"
+      "'hdlr box': reserved = 0",
+      [] (Box const& root, IReport* out)
+      {
+        auto check = [&] (const Box* box) {
+            for(auto& sym : box->syms)
+              if(!strncmp(sym.name, "reserved", 8))
+                if(sym.value != 0)
+                  out->error("'hdlr box': %s shall be 0 but value is %lld", sym.name, sym.value);
+          };
+
+        auto boxes = findBoxes(root, FOURCC("hdlr"));
+
+        for(auto box : boxes)
+          check(box);
+      }
+    },
+    {
+      "Section 8.4.3.1\n"
+      "'hdlr box': 'name' field shall be null-terminated.",
       [] (Box const& root, IReport* out)
       {
         auto check = [&] (const Box* box) {
             char lastName = 0x7F;
 
             for(auto& sym : box->syms)
-            {
-              if(!strcmp(sym.name, "pre_defined"))
-                if(sym.value != 0)
-                  out->error("'hdlr box': pre_defined shall be 0 but value is %lld", sym.value);
-
-              if(!strncmp(sym.name, "reserved", 8))
-                if(sym.value != 0)
-                  out->error("'hdlr box': %s shall be 0 but value is %lld", sym.name, sym.value);
-
               if(!strcmp(sym.name, "name"))
                 lastName = (char)sym.value;
-            }
 
             if(lastName != 0)
               out->error("'hdlr box': 'name' field shall be null-terminated");
@@ -636,7 +662,7 @@ const SpecDesc specIsobmff =
         for(auto box : boxes)
           check(box);
       }
-    }
+    },
   },
   nullptr,
 };
