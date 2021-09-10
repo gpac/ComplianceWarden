@@ -118,7 +118,7 @@ void checkEssential(Box const& root, IReport* out, uint32_t fourcc)
 
                   if(properties[sym.value] == fourcc)
                     if(!essential)
-                      out->error("Transformative property \"%s\" shall be marked as essential (item_ID=%u)", toString(properties[sym.value]).c_str(), itemId);
+                      out->error("Property \"%s\" shall be marked as essential (item_ID=%u)", toString(properties[sym.value]).c_str(), itemId);
                 }
               }
             }

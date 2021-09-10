@@ -5,7 +5,7 @@
 Specification description: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
 
-[avif][Rule #9] Error: Transformative property "av1C" shall be marked as essential (item_ID=1)
+[avif][Rule #9] Error: Property "av1C" shall be marked as essential (item_ID=1)
 
 ========================================
 [avif] 1 error(s), 0 warning(s).
