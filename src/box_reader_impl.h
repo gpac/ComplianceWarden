@@ -43,7 +43,8 @@ struct BoxReader : IReader
     }
     else if(size == 0)
     {
-      size = myBox.size + boxHeaderSize - br.m_pos / 8; // until the end of container - may be impossible to get right in some wrong cases
+      // until the end of container - may be impossible to get right in some wrong cases
+      size = subReader.myBox.size = myBox.size + boxHeaderSize - br.m_pos / 8;
     }
 
     ENSURE(size >= boxHeaderSize, "BoxReader::box(): box size %llu < %u bytes (fourcc='%s')",
