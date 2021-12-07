@@ -50,15 +50,18 @@ struct BoxReader : IReader
     ENSURE(size >= boxHeaderSize, "BoxReader::box(): box size %llu < %u bytes (fourcc='%s')",
            size, boxHeaderSize, toString(subReader.myBox.fourcc).c_str());
 
-    subReader.br = br.sub(int(size - boxHeaderSize));
+    subReader.br = br.sub((int)size);
     auto pos = subReader.br.m_pos;
+    subReader.br.src -= boxHeaderSize;
+    subReader.br.m_pos += boxHeaderSize * 8;
+    br.m_pos -= boxHeaderSize * 8;
     auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
     myBox.children.push_back(std::move(subReader.myBox));
 
-    ENSURE((uint64_t)subReader.br.m_pos == pos + (size - boxHeaderSize) * 8,
+    ENSURE((uint64_t)subReader.br.m_pos == pos + size * 8,
            "Box '%s': read %d bits instead of %llu bits",
-           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, (size - boxHeaderSize) * 8);
+           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, size * 8);
   }
 
   BitReader br;

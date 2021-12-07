@@ -37,12 +37,12 @@ meta_start:
         db 0x40 ; base_offset_size(4) ('@') index_size(4) ('@') 
         db 0x00, 0x01 ; item_count(16) 
         db 0x00, 0x01 ; item_ID(16) 
-        db 0x00, 0x01 ; reserved2(12) construction_method(4) 
+        db 0x00, 0x00 ; reserved2(12) construction_method(4) 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x00, 0x00 ; base_offset(32) 
+        dd BE(mdat_start - ftyp_start + 8) ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
         db 0x00, 0x00, 0x00, 0x00 ; extent_offset(32) 
-        db 0x00, 0x00, 0x00, 0x64 ; extent_length(32) 
+        db 0x00, 0x00, 0x00, 0x01 ; extent_length(32) 
     iloc_end:
     idat_start:
         dd BE(idat_end - idat_start)
@@ -121,5 +121,11 @@ meta_start:
         ipma_end:
     iprp_end:
 meta_end:
+
+mdat_start:
+    dd BE(mdat_end - mdat_start)
+    dd "mdat"
+    db 0x00, 0x00
+mdat_end:
 
 ; vim: syntax=nasm

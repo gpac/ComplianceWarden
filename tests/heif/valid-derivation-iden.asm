@@ -84,7 +84,7 @@ meta_start:
         dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
         db 0x00, 0x00, 0x00, 0x01 ; "extent_length(32)" 
         db 0x00, 0x02 ; "item_ID(16)" 
-        db 0x00, 0x01 ; "reserved2(12)" "construction_method(4)" 
+        db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; "data_reference_index(16)" 
         db 0x00, 0x01 ; "extent_count(16)" 
         dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
@@ -96,6 +96,10 @@ meta_start:
         dd BE(mdat_start - ftyp_start + 8) ; "extent_offset(32)" 
         db 0x00, 0x00, 0x00, 0x01 ; "extent_length(32)" 
     iloc_end:
+    idat_start:
+        dd BE(idat_end - idat_start)
+        dd "idat"
+    idat_end:
     iref_start:
         dd BE(iref_end - iref_start)
         dd "iref"

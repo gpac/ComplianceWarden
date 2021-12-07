@@ -135,9 +135,9 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
 
   std::vector<ItemLocation> itemLocs;
 
-  for(auto& box : root.children)
-    if(box.fourcc == FOURCC("meta"))
-      for(auto& metaChild : box.children)
+  for(auto& meta : root.children)
+    if(meta.fourcc == FOURCC("meta"))
+      for(auto& metaChild : meta.children)
         if(metaChild.fourcc == FOURCC("iloc"))
         {
           int64_t currOffset = 0;
@@ -168,7 +168,16 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
             {
               itemLoc.construction_method = sym.value;
 
-              if(itemLoc.construction_method > 1)
+              if(itemLoc.construction_method == 1)
+              {
+                auto idat = findBoxes(meta, FOURCC("idat"));
+
+                if(idat.size() == 1)
+                  itemLoc.base_offset = idat[0]->position + 8;
+                else
+                  out->error("construction_method=1 but found %llu \"idat\" boxes instead of 1", idat.size());
+              }
+              else if(itemLoc.construction_method > 1)
                 out->warning("construction_method > 1 not supported");
             }
 
@@ -181,7 +190,7 @@ std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> getItemDataOffset
             }
 
             if(!strcmp(sym.name, "base_offset"))
-              itemLoc.base_offset = sym.value;
+              itemLoc.base_offset += sym.value;
 
             if(!strcmp(sym.name, "extent_offset"))
               currOffset = sym.value;

@@ -1,1 +1,1 @@
-Box 'stsd': read 64 bits instead of 96 bits
+Box 'stsd': read 128 bits instead of 160 bits

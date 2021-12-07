@@ -417,27 +417,27 @@ static const SpecDesc specHeif =
         auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
             if(spans[0].second == 0)
             {
-              out->error("Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
+              out->error("[tile] Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
               return;
             }
 
             if(spans.size() > 1)
-              out->error("ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
+              out->error("[tile] ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
 
             if(spans[0].second < 2)
             {
-              out->error("ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans.size());
+              out->error("[tile] ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans[0].second);
               return;
             }
 
             auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
-            br.u(8);
+            br.u(8); /*version*/
             auto const flags = br.u(8);
             const int fieldLength = ((flags & 1) + 1) * 2;
 
             if(spans[0].second < 4 + fieldLength * 2)
             {
-              out->error("ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, 4 + fieldLength * 2);
+              out->error("[tile] ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, spans[0].second, 4 + fieldLength * 2);
               return;
             }
 
@@ -593,27 +593,27 @@ static const SpecDesc specHeif =
         auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
             if(spans[0].second == 0)
             {
-              out->error("Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
+              out->error("[grid] Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
               return;
             }
 
             if(spans.size() > 1)
-              out->error("ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
+              out->error("[grid] ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
 
             if(spans[0].second < 2)
             {
-              out->error("ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans.size());
+              out->error("[grid] ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans[0].second);
               return;
             }
 
             auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
-            br.u(8);
+            br.u(8); /*version*/
             auto const flags = br.u(8);
             const int fieldLength = ((flags & 1) + 1) * 2;
 
             if(spans[0].second < 4 + fieldLength * 2)
             {
-              out->error("ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, 4 + fieldLength * 2);
+              out->error("[grid] ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, spans[0].second, 4 + fieldLength * 2);
               return;
             }
 
