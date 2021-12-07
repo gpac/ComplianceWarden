@@ -32,14 +32,15 @@ meta_start:
     iloc_start:
         dd BE(iloc_end - iloc_start)
         dd "iloc"
-        db 0x00 ; version(8) 
+        db 0x01 ; version(8) 
         db 0x00, 0x00, 0x00 ; flags(24) 
         db 0x04 ; offset_size(4) length_size(4) 
         db 0x40 ; base_offset_size(4) ('@') reserved1(4) ('@') 
         db 0x00, 0x01 ; item_count(16) 
         db 0x00, 0x01 ; item_ID(16) 
+        db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x03, 0x63 ; base_offset(32) 
+        db 0x00, 0x00, 0x03, 0x65 ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
         db 0x00, 0x00, 0x00, 0x0D ; extent_length(32) 

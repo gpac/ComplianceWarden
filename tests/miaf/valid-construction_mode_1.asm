@@ -58,7 +58,7 @@ dd BE(iloc_end - iloc_start)
 db "iloc"
 dd BE(0x01000000)
 dd BE(1) ; 1 item
-dd BE(0) ; construction_method(1)
+dd BE(0xaabb0000) ; construction_method(1)
 dw BE(0) ; invalid data_reference_index
 dw BE(0)
 iloc_end:

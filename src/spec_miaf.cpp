@@ -196,15 +196,17 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
                     else if(!strcmp(sym.name, "item_type"))
                     {
                       if(isVisualSampleEntry(sym.value))
-                        imageItems[itemId] = { ImageItem::Type::coded, -1 }
-
-                      ;
+                      {
+                        imageItems[itemId] = { ImageItem::Type::coded, -1 };
+                      }
                       else if(sym.value == FOURCC("iden") || sym.value == FOURCC("grid") || sym.value == FOURCC("iovl"))
-                        imageItems[itemId] = { ImageItem::Type::derived, -1 }
-                      ;
+                      {
+                        imageItems[itemId] = { ImageItem::Type::derived, -1 };
+                      }
                       else
-                        imageItems[itemId] = {}
-                      ;
+                      {
+                        imageItems[itemId] = {};
+                      }
                     }
                   }
                 }
@@ -229,9 +231,6 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
             }
 
       for(auto& ii : imageItems)
-        // if(ii.second.constructionMethod == -1)
-        // out->error("undefined construction_method for item (ID=%u)", ii.first);
-        // else
         if(ii.second.type == ImageItem::Type::coded && ii.second.constructionMethod == 1)
           out->error("construction_method=1 on a coded image item (ID=%u)", ii.first);
         else if(ii.second.type == ImageItem::Type::derived && (ii.second.constructionMethod != 0 && ii.second.constructionMethod != 1))
