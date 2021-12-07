@@ -169,47 +169,73 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     {
       struct ImageItem
       {
-        bool foundIref = false;
+        enum Type
+        {
+          generic,
+          coded,
+          derived
+        };
+        Type type = generic;
         int constructionMethod = -1;
       };
       std::map<uint32_t /*itemId*/, ImageItem> imageItems;
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
-        {
+          for(auto& metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto& iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe"))
+                {
+                  uint32_t itemId = 0;
+
+                  for(auto& sym : iinfChild.syms)
+                  {
+                    if(!strcmp(sym.name, "item_ID"))
+                      itemId = sym.value;
+                    else if(!strcmp(sym.name, "item_type"))
+                    {
+                      if(isVisualSampleEntry(sym.value))
+                        imageItems[itemId] = { ImageItem::Type::coded, -1 }
+
+                      ;
+                      else if(sym.value == FOURCC("iden") || sym.value == FOURCC("grid") || sym.value == FOURCC("iovl"))
+                        imageItems[itemId] = { ImageItem::Type::derived, -1 }
+                      ;
+                      else
+                        imageItems[itemId] = {}
+                      ;
+                    }
+                  }
+                }
+
+      for(auto& box : root.children)
+        if(box.fourcc == FOURCC("meta"))
           for(auto& metaChild : box.children)
             if(metaChild.fourcc == FOURCC("iloc"))
             {
-              for(auto& field : metaChild.syms)
-                if(!strcmp(field.name, "item_ID"))
-                {
-                  if(imageItems.find(field.value) != imageItems.end())
-                    out->error("iloc itemId duplicates for %lld", field.value);
+              // for MIAF coded image items construction_method==0 and data_reference_index==0
+              uint32_t itemId = 0;
 
-                  ImageItem ii;
-                  imageItems.insert({ field.value, ii });
-                }
+              for(auto& sym : metaChild.syms)
+              {
+                if(!strcmp(sym.name, "item_ID"))
+                  itemId = sym.value;
 
-              for(auto& field : metaChild.syms)
-                if(!strcmp(field.name, "construction_method"))
-                  imageItems[field.value].constructionMethod = field.value;
+                if(!strcmp(sym.name, "construction_method"))
+                  if(imageItems.find(itemId) != imageItems.end())
+                    imageItems[itemId].constructionMethod = sym.value;
+              }
             }
 
-          for(auto& metaChild : box.children)
-            if(metaChild.fourcc == FOURCC("iref"))
-              for(auto& field : metaChild.syms)
-                if(!strcmp(field.name, "to_item_ID"))
-                {
-                  if(imageItems.find(field.value) == imageItems.end())
-                    out->error("iref references a non existing itemId=%lld", field.value);
-                  else
-                    imageItems[field.value].foundIref = true;
-                }
-        }
-
       for(auto& ii : imageItems)
-        if(ii.second.constructionMethod == 1 && !ii.second.foundIref)
-          out->error("construction_method=1 on a coded image item");
+        // if(ii.second.constructionMethod == -1)
+        // out->error("undefined construction_method for item (ID=%u)", ii.first);
+        // else
+        if(ii.second.type == ImageItem::Type::coded && ii.second.constructionMethod == 1)
+          out->error("construction_method=1 on a coded image item (ID=%u)", ii.first);
+        else if(ii.second.type == ImageItem::Type::derived && (ii.second.constructionMethod != 0 && ii.second.constructionMethod != 1))
+          out->error("construction_method=%d on a derived image item (ID=%u)", ii.second.constructionMethod, ii.first);
     }
   },
   {

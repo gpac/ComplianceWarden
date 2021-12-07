@@ -6,7 +6,7 @@ Specification description: MIAF (Multi-Image Application Format)
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 [miaf][Rule #2] Error: compatible_brands list shall contain 'miaf' (not found) and 'mif1' (found)
-[miaf][Rule #5] Error: construction_method=1 on a coded image item
+[miaf][Rule #5] Error: construction_method=1 on a coded image item (ID=1)
 [miaf][Rule #7] Error: Item bodies of coded image "avc1" itemID=1 (offset=99) belongs to box "idat": expecting "mdat"
 
 ========================================
