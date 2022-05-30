@@ -2,7 +2,6 @@
 
 #include "box_reader.h"
 #include <string>
-#include <vector>
 
 enum
 {

@@ -1,5 +1,5 @@
 #include "spec_av1_utils.h"
-#include "spec.h" //IReport
+#include "spec.h" // IReport
 #include "fourcc.h"
 #include <cstring> // strcmp
 
