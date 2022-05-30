@@ -34,6 +34,8 @@ SRCS_CW+=\
   src/common_boxes.cpp\
   src/utils.cpp\
 
+SRCS_CW+=src/spec_av1_hdr10plus.cpp
+SRCS_CW+=src/spec_av1_utils.cpp
 SRCS_CW+=src/spec_avif.cpp
 SRCS_CW+=src/spec_avif_profiles.cpp
 SRCS_CW+=src/spec_avif_utils.cpp

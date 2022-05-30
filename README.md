@@ -34,6 +34,13 @@ Usage:
 ```
 $ bin/cw.exe list
 ================================================================================
+Specification name: av1hdr10plus
+            detail: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+https://aomediacodec.github.io/av1-hdr10plus/
+        depends on: "isobmff" specifications.
+================================================================================
+
+================================================================================
 Specification name: avif
             detail: AVIF v1.0.0, 19 February 2019
 https://aomediacodec.github.io/av1-avif/
