@@ -142,26 +142,26 @@ int checkCompliance(Box const& file, SpecDesc const* spec)
   std::vector<int> ruleIdxEvent;
 
   auto printErrorRules = [&] () {
-      fprintf(stdout, "\n===== Involved rules descriptions:\n");
+    fprintf(stdout, "\n===== Involved rules descriptions:\n");
 
-      int ruleIdx = 0, eventIdx = 0;
+    int ruleIdx = 0, eventIdx = 0;
 
-      for(auto& rule : spec->rules)
+    for(auto& rule : spec->rules)
+    {
+      while(ruleIdx > ruleIdxEvent[eventIdx])
       {
-        while(ruleIdx > ruleIdxEvent[eventIdx])
-        {
-          eventIdx++;
+        eventIdx++;
 
-          if(eventIdx == (int)ruleIdxEvent.size())
-            return;
-        }
-
-        if(ruleIdxEvent[eventIdx] == ruleIdx)
-          fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
-
-        ruleIdx++;
+        if(eventIdx == (int)ruleIdxEvent.size())
+          return;
       }
-    };
+
+      if(ruleIdxEvent[eventIdx] == ruleIdx)
+        fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
+
+      ruleIdx++;
+    }
+  };
 
   auto const cols = 40;
   {

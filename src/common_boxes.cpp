@@ -242,21 +242,21 @@ void processAudioSpecificInfoConfig(IReader* br, int size);
 void processDescriptor(IReader* br, uint8_t oti /*0 if unknown/unrelevant*/)
 {
   auto parseVlc = [] (IReader* br) {
-      int val = 0;
-      int n = 4;
+    int val = 0;
+    int n = 4;
 
-      while(n--)
-      {
-        int c = br->sym("byte", 8);
-        val <<= 7;
-        val = c & 0x7f;
+    while(n--)
+    {
+      int c = br->sym("byte", 8);
+      val <<= 7;
+      val = c & 0x7f;
 
-        if(!(c & 0x80))
-          break;
-      }
+      if(!(c & 0x80))
+        break;
+    }
 
-      return val;
-    };
+    return val;
+  };
 
   auto const tag = br->sym("tag", 8);
   auto const len = parseVlc(br);

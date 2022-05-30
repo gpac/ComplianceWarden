@@ -109,8 +109,8 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
       }
 
       auto strFound = [] (bool found) {
-          return found ? "found" : "not found";
-        };
+        return found ? "found" : "not found";
+      };
 
       if(!foundMiaf || !foundMif1)
         out->error("compatible_brands list shall contain 'miaf' (%s) and 'mif1' (%s)", strFound(foundMiaf), strFound(foundMif1));
@@ -283,25 +283,25 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
       std::vector<std::pair<uint32_t, uint32_t>> codedItems;
 
       auto check = [&] (uint32_t itemId, uint32_t fourcc) {
-          auto spans = getItemDataOffsets(root, out, itemId);
+        auto spans = getItemDataOffsets(root, out, itemId);
 
-          for(auto& span : spans)
-          {
-            auto checkBox = [&] (int64_t offset) {
-                if(offset == 0)
-                  return; // TODO: parse all 'iloc' offsets
+        for(auto& span : spans)
+        {
+          auto checkBox = [&] (int64_t offset) {
+            if(offset == 0)
+              return; // TODO: parse all 'iloc' offsets
 
-                auto& box = getBoxFromOffset(root, offset);
+            auto& box = getBoxFromOffset(root, offset);
 
-                if(box.fourcc != FOURCC("mdat"))
-                  out->error("Item bodies of coded image \"%s\" itemID=%u (offset=%lld) belongs to box \"%s\": expecting \"mdat\"",
-                             toString(fourcc).c_str(), itemId, offset, toString(box.fourcc).c_str());
-              };
+            if(box.fourcc != FOURCC("mdat"))
+              out->error("Item bodies of coded image \"%s\" itemID=%u (offset=%lld) belongs to box \"%s\": expecting \"mdat\"",
+                         toString(fourcc).c_str(), itemId, offset, toString(box.fourcc).c_str());
+          };
 
-            checkBox(span.first);
-            checkBox(span.first + span.second - 1); // also check end of span
-          }
-        };
+          checkBox(span.first);
+          checkBox(span.first + span.second - 1); // also check end of span
+        }
+      };
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -332,25 +332,25 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     [] (Box const& root, IReport* out)
     {
       auto check = [&] (uint32_t itemId, uint32_t fourcc) {
-          auto spans = getItemDataOffsets(root, out, itemId);
+        auto spans = getItemDataOffsets(root, out, itemId);
 
-          for(auto& span : spans)
-          {
-            auto checkBox = [&] (int64_t offset) {
-                if(offset == 0)
-                  return; // TODO: parse all 'iloc' offsets
+        for(auto& span : spans)
+        {
+          auto checkBox = [&] (int64_t offset) {
+            if(offset == 0)
+              return; // TODO: parse all 'iloc' offsets
 
-                auto& box = getBoxFromOffset(root, offset);
+            auto& box = getBoxFromOffset(root, offset);
 
-                if(box.fourcc != FOURCC("mdat"))
-                  out->error("[%s] itemID=%u: offset=%lld belongs to box \"%s\": expecting \"mdat\"",
-                             toString(fourcc).c_str(), itemId, offset, toString(box.fourcc).c_str());
-              };
+            if(box.fourcc != FOURCC("mdat"))
+              out->error("[%s] itemID=%u: offset=%lld belongs to box \"%s\": expecting \"mdat\"",
+                         toString(fourcc).c_str(), itemId, offset, toString(box.fourcc).c_str());
+          };
 
-            checkBox(span.first);
-            checkBox(span.first + span.second - 1); // also check end of span
-          }
-        };
+          checkBox(span.first);
+          checkBox(span.first + span.second - 1); // also check end of span
+        }
+      };
 
       // detect Exif
 
@@ -663,14 +663,14 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
       std::vector<const Box*> found;
 
       auto checkIntegrity = [&] (const Box& clli) {
-          if(clli.size != 12)
-            out->error("'clli' box size is %d bytes (expected 12)", clli.size);
+        if(clli.size != 12)
+          out->error("'clli' box size is %d bytes (expected 12)", clli.size);
 
-          for(auto& field : clli.syms)
-            if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
-               && strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
-              out->error("Invalid 'clli' field \"%s\" (value=%lld)", field.name, field.value);
-        };
+        for(auto& field : clli.syms)
+          if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
+             && strcmp(field.name, "max_content_light_level") && strcmp(field.name, "max_pic_average_light_level"))
+            out->error("Invalid 'clli' field \"%s\" (value=%lld)", field.name, field.value);
+      };
 
       // Look for valid 'clli' boxes
       for(auto& box : root.children)
@@ -697,28 +697,28 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
 
       // Look for other invalidly positioned 'clli' boxes
       std::function<void(const Box &)> parse = [&] (const Box& parent)
-        {
-          for(auto& box : parent.children)
-            if(box.fourcc == FOURCC("clli"))
+      {
+        for(auto& box : parent.children)
+          if(box.fourcc == FOURCC("clli"))
+          {
+            bool ok = false;
+
+            for(auto b : found)
+              if(&box == b)
+                ok = true;
+
+            if(!ok)
             {
-              bool ok = false;
-
-              for(auto b : found)
-                if(&box == b)
-                  ok = true;
-
-              if(!ok)
+              if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
               {
-                if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
-                {
-                  checkIntegrity(box);
-                  out->warning("Unexpected 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
-                }
+                checkIntegrity(box);
+                out->warning("Unexpected 'clli' position (parent is '%s')", toString(parent.fourcc).c_str());
               }
             }
-            else
-              parse(box);
-        };
+          }
+          else
+            parse(box);
+      };
 
       parse(root);
     },
@@ -731,18 +731,18 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
       std::vector<const Box*> found;
 
       auto checkIntegrity = [&] (const Box& mdcv) {
-          if(mdcv.size != 32)
-            out->error("'mdcv' box size is %d bytes (expected 32)", mdcv.size);
+        if(mdcv.size != 32)
+          out->error("'mdcv' box size is %d bytes (expected 32)", mdcv.size);
 
-          for(auto& field : mdcv.syms)
-            if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
-               && strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
-               && strcmp(field.name, "display_primaries_x_1") && strcmp(field.name, "display_primaries_y_1")
-               && strcmp(field.name, "display_primaries_x_2") && strcmp(field.name, "display_primaries_y_2")
-               && strcmp(field.name, "white_point_x") && strcmp(field.name, "white_point_y")
-               && strcmp(field.name, "max_display_mastering_luminance") && strcmp(field.name, "min_display_mastering_luminance"))
-              out->error("Invalid 'mdcv' field \"%s\" (value=%lld)", field.name, field.value);
-        };
+        for(auto& field : mdcv.syms)
+          if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
+             && strcmp(field.name, "display_primaries_x_0") && strcmp(field.name, "display_primaries_y_0")
+             && strcmp(field.name, "display_primaries_x_1") && strcmp(field.name, "display_primaries_y_1")
+             && strcmp(field.name, "display_primaries_x_2") && strcmp(field.name, "display_primaries_y_2")
+             && strcmp(field.name, "white_point_x") && strcmp(field.name, "white_point_y")
+             && strcmp(field.name, "max_display_mastering_luminance") && strcmp(field.name, "min_display_mastering_luminance"))
+            out->error("Invalid 'mdcv' field \"%s\" (value=%lld)", field.name, field.value);
+      };
 
       // Look for valid 'mdcv' boxes
       for(auto& box : root.children)
@@ -769,28 +769,28 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
 
       // Look for other invalidly positioned 'mdcv' boxes
       std::function<void(const Box &)> parse = [&] (const Box& parent)
-        {
-          for(auto& box : parent.children)
-            if(box.fourcc == FOURCC("mdcv"))
+      {
+        for(auto& box : parent.children)
+          if(box.fourcc == FOURCC("mdcv"))
+          {
+            bool ok = false;
+
+            for(auto b : found)
+              if(&box == b)
+                ok = true;
+
+            if(!ok)
             {
-              bool ok = false;
-
-              for(auto b : found)
-                if(&box == b)
-                  ok = true;
-
-              if(!ok)
+              if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
               {
-                if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
-                {
-                  checkIntegrity(box);
-                  out->warning("Unexpected 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
-                }
+                checkIntegrity(box);
+                out->warning("Unexpected 'mdcv' position (parent is '%s')", toString(parent.fourcc).c_str());
               }
             }
-            else
-              parse(box);
-        };
+          }
+          else
+            parse(box);
+      };
 
       parse(root);
     },
@@ -806,19 +806,19 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
     [] (Box const& root, IReport* out)
     {
       auto checkPasp = [&] (const Box& box) {
-          uint32_t hSpacing = -1, vSpacing = -1;
+        uint32_t hSpacing = -1, vSpacing = -1;
 
-          for(auto& sym : box.syms)
-          {
-            if(!strcmp(sym.name, "hSpacing"))
-              hSpacing = sym.value;
-            else if(!strcmp(sym.name, "vSpacing"))
-              vSpacing = sym.value;
-          }
+        for(auto& sym : box.syms)
+        {
+          if(!strcmp(sym.name, "hSpacing"))
+            hSpacing = sym.value;
+          else if(!strcmp(sym.name, "vSpacing"))
+            vSpacing = sym.value;
+        }
 
-          if(vSpacing != hSpacing)
-            out->error("Pixel aspect ratio shall be 1:1 but is %u:%u", hSpacing, vSpacing);
-        };
+        if(vSpacing != hSpacing)
+          out->error("Pixel aspect ratio shall be 1:1 but is %u:%u", hSpacing, vSpacing);
+      };
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -1342,14 +1342,14 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
         return;
 
       auto findTrackId = [] (Box const& root) -> uint32_t {
-          for(auto& trakChild : root.children)
-            if(trakChild.fourcc == FOURCC("tkhd"))
-              for(auto& sym : trakChild.syms)
-                if(!strcmp(sym.name, "track_ID"))
-                  return (uint32_t)sym.value;
+        for(auto& trakChild : root.children)
+          if(trakChild.fourcc == FOURCC("tkhd"))
+            for(auto& sym : trakChild.syms)
+              if(!strcmp(sym.name, "track_ID"))
+                return (uint32_t)sym.value;
 
-          return 0;
-        };
+        return 0;
+      };
 
       struct Track
       {
@@ -1357,82 +1357,82 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
       };
 
       auto findAlphaTracks = [findTrackId] (Box const& root, IReport* out) -> std::vector<Track> {
-          std::vector<Track> trackIds;
+        std::vector<Track> trackIds;
 
-          for(auto& box : root.children)
-            if(box.fourcc == FOURCC("moov"))
-              for(auto& moovChild : box.children)
-                if(moovChild.fourcc == FOURCC("trak"))
+        for(auto& box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto& moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+              {
+                // find the hldr
+                uint32_t handlerType = 0;
+
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto& mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("hdlr"))
+                        for(auto& sym : mdiaChild.syms)
+                          if(!strcmp(sym.name, "handler_type"))
+                            handlerType = (uint32_t)sym.value;
+
+                // find tref track_id
+                uint32_t trackId = 0;
+
+                for(auto& trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tref"))
+                    for(auto& trefChild : trakChild.children)
+                      if(trefChild.fourcc == FOURCC("auxl"))
+                        for(auto& sym : trefChild.syms)
+                          if(!strcmp(sym.name, "track_IDs"))
+                          {
+                            if(trackId)
+                              out->error("Unexpected: found several 'tref' track_IDs (%u then %lld)", trackId, sym.value);
+
+                            trackId = (uint32_t)sym.value;
+                          }
+
+                if(handlerType == FOURCC("pict") && trackId)
                 {
-                  // find the hldr
-                  uint32_t handlerType = 0;
+                  auto id = findTrackId(moovChild);
 
-                  for(auto& trakChild : moovChild.children)
-                    if(trakChild.fourcc == FOURCC("mdia"))
-                      for(auto& mdiaChild : trakChild.children)
-                        if(mdiaChild.fourcc == FOURCC("hdlr"))
-                          for(auto& sym : mdiaChild.syms)
-                            if(!strcmp(sym.name, "handler_type"))
-                              handlerType = (uint32_t)sym.value;
-
-                  // find tref track_id
-                  uint32_t trackId = 0;
-
-                  for(auto& trakChild : moovChild.children)
-                    if(trakChild.fourcc == FOURCC("tref"))
-                      for(auto& trefChild : trakChild.children)
-                        if(trefChild.fourcc == FOURCC("auxl"))
-                          for(auto& sym : trefChild.syms)
-                            if(!strcmp(sym.name, "track_IDs"))
-                            {
-                              if(trackId)
-                                out->error("Unexpected: found several 'tref' track_IDs (%u then %lld)", trackId, sym.value);
-
-                              trackId = (uint32_t)sym.value;
-                            }
-
-                  if(handlerType == FOURCC("pict") && trackId)
-                  {
-                    auto id = findTrackId(moovChild);
-
-                    if(id)
-                      trackIds.push_back({ trackId, id });
-                  }
+                  if(id)
+                    trackIds.push_back({ trackId, id });
                 }
+              }
 
-          return trackIds;
-        };
+        return trackIds;
+      };
 
       auto tracks = findAlphaTracks(root, out);
 
       for(auto& t : tracks)
       {
         auto getMediaTimes = [findTrackId] (Box const& root, uint32_t fourcc, uint32_t trackId) -> std::vector<Box const*> {
-            std::vector<Box const*> mediaTimes;
+          std::vector<Box const*> mediaTimes;
 
-            for(auto& box : root.children)
-              if(box.fourcc == FOURCC("moov"))
-                for(auto& moovChild : box.children)
-                  if(moovChild.fourcc == FOURCC("trak"))
-                    for(auto& trakChild : moovChild.children)
-                    {
-                      auto id = findTrackId(moovChild);
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                  for(auto& trakChild : moovChild.children)
+                  {
+                    auto id = findTrackId(moovChild);
 
-                      if(id != trackId)
-                        continue;
+                    if(id != trackId)
+                      continue;
 
-                      if(trakChild.fourcc == FOURCC("mdia"))
-                        for(auto& mdiaChild : trakChild.children)
-                          if(mdiaChild.fourcc == FOURCC("minf"))
-                            for(auto& minfChild : mdiaChild.children)
-                              if(minfChild.fourcc == FOURCC("stbl"))
-                                for(auto& stblChild : minfChild.children)
-                                  if(stblChild.fourcc == fourcc)
-                                    mediaTimes.push_back(&stblChild);
-                    }
+                    if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl"))
+                              for(auto& stblChild : minfChild.children)
+                                if(stblChild.fourcc == fourcc)
+                                  mediaTimes.push_back(&stblChild);
+                  }
 
-            return mediaTimes;
-          };
+          return mediaTimes;
+        };
 
         auto decodingTimesMaster = getMediaTimes(root, FOURCC("stts"), t.videoTrackId);
         auto decodingTimesAlpha = getMediaTimes(root, FOURCC("stts"), t.alphaPlaneTrackId);
@@ -1448,42 +1448,42 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
         };
 
         auto getEditLists = [findTrackId] (Box const& root, uint32_t trackId) -> std::vector<Box const*> {
-            std::vector<Box const*> editLists;
+          std::vector<Box const*> editLists;
 
-            for(auto& box : root.children)
-              if(box.fourcc == FOURCC("moov"))
-                for(auto& moovChild : box.children)
-                  if(moovChild.fourcc == FOURCC("trak"))
-                    for(auto& trakChild : moovChild.children)
-                    {
-                      auto id = findTrackId(moovChild);
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                  for(auto& trakChild : moovChild.children)
+                  {
+                    auto id = findTrackId(moovChild);
 
-                      if(id != trackId)
-                        continue;
+                    if(id != trackId)
+                      continue;
 
-                      if(trakChild.fourcc == FOURCC("edts"))
-                        for(auto& edtsChild : trakChild.children)
-                          if(edtsChild.fourcc == FOURCC("elst"))
-                            editLists.push_back(&edtsChild);
-                    }
+                    if(trakChild.fourcc == FOURCC("edts"))
+                      for(auto& edtsChild : trakChild.children)
+                        if(edtsChild.fourcc == FOURCC("elst"))
+                          editLists.push_back(&edtsChild);
+                  }
 
-            return editLists;
-          };
+          return editLists;
+        };
 
         auto editListsMaster = getEditLists(root, t.videoTrackId);
         auto editListsAlpha = getEditLists(root, t.alphaPlaneTrackId);
 
         auto compareBoxVector = [] (std::vector<Box const*>& a, std::vector<Box const*>& b)
-          {
-            if(a.size() != b.size())
+        {
+          if(a.size() != b.size())
+            return false;
+
+          for(size_t i = 0; i < a.size(); ++i)
+            if(!boxEqual(a[i], b[i]))
               return false;
 
-            for(size_t i = 0; i < a.size(); ++i)
-              if(!boxEqual(a[i], b[i]))
-                return false;
-
-            return true;
-          };
+          return true;
+        };
 
         if(!compareBoxVector(decodingTimesMaster, decodingTimesAlpha) ||
            !compareBoxVector(compositionOffsetsMaster, compositionOffsetsAlpha) ||
@@ -1626,11 +1626,11 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
       std::map<uint32_t /*1-based*/, uint32_t /*fourcc*/> transformativeProperties;
 
       auto isTransformative = [] (uint32_t fourcc) {
-          if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
-            return true;
-          else
-            return false;
-        };
+        if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+          return true;
+        else
+          return false;
+      };
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -1661,37 +1661,37 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
                   std::vector<uint32_t> actualTProps;
 
                   auto check = [&] () {
-                      const std::vector<uint32_t> expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
+                    const std::vector<uint32_t> expectedTProps { FOURCC("clap"), FOURCC("irot"), FOURCC("imir") };
 
-                      if(actualTProps.size() > expectedTProps.size())
-                      {
-                        out->error("Item_ID=%d: too many transformative properties (%d instead of maximum %d)", item_ID, (int)actualTProps.size(), (int)expectedTProps.size());
-                        return;
-                      }
+                    if(actualTProps.size() > expectedTProps.size())
+                    {
+                      out->error("Item_ID=%d: too many transformative properties (%d instead of maximum %d)", item_ID, (int)actualTProps.size(), (int)expectedTProps.size());
+                      return;
+                    }
 
-                      std::string expected, actual;
+                    std::string expected, actual;
 
-                      for(auto& v : expectedTProps)
-                        expected += toString(v) + " ";
+                    for(auto& v : expectedTProps)
+                      expected += toString(v) + " ";
 
-                      for(auto& v : actualTProps)
-                        actual += toString(v) + " ";
+                    for(auto& v : actualTProps)
+                      actual += toString(v) + " ";
 
-                      for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
+                    for(size_t i = 0, j = 0; i < actualTProps.size() && j < expectedTProps.size(); ++i, ++j)
+                    {
+                      if(actualTProps[i] != expectedTProps[j])
+                        i--;
+
+                      if(j + 1 == expectedTProps.size())
                       {
                         if(actualTProps[i] != expectedTProps[j])
-                          i--;
-
-                        if(j + 1 == expectedTProps.size())
-                        {
-                          if(actualTProps[i] != expectedTProps[j])
-                            out->error("Item_ID=%d property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", item_ID,
-                                       toString(expectedTProps[j]).c_str(), expected.c_str(), toString(actualTProps[i + 1]).c_str(), actual.c_str());
-                          else if(i + 1 != actualTProps.size())
-                            out->error("Item_ID=%d property: expecting { %s}, got { %s}", item_ID, expected.c_str(), actual.c_str());
-                        }
+                          out->error("Item_ID=%d property: expecting \"%s\" ({ %s}), got \"%s\" ({ %s})", item_ID,
+                                     toString(expectedTProps[j]).c_str(), expected.c_str(), toString(actualTProps[i + 1]).c_str(), actual.c_str());
+                        else if(i + 1 != actualTProps.size())
+                          out->error("Item_ID=%d property: expecting { %s}, got { %s}", item_ID, expected.c_str(), actual.c_str());
                       }
-                    };
+                    }
+                  };
 
                   for(auto& sym : iprpChild.syms)
                   {

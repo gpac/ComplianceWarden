@@ -94,18 +94,18 @@ void checkDerivation(Box const& root, IReport* out, uint32_t fourcc, std::functi
 void checkDerivationVersion(Box const& root, IReport* out, uint32_t fourcc)
 {
   auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
-      if(spans[0].second == 0)
-      {
-        out->error("Image data (itemID=%u): found invalid span size %lld\n", itemId, spans[0].second);
-        return;
-      }
+    if(spans[0].second == 0)
+    {
+      out->error("Image data (itemID=%u): found invalid span size %lld\n", itemId, spans[0].second);
+      return;
+    }
 
-      auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
-      auto version = br.u(8);
+    auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+    auto version = br.u(8);
 
-      if(version != 0)
-        out->error("'%s' version shall be equal to 0, found %lld (itemId=%u)", toString(fourcc).c_str(), version, itemId);
-    };
+    if(version != 0)
+      out->error("'%s' version shall be equal to 0, found %lld (itemId=%u)", toString(fourcc).c_str(), version, itemId);
+  };
 
   checkDerivation(root, out, fourcc, check);
 }
@@ -150,14 +150,14 @@ static const SpecDesc specHeif =
       [] (Box const& root, IReport* out)
       {
         auto findTrackId = [] (Box const& root) -> uint32_t {
-            for(auto& trakChild : root.children)
-              if(trakChild.fourcc == FOURCC("tkhd"))
-                for(auto& sym : trakChild.syms)
-                  if(!strcmp(sym.name, "track_ID"))
-                    return (uint32_t)sym.value;
+          for(auto& trakChild : root.children)
+            if(trakChild.fourcc == FOURCC("tkhd"))
+              for(auto& sym : trakChild.syms)
+                if(!strcmp(sym.name, "track_ID"))
+                  return (uint32_t)sym.value;
 
-            return 0;
-          };
+          return 0;
+        };
 
         struct Track
         {
@@ -165,61 +165,61 @@ static const SpecDesc specHeif =
         };
 
         auto findAuxlTracks = [findTrackId] (Box const& root, IReport* out) -> std::vector<Track> {
-            std::vector<Track> trackIds;
+          std::vector<Track> trackIds;
 
-            for(auto& box : root.children)
-              if(box.fourcc == FOURCC("moov"))
-                for(auto& moovChild : box.children)
-                  if(moovChild.fourcc == FOURCC("trak"))
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                {
+                  // find the hldr
+                  uint32_t handlerType = 0;
+
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("hdlr"))
+                          for(auto& sym : mdiaChild.syms)
+                            if(!strcmp(sym.name, "handler_type"))
+                              handlerType = (uint32_t)sym.value;
+
+                  // find tref track_id
+                  uint32_t trackId = 0;
+
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("tref"))
+                      for(auto& trefChild : trakChild.children)
+                        if(trefChild.fourcc == FOURCC("auxl"))
+                          for(auto& sym : trefChild.syms)
+                            if(!strcmp(sym.name, "track_IDs"))
+                            {
+                              if(trackId)
+                                out->error("Unexpected: found several 'tref' track_IDs (%u then %lld)", trackId, sym.value);
+
+                              trackId = (uint32_t)sym.value;
+                            }
+
+                  if(handlerType == FOURCC("pict") && trackId)
                   {
-                    // find the hldr
-                    uint32_t handlerType = 0;
+                    auto id = findTrackId(moovChild);
 
-                    for(auto& trakChild : moovChild.children)
-                      if(trakChild.fourcc == FOURCC("mdia"))
-                        for(auto& mdiaChild : trakChild.children)
-                          if(mdiaChild.fourcc == FOURCC("hdlr"))
-                            for(auto& sym : mdiaChild.syms)
-                              if(!strcmp(sym.name, "handler_type"))
-                                handlerType = (uint32_t)sym.value;
-
-                    // find tref track_id
-                    uint32_t trackId = 0;
-
-                    for(auto& trakChild : moovChild.children)
-                      if(trakChild.fourcc == FOURCC("tref"))
-                        for(auto& trefChild : trakChild.children)
-                          if(trefChild.fourcc == FOURCC("auxl"))
-                            for(auto& sym : trefChild.syms)
-                              if(!strcmp(sym.name, "track_IDs"))
-                              {
-                                if(trackId)
-                                  out->error("Unexpected: found several 'tref' track_IDs (%u then %lld)", trackId, sym.value);
-
-                                trackId = (uint32_t)sym.value;
-                              }
-
-                    if(handlerType == FOURCC("pict") && trackId)
-                    {
-                      auto id = findTrackId(moovChild);
-
-                      if(id)
-                        trackIds.push_back({ trackId, id });
-                    }
+                    if(id)
+                      trackIds.push_back({ trackId, id });
                   }
+                }
 
-            return trackIds;
-          };
+          return trackIds;
+        };
 
         auto auxlTracks = findAuxlTracks(root, out);
 
         auto findAuxlVideoTrack = [&] (uint32_t trackId) -> uint32_t {
-            for(auto& auxl : auxlTracks)
-              if(auxl.auxlTrackId == trackId)
-                return auxl.videoTrackId;
+          for(auto& auxl : auxlTracks)
+            if(auxl.auxlTrackId == trackId)
+              return auxl.videoTrackId;
 
-            return 0;
-          };
+          return 0;
+        };
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -415,39 +415,39 @@ static const SpecDesc specHeif =
               }
 
         auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
-            if(spans[0].second == 0)
-            {
-              out->error("[tile] Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
-              return;
-            }
+          if(spans[0].second == 0)
+          {
+            out->error("[tile] Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
+            return;
+          }
 
-            if(spans.size() > 1)
-              out->error("[tile] ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
+          if(spans.size() > 1)
+            out->error("[tile] ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
 
-            if(spans[0].second < 2)
-            {
-              out->error("[tile] ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans[0].second);
-              return;
-            }
+          if(spans[0].second < 2)
+          {
+            out->error("[tile] ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans[0].second);
+            return;
+          }
 
-            auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
-            br.u(8); /*version*/
-            auto const flags = br.u(8);
-            const int fieldLength = ((flags & 1) + 1) * 2;
+          auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+          br.u(8); /*version*/
+          auto const flags = br.u(8);
+          const int fieldLength = ((flags & 1) + 1) * 2;
 
-            if(spans[0].second < 4 + fieldLength * 2)
-            {
-              out->error("[tile] ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, spans[0].second, 4 + fieldLength * 2);
-              return;
-            }
+          if(spans[0].second < 4 + fieldLength * 2)
+          {
+            out->error("[tile] ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, spans[0].second, 4 + fieldLength * 2);
+            return;
+          }
 
-            auto const rows = 1 + br.u(8);
-            auto const columns = 1 + br.u(8);
+          auto const rows = 1 + br.u(8);
+          auto const columns = 1 + br.u(8);
 
-            if(rows * columns != refCounts[itemId])
-              out->error("Tile [itemId=%u]: the value of reference_count(%d) shall be equal to rows(%d)*columns(%d)=%d",
-                         itemId, refCounts[itemId], rows, columns, rows * columns);
-          };
+          if(rows * columns != refCounts[itemId])
+            out->error("Tile [itemId=%u]: the value of reference_count(%d) shall be equal to rows(%d)*columns(%d)=%d",
+                       itemId, refCounts[itemId], rows, columns, rows * columns);
+        };
 
         checkDerivation(root, out, FOURCC("grid"), check);
       }
@@ -486,8 +486,8 @@ static const SpecDesc specHeif =
             auto graph = buildDerivationGraph(root);
 
             auto onError = [&] (const std::list<uint32_t>& visited) {
-                out->error("Detected error in derivations: %s", graph.display(visited).c_str());
-              };
+              out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+            };
 
             std::list<uint32_t> visitedBackward;
 
@@ -591,40 +591,40 @@ static const SpecDesc specHeif =
         std::map<uint32_t /*ItemID*/, std::pair<int /*numRows*/, int /*numCols*/>> gridLayouts;
 
         auto check = [&] (uint32_t itemId, std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>> spans) {
-            if(spans[0].second == 0)
-            {
-              out->error("[grid] Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
-              return;
-            }
+          if(spans[0].second == 0)
+          {
+            out->error("[grid] Image data (itemID=%u): found invalid span size %lld", itemId, spans[0].second);
+            return;
+          }
 
-            if(spans.size() > 1)
-              out->error("[grid] ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
+          if(spans.size() > 1)
+            out->error("[grid] ItemID=%u: multiple spans (%d) not handled. Only considering the first one.", itemId, (int)spans.size());
 
-            if(spans[0].second < 2)
-            {
-              out->error("[grid] ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans[0].second);
-              return;
-            }
+          if(spans[0].second < 2)
+          {
+            out->error("[grid] ItemID=%u: not enough bytes to parse: %d instead of 2 to compute FieldLength.", itemId, spans[0].second);
+            return;
+          }
 
-            auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
-            br.u(8); /*version*/
-            auto const flags = br.u(8);
-            const int fieldLength = ((flags & 1) + 1) * 2;
+          auto br = BitReader { root.original + spans[0].first, (int)spans[0].second };
+          br.u(8); /*version*/
+          auto const flags = br.u(8);
+          const int fieldLength = ((flags & 1) + 1) * 2;
 
-            if(spans[0].second < 4 + fieldLength * 2)
-            {
-              out->error("[grid] ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, spans[0].second, 4 + fieldLength * 2);
-              return;
-            }
+          if(spans[0].second < 4 + fieldLength * 2)
+          {
+            out->error("[grid] ItemID=%u: not enough bytes to parse: %d instead of %d.", itemId, spans[0].second, 4 + fieldLength * 2);
+            return;
+          }
 
-            auto const rows_minus_one = br.u(8);
-            auto const columns_minus_one = br.u(8);
-            const int output_width = br.u(fieldLength * 8);
-            const int output_height = br.u(fieldLength * 8);
+          auto const rows_minus_one = br.u(8);
+          auto const columns_minus_one = br.u(8);
+          const int output_width = br.u(fieldLength * 8);
+          const int output_height = br.u(fieldLength * 8);
 
-            gridResolutions[itemId] = Resolution { output_width, output_height };
-            gridLayouts[itemId] = { rows_minus_one + 1, columns_minus_one + 1 };
-          };
+          gridResolutions[itemId] = Resolution { output_width, output_height };
+          gridLayouts[itemId] = { rows_minus_one + 1, columns_minus_one + 1 };
+        };
 
         checkDerivation(root, out, FOURCC("grid"), check);
 
@@ -747,11 +747,11 @@ static const SpecDesc specHeif =
           out->error("image spatial extents property (\"ispe\") not detected.");
 
         auto isTransformative = [] (uint32_t fourcc) {
-            if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
-              return true;
-            else
-              return false;
-          };
+          if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+            return true;
+          else
+            return false;
+        };
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
@@ -763,9 +763,9 @@ static const SpecDesc specHeif =
                     uint32_t localItemId = 0;
                     bool foundIspe = true;
                     auto checkIspe = [&] () {
-                        if(!foundIspe)
-                          out->error("Item ID=%u: missing Image spatial extents property", localItemId);
-                      };
+                      if(!foundIspe)
+                        out->error("Item ID=%u: missing Image spatial extents property", localItemId);
+                    };
 
                     for(auto& sym : iprpChild.syms)
                       if(!strcmp(sym.name, "item_ID"))
@@ -812,15 +812,15 @@ static const SpecDesc specHeif =
                     for(auto& mdiaChild : trakChild.children)
                     {
                       auto isPict = [&] () {
-                          for(auto& mdiaChild2 : trakChild.children)
-                            if(mdiaChild2.fourcc == FOURCC("hdlr"))
-                              for(auto& sym : mdiaChild2.syms)
-                                if(!strcmp(sym.name, "handler_type"))
-                                  if(sym.value == FOURCC("pict"))
-                                    return true;
+                        for(auto& mdiaChild2 : trakChild.children)
+                          if(mdiaChild2.fourcc == FOURCC("hdlr"))
+                            for(auto& sym : mdiaChild2.syms)
+                              if(!strcmp(sym.name, "handler_type"))
+                                if(sym.value == FOURCC("pict"))
+                                  return true;
 
-                          return false;
-                        };
+                        return false;
+                      };
 
                       if(!isPict())
                         continue;
@@ -867,15 +867,15 @@ static const SpecDesc specHeif =
                     for(auto& mdiaChild : trakChild.children)
                     {
                       auto isPict = [&] () {
-                          for(auto& mdiaChild2 : trakChild.children)
-                            if(mdiaChild2.fourcc == FOURCC("hdlr"))
-                              for(auto& sym : mdiaChild2.syms)
-                                if(!strcmp(sym.name, "handler_type"))
-                                  if(sym.value == FOURCC("pict"))
-                                    return true;
+                        for(auto& mdiaChild2 : trakChild.children)
+                          if(mdiaChild2.fourcc == FOURCC("hdlr"))
+                            for(auto& sym : mdiaChild2.syms)
+                              if(!strcmp(sym.name, "handler_type"))
+                                if(sym.value == FOURCC("pict"))
+                                  return true;
 
-                          return false;
-                        };
+                        return false;
+                      };
 
                       if(!isPict())
                         continue;
@@ -1127,46 +1127,46 @@ static const SpecDesc specHeif =
         auto const ext = filename.substr(extPos + 1);
 
         auto getExtensionFromBrand = [] (Box const& root) -> std::vector<const char*> {
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("ftyp"))
+              for(auto& sym : box.syms)
+                if(!strcmp(sym.name, "compatible_brand"))
+                  switch(sym.value)
+                  {
+                  case FOURCC("avci"):
+                    return { "avci" };
+                  case FOURCC("avcs"):
+                    return { "avcs" };
+                  case FOURCC("heic"):
+                  case FOURCC("heix"):
+                  case FOURCC("heim"):
+                  case FOURCC("heis"):
+                    return { "heic", "hif" };
+                  case FOURCC("hevc"):
+                  case FOURCC("hevx"):
+                  case FOURCC("hevm"):
+                  case FOURCC("hevs"):
+                    return { "heics", "hif" };
+                  }
+
+          auto isSequence = [] (Box const& root) -> bool {
             for(auto& box : root.children)
-              if(box.fourcc == FOURCC("ftyp"))
-                for(auto& sym : box.syms)
-                  if(!strcmp(sym.name, "compatible_brand"))
-                    switch(sym.value)
-                    {
-                    case FOURCC("avci"):
-                      return { "avci" };
-                    case FOURCC("avcs"):
-                      return { "avcs" };
-                    case FOURCC("heic"):
-                    case FOURCC("heix"):
-                    case FOURCC("heim"):
-                    case FOURCC("heis"):
-                      return { "heic", "hif" };
-                    case FOURCC("hevc"):
-                    case FOURCC("hevx"):
-                    case FOURCC("hevm"):
-                    case FOURCC("hevs"):
-                      return { "heics", "hif" };
-                    }
+              if(box.fourcc == FOURCC("moov"))
+                for(auto& moovChild : box.children)
+                  if(moovChild.fourcc == FOURCC("trak"))
+                    return true;
 
-            auto isSequence = [] (Box const& root) -> bool {
-                for(auto& box : root.children)
-                  if(box.fourcc == FOURCC("moov"))
-                    for(auto& moovChild : box.children)
-                      if(moovChild.fourcc == FOURCC("trak"))
-                        return true;
-
-                return false;
-              };
-
-            if(isSequence(root))
-              return { "heifs", "hif" }
-
-            ;
-            else
-              return { "heif", "hif" }
-            ;
+            return false;
           };
+
+          if(isSequence(root))
+            return { "heifs", "hif" }
+
+          ;
+          else
+            return { "heif", "hif" }
+          ;
+        };
 
         bool found = false;
         auto possibleExts = getExtensionFromBrand(root);

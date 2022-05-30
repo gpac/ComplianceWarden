@@ -49,19 +49,19 @@ const SpecDesc specIsobmff =
         std::vector<const Box*> found;
 
         auto checkIntegrityPasp = [&] (const Box& pasp) {
-            if(pasp.size != 16)
-              out->error("'pasp' box size is %d bytes (expected 16)", pasp.size);
+          if(pasp.size != 16)
+            out->error("'pasp' box size is %d bytes (expected 16)", pasp.size);
 
-            for(auto& field : pasp.syms)
-              if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
-                 && strcmp(field.name, "hSpacing") && strcmp(field.name, "vSpacing"))
-                out->error("Invalid 'pasp' field \"%s\" (value=%lld)", field.name, field.value);
-          };
+          for(auto& field : pasp.syms)
+            if(strcmp(field.name, "size") && strcmp(field.name, "fourcc")
+               && strcmp(field.name, "hSpacing") && strcmp(field.name, "vSpacing"))
+              out->error("Invalid 'pasp' field \"%s\" (value=%lld)", field.name, field.value);
+        };
 
         auto checkIntegrityClap = [&] (const Box& clap) {
-            if(clap.size != 40)
-              out->error("'clap' box size is %d bytes (expected 40)", clap.size);
-          };
+          if(clap.size != 40)
+            out->error("'clap' box size is %d bytes (expected 40)", clap.size);
+        };
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -99,31 +99,31 @@ const SpecDesc specIsobmff =
 
         // Look for other invalidly positioned 'clap' and 'pasp' boxes
         auto findBox = [&] (const Box* box) {
-            for(auto b : found)
-              if(box == b)
-                return true;
+          for(auto b : found)
+            if(box == b)
+              return true;
 
-            return false;
-          };
+          return false;
+        };
 
         std::function<void(const Box &, const uint32_t, std::function<void(const Box &)>)> parse =
           [&] (const Box& parent, const uint32_t fourCC, std::function<void(const Box &)> checkIntegrity)
-          {
-            for(auto& box : parent.children)
-              if(box.fourcc == fourCC)
+        {
+          for(auto& box : parent.children)
+            if(box.fourcc == fourCC)
+            {
+              if(!findBox(&box))
               {
-                if(!findBox(&box))
+                if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
                 {
-                  if(parent.fourcc != FOURCC("ipco")) /*ipco is also a valid parent*/
-                  {
-                    checkIntegrity(box);
-                    out->warning("Unexpected '%s' position (parent is '%s')", toString(fourCC).c_str(), toString(parent.fourcc).c_str());
-                  }
+                  checkIntegrity(box);
+                  out->warning("Unexpected '%s' position (parent is '%s')", toString(fourCC).c_str(), toString(parent.fourcc).c_str());
                 }
               }
-              else
-                parse(box, fourCC, checkIntegrity);
-          };
+            }
+            else
+              parse(box, fourCC, checkIntegrity);
+        };
 
         parse(root, FOURCC("clap"), checkIntegrityClap);
         parse(root, FOURCC("pasp"), checkIntegrityPasp);
@@ -138,31 +138,31 @@ const SpecDesc specIsobmff =
         const int64_t filesize = root.size;
 
         auto check = [&] (uint32_t itemId) {
-            auto spans = getItemDataOffsets(root, out, itemId);
+          auto spans = getItemDataOffsets(root, out, itemId);
 
-            for(auto& span : spans)
+          for(auto& span : spans)
+          {
+            if(span.first > filesize || span.first + span.second > filesize)
             {
-              if(span.first > filesize || span.first + span.second > filesize)
-              {
-                out->error("Data offset overflow for Item_ID=%u: offset is %lld (pos=%lld,len=%lld) while file size is %llu",
-                           itemId, span.first + span.second, span.first, span.second, filesize);
-                return;
-              }
-
-              auto checkBox = [&] (int64_t offset) {
-                  if(offset == 0)
-                    return; // TODO: parse all 'iloc' offsets
-
-                  auto& box = getBoxFromOffset(root, offset);
-
-                  if(box.fourcc != FOURCC("mdat") && box.fourcc != FOURCC("idat"))
-                    out->error("Data offset %lld belongs to box \"%s\": expecting \"mdat\" or \"idat\"", offset, toString(box.fourcc).c_str());
-                };
-
-              checkBox(span.first);
-              checkBox(span.first + span.second - 1); // also check end of span
+              out->error("Data offset overflow for Item_ID=%u: offset is %lld (pos=%lld,len=%lld) while file size is %llu",
+                         itemId, span.first + span.second, span.first, span.second, filesize);
+              return;
             }
-          };
+
+            auto checkBox = [&] (int64_t offset) {
+              if(offset == 0)
+                return; // TODO: parse all 'iloc' offsets
+
+              auto& box = getBoxFromOffset(root, offset);
+
+              if(box.fourcc != FOURCC("mdat") && box.fourcc != FOURCC("idat"))
+                out->error("Data offset %lld belongs to box \"%s\": expecting \"mdat\" or \"idat\"", offset, toString(box.fourcc).c_str());
+            };
+
+            checkBox(span.first);
+            checkBox(span.first + span.second - 1); // also check end of span
+          }
+        };
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("meta"))
@@ -182,18 +182,18 @@ const SpecDesc specIsobmff =
         const uint64_t filesize = root.size;
 
         auto check = [&] (uint32_t trackId, uint64_t offset) {
-            if(offset > filesize)
-            {
-              out->error("Data offset overflow for trackID=%u: offset is %lld while file size is %llu",
-                         trackId, offset, filesize);
-              return;
-            }
+          if(offset > filesize)
+          {
+            out->error("Data offset overflow for trackID=%u: offset is %lld while file size is %llu",
+                       trackId, offset, filesize);
+            return;
+          }
 
-            auto& box = getBoxFromOffset(root, offset);
+          auto& box = getBoxFromOffset(root, offset);
 
-            if(box.fourcc != FOURCC("mdat"))
-              out->error("Data offset %llu belongs to box \"%s\": expecting \"mdat\"", offset, toString(box.fourcc).c_str());
-          };
+          if(box.fourcc != FOURCC("mdat"))
+            out->error("Data offset %llu belongs to box \"%s\": expecting \"mdat\"", offset, toString(box.fourcc).c_str());
+        };
 
         for(auto& box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -611,11 +611,11 @@ const SpecDesc specIsobmff =
       [] (Box const& root, IReport* out)
       {
         auto check = [&] (const Box* box) {
-            for(auto& sym : box->syms)
-              if(!strcmp(sym.name, "pre_defined"))
-                if(sym.value != 0)
-                  out->error("'hdlr box': pre_defined shall be 0 but value is %lld", sym.value);
-          };
+          for(auto& sym : box->syms)
+            if(!strcmp(sym.name, "pre_defined"))
+              if(sym.value != 0)
+                out->error("'hdlr box': pre_defined shall be 0 but value is %lld", sym.value);
+        };
 
         auto boxes = findBoxes(root, FOURCC("hdlr"));
 
@@ -629,11 +629,11 @@ const SpecDesc specIsobmff =
       [] (Box const& root, IReport* out)
       {
         auto check = [&] (const Box* box) {
-            for(auto& sym : box->syms)
-              if(!strncmp(sym.name, "reserved", 8))
-                if(sym.value != 0)
-                  out->error("'hdlr box': %s shall be 0 but value is %lld", sym.name, sym.value);
-          };
+          for(auto& sym : box->syms)
+            if(!strncmp(sym.name, "reserved", 8))
+              if(sym.value != 0)
+                out->error("'hdlr box': %s shall be 0 but value is %lld", sym.name, sym.value);
+        };
 
         auto boxes = findBoxes(root, FOURCC("hdlr"));
 
@@ -647,15 +647,15 @@ const SpecDesc specIsobmff =
       [] (Box const& root, IReport* out)
       {
         auto check = [&] (const Box* box) {
-            char lastName = 0x7F;
+          char lastName = 0x7F;
 
-            for(auto& sym : box->syms)
-              if(!strcmp(sym.name, "name"))
-                lastName = (char)sym.value;
+          for(auto& sym : box->syms)
+            if(!strcmp(sym.name, "name"))
+              lastName = (char)sym.value;
 
-            if(lastName != 0)
-              out->error("'hdlr box': 'name' field shall be null-terminated");
-          };
+          if(lastName != 0)
+            out->error("'hdlr box': 'name' field shall be null-terminated");
+        };
 
         auto boxes = findBoxes(root, FOURCC("hdlr"));
 

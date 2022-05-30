@@ -635,24 +635,24 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
           continue;
 
         auto computeBitDepth = [&] (uint32_t itemId) -> uint32_t
+        {
+          av1State state;
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, state);
+
+          int bitDepth = 8;
+
+          if(state.av1c.seq_profile == 2 && state.av1c.high_bitdepth)
           {
-            av1State state;
-            BoxReader br;
-            probeAV1ImageItem(root, out, itemId, br, state);
+            bitDepth = state.av1c.twelve_bit ? 12 : 10;
+          }
+          else if(state.av1c.seq_profile <= 2)
+          {
+            bitDepth = state.av1c.high_bitdepth ? 10 : 8;
+          }
 
-            int bitDepth = 8;
-
-            if(state.av1c.seq_profile == 2 && state.av1c.high_bitdepth)
-            {
-              bitDepth = state.av1c.twelve_bit ? 12 : 10;
-            }
-            else if(state.av1c.seq_profile <= 2)
-            {
-              bitDepth = state.av1c.high_bitdepth ? 10 : 8;
-            }
-
-            return bitDepth;
-          };
+          return bitDepth;
+        };
 
         auto bitDepthMaster = computeBitDepth(auxImageIds.master);
         auto bitDepthAux = computeBitDepth(auxImageIds.aux);
@@ -818,20 +818,20 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
       std::string filename;
 
       auto getFileExt = [&] () {
-          for(auto& field : root.syms)
-            if(!strcmp(field.name, "filename"))
-              filename.push_back((char)field.value);
+        for(auto& field : root.syms)
+          if(!strcmp(field.name, "filename"))
+            filename.push_back((char)field.value);
 
-          auto extPos = filename.find_last_of('.');
+        auto extPos = filename.find_last_of('.');
 
-          if(extPos > filename.length())
-          {
-            out->warning("Filename \"%s\" has no extension", filename.c_str());
-            extPos = filename.length() - 1;
-          }
+        if(extPos > filename.length())
+        {
+          out->warning("Filename \"%s\" has no extension", filename.c_str());
+          extPos = filename.length() - 1;
+        }
 
-          return filename.substr(extPos + 1);
-        };
+        return filename.substr(extPos + 1);
+      };
 
       auto const ext = getFileExt();
 
@@ -849,14 +849,14 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
       std::map<uint32_t /*trackId*/, int64_t> av1AplhaTrackFirstOffset;
 
       auto isAV1 = [] (std::vector<Box> const& root) {
-          for(auto& stblChild : root)
-            if(stblChild.fourcc == FOURCC("stsd"))
-              for(auto& stsdChild : stblChild.children)
-                if(stsdChild.fourcc == FOURCC("av01"))
-                  return true;
+        for(auto& stblChild : root)
+          if(stblChild.fourcc == FOURCC("stsd"))
+            for(auto& stsdChild : stblChild.children)
+              if(stsdChild.fourcc == FOURCC("av01"))
+                return true;
 
-          return false;
-        };
+        return false;
+      };
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("moov"))
@@ -876,16 +876,16 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
                                   {
                                     // check in stts (mandatory) the number of samples
                                     auto getSampleNum = [&] () {
-                                        int64_t sampleNum = 0;
+                                      int64_t sampleNum = 0;
 
-                                        for(auto& stblChild2 : minfChild.children)
-                                          if(stblChild2.fourcc == FOURCC("stts"))
-                                            for(auto& sym2 : stblChild2.syms)
-                                              if(!strcmp(sym2.name, "sample_count"))
-                                                sampleNum += sym2.value;
+                                      for(auto& stblChild2 : minfChild.children)
+                                        if(stblChild2.fourcc == FOURCC("stts"))
+                                          for(auto& sym2 : stblChild2.syms)
+                                            if(!strcmp(sym2.name, "sample_count"))
+                                              sampleNum += sym2.value;
 
-                                        return sampleNum;
-                                      };
+                                      return sampleNum;
+                                    };
 
                                     auto const sampleNum = getSampleNum();
 
@@ -915,11 +915,11 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     [] (Box const& root, IReport* out)
     {
       auto isTransformative = [] (uint32_t fourcc) {
-          if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
-            return true;
-          else
-            return false;
-        };
+        if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
+          return true;
+        else
+          return false;
+      };
 
       // locate transformative Item IDs
       // as mentioned in Section 6 ("cropping, mirroring or rotation transformations")
@@ -967,30 +967,30 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
       auto graph = buildDerivationGraph(root);
 
       auto check = [&] (const std::list<uint32_t>& visited) {
-          bool foundTransformation = false;
-          uint32_t lastTransformation = 0, lastTransformationItemId = 0;
+        bool foundTransformation = false;
+        uint32_t lastTransformation = 0, lastTransformationItemId = 0;
 
-          for(auto v : visited)
+        for(auto v : visited)
+        {
+          if(transformationItemIDs.find(v) != transformationItemIDs.end())
           {
-            if(transformationItemIDs.find(v) != transformationItemIDs.end())
-            {
-              if(!foundTransformation)
-                foundTransformation = true;
-              else
-                out->error("Transformative properties used in derivation chains shall only be associated "
-                           "with items that are not referenced by another derived item. "
-                           "However {item_ID=%u, type=%s} was preceeded by {item_ID=%u, type=%s}.",
-                           v, toString(transformationItemIDs[v]).c_str(), lastTransformationItemId, toString(lastTransformation).c_str());
+            if(!foundTransformation)
+              foundTransformation = true;
+            else
+              out->error("Transformative properties used in derivation chains shall only be associated "
+                         "with items that are not referenced by another derived item. "
+                         "However {item_ID=%u, type=%s} was preceeded by {item_ID=%u, type=%s}.",
+                         v, toString(transformationItemIDs[v]).c_str(), lastTransformationItemId, toString(lastTransformation).c_str());
 
-              lastTransformationItemId = v;
-              lastTransformation = transformationItemIDs[v];
-            }
+            lastTransformationItemId = v;
+            lastTransformation = transformationItemIDs[v];
           }
-        };
+        }
+      };
 
       auto onError = [&] (const std::list<uint32_t>& visited) {
-          out->error("Detected error in derivations: %s", graph.display(visited).c_str());
-        };
+        out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+      };
 
       for(auto& c : graph.connections)
       {

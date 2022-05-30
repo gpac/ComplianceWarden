@@ -404,24 +404,24 @@ int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
   }
 
   auto leb128_read = [] (IReader* br, int* bytes) -> uint64_t {
-      uint64_t value = 0;
-      uint8_t Leb128Bytes = 0;
+    uint64_t value = 0;
+    uint8_t Leb128Bytes = 0;
 
-      for(int i = 0; i < 8; i++)
-      {
-        uint8_t leb128_byte = br->sym("leb128_byte", 8);
-        value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
-        Leb128Bytes += 1;
+    for(int i = 0; i < 8; i++)
+    {
+      uint8_t leb128_byte = br->sym("leb128_byte", 8);
+      value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
+      Leb128Bytes += 1;
 
-        if(!(leb128_byte & 0x80))
-          break;
-      }
+      if(!(leb128_byte & 0x80))
+        break;
+    }
 
-      if(bytes)
-        *bytes = Leb128Bytes;
+    if(bytes)
+      *bytes = Leb128Bytes;
 
-      return value;
-    };
+    return value;
+  };
 
   int leb128Bytes = 0;
   long long unsigned obuSize = leb128_read(br, &leb128Bytes);

@@ -48,41 +48,41 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getHevcItemColorspaces(
   std::vector<std::pair<uint32_t /*ItemId*/, std::string>> ret;
 
   auto check = [&] (uint32_t fourcc) {
-      auto const av1ImageItemIDs = findImageItems(root, fourcc);
+    auto const av1ImageItemIDs = findImageItems(root, fourcc);
 
-      for(auto itemId : av1ImageItemIDs)
+    for(auto itemId : av1ImageItemIDs)
+    {
+      auto hvcCs = findBoxesWithProperty(root, itemId, FOURCC("hvcC"));
+
+      if(hvcCs.empty())
       {
-        auto hvcCs = findBoxesWithProperty(root, itemId, FOURCC("hvcC"));
-
-        if(hvcCs.empty())
-        {
-          out->error("[ItemId=%u] No hvcC configuration found (expected 1)", itemId);
-          continue;
-        }
-        else if(hvcCs.size() > 1)
-          out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)hvcCs.size());
-
-        auto hvcC = hvcCs[0];
-
-        for(auto& sym : hvcC->syms)
-          if(!strcmp(sym.name, "chroma_format_idc"))
-            switch(sym.value)
-            {
-            case 0:
-              ret.push_back({ itemId, "Monochrome 4:0:0" });
-              break;
-            case 1:
-              ret.push_back({ itemId, "YUV 4:2:0" });
-              break;
-            case 2:
-              ret.push_back({ itemId, "YUV 4:2:2" });
-              break;
-            case 3:
-              ret.push_back({ itemId, "YUV 4:4:4" });
-              break;
-            }
+        out->error("[ItemId=%u] No hvcC configuration found (expected 1)", itemId);
+        continue;
       }
-    };
+      else if(hvcCs.size() > 1)
+        out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)hvcCs.size());
+
+      auto hvcC = hvcCs[0];
+
+      for(auto& sym : hvcC->syms)
+        if(!strcmp(sym.name, "chroma_format_idc"))
+          switch(sym.value)
+          {
+          case 0:
+            ret.push_back({ itemId, "Monochrome 4:0:0" });
+            break;
+          case 1:
+            ret.push_back({ itemId, "YUV 4:2:0" });
+            break;
+          case 2:
+            ret.push_back({ itemId, "YUV 4:2:2" });
+            break;
+          case 3:
+            ret.push_back({ itemId, "YUV 4:4:4" });
+            break;
+          }
+    }
+  };
 
   check(FOURCC("hev1"));
   check(FOURCC("hev2"));

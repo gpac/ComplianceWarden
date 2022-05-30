@@ -45,20 +45,20 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
           return;
 
         auto boxOrderCheck = [&] () -> bool {
-            if(root.children.size() < 2)
-              return false;
+          if(root.children.size() < 2)
+            return false;
 
-            if(root.children[0].fourcc != FOURCC("ftyp"))
-              return false;
+          if(root.children[0].fourcc != FOURCC("ftyp"))
+            return false;
 
-            if(root.children[1].fourcc == FOURCC("meta"))
-              return true;
-            else if(root.children.size() >= 3
-                    && root.children[1].fourcc == FOURCC("fidx") && root.children[2].fourcc == FOURCC("meta"))
-              return true;
-            else
-              return false;
-          };
+          if(root.children[1].fourcc == FOURCC("meta"))
+            return true;
+          else if(root.children.size() >= 3
+                  && root.children[1].fourcc == FOURCC("fidx") && root.children[2].fourcc == FOURCC("meta"))
+            return true;
+          else
+            return false;
+        };
 
         if(!boxOrderCheck())
           out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening BoxFileIndexBox)");

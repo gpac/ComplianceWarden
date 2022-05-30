@@ -18,21 +18,21 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
         auto graph = buildDerivationGraph(root);
 
         auto check = [&] (const std::list<uint32_t>& visited) {
-            std::string last;
+          std::string last;
 
-            for(auto v : visited)
-            {
-              if(graph.itemTypes[v] == "iden" && last == "iden")
-                out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u). "
-                           "Derivation chain: %s", v, graph.display(visited).c_str());
+          for(auto v : visited)
+          {
+            if(graph.itemTypes[v] == "iden" && last == "iden")
+              out->error("An identity derivation shall not be derived immediately from another identity (item_ID=%u). "
+                         "Derivation chain: %s", v, graph.display(visited).c_str());
 
-              last = graph.itemTypes[v];
-            }
-          };
+            last = graph.itemTypes[v];
+          }
+        };
 
         auto onError = [&] (const std::list<uint32_t>& visited) {
-            out->error("Detected error in derivations: %s", graph.display(visited).c_str());
-          };
+          out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+        };
 
         for(auto& c : graph.connections)
         {
@@ -57,47 +57,47 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
         auto graph = buildDerivationGraph(root);
 
         auto onError = [&] (const std::list<uint32_t>& visited) {
-            out->error("Detected error in derivations: %s", graph.display(visited).c_str());
-          };
+          out->error("Detected error in derivations: %s", graph.display(visited).c_str());
+        };
 
         auto check = [&] (const std::list<uint32_t>& visited) {
-            std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
-            auto const numDerivations = (int)visited.size() - 1; // origin is a coded image: skip it
+          std::vector<std::string> expected = { "iden", "grid", "iden", "iovl", "iden" };
+          auto const numDerivations = (int)visited.size() - 1; // origin is a coded image: skip it
 
-            if(numDerivations > (int)expected.size())
+          if(numDerivations > (int)expected.size())
+          {
+            out->error("Too many derivations: %d (expected %d)", numDerivations, expected.size());
+            return;
+          }
+
+          auto visitedIt = ++visited.begin(); // origin is a coded image: skip it
+
+          bool error = false;
+
+          for(int i = 0, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
+          {
+            // iterate over optional transformations
+            for(;;)
             {
-              out->error("Too many derivations: %d (expected %d)", numDerivations, expected.size());
-              return;
-            }
-
-            auto visitedIt = ++visited.begin(); // origin is a coded image: skip it
-
-            bool error = false;
-
-            for(int i = 0, expectIdx = 0; i < numDerivations && expectIdx < (int)expected.size(); ++i, ++visitedIt, ++expectIdx)
-            {
-              // iterate over optional transformations
-              for(;;)
-              {
-                if(graph.itemTypes[*visitedIt] == expected[expectIdx])
-                  break;
-
-                expectIdx++;
-
-                if(expectIdx == (int)expected.size())
-                {
-                  error = true;
-                  break;
-                }
-              }
-
-              if(error)
+              if(graph.itemTypes[*visitedIt] == expected[expectIdx])
                 break;
+
+              expectIdx++;
+
+              if(expectIdx == (int)expected.size())
+              {
+                error = true;
+                break;
+              }
             }
 
             if(error)
-              onError(visited);
-          };
+              break;
+          }
+
+          if(error)
+            onError(visited);
+        };
 
         for(auto& c : graph.connections)
         {
