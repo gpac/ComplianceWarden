@@ -243,8 +243,6 @@ void probeIsobmff(uint8_t* data, size_t size)
 
 int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
 {
-  probeIsobmff(data, size);
-
   BoxReader topReader;
   topReader.br = { data, (int)size };
   topReader.myBox.original = data;
@@ -253,21 +251,30 @@ int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t 
   topReader.myBox.fourcc = FOURCC("root");
   topReader.specs = { spec };
 
+  const std::string fnStr(filename);
+
+  auto const extPos = fnStr.find_last_of('.');
+
+  if(extPos == std::string::npos || fnStr.substr(extPos) != ".obu")
   {
-    // remove path
-    auto fnPos = std::string(filename).find_last_of('/');
-    auto fn = std::string(filename).substr(fnPos + 1);
-    auto fnPtr = fn.c_str();
+    probeIsobmff(data, size);
 
-    while(*fnPtr)
     {
-      topReader.myBox.syms.push_back({ "filename", *fnPtr, 8 });
-      fnPtr++;
-    }
-  }
+      // remove path
+      auto fnPos = fnStr.find_last_of('/');
+      auto fn = fnStr.substr(fnPos + 1);
+      auto fnPtr = fn.c_str();
 
-  auto parseFunc = getParseFunction(topReader.myBox.fourcc);
-  parseFunc(&topReader);
+      while(*fnPtr)
+      {
+        topReader.myBox.syms.push_back({ "filename", *fnPtr, 8 });
+        fnPtr++;
+      }
+    }
+
+    auto parseFunc = getParseFunction(topReader.myBox.fourcc);
+    parseFunc(&topReader);
+  }
 
   if(0)
     dump(topReader.myBox);
