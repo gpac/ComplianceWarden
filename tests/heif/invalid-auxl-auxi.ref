@@ -18,8 +18,8 @@ The nature of the auxiliary track is announced by the AuxiliaryTypeInfoBox that
 shall be included in the sample entry of the auxiliary track.
 
 [heif][Rule #33] Section 10.3
-when a brand specified in ‎10.3 is among the compatible brands of a file,
-the requirements specified in Clause ‎7 shall be obeyed
+when a brand specified in 10.3 is among the compatible brands of a file,
+the requirements specified in Clause 7 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |

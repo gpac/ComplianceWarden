@@ -23,8 +23,8 @@ Files shall contain the brand 'msf1' in the compatible brands:
 - It is required that 'iso8' is present among the compatible brands array.
 
 [heif][Rule #32] Section 10.2
-when a brand specified in ‎10.2 is among the compatible brands of a file,
-the requirements specified in Clause ‎6 shall be obeyed
+when a brand specified in 10.2 is among the compatible brands of a file,
+the requirements specified in Clause 6 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |

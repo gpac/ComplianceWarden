@@ -28,8 +28,8 @@ Box structure and arity for boxes defined in HEIF
 This is rather a safety check than a formal rule.
 
 [heif][Rule #32] Section 10.2
-when a brand specified in ‎10.2 is among the compatible brands of a file,
-the requirements specified in Clause ‎6 shall be obeyed
+when a brand specified in 10.2 is among the compatible brands of a file,
+the requirements specified in Clause 6 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |

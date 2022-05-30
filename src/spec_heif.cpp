@@ -1364,8 +1364,8 @@ static const SpecDesc specHeif =
     },
     {
       "Section 10.2\n"
-      "when a brand specified in ‎10.2 is among the compatible brands of a file,\n"
-      "the requirements specified in Clause ‎6 shall be obeyed",
+      "when a brand specified in 10.2 is among the compatible brands of a file,\n"
+      "the requirements specified in Clause 6 shall be obeyed",
       [] (Box const& root, IReport* out)
       {
         for(auto& box : root.children)
@@ -1379,8 +1379,8 @@ static const SpecDesc specHeif =
     },
     {
       "Section 10.3\n"
-      "when a brand specified in ‎10.3 is among the compatible brands of a file,\n"
-      "the requirements specified in Clause ‎7 shall be obeyed",
+      "when a brand specified in 10.3 is among the compatible brands of a file,\n"
+      "the requirements specified in Clause 7 shall be obeyed",
       [] (Box const& root, IReport* out)
       {
         for(auto& box : root.children)

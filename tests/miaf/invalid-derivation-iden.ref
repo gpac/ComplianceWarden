@@ -55,8 +55,8 @@ item shall be equal to 1.
 Tiles: the values of to_item_ID [shall] identify the input images
 
 [heif][Rule #32] Section 10.2
-when a brand specified in ‎10.2 is among the compatible brands of a file,
-the requirements specified in Clause ‎6 shall be obeyed
+when a brand specified in 10.2 is among the compatible brands of a file,
+the requirements specified in Clause 6 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |

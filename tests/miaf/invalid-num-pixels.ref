@@ -39,8 +39,8 @@ The file-level MetaBox shall identify as its primary item an item that is a
 coded image or a derived image item
 
 [heif][Rule #32] Section 10.2
-when a brand specified in ‎10.2 is among the compatible brands of a file,
-the requirements specified in Clause ‎6 shall be obeyed
+when a brand specified in 10.2 is among the compatible brands of a file,
+the requirements specified in Clause 6 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |
