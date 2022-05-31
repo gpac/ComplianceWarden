@@ -53,7 +53,7 @@ struct BoxReader : IReader
     subReader.br.src -= boxHeaderSize;
     subReader.br.m_pos += boxHeaderSize * 8;
     br.m_pos -= boxHeaderSize * 8;
-    auto parseFunc = selectBoxParseFunction(subReader.myBox.fourcc);
+    auto parseFunc = getParseFunction(subReader.myBox.fourcc);
     parseFunc(&subReader);
     myBox.children.push_back(std::move(subReader.myBox));
 
@@ -66,17 +66,5 @@ struct BoxReader : IReader
 
   Box myBox {};
   std::vector<const SpecDesc*> specs;
-
-private:
-  ParseBoxFunc* selectBoxParseFunction(uint32_t fourcc)
-  {
-    // try first custom parse function
-    for(auto spec : specs)
-      if(spec->getParseFunction)
-        if(auto func = spec->getParseFunction(fourcc))
-          return func;
-
-    return getParseFunction(fourcc);
-  }
 };
 

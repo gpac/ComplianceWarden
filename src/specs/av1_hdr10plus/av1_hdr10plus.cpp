@@ -4,14 +4,6 @@
 
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
 
-namespace
-{
-bool isStream(Box const& root)
-{
-  return root.children.empty();
-}
-}
-
 static const SpecDesc specAv1Hdr10plus =
 {
   "av1hdr10plus",
@@ -24,7 +16,7 @@ static const SpecDesc specAv1Hdr10plus =
       "An AV1 stream shall contain at least one OBU",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(!isStream(root))
+        if(isIsobmff(root))
           return;
 
         // TODO
@@ -39,7 +31,7 @@ static const SpecDesc specAv1Hdr10plus =
       " - itu_t_t35_terminal_provider_oriented_code set as 0x0001",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(!isStream(root))
+        if(isIsobmff(root))
           return;
 
         // TODO
@@ -58,7 +50,7 @@ static const SpecDesc specAv1Hdr10plus =
       " - chroma_sample_position should be set to 2",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(!isStream(root))
+        if(isIsobmff(root))
           return;
 
         // TODO
@@ -73,7 +65,7 @@ static const SpecDesc specAv1Hdr10plus =
       "temporal delimiter, for storage formats where temporal delimiters are preserved).",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(!isStream(root))
+        if(isIsobmff(root))
           return;
 
         // TODO
@@ -106,7 +98,7 @@ static const SpecDesc specAv1Hdr10plus =
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(isStream(root))
+        if(!isIsobmff(root))
           return;
 
         // TODO
@@ -117,7 +109,7 @@ static const SpecDesc specAv1Hdr10plus =
       "This specification requires that HDR10 Static Metadata [...] be unprotected",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(isStream(root))
+        if(!isIsobmff(root))
           return;
 
         // TODO: encryption not supported in ISOBMFF yet
@@ -129,7 +121,7 @@ static const SpecDesc specAv1Hdr10plus =
       "This specification requires that [...] HDR10+ Metadata OBUs be unprotected",
       [] (Box const& root, IReport* /*out*/)
       {
-        if(isStream(root))
+        if(!isIsobmff(root))
           return;
 
         // TODO: encryption not supported in ISOBMFF yet
@@ -142,7 +134,7 @@ static const SpecDesc specAv1Hdr10plus =
       "defined in [CTA-5001] in addition to the brand av01.",
       [] (Box const& root, IReport* out)
       {
-        if(isStream(root))
+        if(!isIsobmff(root))
           return;
 
         if(checkRuleSection(specAv1Hdr10plus, "2.", root) && checkRuleSection(specAv1Hdr10plus, "3.2", root))
@@ -160,7 +152,7 @@ static const SpecDesc specAv1Hdr10plus =
       }
     },
   },
-  nullptr,
+  isIsobmff,
 };
 
 static auto const registered = registerSpec(&specAv1Hdr10plus);

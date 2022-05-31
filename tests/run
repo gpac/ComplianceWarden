@@ -14,7 +14,6 @@ function main
   run_test real_mp4_avc
   run_test real_mp4_heif
 
-  run_test check_rules_folder dummy mp4
   run_test check_rules_folder isobmff mp4
   run_test check_rules_folder heif mp4
   run_test check_rules_folder miaf hif
@@ -34,13 +33,13 @@ function run_test
 
 function real_mp4_aac
 {
-  $BIN/cw.exe dummy $scriptDir/aac.mp4 > $tmpDir/aac.new
+  $BIN/cw.exe isobmff $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
 }
 
 function real_mp4_avc
 {
-  $BIN/cw.exe dummy $scriptDir/avc.mp4 > $tmpDir/avc.new
+  $BIN/cw.exe isobmff $scriptDir/avc.mp4 > $tmpDir/avc.new
   compare $scriptDir/avc.ref $tmpDir/avc.new
 }
 

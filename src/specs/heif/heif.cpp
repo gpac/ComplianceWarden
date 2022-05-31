@@ -1393,7 +1393,7 @@ static const SpecDesc specHeif =
       }
     },
   },
-  nullptr,
+  isIsobmff,
 };
 
 static auto const registered = registerSpec(&specHeif);

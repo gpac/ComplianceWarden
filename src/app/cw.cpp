@@ -114,7 +114,8 @@ int checkCompliance(Box const& file, SpecDesc const* spec)
 
     try
     {
-      rule.check(file, &out);
+      if(spec->valid(file))
+        rule.check(file, &out);
     }
     catch(std::exception const& e)
     {

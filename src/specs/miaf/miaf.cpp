@@ -1728,7 +1728,7 @@ static const SpecDesc specMiaf =
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // TODO: + DAM2 WG03 N0032",
   { "heif" },
   concatRules({ rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(), getRulesMiafColours(), getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
-  nullptr,
+  isIsobmff,
 };
 
 static auto const registered = registerSpec(&specMiaf);

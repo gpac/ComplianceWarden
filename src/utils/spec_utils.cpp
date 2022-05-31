@@ -105,7 +105,9 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
         int errorCount = 0;
       };
       Report r;
-      rule.check(root, &r);
+
+      if(spec.valid(root))
+        rule.check(root, &r);
 
       if(r.errorCount)
         return false;

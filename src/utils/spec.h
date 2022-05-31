@@ -36,8 +36,11 @@ struct SpecDesc
   // list of compliance checks for this spec.
   std::vector<RuleDesc> rules;
 
-  ParseBoxFunc* (* getParseFunction)(uint32_t fourcc);
+  // checks will only be executed if this returns true.
+  bool (* valid)(Box const& root) = nullptr;
 };
+
+bool isIsobmff(Box const& root);
 
 int registerSpec(SpecDesc const* spec);
 

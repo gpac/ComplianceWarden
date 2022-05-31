@@ -42,7 +42,6 @@ SRCS_CW+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
 SRCS_CW+=src/specs/avif/avif.cpp
 SRCS_CW+=src/specs/avif/profiles.cpp
 SRCS_CW+=src/specs/avif/utils.cpp
-SRCS_CW+=src/specs/dummy/dummy.cpp
 SRCS_CW+=src/specs/isobmff/isobmff.cpp
 SRCS_CW+=src/specs/heif/heif.cpp
 SRCS_CW+=src/specs/miaf/miaf.cpp

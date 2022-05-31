@@ -1,10 +1,11 @@
 +--------------------------------------+
-|           dummy validation           |
+|          isobmff validation          |
 +--------------------------------------+
 
-Specification description: Dummy Spec, v1.2
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
 ========================================
-[dummy] No errors.
+[isobmff] No errors.
 ========================================
 

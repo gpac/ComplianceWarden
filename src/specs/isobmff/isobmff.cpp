@@ -664,7 +664,7 @@ const SpecDesc specIsobmff =
       }
     },
   },
-  nullptr,
+  isIsobmff,
 };
 }
 

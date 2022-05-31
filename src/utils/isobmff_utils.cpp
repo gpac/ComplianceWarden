@@ -5,6 +5,11 @@
 #include <map>
 #include <vector>
 
+bool isIsobmff(Box const& root)
+{
+  return !root.children.empty();
+}
+
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
 {
   std::vector<const Box*> res;

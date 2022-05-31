@@ -1013,7 +1013,7 @@ static const SpecDesc specAvif =
   "https://aomediacodec.github.io/av1-avif/",
   { "miaf" },
   concatRules({ rulesAvifGeneral, getRulesAvifProfiles(specAvif) }),
-  nullptr,
+  isIsobmff,
 };
 
 static auto const registered = registerSpec(&specAvif);
