@@ -1,4 +1,3 @@
-Incomplete OBU (remaining to read=24)
 +--------------------------------------+
 |       av1hdr10plus validation        |
 +--------------------------------------+
@@ -6,21 +5,13 @@ Incomplete OBU (remaining to read=24)
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #0] Error: An AV1 stream shall contain at least one OBU but first OBU could not be parsed
-Incomplete OBU (remaining to read=24)
-Incomplete OBU (remaining to read=24)
-[av1hdr10plus][Rule #2] Error: color_primaries shall be set as 9 ([BT-2020]), found 141
-[av1hdr10plus][Rule #2] Error: transfer_characteristics shall be set as 16 ([SMPTE-ST-2084] / [BT-2100]), found 180
-[av1hdr10plus][Rule #2] Error: matrix_coefficients shall be set as 9 ([BT-2020]), found 2
+[av1hdr10plus][Rule #2] Error: transfer_characteristics shall be set as 16 ([SMPTE-ST-2084] / [BT-2100]), found 1
 
 ========================================
-[av1hdr10plus] 4 error(s), 0 warning(s).
+[av1hdr10plus] 1 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
-
-[av1hdr10plus][Rule #0] Section 2.1
-An AV1 stream shall contain at least one OBU
 
 [av1hdr10plus][Rule #2] Section 2.2.1
 Streams shall use the following values for the AV1 color_config:

@@ -128,7 +128,7 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
 
     if(av1c.chroma_subsampling_x && av1c.chroma_subsampling_y)
     {
-      br->sym("chroma_sample_position", 1);
+      br->sym("chroma_sample_position", 2);
     }
   }
 

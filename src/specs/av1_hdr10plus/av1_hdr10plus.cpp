@@ -99,7 +99,49 @@ static const SpecDesc specAv1Hdr10plus =
           return;
         }
 
-        // TODO
+        BoxReader br;
+        br.br = BitReader { root.original, (int)root.size };
+
+        while(!br.empty())
+        {
+          Av1State stateUnused;
+          parseAv1Obus(&br, stateUnused, false);
+        }
+
+        for(auto& sym : br.myBox.syms)
+        {
+          if(!strcmp(sym.name, "color_primaries"))
+            if(sym.value != 9)
+              out->error("color_primaries shall be set as 9 ([BT-2020]), found %d", sym.value);
+
+          if(!strcmp(sym.name, "transfer_characteristics"))
+            if(sym.value != 16)
+              out->error("transfer_characteristics shall be set as 16 ([SMPTE-ST-2084] / [BT-2100]), found %d", sym.value);
+
+          if(!strcmp(sym.name, "matrix_coefficients"))
+            if(sym.value != 9)
+              out->error("matrix_coefficients shall be set as 9 ([BT-2020]), found %d", sym.value);
+
+          if(!strcmp(sym.name, "color_range"))
+            if(sym.value != 1)
+              out->warning("VideoFullRangeFlag shall be set as 1, found %d", sym.value);
+
+          if(!strcmp(sym.name, "subsampling_x"))
+            if(sym.value != 0)
+              out->warning("subsampling_x shall be set as 0, found %d", sym.value);
+
+          if(!strcmp(sym.name, "subsampling_y"))
+            if(sym.value != 0)
+              out->warning("subsampling_y shall be set as 0, found %d", sym.value);
+
+          if(!strcmp(sym.name, "mono_chrome"))
+            if(sym.value != 0)
+              out->warning("mono_chrome shall be set as 0, found %d", sym.value);
+
+          if(!strcmp(sym.name, "chroma_sample_position"))
+            if(sym.value != 2)
+              out->warning("chroma_sample_position shall be set as 2, found %d", sym.value);
+        }
       }
     },
     {
