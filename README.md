@@ -1,14 +1,15 @@
-# ComplianceWarden : a pluggable ISOBMFF (MP4/IFF) compliance checker
+# Compliance Warden
+# A pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+)
 
 ## Introduction
 
-[ComplianceWarden](https://github.com/gpac/ComplianceWarden) is a compliance checker for ISOBMFF-based file format.
-It has been developed as a reference software for MPEG MIAF and AOM AVIF. ComplianceWarden
-can be extended to check MP4, CMAF, and many other file formats.
+The [Compliance Warden](https://github.com/gpac/ComplianceWarden) is a compliance checker.
+It has been developed as a reference software for MPEG MIAF, AOM AVIF, and AOM AV1 HDR10+.
+The Compliance Warden can be extended to check MP4, CMAF, and many other file formats.
 
-ComplianceWarden decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
+The Compliance Warden decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
 
-ComplianceWarden is distributed under the [BSD-3 license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
+The Compliance Warden is distributed under the [BSD-3 license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
 ## Useful information
 
@@ -119,7 +120,7 @@ The HTML integration source code is hosted at https://github.com/gpac/Compliance
 
 ## Testing
 
-ComplianceWarden includes known good tests and known bad tests. This ensures the software is stable to false positives.
+The Compliance Warden includes known good tests and known bad tests. This ensures the software is stable to false positives.
 
 ```
 ./check
@@ -171,10 +172,10 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 
 ### Principles
 
-ComplianceWarden is made of three parts:
+The Compliance Warden is made of three parts:
  - a file parser ```common_boxes.cpp``` that can be extended (or superseeded) by each specification,
- - some array of rules stored in ```spec_*.cpp```,
- - an application stored in ```src/app_cw.cpp``` that probes the files, launches the tests, and produces a human-readable report.
+ - some array of rules stored in ```specs/```,
+ - an application stored in ```src/app/cw.cpp``` that probes the files, launches the tests, and produces a human-readable report.
 
 The parsing is decoupled from the rules. This allows a lot of flexibility such as:
  - the replacement of the parser by an external tool,
