@@ -1,51 +1,9 @@
-#include "spec.h"
+#include "box.h"
 #include "fourcc.h"
+#include "spec.h"
 #include <cstring> // strcmp
-#include <sstream>
 #include <map>
-
-bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
-{
-  for(auto& rule : spec.rules)
-  {
-    std::stringstream ss(rule.caption);
-    std::string line;
-    std::getline(ss, line);
-    std::stringstream ssl(line);
-    std::string word;
-    ssl >> word;
-
-    if(word != "Section")
-      throw std::runtime_error("Rule caption is misformed.");
-
-    ssl >> word;
-
-    if(word.rfind(section, 0) == 0)
-    {
-      struct Report : IReport
-      {
-        void error(const char*, ...) override
-        {
-          ++errorCount;
-        }
-
-        void warning(const char*, ...) override
-        {
-          /*ignored*/
-        }
-
-        int errorCount = 0;
-      };
-      Report r;
-      rule.check(root, &r);
-
-      if(r.errorCount)
-        return false;
-    }
-  }
-
-  return true;
-}
+#include <vector>
 
 std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc)
 {
@@ -351,15 +309,5 @@ std::vector<const Box*> findBoxesWithProperty(Box const& root, uint32_t itemId, 
       propertyBoxes.push_back(a.second.box);
 
   return propertyBoxes;
-}
-
-std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initializer_list<RuleDesc>>& rules)
-{
-  std::vector<RuleDesc> v;
-
-  for(auto& r : rules)
-    v.insert(v.end(), r.begin(), r.end());
-
-  return v;
 }
 

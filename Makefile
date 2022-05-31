@@ -3,7 +3,7 @@ include generic.mk
 CXXFLAGS+=-std=c++14
 CXXFLAGS+=-Wall -Wextra -Werror
 
-CXXFLAGS+=-Isrc -I$(BIN)
+CXXFLAGS+=-Isrc/utils -I$(BIN)
 
 ifeq ($(DEBUG),1)
   CXXFLAGS+=-g3
@@ -30,27 +30,28 @@ $(BIN)/cw_version.cpp: version
 
 #------------------------------------------------------------------------------
 SRCS_CW+=\
-  src/app_cw.cpp\
-  src/common_boxes.cpp\
-  src/utils.cpp\
+  src/app/cw.cpp\
+  src/utils/common_boxes.cpp\
+  src/utils/tools.cpp\
+  src/utils/av1_utils.cpp\
+  src/utils/isobmff_utils.cpp\
+  src/utils/isobmff_derivations.cpp\
+  src/utils/spec_utils.cpp\
 
-SRCS_CW+=src/spec_av1_hdr10plus.cpp
-SRCS_CW+=src/spec_av1_utils.cpp
-SRCS_CW+=src/spec_avif.cpp
-SRCS_CW+=src/spec_avif_profiles.cpp
-SRCS_CW+=src/spec_avif_utils.cpp
-SRCS_CW+=src/spec_dummy.cpp
-SRCS_CW+=src/spec_isobmff.cpp
-SRCS_CW+=src/spec_heif.cpp
-SRCS_CW+=src/spec_miaf.cpp
-SRCS_CW+=src/spec_miaf_audio.cpp
-SRCS_CW+=src/spec_miaf_brands.cpp
-SRCS_CW+=src/spec_miaf_derivations.cpp
-SRCS_CW+=src/spec_miaf_colours.cpp
-SRCS_CW+=src/spec_miaf_num_pixels.cpp
-SRCS_CW+=src/spec_miaf_profiles.cpp
-SRCS_CW+=src/spec_utils.cpp
-SRCS_CW+=src/spec_utils_derivations.cpp
+SRCS_CW+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
+SRCS_CW+=src/specs/avif/avif.cpp
+SRCS_CW+=src/specs/avif/profiles.cpp
+SRCS_CW+=src/specs/avif/utils.cpp
+SRCS_CW+=src/specs/dummy/dummy.cpp
+SRCS_CW+=src/specs/isobmff/isobmff.cpp
+SRCS_CW+=src/specs/heif/heif.cpp
+SRCS_CW+=src/specs/miaf/miaf.cpp
+SRCS_CW+=src/specs/miaf/audio.cpp
+SRCS_CW+=src/specs/miaf/brands.cpp
+SRCS_CW+=src/specs/miaf/derivations.cpp
+SRCS_CW+=src/specs/miaf/colours.cpp
+SRCS_CW+=src/specs/miaf/num_pixels.cpp
+SRCS_CW+=src/specs/miaf/profiles.cpp
 
 SRCS_CW+=$(BIN)/cw_version.cpp
 

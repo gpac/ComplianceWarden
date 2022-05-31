@@ -1,17 +1,20 @@
 #include "box_reader_impl.h"
-#include "fourcc.h"
 #include <cstdarg>
-#include <cstring>
-#include <stdexcept>
+#include <cstring> // strlen
 
 extern const char* g_version;
 
 const char* g_appName = "Compliance Warden";
 
-/* ***** utils ***** */
-
 std::vector<uint8_t> loadFile(const char* path);
+std::vector<SpecDesc const*> & g_allSpecs();
+void probeIsobmff(uint8_t* data, size_t size);
+SpecDesc const* specFind(const char* name);
+void printSpecDescription(const SpecDesc* spec);
+void specListRules(const SpecDesc* spec);
 
+namespace
+{
 void dump(Box const& box, int depth = 0)
 {
   for(int i = 0; i < depth; ++i)
@@ -33,74 +36,6 @@ void dump(Box const& box, int depth = 0)
 
   for(auto& child : box.children)
     dump(child, depth + 1);
-}
-
-/* ***** specs ***** */
-
-std::vector<SpecDesc const*> & g_allSpecs()
-{
-  static std::vector<SpecDesc const*> allSpecs;
-  return allSpecs;
-}
-
-int registerSpec(SpecDesc const* spec)
-{
-  g_allSpecs().push_back(spec);
-  return 0;
-}
-
-SpecDesc const* specFind(const char* name)
-{
-  for(auto& spec : g_allSpecs())
-    if(strcmp(spec->name, name) == 0)
-      return spec;
-
-  fprintf(stderr, "Spec '%s' not found\n", name);
-  fflush(stderr);
-  exit(1);
-}
-
-void printSpecDescription(const SpecDesc* spec)
-{
-  fprintf(stdout, "================================================================================\n");
-  fprintf(stdout, "Specification name: %s\n", spec->name);
-  fprintf(stdout, "            detail: %s\n", spec->caption);
-  fprintf(stdout, "        depends on:");
-
-  if(spec->dependencies.empty())
-  {
-    fprintf(stdout, " none.\n");
-  }
-  else
-  {
-    for(auto d : spec->dependencies)
-      fprintf(stdout, " \"%s\"", d);
-
-    fprintf(stdout, " specifications.\n");
-  }
-
-  fprintf(stdout, "================================================================================\n\n");
-}
-
-void specListRules(const SpecDesc* spec)
-{
-  fprintf(stdout, "////////////////////// Beginning of \"%s\" specification.\n\n", spec->name);
-  printSpecDescription(spec);
-
-  int ruleIdx = 0;
-
-  for(auto& r : spec->rules)
-  {
-    fprintf(stdout, "[%s] Rule #%04d: %s\n\n", spec->name, ruleIdx, r.caption);
-    ruleIdx++;
-  }
-
-  fprintf(stdout, "///////////////////////// End of \"%s\" specification.\n\n", spec->name);
-
-  for(auto dep : spec->dependencies)
-    specListRules(specFind(dep));
-
-  fflush(stdout);
 }
 
 int checkCompliance(Box const& file, SpecDesc const* spec)
@@ -217,30 +152,6 @@ int checkCompliance(Box const& file, SpecDesc const* spec)
   return eventCount;
 }
 
-void probeIsobmff(uint8_t* data, size_t size)
-{
-  ENSURE(size >= 8, "ISOBMFF probing: not enough bytes (%d bytes available). Aborting.", (int)size);
-
-  uint64_t boxSize = 0;
-
-  for(auto i = 0; i < 4; ++i)
-    boxSize = (boxSize << 8) + data[i];
-
-  if(boxSize == 1)
-  {
-    boxSize = 0;
-
-    for(auto i = 0; i < 4; ++i)
-      boxSize = (boxSize << 8) + data[i];
-  }
-
-  ENSURE(boxSize == 0 || boxSize >= 8, "ISOBMFF probing: first box size too small (%d bytes). Aborting.", (int)boxSize);
-  ENSURE(boxSize <= size, "ISOBMFF probing: first box size too big (%d bytes when file size is %d bytes). Aborting.", (int)boxSize, size);
-
-  for(auto i = 4; i < 7; ++i)
-    ENSURE(isalpha(data[i]) || isdigit(data[i]) || isspace(data[i]), "Box type is neither an alphanumerics nor a space (box[%d]=\"%c\" (%d)). Aborting.", i, (char)data[i], (int)data[i]);
-}
-
 int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
 {
   BoxReader topReader;
@@ -255,7 +166,8 @@ int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t 
 
   auto const extPos = fnStr.find_last_of('.');
 
-  if(extPos == std::string::npos || fnStr.substr(extPos) != ".obu")
+  if(extPos == std::string::npos ||
+     (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b"))
   {
     probeIsobmff(data, size);
 
@@ -288,44 +200,6 @@ void fprintVersion(FILE* const stream)
   fflush(stream);
 }
 
-/* ***** emscripten exports ***** */
-
-#ifdef CW_WASM
-
-extern "C" {
-struct SpecDesc;
-SpecDesc const* specFindC(const char* name);
-void specListRulesC(const SpecDesc* spec);
-void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size);
-void printVersion();
-}
-
-SpecDesc const* specFindC(const char* name)
-{
-  return specFind(name);
-}
-
-void specListRulesC(const SpecDesc* spec)
-{
-  specListRules(spec);
-}
-
-void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
-{
-  specCheck(spec, filename, data, size);
-}
-
-void printVersion()
-{
-  fprintVersion(stdout);
-}
-
-#endif /*CW_WASM*/
-
-/* ***** main ***** */
-
-#ifndef CW_WASM
-
 void printUsageAndExit(const char* progName)
 {
   fprintVersion(stderr);
@@ -336,6 +210,9 @@ void printUsageAndExit(const char* progName)
   fprintf(stderr, "- Print version:            %s version\n", progName);
   exit(1);
 }
+}
+
+#ifndef CW_WASM
 
 int main(int argc, const char* argv[])
 {
@@ -370,5 +247,37 @@ int main(int argc, const char* argv[])
   return specCheck(spec, argv[2], buf.data(), (int)buf.size());
 }
 
-#endif /*!CW_WASM*/
+#else
+
+/* ***** emscripten exports ***** */
+
+extern "C" {
+struct SpecDesc;
+SpecDesc const* specFindC(const char* name);
+void specListRulesC(const SpecDesc* spec);
+void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size);
+void printVersion();
+}
+
+SpecDesc const* specFindC(const char* name)
+{
+  return specFind(name);
+}
+
+void specListRulesC(const SpecDesc* spec)
+{
+  specListRules(spec);
+}
+
+void specCheckC(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
+{
+  specCheck(spec, filename, data, size);
+}
+
+void printVersion()
+{
+  fprintVersion(stdout);
+}
+
+#endif /*CW_WASM*/
 

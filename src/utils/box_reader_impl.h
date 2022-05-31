@@ -5,8 +5,6 @@
 #include "common_boxes.h"
 #include "fourcc.h"
 
-void ENSURE(bool cond, const char* format, ...);
-
 struct BoxReader : IReader
 {
   bool empty() override

@@ -2,7 +2,7 @@
 #include "spec.h"
 #include "fourcc.h"
 #include "bit_reader.h"
-#include "spec_utils_derivations.h"
+#include "isobmff_derivations.h"
 #include <algorithm> // std::find
 
 extern std::vector<uint32_t> visualSampleEntryFourccs;

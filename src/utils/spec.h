@@ -3,7 +3,6 @@
 
 #include "box.h"
 #include "box_reader.h" // ParseBoxFunc
-#include <string>
 #include <vector>
 
 struct IReport

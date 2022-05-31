@@ -1,4 +1,16 @@
 #include "spec.h"
+#include "fourcc.h"
+#include <cstring> // strcmp
+
+bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
+
+namespace
+{
+bool isStream(Box const& root)
+{
+  return root.children.empty();
+}
+}
 
 static const SpecDesc specAv1Hdr10plus =
 {
@@ -10,9 +22,13 @@ static const SpecDesc specAv1Hdr10plus =
     {
       "Section 2.1\n"
       "An AV1 stream shall contain at least one OBU",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
+        if(!isStream(root))
+          return;
+
         // TODO
+        // Q: what is the stream?
       }
     },
     {
@@ -21,8 +37,11 @@ static const SpecDesc specAv1Hdr10plus =
       " - itu_t_t35_country_code set as 0xB5\n"
       " - itu_t_t35_terminal_provider_code set as 0x003C\n"
       " - itu_t_t35_terminal_provider_oriented_code set as 0x0001",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
+        if(!isStream(root))
+          return;
+
         // TODO
       }
     },
@@ -37,8 +56,11 @@ static const SpecDesc specAv1Hdr10plus =
       " - subsampling_x and subsampling_y should be set to 0\n"
       " - mono_chrome should be 0\n"
       " - chroma_sample_position should be set to 2",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
+        if(!isStream(root))
+          return;
+
         // TODO
       }
     },
@@ -49,8 +71,11 @@ static const SpecDesc specAv1Hdr10plus =
       "located after the last OBU of the previous frame (if any) or after the\n"
       "Sequence Header (if any) or after the start of the temporal unit (e.g. after the\n"
       "temporal delimiter, for storage formats where temporal delimiters are preserved).",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
+        if(!isStream(root))
+          return;
+
         // TODO
         // A TU contains a series of OBUs starting from a Temporal Delimiter, optional sequence headers, optional metadata OBUs,
         // a sequence of one or more frame headers, each followed by zero or more tile group OBUs as well as optional padding OBUs.
@@ -79,46 +104,59 @@ static const SpecDesc specAv1Hdr10plus =
     {
       "Section 3.2\n"
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
-        // TODO
-      }
-    },
-    {
-      "Section 3.2\n"
-      "An ISOBMFF file or CMAF AV1 track as defined in [AV1-ISOBMFF] that also conforms\n"
-      "to this specification should use the brand cdm4\n"
-      "defined in [CTA-5001] in addition to the brand av01.",
-      [] (Box const & /*root*/, IReport* /*out*/)
-      {
-        // TODO
-        // Comment: these rules are triggered on automatic detection... should we add something based on rules in cw?
-      }
-    },
-    {
-      "Section 3.2\n"
-      "If the brand cdm4 is used in conjunction with AV1 streams, the constraints\n"
-      "defined in this specification shall be respected.",
-      [] (Box const & /*root*/, IReport* /*out*/)
-      {
+        if(isStream(root))
+          return;
+
         // TODO
       }
     },
     {
       "Section 3.2\n"
       "This specification requires that HDR10 Static Metadata [...] be unprotected",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
-        // TODO
+        if(isStream(root))
+          return;
+
+        // TODO: encryption not supported in ISOBMFF yet
         // HDR10 Static Metadata (defined as MDCV, MaxCLL and MaxFALL) may be present.
       }
     },
     {
       "Section 3.2\n"
       "This specification requires that [...] HDR10+ Metadata OBUs be unprotected",
-      [] (Box const & /*root*/, IReport* /*out*/)
+      [] (Box const& root, IReport* /*out*/)
       {
-        // TODO
+        if(isStream(root))
+          return;
+
+        // TODO: encryption not supported in ISOBMFF yet
+      }
+    },
+    {
+      "Section 3.3\n"
+      "An ISOBMFF file or CMAF AV1 track as defined in [AV1-ISOBMFF] that also conforms\n"
+      "to this specification should use the brand cdm4\n"
+      "defined in [CTA-5001] in addition to the brand av01.",
+      [] (Box const& root, IReport* out)
+      {
+        if(isStream(root))
+          return;
+
+        if(checkRuleSection(specAv1Hdr10plus, "2.", root) && checkRuleSection(specAv1Hdr10plus, "3.2", root))
+        {
+          bool cdm4Found = false;
+
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("ftyp"))
+              for(auto& sym : box.syms)
+                if(!strcmp(sym.name, "compatible_brand"))
+                  if(toString((uint32_t)sym.value) == "cdm4")
+                    if(!cdm4Found)
+                      out->warning("File conforms to this specification; 'cdm4' brand should be present but is not in the 'ftyp' compatible_brand list");
+        }
       }
     },
   },
