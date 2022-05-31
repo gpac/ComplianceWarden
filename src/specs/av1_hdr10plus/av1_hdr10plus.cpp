@@ -32,7 +32,7 @@ static const SpecDesc specAv1Hdr10plus =
         auto obuType = parseAv1Obus(&br, stateUnused, false);
 
         if(!obuType)
-          out->error("An AV1 stream shall contain at least one OBU but first OU could not be parsed");
+          out->error("An AV1 stream shall contain at least one OBU but first OBU could not be parsed");
       }
     },
     {
@@ -41,12 +41,40 @@ static const SpecDesc specAv1Hdr10plus =
       " - itu_t_t35_country_code set as 0xB5\n"
       " - itu_t_t35_terminal_provider_code set as 0x003C\n"
       " - itu_t_t35_terminal_provider_oriented_code set as 0x0001",
-      [] (Box const& root, IReport* /*out*/)
+      [] (Box const& root, IReport* out)
       {
         if(isIsobmff(root))
           return;
 
-        // TODO
+        if(root.size < 2)
+        {
+          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
+          return;
+        }
+
+        BoxReader br;
+        br.br = BitReader { root.original, (int)root.size };
+
+        while(!br.empty())
+        {
+          Av1State stateUnused;
+          parseAv1Obus(&br, stateUnused, false);
+        }
+
+        for(auto& sym : br.myBox.syms)
+        {
+          if(!strcmp(sym.name, "itu_t_t35_country_code"))
+            if(sym.value != 0xB5)
+              out->error("itu_t_t35_country_code shall be set as 0xB5, found 0x%02X", sym.value);
+
+          if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code"))
+            if(sym.value != 0x003C)
+              out->error("itu_t_t35_terminal_provider_code shall be set as 0x003C, found 0x%04X", sym.value);
+
+          if(!strcmp(sym.name, "itu_t_t35_terminal_provider_oriented_code"))
+            if(sym.value != 0x0001)
+              out->error("itu_t_t35_terminal_provider_oriented_code shall be set as 0x0001, found 0x%04X", sym.value);
+        }
       }
     },
     {
@@ -60,10 +88,16 @@ static const SpecDesc specAv1Hdr10plus =
       " - subsampling_x and subsampling_y should be set to 0\n"
       " - mono_chrome should be 0\n"
       " - chroma_sample_position should be set to 2",
-      [] (Box const& root, IReport* /*out*/)
+      [] (Box const& root, IReport* out)
       {
         if(isIsobmff(root))
           return;
+
+        if(root.size < 2)
+        {
+          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
+          return;
+        }
 
         // TODO
       }
@@ -75,10 +109,16 @@ static const SpecDesc specAv1Hdr10plus =
       "located after the last OBU of the previous frame (if any) or after the\n"
       "Sequence Header (if any) or after the start of the temporal unit (e.g. after the\n"
       "temporal delimiter, for storage formats where temporal delimiters are preserved).",
-      [] (Box const& root, IReport* /*out*/)
+      [] (Box const& root, IReport* out)
       {
         if(isIsobmff(root))
           return;
+
+        if(root.size < 2)
+        {
+          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
+          return;
+        }
 
         // TODO
         // A TU contains a series of OBUs starting from a Temporal Delimiter, optional sequence headers, optional metadata OBUs,
@@ -113,7 +153,7 @@ static const SpecDesc specAv1Hdr10plus =
         if(!isIsobmff(root))
           return;
 
-        // TODO
+        // TODO: sample groups not supported in ISOBMFF yet
       }
     },
     {
@@ -159,7 +199,7 @@ static const SpecDesc specAv1Hdr10plus =
                 if(!strcmp(sym.name, "compatible_brand"))
                   if(toString((uint32_t)sym.value) == "cdm4")
                     if(!cdm4Found)
-                      out->warning("File conforms to this specification; 'cdm4' brand should be present but is not in the 'ftyp' compatible_brand list");
+                      out->warning("'cdm4' brand should be present but is not in the 'ftyp' compatible_brand list");
         }
       }
     },

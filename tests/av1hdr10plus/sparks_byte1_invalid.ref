@@ -6,13 +6,40 @@ Specification description: HDR10+ AV1 Metadata Handling Specification, 8 Decembe
 https://aomediacodec.github.io/av1-hdr10plus/
 
 [av1hdr10plus][Rule #0] Error: Not enough bytes(=1) to contain an OBU
+[av1hdr10plus][Rule #1] Error: Not enough bytes(=1) to contain an OBU
+[av1hdr10plus][Rule #2] Error: Not enough bytes(=1) to contain an OBU
+[av1hdr10plus][Rule #3] Error: Not enough bytes(=1) to contain an OBU
 
 ========================================
-[av1hdr10plus] 1 error(s), 0 warning(s).
+[av1hdr10plus] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
 [av1hdr10plus][Rule #0] Section 2.1
 An AV1 stream shall contain at least one OBU
+
+[av1hdr10plus][Rule #1] Section 2.1
+Each HDR10+ OBU includes an ITU-T T.35 identifier with:
+ - itu_t_t35_country_code set as 0xB5
+ - itu_t_t35_terminal_provider_code set as 0x003C
+ - itu_t_t35_terminal_provider_oriented_code set as 0x0001
+
+[av1hdr10plus][Rule #2] Section 2.2.1
+Streams shall use the following values for the AV1 color_config:
+ - color_primaries = 9 ([BT-2020])
+ - transfer_characteristics = 16 ([SMPTE-ST-2084] / [BT-2100])
+ - matrix_coefficients = 9 ([BT-2020])
+Additionally, the following recommendations apply:
+ - VideoFullRangeFlag should be set to 0
+ - subsampling_x and subsampling_y should be set to 0
+ - mono_chrome should be 0
+ - chroma_sample_position should be set to 2
+
+[av1hdr10plus][Rule #3] Section 2.2.2
+for each frame with show_frame=1 or show_existing_frame=1, there shall be one
+and only one HDR10+ metadata OBU preceding the frame header for this frame and
+located after the last OBU of the previous frame (if any) or after the
+Sequence Header (if any) or after the start of the temporal unit (e.g. after the
+temporal delimiter, for storage formats where temporal delimiters are preserved).
 

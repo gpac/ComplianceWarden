@@ -381,6 +381,81 @@ int parseAv1UncompressedHeader(IReader* reader, Av1State const& state)
     return readBits / 8;
   }
 }
+
+uint64_t leb128_read(IReader* br)
+{
+  uint64_t value = 0;
+  uint8_t Leb128Bytes = 0;
+
+  for(int i = 0; i < 8; i++)
+  {
+    uint8_t leb128_byte = br->sym("leb128_byte", 8);
+    value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
+    Leb128Bytes += 1;
+
+    if(!(leb128_byte & 0x80))
+      break;
+  }
+
+  return value;
+}
+
+enum
+{
+  METADATA_TYPE_HDR_CLL = 1,
+  METADATA_TYPE_HDR_MDCV = 2,
+  METADATA_TYPE_ITUT_T35 = 4
+};
+
+void parseMetadataItutT35(ReaderBits* br, Av1State & /*state*/)
+{
+  auto const itu_t_t35_country_code = br->sym("itu_t_t35_country_code", 8);
+
+  if(itu_t_t35_country_code == 0xFF)
+    br->sym("itu_t_t35_country_code_extension_byte", 8);
+
+  // itu_t_t35_payload_bytes
+  br->sym("itu_t_t35_terminal_provider_code", 16);
+  br->sym("itu_t_t35_terminal_provider_oriented_code", 16);
+}
+
+void parseMetadataHdrCll(ReaderBits* br, Av1State & /*state*/)
+{
+  br->sym("max_cll", 16);
+  br->sym("max_fallmax_fall", 16);
+}
+
+void parseMetadataHdrMdcv(ReaderBits* br, Av1State & /*state*/)
+{
+  for(auto i = 0; i < 3; ++i)
+  {
+    br->sym("primary_chromaticity_x", 16);
+    br->sym("primary_chromaticity_y", 16);
+  }
+
+  br->sym("white_point_chromaticity_x", 16);
+  br->sym("white_point_chromaticity_y", 16);
+  br->sym("luminance_max", 32);
+  br->sym("luminance_min", 32);
+}
+
+int parseAv1MetadataObu(IReader* reader, Av1State& state)
+{
+  auto br = std::make_unique<ReaderBits>(reader);
+
+  auto const metadata_type = leb128_read(reader);
+
+  if(metadata_type == METADATA_TYPE_ITUT_T35)
+    parseMetadataItutT35(br.get(), state);
+  else if(metadata_type == METADATA_TYPE_HDR_CLL)
+    parseMetadataHdrCll(br.get(), state);
+  else if(metadata_type == METADATA_TYPE_HDR_MDCV)
+    parseMetadataHdrMdcv(br.get(), state);
+
+  auto readBits = br->count;
+  READ_UNTIL_NEXT_BYTE(readBits);
+  return readBits / 8;
+}
 } // anonymous namespace
 
 int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
@@ -391,9 +466,6 @@ int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
   auto obu_extension_flag = br->sym("obu_extension_flag", 1);
   auto obu_has_size_field = br->sym("obu_has_size_field", 1);
 
-  if(!obu_has_size_field)
-    throw std::runtime_error("obu_has_size_field shall be set. Aborting.");
-
   br->sym("obu_reserved_1bit", 1);
 
   if(obu_extension_flag)
@@ -403,28 +475,7 @@ int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
     br->sym("extension_header_reserved_3bits", 3);
   }
 
-  auto leb128_read = [] (IReader* br, int* bytes) -> uint64_t {
-    uint64_t value = 0;
-    uint8_t Leb128Bytes = 0;
-
-    for(int i = 0; i < 8; i++)
-    {
-      uint8_t leb128_byte = br->sym("leb128_byte", 8);
-      value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
-      Leb128Bytes += 1;
-
-      if(!(leb128_byte & 0x80))
-        break;
-    }
-
-    if(bytes)
-      *bytes = Leb128Bytes;
-
-    return value;
-  };
-
-  int leb128Bytes = 0;
-  long long unsigned obuSize = leb128_read(br, &leb128Bytes);
+  long long unsigned obuSize = obu_has_size_field ? leb128_read(br) : INT64_MAX;
   switch(obu_type)
   {
   case OBU_SEQUENCE_HEADER:
@@ -436,6 +487,7 @@ int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
     obuSize -= parseAv1UncompressedHeader(br, state);
     break;
   case OBU_METADATA:
+    obuSize -= parseAv1MetadataObu(br, state);
     break;
   default: break;
   }
@@ -444,7 +496,9 @@ int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
   {
     if(br->empty())
     {
-      fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
+      if(obu_has_size_field)
+        fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
+
       return 0;
     }
 
