@@ -14,12 +14,12 @@ function main
   run_test real_mp4_avc
   run_test real_mp4_heif
 
-  run_test check_rules_folder isobmff mp4
-  run_test check_rules_folder heif mp4
-  run_test check_rules_folder miaf hif
-  run_test check_rules_folder avif avif
-  run_test check_rules_folder av1hdr10plus obu
-  run_test check_rules_folder av1hdr10plus mp4
+  run_test check_rules_folder_isobmff isobmff mp4
+  run_test check_rules_folder_isobmff heif mp4
+  run_test check_rules_folder_isobmff miaf hif
+  run_test check_rules_folder_isobmff avif avif
+  run_test check_rules_folder_isobmff av1hdr10plus mp4
+  run_test check_rules_folder_raw av1hdr10plus obu
   run_test miaf_file_extension
 
   echo "OK"
@@ -65,21 +65,37 @@ function check_rules
   local spec="$1"
   local name="$2"
   local ext="$3"
-  local mp4path="$tmpDir/$name.$ext"
-  mkdir -p $(dirname $mp4path)
-  nasm $scriptDir/$name.asm -f bin -o $mp4path
-  if [[ $name == *invalid* ]] ; then
-    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new 2>&1  || true
+  local filepath="$tmpDir/$name.$ext"
+  mkdir -p $(dirname $filepath)
+
+  if [[ $ext == "mp4" ]] ; then
+    nasm $scriptDir/$name.asm -f bin -o $filepath
   else
-    $BIN/cw.exe $spec $mp4path > $tmpDir/$name.new  || true
+    filepath=$scriptDir/$name.$ext
   fi
+
+  if [[ $name == *invalid* ]] ; then
+    $BIN/cw.exe $spec $filepath > $tmpDir/$name.new 2>&1  || true
+  else
+    $BIN/cw.exe $spec $filepath > $tmpDir/$name.new  || true
+  fi
+
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }
 
-function check_rules_folder
+function check_rules_folder_isobmff
 {
   local folder="$1"
   for i in `ls $scriptDir/$folder/*.asm` ; do
+    local name=`basename ${i%.*}`
+    run_test check_rules $folder "$folder/$name" "$2"
+  done
+}
+
+function check_rules_folder_raw
+{
+  local folder="$1"
+  for i in `ls $scriptDir/$folder/*.$2` ; do
     local name=`basename ${i%.*}`
     run_test check_rules $folder "$folder/$name" "$2"
   done

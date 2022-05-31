@@ -445,15 +445,18 @@ int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
     if(br->empty())
     {
       fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
-      break;
+      return 0;
     }
 
-    auto boxReader = dynamic_cast<BoxReader*>(br);
-
     if(storeUnparsed)
+    {
       br->sym("byte", 8);
+    }
     else
+    {
+      auto boxReader = dynamic_cast<BoxReader*>(br);
       boxReader->br.m_pos += 8; // don't store for performance reasons - data is still accessible from the original parsing (e.g Box)
+    }
   }
 
   return obu_type;

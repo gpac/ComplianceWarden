@@ -1,5 +1,5 @@
-#include "spec.h"
-#include "fourcc.h"
+#include "box_reader_impl.h"
+#include "av1_utils.h"
 #include <cstring> // strcmp
 
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
@@ -14,13 +14,25 @@ static const SpecDesc specAv1Hdr10plus =
     {
       "Section 2.1\n"
       "An AV1 stream shall contain at least one OBU",
-      [] (Box const& root, IReport* /*out*/)
+      [] (Box const& root, IReport* out)
       {
         if(isIsobmff(root))
           return;
 
-        // TODO
-        // Q: what is the stream?
+        if(root.size < 2)
+        {
+          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
+          return;
+        }
+
+        BoxReader br;
+        br.br = BitReader { root.original, (int)root.size };
+
+        av1State stateUnused;
+        auto obuType = parseAv1Obus(&br, stateUnused, false);
+
+        if(!obuType)
+          out->error("An AV1 stream shall contain at least one OBU but first OU could not be parsed");
       }
     },
     {
@@ -152,7 +164,7 @@ static const SpecDesc specAv1Hdr10plus =
       }
     },
   },
-  isIsobmff,
+  nullptr,
 };
 
 static auto const registered = registerSpec(&specAv1Hdr10plus);
