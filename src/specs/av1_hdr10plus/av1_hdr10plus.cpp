@@ -28,7 +28,7 @@ static const SpecDesc specAv1Hdr10plus =
         BoxReader br;
         br.br = BitReader { root.original, (int)root.size };
 
-        av1State stateUnused;
+        Av1State stateUnused;
         auto obuType = parseAv1Obus(&br, stateUnused, false);
 
         if(!obuType)

@@ -45,7 +45,7 @@ struct AV1CodecConfigurationRecord
   }
 };
 
-struct av1State
+struct Av1State
 {
   bool reduced_still_picture_header = false;
   bool frame_id_numbers_present_flag = false;
@@ -55,5 +55,5 @@ struct av1State
   AV1CodecConfigurationRecord av1c {};
 };
 
-int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed);
+int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed);
 

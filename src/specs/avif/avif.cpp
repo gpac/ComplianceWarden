@@ -65,7 +65,7 @@ std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
   return av1cSymbols;
 }
 
-void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, av1State& stateUnused)
+void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, Av1State& stateUnused)
 {
   auto const spans = getItemDataOffsets(root, out, itemId);
 
@@ -165,7 +165,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto itemId : av1ImageItemIDs)
       {
-        av1State stateUnused;
+        Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
@@ -199,7 +199,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto itemId : av1ImageItemIDs)
       {
-        av1State stateUnused;
+        Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
@@ -225,7 +225,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto itemId : av1ImageItemIDs)
       {
-        av1State stateUnused;
+        Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
@@ -247,7 +247,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto itemId : av1ImageItemIDs)
       {
-        av1State state;
+        Av1State state;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, state);
 
@@ -302,7 +302,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         if(av1cSymbols.empty())
           return; // no seq hdr in av1C
 
-        av1State stateUnused;
+        Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
 
@@ -369,7 +369,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
             av1cRef.chroma_sample_position = sym.value;
         }
 
-        av1State state;
+        Av1State state;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, state);
 
@@ -514,7 +514,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
       for(auto itemId : auxImages)
       {
-        av1State state;
+        Av1State state;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, state);
 
@@ -636,7 +636,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
 
         auto computeBitDepth = [&] (uint32_t itemId) -> uint32_t
         {
-          av1State state;
+          Av1State state;
           BoxReader br;
           probeAV1ImageItem(root, out, itemId, br, state);
 
@@ -756,7 +756,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
         BoxReader br;
         br.br = BitReader { root.original + offset.second, (int)(box.size - (offset.second - box.position)) };
 
-        av1State state;
+        Av1State state;
 
         bool seqHdrFound = false;
 

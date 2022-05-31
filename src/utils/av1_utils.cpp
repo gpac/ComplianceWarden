@@ -135,7 +135,7 @@ void parseAv1ColorConfig(ReaderBits* br, int64_t seq_profile, AV1CodecConfigurat
   br->sym("separate_uv_delta_q", 1);
 }
 
-int parseAv1SeqHdr(IReader* reader, av1State& state)
+int parseAv1SeqHdr(IReader* reader, Av1State& state)
 {
   auto br = std::make_unique<ReaderBits>(reader);
 
@@ -326,7 +326,7 @@ int parseAv1SeqHdr(IReader* reader, av1State& state)
   return readBits / 8;
 }
 
-int parseAv1UncompressedHeader(IReader* reader, av1State const& state)
+int parseAv1UncompressedHeader(IReader* reader, Av1State const& state)
 {
   auto br = std::make_unique<ReaderBits>(reader);
 
@@ -383,7 +383,7 @@ int parseAv1UncompressedHeader(IReader* reader, av1State const& state)
 }
 } // anonymous namespace
 
-int64_t parseAv1Obus(IReader* br, av1State& state, bool storeUnparsed)
+int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
 {
   br->sym("obu", 0); // virtual OBU separator
   br->sym("forbidden", 1);
@@ -490,7 +490,7 @@ void parseAv1C(IReader* br)
 
   br->sym("configOBUs", 0);
 
-  av1State state;
+  Av1State state;
 
   while(!br->empty())
     parseAv1Obus(br, state, true);
