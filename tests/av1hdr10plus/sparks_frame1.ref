@@ -9,14 +9,3 @@ https://aomediacodec.github.io/av1-hdr10plus/
 [av1hdr10plus] No errors.
 ========================================
 
-+--------------------------------------+
-|          isobmff validation          |
-+--------------------------------------+
-
-Specification description: ISO Base Media File Format
-MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
-
-========================================
-[isobmff] No errors.
-========================================
-

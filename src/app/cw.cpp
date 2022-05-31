@@ -40,6 +40,10 @@ void dump(Box const& box, int depth = 0)
 
 int checkCompliance(Box const& file, SpecDesc const* spec)
 {
+  // early exit if pre-check fails: this spec doesn't apply
+  if(spec->valid && !spec->valid(file))
+    return 0;
+
   struct Report : IReport
   {
     void error(const char* fmt, ...) override
@@ -114,8 +118,7 @@ int checkCompliance(Box const& file, SpecDesc const* spec)
 
     try
     {
-      if(!spec->valid || spec->valid(file))
-        rule.check(file, &out);
+      rule.check(file, &out);
     }
     catch(std::exception const& e)
     {

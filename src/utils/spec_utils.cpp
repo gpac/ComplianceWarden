@@ -74,6 +74,9 @@ void specListRules(const SpecDesc* spec)
 
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root)
 {
+  if(spec.valid && !spec.valid(root))
+    return true;
+
   for(auto& rule : spec.rules)
   {
     std::stringstream ss(rule.caption);
@@ -104,10 +107,9 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
 
         int errorCount = 0;
       };
-      Report r;
 
-      if(!spec.valid || spec.valid(root))
-        rule.check(root, &r);
+      Report r;
+      rule.check(root, &r);
 
       if(r.errorCount)
         return false;

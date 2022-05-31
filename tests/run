@@ -68,10 +68,10 @@ function check_rules
   local filepath="$tmpDir/$name.$ext"
   mkdir -p $(dirname $filepath)
 
-  if [[ $ext == "mp4" ]] ; then
-    nasm $scriptDir/$name.asm -f bin -o $filepath
-  else
+  if [[ $ext == "obu" ]] ; then
     filepath=$scriptDir/$name.$ext
+  else
+    nasm $scriptDir/$name.asm -f bin -o $filepath
   fi
 
   if [[ $name == *invalid* ]] ; then
