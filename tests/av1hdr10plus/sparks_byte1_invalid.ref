@@ -5,10 +5,10 @@
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #0] Error: Not enough bytes(=1) to contain an OBU
-[av1hdr10plus][Rule #1] Error: Not enough bytes(=1) to contain an OBU
-[av1hdr10plus][Rule #2] Error: Not enough bytes(=1) to contain an OBU
-[av1hdr10plus][Rule #3] Error: Not enough bytes(=1) to contain an OBU
+[av1hdr10plus][Rule #0] Error: Not enough bytes(=0) to contain an OBU
+[av1hdr10plus][Rule #1] Error: Not enough bytes(=0) to contain an OBU
+[av1hdr10plus][Rule #2] Error: Not enough bytes(=0) to contain an OBU
+[av1hdr10plus][Rule #3] Error: Not enough bytes(=0) to contain an OBU
 
 ========================================
 [av1hdr10plus] 4 error(s), 0 warning(s).

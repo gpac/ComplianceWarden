@@ -14,12 +14,11 @@ function main
   run_test real_mp4_avc
   run_test real_mp4_heif
 
-  run_test check_rules_folder_isobmff isobmff mp4
-  run_test check_rules_folder_isobmff heif mp4
-  run_test check_rules_folder_isobmff miaf hif
-  run_test check_rules_folder_isobmff avif avif
-  run_test check_rules_folder_isobmff av1hdr10plus mp4
-  run_test check_rules_folder_raw av1hdr10plus obu
+  run_test check_rules_folder isobmff mp4
+  run_test check_rules_folder heif mp4
+  run_test check_rules_folder miaf hif
+  run_test check_rules_folder avif avif
+  run_test check_rules_folder av1hdr10plus obu
   run_test miaf_file_extension
 
   echo "OK"
@@ -68,11 +67,7 @@ function check_rules
   local filepath="$tmpDir/$name.$ext"
   mkdir -p $(dirname $filepath)
 
-  if [[ $ext == "obu" ]] ; then
-    filepath=$scriptDir/$name.$ext
-  else
-    nasm $scriptDir/$name.asm -f bin -o $filepath
-  fi
+  nasm $scriptDir/$name.asm -f bin -o $filepath
 
   if [[ $name == *invalid* ]] ; then
     $BIN/cw.exe $spec $filepath > $tmpDir/$name.new 2>&1  || true
@@ -83,19 +78,10 @@ function check_rules
   compare $scriptDir/$name.ref $tmpDir/$name.new
 }
 
-function check_rules_folder_isobmff
+function check_rules_folder
 {
   local folder="$1"
   for i in `ls $scriptDir/$folder/*.asm` ; do
-    local name=`basename ${i%.*}`
-    run_test check_rules $folder "$folder/$name" "$2"
-  done
-}
-
-function check_rules_folder_raw
-{
-  local folder="$1"
-  for i in `ls $scriptDir/$folder/*.$2` ; do
     local name=`basename ${i%.*}`
     run_test check_rules $folder "$folder/$name" "$2"
   done
