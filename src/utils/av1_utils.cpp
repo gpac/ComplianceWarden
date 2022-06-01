@@ -386,13 +386,11 @@ int parseAv1UncompressedHeader(IReader* reader, Av1State const& state)
 uint64_t leb128_read(IReader* br)
 {
   uint64_t value = 0;
-  uint8_t Leb128Bytes = 0;
 
   for(int i = 0; i < 8; i++)
   {
     uint8_t leb128_byte = br->sym("leb128_byte", 8);
     value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
-    Leb128Bytes += 1;
 
     if(!(leb128_byte & 0x80))
       break;
