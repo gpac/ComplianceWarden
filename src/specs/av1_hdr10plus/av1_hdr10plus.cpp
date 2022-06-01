@@ -123,8 +123,8 @@ static const SpecDesc specAv1Hdr10plus =
               out->error("matrix_coefficients shall be set as 9 ([BT-2020]), found %d", sym.value);
 
           if(!strcmp(sym.name, "color_range"))
-            if(sym.value != 1)
-              out->warning("VideoFullRangeFlag shall be set as 1, found %d", sym.value);
+            if(sym.value != 0)
+              out->warning("VideoFullRangeFlag shall be set as 0, found %d", sym.value);
 
           if(!strcmp(sym.name, "subsampling_x"))
             if(sym.value != 0)

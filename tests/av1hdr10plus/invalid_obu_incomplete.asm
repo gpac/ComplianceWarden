@@ -13,7 +13,7 @@ _start:
     db 0x03 ; frame_width_bits_minus_1(4) frame_height_bits_minus_1(4) 
     db 0xCA ; max_frame_width_minus_1(1) max_frame_height_minus_1(4) frame_id_numbers_present_flag(1) use_128x128_superblock(1) enable_filter_intra(1) 
     db 0x58 ; enable_intra_edge_filter(1) ('X') enable_interintra_compound(1) ('X') enable_masked_compound(1) ('X') enable_warped_motion(1) ('X') enable_dual_filter(1) ('X') enable_order_hint(1) ('X') seq_choose_screen_content_tools(1) ('X') seq_force_screen_content_tools(1) ('X') 
-    db 0x06, 0x36, 0xD0, 0x0B ; enable_superres(1) enable_cdef(1) enable_restoration(1) high_bitdepth(1) mono_chrome(1) color_description_present_flag(1) color_primaries(8) transfer_characteristics(8) matrix_coefficients(8) color_range(1) separate_uv_delta_q(1) 
+    db 0x06, 0x36, 0xD0, 0x09 ; enable_superres(1) enable_cdef(1) enable_restoration(1) high_bitdepth(1) mono_chrome(1) color_description_present_flag(1) color_primaries(8) transfer_characteristics(8) matrix_coefficients(8) color_range(1) separate_uv_delta_q(1) 
     db 0x3E ; film_grain_params_present(1) ('>') bits(7) ('>') 
      ; /seqhdr(0) 
     db 0xF8 ; byte(8) 
