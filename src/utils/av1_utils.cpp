@@ -12,7 +12,7 @@ namespace
     readBits += remainderBits; \
   }
 
-struct ReaderBits
+struct ReaderBits : IReader
 {
   ReaderBits(IReader* delegate) : delegate(delegate) {}
 
@@ -443,7 +443,7 @@ int parseAv1MetadataObu(IReader* reader, Av1State& state)
 {
   auto br = std::make_unique<ReaderBits>(reader);
 
-  auto const metadata_type = leb128_read(reader);
+  auto const metadata_type = leb128_read(br.get());
 
   if(metadata_type == METADATA_TYPE_ITUT_T35)
     parseMetadataItutT35(br.get(), state);
@@ -499,7 +499,7 @@ int64_t parseAv1Obus(IReader* br, Av1State& state, bool storeUnparsed)
       if(obu_has_size_field)
         fprintf(stderr, "Incomplete OBU (remaining to read=%llu)\n", obuSize + 1);
 
-      return 0;
+      return obu_type;
     }
 
     if(storeUnparsed)
