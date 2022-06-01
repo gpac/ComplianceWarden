@@ -15,6 +15,7 @@ namespace
 struct ReaderBits : IReader
 {
   ReaderBits(IReader* delegate) : delegate(delegate) {}
+  virtual ~ReaderBits() {}
 
   bool empty()
   {
