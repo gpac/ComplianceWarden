@@ -11,9 +11,11 @@ https://aomediacodec.github.io/av1-hdr10plus/
 [av1hdr10plus][Rule #2] Error: color_primaries shall be set as 9 ([BT-2020]), found 141
 [av1hdr10plus][Rule #2] Error: transfer_characteristics shall be set as 16 ([SMPTE-ST-2084] / [BT-2100]), found 180
 [av1hdr10plus][Rule #2] Error: matrix_coefficients shall be set as 9 ([BT-2020]), found 2
+Incomplete OBU (remaining to read=24)
+[av1hdr10plus][Rule #3] Error: The first OBU shall be a temporal unit. Aborting.
 
 ========================================
-[av1hdr10plus] 3 error(s), 0 warning(s).
+[av1hdr10plus] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -28,4 +30,11 @@ Additionally, the following recommendations apply:
  - subsampling_x and subsampling_y should be set to 0
  - mono_chrome should be 0
  - chroma_sample_position should be set to 2
+
+[av1hdr10plus][Rule #3] Section 2.2.2
+for each frame with show_frame=1 or show_existing_frame=1, there shall be one
+and only one HDR10+ metadata OBU preceding the frame header for this frame and
+located after the last OBU of the previous frame (if any) or after the
+Sequence Header (if any) or after the start of the temporal unit (e.g. after the
+temporal delimiter, for storage formats where temporal delimiters are preserved).
 

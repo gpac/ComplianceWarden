@@ -5,20 +5,13 @@
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #1] Error: itu_t_t35_country_code shall be set as 0xB5, found 0xA5
-[av1hdr10plus][Rule #3] Error: There shall be one and only one HDR10+ metadata OBU. Found 0 in Temporal Unit #0 (Frame #0)
+[av1hdr10plus][Rule #3] Error: There shall be one and only one HDR10+ metadata OBU. Found 2 in Temporal Unit #0 (Frame #0)
 
 ========================================
-[av1hdr10plus] 2 error(s), 0 warning(s).
+[av1hdr10plus] 1 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
-
-[av1hdr10plus][Rule #1] Section 2.1
-Each HDR10+ OBU includes an ITU-T T.35 identifier with:
- - itu_t_t35_country_code set as 0xB5
- - itu_t_t35_terminal_provider_code set as 0x003C
- - itu_t_t35_terminal_provider_oriented_code set as 0x0001
 
 [av1hdr10plus][Rule #3] Section 2.2.2
 for each frame with show_frame=1 or show_existing_frame=1, there shall be one

@@ -162,29 +162,164 @@ static const SpecDesc specAv1Hdr10plus =
           return;
         }
 
-        // TODO
-        // A TU contains a series of OBUs starting from a Temporal Delimiter, optional sequence headers, optional metadata OBUs,
-        // a sequence of one or more frame headers, each followed by zero or more tile group OBUs as well as optional padding OBUs.
-        /*
-           ASSERTION 2.2.2a
-           GIVEN: an AV1 stream with HDR10+
-           WHEN: each frame in the stream is observed
-           AND: the frame has show_frame set to 1
-           OR: the frame has show_existing_frame set to 1
-           THEN: exactly one HDR10+ metadata OBU exists
-           AND: it is placed within the frame as defined in Section 2.2.2.
+        Av1State stateUnused;
+        BoxReader br;
+        br.br = BitReader { root.original, (int)root.size };
 
-           ASSERTION 2.2.2b
-           GIVEN: an AV1 stream with HDR10+
-           WHEN: each frame in the stream is observed
-           AND: the frame has show_frame set to 0
-           THEN: no HDR10+ metadata OBU exists within that frame.
+        struct OBU
+        {
+          int64_t type = 0;
+          bool isHdr10p = false;
+          size_t firstSymIdx = 0, lastSymIdx = 0;
+        };
+        struct Frame : std::vector<OBU>
+        {
+          bool show = false;
+        };
+        struct TemporalUnit : std::vector<Frame> {};
+        struct AV1Stream : std::vector<TemporalUnit> {};
+        AV1Stream av1Stream;
 
-           ASSERTION 2.2.2c
-           GIVEN: a non-layered AV1 stream with HDR10+
-           WHEN: the stream is observed
-           THEN: exactly one HDR10+ metadata OBU exists per TU.
-         */
+        while(!br.empty())
+        {
+          OBU obu;
+          obu.firstSymIdx = br.myBox.syms.size();
+          obu.type = parseAv1Obus(&br, stateUnused, false);
+          obu.lastSymIdx = br.myBox.syms.size() - 1;
+
+          if(obu.type == 0)
+            break;
+
+          if(obu.type == OBU_TEMPORAL_DELIMITER)
+          {
+            av1Stream.push_back(TemporalUnit {});
+            av1Stream.back().push_back(Frame {});
+          }
+
+          if(av1Stream.empty())
+          {
+            if(obu.type != OBU_TEMPORAL_DELIMITER)
+            {
+              out->error("The first OBU shall be a temporal unit. Aborting.");
+              break;
+            }
+
+            av1Stream.push_back(TemporalUnit {});
+            av1Stream.back().push_back(Frame {});
+          }
+
+          av1Stream.back().back().push_back(obu);
+
+          if(obu.type == OBU_FRAME)
+            av1Stream.back().push_back(Frame {});
+        }
+
+        for(auto& tu : av1Stream)
+          for(auto& frame : tu)
+            for(auto& obu : frame)
+            {
+              // look for show_frame/show_existing_frame and the HDR10+ metadata OBUs
+              for(size_t i = obu.firstSymIdx; i < obu.lastSymIdx; ++i)
+              {
+                auto& sym = br.myBox.syms[i];
+
+                if(!strcmp(sym.name, "show_frame") || !strcmp(sym.name, "show_existing_frame"))
+                  frame.show = !!sym.value;
+
+                if(!strcmp(sym.name, "itu_t_t35_country_code"))
+                  if(sym.value == 0xB5)
+                    while(++i <= obu.lastSymIdx)
+                    {
+                      sym = br.myBox.syms[i];
+
+                      if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code"))
+                        if(sym.value == 0x003C)
+                          if(++i <= obu.lastSymIdx)
+                          {
+                            sym = br.myBox.syms[i];
+
+                            if(!strcmp(sym.name, "itu_t_t35_terminal_provider_oriented_code"))
+                              if(sym.value == 0x0001)
+                                obu.isHdr10p = true;
+                          }
+                    }
+              }
+            }
+
+        if(av1Stream.empty())
+          return;
+
+        // re-aggregate the last tu&frame&obu into the last frame when there is no OBU_FRAME
+        if(av1Stream.back().size() >= 2)
+        {
+          bool lastFrameIsNoFrame = true;
+
+          for(auto& obu : av1Stream.back().back())
+            if(obu.type == OBU_FRAME)
+              lastFrameIsNoFrame = false;
+
+          if(lastFrameIsNoFrame)
+          {
+            auto& prevFrame = av1Stream.back()[av1Stream.back().size() - 2];
+
+            for(auto& obu : av1Stream.back().back())
+              prevFrame.push_back(obu);
+
+            // remove the last frame
+            av1Stream.back().resize(av1Stream.back().size() - 1);
+          }
+        }
+
+        for(int tu = 0; tu < (int)av1Stream.size(); ++tu)
+          for(int frame = 0; frame < (int)av1Stream[tu].size(); ++frame)
+          {
+            if(!av1Stream[tu][frame].show)
+              continue;
+
+            int numHdr10p = 0;
+
+            for(auto& obu : av1Stream[tu][frame])
+              if(obu.isHdr10p)
+                numHdr10p++;
+
+            if(numHdr10p != 1)
+            {
+              out->error("There shall be one and only one HDR10+ metadata OBU. Found %d in Temporal Unit #%d (Frame #%d)", numHdr10p, tu, frame);
+              continue;
+            }
+
+#if 0 // this makes no sense
+
+            if(av1Stream[tu][frame].size() >= 2)
+              if(av1Stream[tu][frame][0].type == OBU_TEMPORAL_DELIMITER && av1Stream[tu][frame][1].isHdr10p)
+                // right after the Temporal Unit Delimiter
+                continue;
+
+#endif
+
+            bool seenFrameHeader = false, seenFrame = false, seenSeqHdr = false;
+
+            for(auto& obu : av1Stream[tu][frame])
+            {
+              if(obu.type == OBU_FRAME_HEADER)
+                seenFrameHeader = true;
+
+              if(obu.isHdr10p && seenFrameHeader)
+                out->error("The HR10+ metadata OBU shall precede the frame header");
+
+              if(obu.type == OBU_FRAME)
+                seenFrame = true;
+
+              if(obu.isHdr10p && seenFrame)
+                out->error("The HR10+ metadata OBU shall be located after the last OBU of the previous frame if any");
+
+              if(obu.type == OBU_SEQUENCE_HEADER)
+                seenSeqHdr = true;
+
+              if(obu.isHdr10p && !seenSeqHdr)
+                out->error("The HR10+ metadata OBU shall be located after the Sequence Header if any");
+            }
+          }
       }
     },
     {
@@ -212,7 +347,7 @@ static const SpecDesc specAv1Hdr10plus =
     },
     {
       "Section 3.2\n"
-      "This specification requires that [...] HDR10+ Metadata OBUs be unprotected",
+      "This specification requires that [...] HDR10+ Metadata OBUs be unprotected ",
       [] (Box const& root, IReport* /*out*/)
       {
         if(!isIsobmff(root))
