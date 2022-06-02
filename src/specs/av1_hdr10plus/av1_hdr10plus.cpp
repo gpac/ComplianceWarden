@@ -297,7 +297,11 @@ static const SpecDesc specAv1Hdr10plus =
 
 #endif
 
-            bool seenFrameHeader = false, seenFrame = false, seenSeqHdr = false;
+            bool seenFrameHeader = false, seenFrame = false, seenSeqHdr = false, hasSeqHdr = false;
+
+            for(auto& obu : av1Stream[tu][frame])
+              if(obu.type == OBU_SEQUENCE_HEADER)
+                hasSeqHdr = true;
 
             for(auto& obu : av1Stream[tu][frame])
             {
@@ -316,7 +320,7 @@ static const SpecDesc specAv1Hdr10plus =
               if(obu.type == OBU_SEQUENCE_HEADER)
                 seenSeqHdr = true;
 
-              if(obu.isHdr10p && !seenSeqHdr)
+              if(obu.isHdr10p && hasSeqHdr && !seenSeqHdr)
                 out->error("The HR10+ metadata OBU shall be located after the Sequence Header if any (Temporal Unit #%d, Frame #%d)", tu, frame);
             }
           }
