@@ -124,23 +124,23 @@ static const SpecDesc specAv1Hdr10plus =
 
           if(!strcmp(sym.name, "color_range"))
             if(sym.value != 0)
-              out->warning("VideoFullRangeFlag shall be set as 0, found %d", sym.value);
+              out->warning("VideoFullRangeFlag should be set as 0, found %d", sym.value);
 
           if(!strcmp(sym.name, "subsampling_x"))
             if(sym.value != 0)
-              out->warning("subsampling_x shall be set as 0, found %d", sym.value);
+              out->warning("subsampling_x should be set as 0, found %d", sym.value);
 
           if(!strcmp(sym.name, "subsampling_y"))
             if(sym.value != 0)
-              out->warning("subsampling_y shall be set as 0, found %d", sym.value);
+              out->warning("subsampling_y should be set as 0, found %d", sym.value);
 
           if(!strcmp(sym.name, "mono_chrome"))
             if(sym.value != 0)
-              out->warning("mono_chrome shall be set as 0, found %d", sym.value);
+              out->warning("mono_chrome should be set as 0, found %d", sym.value);
 
           if(!strcmp(sym.name, "chroma_sample_position"))
             if(sym.value != 2)
-              out->warning("chroma_sample_position shall be set as 2, found %d", sym.value);
+              out->warning("chroma_sample_position should be set as 2, found %d", sym.value);
         }
       }
     },
