@@ -5,7 +5,7 @@
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #3] Error: The HR10+ metadata OBU shall be located after the Sequence Header if any
+[av1hdr10plus][Rule #3] Error: The HR10+ metadata OBU shall be located after the Sequence Header if any (Temporal Unit #0, Frame #0)
 
 ========================================
 [av1hdr10plus] 1 error(s), 0 warning(s).

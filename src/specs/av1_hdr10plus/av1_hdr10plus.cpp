@@ -305,19 +305,19 @@ static const SpecDesc specAv1Hdr10plus =
                 seenFrameHeader = true;
 
               if(obu.isHdr10p && seenFrameHeader)
-                out->error("The HR10+ metadata OBU shall precede the frame header");
+                out->error("The HR10+ metadata OBU shall precede the frame header (Temporal Unit #%d, Frame #%d)", tu, frame);
 
               if(obu.type == OBU_FRAME)
                 seenFrame = true;
 
               if(obu.isHdr10p && seenFrame)
-                out->error("The HR10+ metadata OBU shall be located after the last OBU of the previous frame if any");
+                out->error("The HR10+ metadata OBU shall be located after the last OBU of the previous frame if any (Temporal Unit #%d, Frame #%d)", tu, frame);
 
               if(obu.type == OBU_SEQUENCE_HEADER)
                 seenSeqHdr = true;
 
               if(obu.isHdr10p && !seenSeqHdr)
-                out->error("The HR10+ metadata OBU shall be located after the Sequence Header if any");
+                out->error("The HR10+ metadata OBU shall be located after the Sequence Header if any (Temporal Unit #%d, Frame #%d)", tu, frame);
             }
           }
       }

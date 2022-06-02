@@ -5,7 +5,7 @@
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #2] Warning: chroma_sample_position shall be set as 2, found 0
+[av1hdr10plus][Rule #2] Warning: chroma_sample_position should be set as 2, found 0
 
 ========================================
 [av1hdr10plus] 0 error(s), 1 warning(s).

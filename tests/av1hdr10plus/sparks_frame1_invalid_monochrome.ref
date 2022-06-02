@@ -5,7 +5,7 @@
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #2] Warning: mono_chrome shall be set as 0, found 1
+[av1hdr10plus][Rule #2] Warning: mono_chrome should be set as 0, found 1
 
 ========================================
 [av1hdr10plus] 0 error(s), 1 warning(s).
