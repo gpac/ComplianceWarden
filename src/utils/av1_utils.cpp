@@ -15,6 +15,7 @@ namespace
 struct ReaderBits : IReader
 {
   ReaderBits(IReader* delegate) : delegate(delegate) {}
+
   virtual ~ReaderBits() {}
 
   bool empty()
@@ -350,7 +351,7 @@ int parseAv1UncompressedHeader(IReader* reader, Av1State const& state)
 
     if(show_existing_frame)
     {
-      auto frame_to_show_map_idx = br->sym("frame_to_show_map_idx", 3);
+      br->sym("frame_to_show_map_idx", 3);
 
       // Not covered: there is an assert in the sequence header.
       // if ( decoder_model_info_present_flag && !equal_picture_interval ) {
@@ -362,9 +363,6 @@ int parseAv1UncompressedHeader(IReader* reader, Av1State const& state)
       {
         br->sym("display_frame_id", idLen);
       }
-
-      if(frame_to_show_map_idx != 0)
-        throw std::runtime_error("Unimplemented frame_to_show_map_idx != 0. Aborting.");
 
       // we don't refresh RefFrameType
       // frame_type = RefFrameType[frame_to_show_map_idx];
