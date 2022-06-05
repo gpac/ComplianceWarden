@@ -4,6 +4,7 @@
 #include "spec.h"
 #include "common_boxes.h"
 #include "fourcc.h"
+#include <cstring> // strcmp
 
 struct BoxReader : IReader
 {
@@ -15,7 +16,23 @@ struct BoxReader : IReader
   int64_t sym(const char* name, int bits) override
   {
     auto val = br.u(bits);
-    myBox.syms.push_back({ name, val, bits });
+
+    if(!strcmp(name, ""))
+    {
+      // Avoid allocating for unparsed symbols.
+      // Our current data structure is naive and memory-greedy.
+      // It breaks the WebAssembly runtime.
+      // In return, empty symbols values can't be trusted.
+      if(!myBox.syms.empty() && !strcmp(myBox.syms.back().name, ""))
+        myBox.syms.back().numBits += bits;
+      else
+        myBox.syms.push_back({ name, val, bits });
+    }
+    else
+    {
+      myBox.syms.push_back({ name, val, bits });
+    }
+
     return val;
   }
 
