@@ -479,6 +479,20 @@ void parseAuxi(IReader* br)
     br->sym("aux_track_type", 8);
 }
 
+void parseCcst(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("all_ref_pics_intra", 1);
+  br->sym("intra_pred_used", 1);
+  br->sym("max_ref_per_pic", 4);
+  br->sym("reserved", 26);
+
+  while(!br->empty())
+    br->sym("", 8);
+}
+
 void parseIloc(IReader* br)
 {
   auto version = br->sym("version", 8);
@@ -840,6 +854,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseAuxc;
   case FOURCC("auxi"):
     return &parseAuxi;
+  case FOURCC("ccst"):
+    return &parseCcst;
   case FOURCC("iloc"):
     return &parseIloc;
   case FOURCC("iinf"):

@@ -114,6 +114,7 @@ dd BE(0)
 ccst_start:
     dd BE(ccst_end - ccst_start)
     dd "ccst"
+    dd 0, 0, 0, 0
 ccst_end:
 avc1_end:
 

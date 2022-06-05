@@ -890,18 +890,20 @@ static const SpecDesc specHeif =
                                     for(auto& sampleEntryChild : stsdChild.children)
                                       if(sampleEntryChild.fourcc == FOURCC("ccst"))
                                       {
-                                        if(sampleEntryChild.syms.size() != 2 + 4 /*fullBox*/ + 4)
-                                        {
-                                          out->error("invalid 'ccst' size: %llu instead of 16", sampleEntryChild.size);
-                                        }
-                                        else
-                                        {
-                                          uint32_t reserved = ((sampleEntryChild.syms[7].value & 0x03) << 16)
-                                            + (sampleEntryChild.syms[8].value << 8) + sampleEntryChild.syms[9].value;
+                                        auto sampleEntryChildSizeInBits = 0;
 
-                                          if(reserved != 0)
-                                            out->error("invalid 'ccst' reserved value shall be 0, found 0x%X", reserved);
-                                        }
+                                        for(auto sym : sampleEntryChild.syms)
+                                          sampleEntryChildSizeInBits += sym.numBits;
+
+                                        sampleEntryChildSizeInBits += sampleEntryChildSizeInBits % 8 ? 8 - sampleEntryChildSizeInBits % 8 : 0;
+
+                                        if(sampleEntryChildSizeInBits / 8 != 16)
+                                          out->error("invalid 'ccst' size: %llu instead of 16", sampleEntryChild.size);
+
+                                        for(auto sym : sampleEntryChild.syms)
+                                          if(!strcmp(sym.name, "reserved"))
+                                            if(sym.value != 0)
+                                              out->error("invalid 'ccst' reserved value shall be 0, found 0x%llX", sym.value);
                                       }
                     }
       }
