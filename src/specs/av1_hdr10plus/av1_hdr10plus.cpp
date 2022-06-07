@@ -160,6 +160,9 @@ const SpecDesc specAv1Hdr10plus =
       "temporal delimiter, for storage formats where temporal delimiters are preserved).",
       [] (Box const& root, IReport* out)
       {
+        if(isIsobmff(root))
+          return;
+
         BoxReader br;
         br.br = getData(root, out);
 
