@@ -5,7 +5,7 @@
 Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #0] Error: Not enough bytes(=1) to contain an OBU
+[av1hdr10plus][Rule #0] Error: Not enough bytes(=0) to contain an OBU
 
 ========================================
 [av1hdr10plus] 1 error(s), 0 warning(s).
@@ -15,4 +15,15 @@ https://aomediacodec.github.io/av1-hdr10plus/
 
 [av1hdr10plus][Rule #0] Section 2.1
 An AV1 stream shall contain at least one OBU
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
 

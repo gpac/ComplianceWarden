@@ -14,11 +14,12 @@ function main
   run_test real_mp4_avc
   run_test real_mp4_heif
 
-  run_test check_rules_folder isobmff mp4
-  run_test check_rules_folder heif mp4
-  run_test check_rules_folder miaf hif
-  run_test check_rules_folder avif avif
-  run_test check_rules_folder av1hdr10plus obu
+  run_test check_rules_folder isobmff mp4 ""
+  run_test check_rules_folder heif mp4 ""
+  run_test check_rules_folder miaf hif ""
+  run_test check_rules_folder avif avif ""
+  run_test check_rules_folder av1hdr10plus obu "| grep -v isobmff"
+  run_test check_rules_folder av1hdr10plus mp4 "| grep isobmff"
   run_test miaf_file_extension
 
   echo "OK"
@@ -81,7 +82,8 @@ function check_rules
 function check_rules_folder
 {
   local folder="$1"
-  for i in `ls $scriptDir/$folder/*.asm` ; do
+  local list_rule="ls $scriptDir/$folder/*.asm $3"
+  for i in $(eval $list_rule) ; do
     local name=`basename ${i%.*}`
     run_test check_rules $folder "$folder/$name" "$2"
   done

@@ -3,8 +3,30 @@
 #include <cstring> // strcmp
 
 bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
+std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
 
-static const SpecDesc specAv1Hdr10plus =
+namespace
+{
+BitReader getData(Box const& root, IReport* out)
+{
+  if(!isIsobmff(root))
+    return { root.original, (int)root.size }
+
+  ;
+
+  // FIXME: cw is not an ISOBMFF demuxer so we consider the 'mdat' box
+  auto mdats = findBoxes(root, FOURCC("mdat"));
+
+  if(mdats.size() == 1)
+    return { mdats[0]->original + 8, (int)mdats[0]->size - 8 }
+
+  ;
+
+  out->error("%d mdat found, expected 1", mdats.size());
+  return { nullptr, 0 };
+}
+
+const SpecDesc specAv1Hdr10plus =
 {
   "av1hdr10plus",
   "HDR10+ AV1 Metadata Handling Specification, 8 December 2021\n"
@@ -16,17 +38,14 @@ static const SpecDesc specAv1Hdr10plus =
       "An AV1 stream shall contain at least one OBU",
       [] (Box const& root, IReport* out)
       {
-        if(isIsobmff(root))
-          return;
+        BoxReader br;
+        br.br = getData(root, out);
 
-        if(root.size < 2)
+        if(br.br.size < 2)
         {
-          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
+          out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
           return;
         }
-
-        BoxReader br;
-        br.br = BitReader { root.original, (int)root.size };
 
         Av1State stateUnused;
         auto obuType = parseAv1Obus(&br, stateUnused, false);
@@ -43,17 +62,11 @@ static const SpecDesc specAv1Hdr10plus =
       " - itu_t_t35_terminal_provider_oriented_code set as 0x0001",
       [] (Box const& root, IReport* out)
       {
-        if(isIsobmff(root))
-          return;
-
-        if(root.size < 2)
-        {
-          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
-          return;
-        }
-
         BoxReader br;
-        br.br = BitReader { root.original, (int)root.size };
+        br.br = getData(root, out);
+
+        if(br.br.size < 2)
+          return;
 
         while(!br.empty())
         {
@@ -90,17 +103,11 @@ static const SpecDesc specAv1Hdr10plus =
       " - chroma_sample_position should be set to 2",
       [] (Box const& root, IReport* out)
       {
-        if(isIsobmff(root))
-          return;
-
-        if(root.size < 2)
-        {
-          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
-          return;
-        }
-
         BoxReader br;
-        br.br = BitReader { root.original, (int)root.size };
+        br.br = getData(root, out);
+
+        if(br.br.size < 2)
+          return;
 
         while(!br.empty())
         {
@@ -153,18 +160,11 @@ static const SpecDesc specAv1Hdr10plus =
       "temporal delimiter, for storage formats where temporal delimiters are preserved).",
       [] (Box const& root, IReport* out)
       {
-        if(isIsobmff(root))
-          return;
-
-        if(root.size < 2)
-        {
-          out->error("Not enough bytes(=%llu) to contain an OBU", root.size);
-          return;
-        }
-
-        Av1State stateUnused;
         BoxReader br;
-        br.br = BitReader { root.original, (int)root.size };
+        br.br = getData(root, out);
+
+        if(br.br.size < 2)
+          return;
 
         struct OBU
         {
@@ -179,6 +179,7 @@ static const SpecDesc specAv1Hdr10plus =
         struct TemporalUnit : std::vector<Frame> {};
         struct AV1Stream : std::vector<TemporalUnit> {};
         AV1Stream av1Stream;
+        Av1State stateUnused;
 
         while(!br.empty())
         {
@@ -389,4 +390,5 @@ static const SpecDesc specAv1Hdr10plus =
 };
 
 static auto const registered = registerSpec(&specAv1Hdr10plus);
+}
 
