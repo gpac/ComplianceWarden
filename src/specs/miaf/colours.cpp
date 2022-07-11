@@ -429,7 +429,7 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
           if(colorspace == "YUV 4:2:2")
             if(resIspe.width % 2)
-              out->error("[gridItemId=%u] for YUV 4:2:0 width(%d) should be even", gridItemId, resIspe.width);
+              out->error("[gridItemId=%u] for YUV 4:2:2 width(%d) should be even", gridItemId, resIspe.width);
         }
       }
     },

@@ -110,7 +110,7 @@ const std::initializer_list<RuleDesc> getRulesMiafDerivations()
     },
     {
       "Section 7.3.11.1\n"
-      "All derivation chains shall originate from one or more coded images\n",
+      "All derivation chains shall originate from one or more coded images",
       [] (Box const& root, IReport* out)
       {
         auto graph = buildDerivationGraph(root);

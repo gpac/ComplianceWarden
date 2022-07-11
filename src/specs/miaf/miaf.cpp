@@ -1620,7 +1620,7 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
   {
     "Section 7.3.6.7\n"
     "[Transformative properties][if used] shall be indicated to be applied in the\n"
-    "following order: clean aperture first, then rotation, then mirror.\n",
+    "following order: clean aperture first, then rotation, then mirror.",
     [] (Box const& root, IReport* out)
     {
       std::map<uint32_t /*1-based*/, uint32_t /*fourcc*/> transformativeProperties;

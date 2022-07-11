@@ -197,7 +197,7 @@ const std::initializer_list<RuleDesc> getRulesAvifProfiles(const SpecDesc & /*sp
     },
     {
       "Section 5\n"
-      "AVIF files shall contain either the 'avif', 'avis', or 'avio' brand\n",
+      "AVIF files shall contain either the 'avif', 'avis', or 'avio' brand",
       [] (Box const& root, IReport* out)
       {
         bool found = false;
