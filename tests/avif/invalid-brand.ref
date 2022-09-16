@@ -16,7 +16,6 @@ https://aomediacodec.github.io/av1-avif/
 [avif][Rule #19] Section 5
 AVIF files shall contain either the 'avif', 'avis', or 'avio' brand
 
-
 +--------------------------------------+
 |           miaf validation            |
 +--------------------------------------+

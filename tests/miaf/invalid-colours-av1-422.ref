@@ -41,7 +41,7 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 [miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the cropped width shall be an even number. Found 129/2
 [miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found 1/2
 [miaf][Rule #40] Error: [ItemId=7] YUV 4:2:2: the cropped height shall be an integer number. Found 33/2
-[miaf][Rule #42] Error: [gridItemId=1] for YUV 4:2:0 width(65) should be even
+[miaf][Rule #42] Error: [gridItemId=1] for YUV 4:2:2 width(65) should be even
 
 ========================================
 [miaf] 25 error(s), 12 warning(s).

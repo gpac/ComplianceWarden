@@ -23,7 +23,6 @@ derivation
 [miaf][Rule #36] Section 7.3.11.1
 All derivation chains shall originate from one or more coded images
 
-
 +--------------------------------------+
 |           heif validation            |
 +--------------------------------------+
