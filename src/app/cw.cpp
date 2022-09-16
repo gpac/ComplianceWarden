@@ -1,6 +1,5 @@
 #include "box_reader_impl.h"
-#include <cstdarg>
-#include <cstring> // strlen
+#include <cstring> // strcmp
 
 extern const char* g_version;
 
@@ -9,6 +8,8 @@ const char* g_appName = "Compliance Warden";
 std::vector<uint8_t> loadFile(const char* path);
 std::vector<SpecDesc const*> & g_allSpecs();
 void probeIsobmff(uint8_t* data, size_t size);
+int checkComplianceStd(Box const& file, SpecDesc const* spec);
+int checkComplianceJson(Box const& file, SpecDesc const* spec);
 SpecDesc const* specFind(const char* name);
 void printSpecDescription(const SpecDesc* spec);
 void specListRules(const SpecDesc* spec);
@@ -38,125 +39,7 @@ void dump(Box const& box, int depth = 0)
     dump(child, depth + 1);
 }
 
-int checkCompliance(Box const& file, SpecDesc const* spec)
-{
-  // early exit if pre-check fails: this spec doesn't apply
-  if(spec->valid && !spec->valid(file))
-    return 0;
-
-  struct Report : IReport
-  {
-    void error(const char* fmt, ...) override
-    {
-      va_list args;
-      va_start(args, fmt);
-      printf("[%s][Rule #%d] Error: ", specName, ruleIdx);
-      vprintf(fmt, args);
-      va_end(args);
-      printf("\n");
-      fflush(stdout);
-      ++errorCount;
-    }
-
-    void warning(const char* fmt, ...) override
-    {
-      va_list args;
-      va_start(args, fmt);
-      printf("[%s][Rule #%d] Warning: ", specName, ruleIdx);
-      vprintf(fmt, args);
-      va_end(args);
-      printf("\n");
-      fflush(stdout);
-      ++warningCount;
-    }
-
-    int ruleIdx = 0;
-    int errorCount = 0;
-    int warningCount = 0;
-    const char* specName = nullptr;
-  };
-
-  Report out;
-  out.specName = spec->name;
-  std::vector<int> ruleIdxEvent;
-
-  auto printErrorRules = [&] () {
-    fprintf(stdout, "\n===== Involved rules descriptions:\n");
-
-    int ruleIdx = 0, eventIdx = 0;
-
-    for(auto& rule : spec->rules)
-    {
-      while(ruleIdx > ruleIdxEvent[eventIdx])
-      {
-        eventIdx++;
-
-        if(eventIdx == (int)ruleIdxEvent.size())
-          return;
-      }
-
-      if(ruleIdxEvent[eventIdx] == ruleIdx)
-        fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
-
-      ruleIdx++;
-    }
-  };
-
-  auto const cols = 40;
-  {
-    fprintf(stdout, "+%s+\n", std::string(cols - 2, '-').c_str());
-    auto const spacing = cols - 11 - 2 - strlen(spec->name);
-    fprintf(stdout, "|%s%s validation%s|\n", std::string(spacing / 2, ' ').c_str(), spec->name, std::string((spacing + 1) / 2, ' ').c_str());
-    fprintf(stdout, "+%s+\n\n", std::string(cols - 2, '-').c_str());
-  }
-
-  fprintf(stdout, "Specification description: %s\n\n", spec->caption);
-
-  for(auto& rule : spec->rules)
-  {
-    auto curEventCount = out.errorCount + out.warningCount;
-
-    try
-    {
-      rule.check(file, &out);
-    }
-    catch(std::exception const& e)
-    {
-      out.error("ABORTED TEST: %s\n", e.what());
-    }
-
-    if(curEventCount != out.errorCount + out.warningCount)
-      ruleIdxEvent.push_back(out.ruleIdx);
-
-    out.ruleIdx++;
-  }
-
-  if(!ruleIdxEvent.empty())
-  {
-    fprintf(stdout, "\n%s\n", std::string(cols, '=').c_str());
-    fprintf(stdout, "[%s] %d error(s), %d warning(s).\n", spec->name, out.errorCount, out.warningCount);
-    fprintf(stdout, "%s\n", std::string(cols, '=').c_str());
-    printErrorRules();
-    fprintf(stdout, "\n");
-  }
-  else
-  {
-    fprintf(stdout, "%s\n", std::string(cols, '=').c_str());
-    fprintf(stdout, "[%s] No errors.\n", spec->name);
-    fprintf(stdout, "%s\n\n", std::string(cols, '=').c_str());
-  }
-
-  auto eventCount = out.errorCount + out.warningCount;
-
-  for(auto dep : spec->dependencies)
-    eventCount += checkCompliance(file, specFind(dep));
-
-  fflush(stdout);
-
-  return eventCount;
-}
-
-int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size)
+int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size, bool isJson)
 {
   BoxReader topReader;
   topReader.br = { data, (int)size };
@@ -195,7 +78,10 @@ int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t 
   if(0)
     dump(topReader.myBox);
 
-  return checkCompliance(topReader.myBox, spec);
+  if(isJson)
+    return checkComplianceJson(topReader.myBox, spec);
+  else
+    return checkComplianceStd(topReader.myBox, spec);
 }
 
 void fprintVersion(FILE* const stream)
@@ -220,7 +106,7 @@ void printUsageAndExit(const char* progName)
 
 int main(int argc, const char* argv[])
 {
-  if(argc < 2 || argc > 3)
+  if(argc < 2 || argc > 4)
     printUsageAndExit(argv[0]);
 
   if(!strcmp(argv[1], "list"))
@@ -246,9 +132,11 @@ int main(int argc, const char* argv[])
     return 0;
   }
 
+  auto const outputJson = (argc < 4) ? false : !strcmp(argv[3], "json");
+
   auto buf = loadFile(argv[2]);
 
-  return specCheck(spec, argv[2], buf.data(), (int)buf.size());
+  return specCheck(spec, argv[2], buf.data(), (int)buf.size(), outputJson);
 }
 
 #else
