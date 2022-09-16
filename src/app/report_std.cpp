@@ -6,7 +6,7 @@
 
 SpecDesc const* specFind(const char* name);
 
-int checkComplianceStd(Box const& file, SpecDesc const* spec)
+bool checkComplianceStd(Box const& file, SpecDesc const* spec)
 {
   // early exit if pre-check fails: this spec doesn't apply
   if(spec->valid && !spec->valid(file))
@@ -121,6 +121,6 @@ int checkComplianceStd(Box const& file, SpecDesc const* spec)
 
   fflush(stdout);
 
-  return eventCount;
+  return eventCount > 0;
 }
 

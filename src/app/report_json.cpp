@@ -107,12 +107,13 @@ struct Array : ISerialize
 
 namespace
 {
-int checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* const array, int indent /*Romain: not sure it is used*/)
+bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* const array)
 {
   // early exit if pre-check fails: this spec doesn't apply
   if(spec->valid && !spec->valid(file))
     return 0;
 
+  bool fail = false;
   auto root = std::make_unique<Json::Object>();
   root->content.push_back(std::make_unique<Json::Data>("specification", spec->name));
   auto successArray = std::make_unique<Json::Array>("successful_checks");
@@ -135,7 +136,7 @@ int checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* 
       o->content.push_back(std::make_unique<Json::Data>("description", std::string(buf)));
       warningArray->content.push_back(std::move(o));
 
-      ++errorCount;
+      *fail = true;
     }
 
     void warning(const char* fmt, ...) override
@@ -152,12 +153,11 @@ int checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* 
       o->content.push_back(std::make_unique<Json::Data>("description", std::string(buf)));
       warningArray->content.push_back(std::move(o));
 
-      ++warningCount;
+      *fail = true;
     }
 
     int ruleIdx = 0;
-    int errorCount = 0;
-    int warningCount = 0;
+    bool* fail = nullptr;
     SpecDesc const* spec = nullptr;
     Json::Array* successArray = nullptr;
     Json::Array* errorArray = nullptr;
@@ -166,6 +166,7 @@ int checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* 
 
   Report out;
   out.spec = spec;
+  out.fail = &fail;
   out.successArray = successArray.get();
   out.errorArray = errorArray.get();
   out.warningArray = warningArray.get();
@@ -189,16 +190,14 @@ int checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* 
   root->content.push_back(std::move(warningArray));
   array->content.push_back(std::move(root));
 
-  auto eventCount = out.errorCount + out.warningCount;
-
   for(auto dep : spec->dependencies)
-    eventCount += checkComplianceJsonSpec(file, specFind(dep), array, indent);
+    fail |= checkComplianceJsonSpec(file, specFind(dep), array);
 
-  return eventCount;
+  return fail;
 }
 }
 
-int checkComplianceJson(Box const& file, SpecDesc const* spec)
+bool checkComplianceJson(Box const& file, SpecDesc const* spec)
 {
   Json::Object root;
   root.content.push_back(std::make_unique<Json::Data>("cw_version", g_version));
@@ -224,16 +223,17 @@ int checkComplianceJson(Box const& file, SpecDesc const* spec)
   auto validationArrayPtr = validationArray.get();
   root.content.push_back(std::move(validationArray));
 
-  int eventCount = 0;
+  bool fail = false;
 
   for(auto& dep : spec->dependencies)
   {
     depsArrayPtr->content.push_back(std::make_unique<Json::Array::String>(dep));
-    eventCount += checkComplianceJsonSpec(file, spec, validationArrayPtr, 0);
+    fail |= checkComplianceJsonSpec(file, spec, validationArrayPtr);
   }
 
   root.serialize(0);
   std::cout << std::endl;
-  return eventCount;
+
+  return fail;
 }
 

@@ -8,8 +8,8 @@ const char* g_appName = "Compliance Warden";
 std::vector<uint8_t> loadFile(const char* path);
 std::vector<SpecDesc const*> & g_allSpecs();
 void probeIsobmff(uint8_t* data, size_t size);
-int checkComplianceStd(Box const& file, SpecDesc const* spec);
-int checkComplianceJson(Box const& file, SpecDesc const* spec);
+bool checkComplianceStd(Box const& file, SpecDesc const* spec);
+bool checkComplianceJson(Box const& file, SpecDesc const* spec);
 SpecDesc const* specFind(const char* name);
 void printSpecDescription(const SpecDesc* spec);
 void specListRules(const SpecDesc* spec);
@@ -39,7 +39,7 @@ void dump(Box const& box, int depth = 0)
     dump(child, depth + 1);
 }
 
-int specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size, bool isJson)
+bool specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t size, bool isJson)
 {
   BoxReader topReader;
   topReader.br = { data, (int)size };
