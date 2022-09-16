@@ -1,6 +1,8 @@
 #include "spec.h"
 #include <iostream>
 #include <memory>
+#include <ostream>
+#include <iomanip> // setw, setfill
 #include <string>
 #include <vector>
 #include <cstdarg>
@@ -20,6 +22,21 @@ void insertSpace(int indent)
     std::cout << space;
 }
 
+std::string escape(const std::string& s)
+{
+  std::ostringstream o;
+
+  for(auto c = s.cbegin(); c != s.cend(); ++c)
+  {
+    if(*c == '"' || *c == '\\' || ('\x00' <= *c && *c <= '\x1f'))
+      o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(*c);
+    else
+      o << *c;
+  }
+
+  return o.str();
+}
+
 struct ISerialize
 {
   virtual ~ISerialize() = default;
@@ -34,7 +51,7 @@ struct Data : ISerialize
   void serialize(int indent) const final
   {
     insertSpace(indent);
-    std::cout << "\"" << name << "\": \"" << value << "\"";
+    std::cout << "\"" << escape(name) << "\": \"" << escape(value) << "\"";
   }
 
   bool operator != (const Data& other) const
@@ -76,7 +93,7 @@ struct Array : ISerialize
     void serialize(int indent) const final
     {
       insertSpace(indent);
-      std::cout << "\"" << val << "\"";
+      std::cout << "\"" << escape(val) << "\"";
     }
   };
 
@@ -87,7 +104,7 @@ struct Array : ISerialize
   void serialize(int indent) const final
   {
     insertSpace(indent);
-    std::cout << "\"" << name << "\": [" << std::endl;
+    std::cout << "\"" << escape(name) << "\": [" << std::endl;
 
     for(auto& c: content)
     {
