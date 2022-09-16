@@ -47,6 +47,8 @@ const SpecDesc specAv1Hdr10plus =
           return;
         }
 
+        out->covered();
+
         Av1State stateUnused;
         auto obuType = parseAv1Obus(&br, stateUnused, false);
 
@@ -72,6 +74,7 @@ const SpecDesc specAv1Hdr10plus =
         {
           Av1State stateUnused;
           parseAv1Obus(&br, stateUnused, false);
+          out->covered();
         }
 
         for(auto& sym : br.myBox.syms)
@@ -113,6 +116,7 @@ const SpecDesc specAv1Hdr10plus =
         {
           Av1State stateUnused;
           parseAv1Obus(&br, stateUnused, false);
+          out->covered();
         }
 
         for(auto& sym : br.myBox.syms)
@@ -253,6 +257,8 @@ const SpecDesc specAv1Hdr10plus =
         if(av1Stream.empty())
           return;
 
+        out->covered();
+
         // re-aggregate the last tu&frame&obu into the last frame when there is no OBU_FRAME
         if(av1Stream.back().size() >= 2)
         {
@@ -339,6 +345,7 @@ const SpecDesc specAv1Hdr10plus =
           return;
 
         // TODO: sample groups not supported in ISOBMFF yet
+        // out->covered();
       }
     },
     {
@@ -351,6 +358,7 @@ const SpecDesc specAv1Hdr10plus =
 
         // TODO: encryption not supported in ISOBMFF yet
         // HDR10 Static Metadata (defined as MDCV, MaxCLL and MaxFALL) may be present.
+        // out->covered();
       }
     },
     {
@@ -362,6 +370,7 @@ const SpecDesc specAv1Hdr10plus =
           return;
 
         // TODO: encryption not supported in ISOBMFF yet
+        // out->covered();
       }
     },
     {
@@ -385,6 +394,8 @@ const SpecDesc specAv1Hdr10plus =
                   if(toString((uint32_t)sym.value) == "cdm4")
                     if(!cdm4Found)
                       out->warning("'cdm4' brand should be present but is not in the 'ftyp' compatible_brand list");
+
+          out->covered();
         }
       }
     },

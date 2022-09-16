@@ -10,6 +10,9 @@ struct IReport
   // add a human-readable error or warning to the report.
   virtual void error(const char* fmt, ...) = 0;
   virtual void warning(const char* fmt, ...) = 0;
+
+  // advertize that a test was exercized
+  virtual void covered() = 0;
 };
 
 struct RuleDesc

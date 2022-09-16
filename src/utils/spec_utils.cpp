@@ -105,6 +105,11 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
           /*ignored*/
         }
 
+        void covered() override
+        {
+          /*ignored*/
+        }
+
         int errorCount = 0;
       };
 
