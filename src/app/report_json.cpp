@@ -1,7 +1,7 @@
 #include "spec.h"
 #include <iostream>
 #include <memory>
-#include <ostream>
+#include <sstream>
 #include <iomanip> // setw, setfill
 #include <string>
 #include <vector>
