@@ -9,14 +9,12 @@ https://aomediacodec.github.io/av1-avif/
 [avif][Rule #1] Error: [ItemId=4] AV1 Sample shall be marked as sync (showFrame=0, keyFrame=0)
 [avif][Rule #2] Error: [ItemId=3] Expected 1 sequence Header OBU in Image Item Data but found 0
 [avif][Rule #2] Error: [ItemId=4] Expected 1 sequence Header OBU in Image Item Data but found 0
-[avif][Rule #4] Warning: [ItemId=3] reduced_still_picture_header flag set to 0
-[avif][Rule #4] Warning: [ItemId=4] reduced_still_picture_header flag set to 0
 [avif][Rule #10] Error: Primary item that is an AV1 image item found, but no track with 'pict' handler found.
 [avif][Rule #11] Error: The mono_chrome field in the Sequence Header OBU shall be set to 1 (item_ID=3)
 [avif][Rule #11] Error: The color_range field in the Sequence Header OBU shall be set to 1 (item_ID=3)
 
 ========================================
-[avif] 7 error(s), 2 warning(s).
+[avif] 7 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -26,9 +24,6 @@ The AV1 Image Item Data shall be identical to the content of an AV1 Sample marke
 
 [avif][Rule #2] Section 2.1
 The AV1 Image Item Data shall have exactly one Sequence Header OBU.
-
-[avif][Rule #4] Section 2.1
-The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.
 
 [avif][Rule #10] Section 3
 The track handler for an AV1 Image Sequence shall be 'pict'.
