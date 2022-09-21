@@ -66,14 +66,20 @@ displayable (not hidden)
 
 Specification description: HEIF - ISO/IEC 23008-12 - 2nd Edition N18310
 
+[heif][Rule #1] Error: Found 'auxl' track (trackId: 1) with unexpected handler_type="pico". Must be 'auxv'.
 [heif][Rule #3] Error: The handler type for the MetaBox shall be 'pict'
 [heif][Rule #32] Error: 'mif1' brand: this file shall conform to HEIF section 6, check the other errors for details
+[heif][Rule #33] Error: 'msf1' brand: this file shall conform to HEIF section 7, check the other errors for details
 
 ========================================
-[heif] 2 error(s), 0 warning(s).
+[heif] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
+
+[heif][Rule #1] Section 7.5.3.1
+The nature of the auxiliary track is announced by the AuxiliaryTypeInfoBox that
+shall be included in the sample entry of the auxiliary track.
 
 [heif][Rule #3] Section 6.2
 The handler type for the MetaBox shall be 'pict'.
@@ -81,6 +87,10 @@ The handler type for the MetaBox shall be 'pict'.
 [heif][Rule #32] Section 10.2
 when a brand specified in 10.2 is among the compatible brands of a file,
 the requirements specified in Clause 6 shall be obeyed
+
+[heif][Rule #33] Section 10.3
+when a brand specified in 10.3 is among the compatible brands of a file,
+the requirements specified in Clause 7 shall be obeyed
 
 +--------------------------------------+
 |          isobmff validation          |
