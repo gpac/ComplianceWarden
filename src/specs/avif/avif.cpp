@@ -670,7 +670,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     [] (Box const& root, IReport* out)
     {
       std::vector<uint32_t> av1AlphaTrackIds;
-      std::map<uint32_t /*trackId*/, int64_t> av1AplhaTrackFirstOffset;
+      std::map<uint32_t /*trackId*/, int64_t> av1AlphaTrackFirstOffset;
 
       for(auto& box : root.children)
         if(box.fourcc == FOURCC("moov"))
@@ -718,13 +718,16 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
                               if(std::find(av1AlphaTrackIds.begin(), av1AlphaTrackIds.end(), trackId) != av1AlphaTrackIds.end())
                                 for(auto& sym : stblChild.syms)
                                   if(!strcmp(sym.name, "chunk_offset"))
-                                    av1AplhaTrackFirstOffset[trackId] = sym.value;
+                                  {
+                                    av1AlphaTrackFirstOffset[trackId] = sym.value;
+                                    break;
+                                  }
                             }
                           }
               }
             }
 
-      for(auto& offset : av1AplhaTrackFirstOffset)
+      for(auto& offset : av1AlphaTrackFirstOffset)
       {
         auto& box = getBoxFromOffset(root, offset.second);
 
@@ -846,7 +849,6 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     [] (Box const& root, IReport* out)
     {
       std::vector<uint32_t> av1AlphaTrackIds;
-      std::map<uint32_t /*trackId*/, int64_t> av1AplhaTrackFirstOffset;
 
       auto isAV1 = [] (std::vector<Box> const& root) {
         for(auto& stblChild : root)
