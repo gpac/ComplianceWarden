@@ -216,7 +216,12 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
       rule.check(file, &out);
 
       if(count == out.errorCount + out.warningCount && out.lastRuleCovered == true)
-        successArray->content.push_back(std::make_unique<Json::Array::Int>(out.ruleIdx));
+      {
+        auto o = std::make_unique<Json::Object>();
+        o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(out.ruleIdx)));
+        o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[out.ruleIdx].caption));
+        successArray->content.push_back(std::move(o));
+      }
     }
     catch(std::exception const& e)
     {
