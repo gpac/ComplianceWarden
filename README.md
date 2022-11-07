@@ -108,6 +108,12 @@ $ export CXX=x86_64-w64-mingw32-g++
 $ make
 ```
 
+or
+
+```
+$ BIN=bin_32 CXX=i686-linux-gnu-g++-12 ./check
+```
+
 ### Emscripten (WASM)
 
 ```
@@ -196,7 +202,7 @@ Some aspects are not activated:
  - Codec-level parsing is incomplete. It should be deferred in most case to an external project that can analyze both the metadata and the data (e.g. [GPAC](http://gpac.io)).
  - Some rules related to pixel formats (color spaces, ...) (computations and consistency) may only be checked by a player. Hence they are considered outside of the scope of this project.
  - Some rules related to pixel formats are only processed for AV1. Because we embed some codec-level parsing for AV1.
- - Some rules are not implemented due to missing content (e.g. AV1 OBU Metadata content or Apple Audio Twos).
+ - Some rules are not implemented due to missing content (e.g. Apple Audio Twos).
 
 ## Acknowledgments
 
