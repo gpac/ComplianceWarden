@@ -20,7 +20,8 @@ Each HDR10+ OBU includes an ITU-T T.35 identifier with:
  - itu_t_t35_terminal_provider_code set as 0x003C
  - itu_t_t35_terminal_provider_oriented_code set as 0x0001
 
-[av1hdr10plus][Rule #3] Section 2.2.2
+[av1hdr10plus][Rule #3] id: assert-45af0987
+Section 2.2.2
 for each frame with show_frame=1 or show_existing_frame=1, there shall be one
 and only one HDR10+ metadata OBU preceding the frame header for this frame and
 located after the last OBU of the previous frame (if any) or after the

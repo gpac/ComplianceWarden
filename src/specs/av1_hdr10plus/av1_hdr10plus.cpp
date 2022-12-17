@@ -162,6 +162,7 @@ const SpecDesc specAv1Hdr10plus =
       "located after the last OBU of the previous frame (if any) or after the\n"
       "Sequence Header (if any) or after the start of the temporal unit (e.g. after the\n"
       "temporal delimiter, for storage formats where temporal delimiters are preserved).",
+      "assert-45af0987",
       [] (Box const& root, IReport* out)
       {
         if(isIsobmff(root))
