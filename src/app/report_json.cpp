@@ -184,7 +184,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
       o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(ruleIdx)));
 
       if(spec->rules[ruleIdx].id)
-        o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[ruleIdx].id));
+        o->content.push_back(std::make_unique<Json::Data>("id", spec->rules[ruleIdx].id));
 
       o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[ruleIdx].caption));
       o->content.push_back(std::make_unique<Json::Data>("description", std::string(buf)));
