@@ -547,8 +547,7 @@ const SpecDesc specAv1Hdr10plus =
       {
         if(!isIsobmff(root))
           return;
-        
-        // TODO: implement me
+        // This should already be implemented in here by evaluating all other rules. We keep it in here to satisfy the python script.
       }
     },
     {
@@ -558,8 +557,7 @@ const SpecDesc specAv1Hdr10plus =
       {
         if(!isIsobmff(root))
           return;
-        
-        // TODO: Is this also in scope of CW?
+        // This is out of scope for ComplianceWarden. We keep it in here to satisfy the python script.
       }
     },
     {
@@ -569,8 +567,7 @@ const SpecDesc specAv1Hdr10plus =
       {
         if(!isIsobmff(root))
           return;
-        
-        // TODO: Is this also in scope of CW?
+        // This is out of scope for ComplianceWarden. We keep it in here to satisfy the python script.
       }
     },
   },
