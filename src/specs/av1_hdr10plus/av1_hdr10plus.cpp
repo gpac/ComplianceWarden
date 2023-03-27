@@ -468,6 +468,42 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.2\n"
+      "HDR10+ Metadata OBUs are not provided when show_frame = 0",
+      "assert-a575dc54",
+      [] (Box const& root, IReport* /*out*/)
+      {
+        if(!isIsobmff(root))
+          return;
+        
+        // TODO: implement me
+      }
+    },
+    {
+      "Section 2.2.2\n"
+      "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
+      "assert-797eb19e",
+      [] (Box const& root, IReport* /*out*/)
+      {
+        if(!isIsobmff(root))
+          return;
+        
+        // TODO: implement me
+      }
+    },
+    {
+      "Section 3.1\n"
+      "For formats that use the AV1CodecConfigurationRecord when storing [AV1] bitstreams (e.g. ISOBMFF and MPEG-2 TS), HDR10+ Metadata OBUs shall not be present in the configOBUs field of the AV1CodecConfigurationRecord",
+      "assert-aa071f33",
+      [] (Box const& root, IReport* /*out*/)
+      {
+        if(!isIsobmff(root))
+          return;
+        
+        // TODO: implement me
+      }
+    },
+    {
       "Section 3.2\n"
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",
       "assert-398f68cd",
@@ -517,42 +553,6 @@ const SpecDesc specAv1Hdr10plus =
 
           out->covered();
         }
-      }
-    },
-    {
-      "Section 2.2.2\n"
-      "HDR10+ Metadata OBUs are not provided when show_frame = 0",
-      "assert-a575dc54",
-      [] (Box const& root, IReport* /*out*/)
-      {
-        if(!isIsobmff(root))
-          return;
-        
-        // TODO: implement me
-      }
-    },
-    {
-      "Section 2.2.2\n"
-      "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
-      "assert-797eb19e",
-      [] (Box const& root, IReport* /*out*/)
-      {
-        if(!isIsobmff(root))
-          return;
-        
-        // TODO: implement me
-      }
-    },
-    {
-      "Section 3.1\n"
-      "For formats that use the AV1CodecConfigurationRecord when storing [AV1] bitstreams (e.g. ISOBMFF and MPEG-2 TS), HDR10+ Metadata OBUs shall not be present in the configOBUs field of the AV1CodecConfigurationRecord",
-      "assert-aa071f33",
-      [] (Box const& root, IReport* /*out*/)
-      {
-        if(!isIsobmff(root))
-          return;
-        
-        // TODO: implement me
       }
     },
     {
