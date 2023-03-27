@@ -33,28 +33,28 @@ const SpecDesc specAv1Hdr10plus =
   "https://aomediacodec.github.io/av1-hdr10plus/",
   { "isobmff" },
   {
-    // { // This rule does seems to be from the older version of the spec?
-    //   "An AV1 stream shall contain at least one OBU",
-    //   [] (Box const& root, IReport* out)
-    //   {
-    //     BoxReader br;
-    //     br.br = getData(root, out);
+    { // This rule does not exist in the AV1 HDR10+ spec. Should it be in some dependency?
+      "An AV1 stream shall contain at least one OBU",
+      [] (Box const& root, IReport* out)
+      {
+        BoxReader br;
+        br.br = getData(root, out);
 
-    //     if(br.br.size < 2)
-    //     {
-    //       out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
-    //       return;
-    //     }
+        if(br.br.size < 2)
+        {
+          out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
+          return;
+        }
 
-    //     out->covered();
+        out->covered();
 
-    //     Av1State stateUnused;
-    //     auto obuType = parseAv1Obus(&br, stateUnused, false);
+        Av1State stateUnused;
+        auto obuType = parseAv1Obus(&br, stateUnused, false);
 
-    //     if(!obuType)
-    //       out->error("An AV1 stream shall contain at least one OBU but first OBU could not be parsed");
-    //   }
-    // },
+        if(!obuType)
+          out->error("An AV1 stream shall contain at least one OBU but first OBU could not be parsed");
+      }
+    },
     {
       "Section 2.1\n"
       "An HDR10+ Metadata OBU is defined as HDR10+ Metadata carried in a Metadata OBU. The metadata_type of such Metadata OBU is set to METADATA_TYPE_ITUT_T35 and the itu_t_t35_country_code of the corresponding Metadata ITUT T35 element is set to 0xB5.\n"
