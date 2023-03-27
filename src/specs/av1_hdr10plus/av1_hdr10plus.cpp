@@ -96,6 +96,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "color_primaries = 9",
       "assert-2d0cc174",
       [] (Box const& root, IReport* out)
@@ -122,6 +123,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "transfer_characteristics = 16",
       "assert-0931ac52",
       [] (Box const& root, IReport* out)
@@ -148,6 +150,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "matrix_coefficients = 9",
       "assert-19a71368",
       [] (Box const& root, IReport* out)
@@ -174,6 +177,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "color_range should be set to 0",
       "assert-02249407",
       [] (Box const& root, IReport* out)
@@ -200,6 +204,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "subsampling_x and subsampling_y should be set to 0",
       "assert-5230c330",
       [](Box const & root, IReport * out)
@@ -230,6 +235,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "mono_chrome should be set to 0",
       "assert-4217c4a7",
       [](Box const & root, IReport * out)
@@ -256,6 +262,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.1\n",
       "chroma_sample_position should be set to 2",
       "assert-5b56cde2",
       [] (Box const& root, IReport* out)
@@ -282,6 +289,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.2\n",
       "for each frame with show_frame = 1 or show_existing_frame = 1, there shall be one and only one HDR10+ metadata OBU preceding the Frame Header OBU for this frame and located after the last OBU of the previous frame (if any) or after the Sequence Header OBU (if any) or after the start of the temporal unit",
       "assert-45af0987",
       [] (Box const& root, IReport* out)
@@ -459,6 +467,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.2\n",
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",
       "assert-398f68cd",
       [] (Box const& root, IReport* /*out*/)
@@ -471,6 +480,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.2\n",
       "HDR10 Static Metadata and HDR10+ Metadata OBUs are unprotected",
       "assert-d451561e",
       [] (Box const& root, IReport* /*out*/)
@@ -484,6 +494,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.2\n",
       "An ISOBMFF file or CMAF AV1 track as defined in [AV1-ISOBMFF] that also conforms to this specification (i.e. that contains HDR10+ metadata OBUs and complies to the constraints from this specification) should use the brand cdm4 defined in [CTA-5001] in addition to the brand av01",
       "assert-c56194aa",
       [] (Box const& root, IReport* out)
@@ -508,6 +519,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.2\n",
       "HDR10+ Metadata OBUs are not provided when show_frame = 0",
       "assert-a575dc54",
       [] (Box const& root, IReport* /*out*/)
@@ -519,6 +531,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 2.2.2\n",
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
       "assert-797eb19e",
       [] (Box const& root, IReport* /*out*/)
@@ -530,6 +543,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.1\n",
       "For formats that use the AV1CodecConfigurationRecord when storing [AV1] bitstreams (e.g. ISOBMFF and MPEG-2 TS), HDR10+ Metadata OBUs shall not be present in the configOBUs field of the AV1CodecConfigurationRecord",
       "assert-aa071f33",
       [] (Box const& root, IReport* /*out*/)
@@ -541,6 +555,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.2\n",
       "If the brand cdm4 is used in conjunction with [AV1] bitstreams, the constraints defined in this specification shall be respected",
       "assert-3a8897d6",
       [] (Box const& root, IReport* /*out*/)
@@ -551,6 +566,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.3\n",
       "[DASH] content following [DASH-IOP] should include a Supplemental Descriptor with @schemeIdUri set to http://dashif.org/metadata/hdr and @value set to SMPTE2094-40 in manifest files",
       "assert-622a560f",
       [] (Box const& root, IReport* /*out*/)
@@ -561,6 +577,7 @@ const SpecDesc specAv1Hdr10plus =
       }
     },
     {
+      "Section 3.3\n",
       "The value of the Codecs Parameter String for [AV1] bitstreams that is used when using HTTP streaming technologies shall remain unchanged when HDR10+ Metadata OBUs are included in the [AV1] stream",
       "assert-91363c5f",
       [] (Box const& root, IReport* /*out*/)
