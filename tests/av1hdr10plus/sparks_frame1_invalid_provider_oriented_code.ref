@@ -2,11 +2,12 @@
 |       av1hdr10plus validation        |
 +--------------------------------------+
 
-Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+Specification description: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
 
 [av1hdr10plus][Rule #1] Error: itu_t_t35_terminal_provider_oriented_code shall be set as 0x0001, found 0x0002
-[av1hdr10plus][Rule #3] Error: There shall be one and only one HDR10+ metadata OBU. Found 0 in Temporal Unit #0 (Frame #0)
+[av1hdr10plus][Rule #9] Error: There shall be one and only one HDR10+ metadata OBU. Found 0 in Temporal Unit #0 (Frame #0)
 
 ========================================
 [av1hdr10plus] 2 error(s), 0 warning(s).
@@ -15,16 +16,22 @@ https://aomediacodec.github.io/av1-hdr10plus/
 ===== Involved rules descriptions:
 
 [av1hdr10plus][Rule #1] Section 2.1
-Each HDR10+ OBU includes an ITU-T T.35 identifier with:
- - itu_t_t35_country_code set as 0xB5
- - itu_t_t35_terminal_provider_code set as 0x003C
- - itu_t_t35_terminal_provider_oriented_code set as 0x0001
+An HDR10+ Metadata OBU is defined as HDR10+ Metadata carried in a Metadata OBU.
+The metadata_type of such Metadata OBU is set to METADATA_TYPE_ITUT_T35 and the
+itu_t_t35_country_code of the corresponding Metadata ITUT T35 element is set to 0xB5.
+The remaining syntax element of Metadata ITUT T35, itu_t_t35_payload_bytes,
+is interpreted using the syntax defined in Annex S of [CTA-861], starting with
+the itu_t_t35_terminal_provider_code, and the semantics defined in [ST-2094-40].
+According to the definition of the HDR10+ Metadata, the first 6 bytes ofthe itu_t_t35_payload_bytes of the HDR10+ Metadata OBU are set as follows:
+ - 0x003C, which corresponds to itu_t_t35_terminal_provider_code from Annex S of [CTA-861]
+ - 0x0001, which corresponds to itu_t_t35_terminal_provider_oriented_code from Annex S of [CTA-861]
+ - 0x4, which corresponds to application_identifier from Annex S of [CTA-861]
+ - 0x1, which corresponds to application_mode from Annex S of [CTA-861]
 
-[av1hdr10plus][Rule #3] id: assert-45af0987
+[av1hdr10plus][Rule #9] id: assert-45af0987
 Section 2.2.2
-for each frame with show_frame=1 or show_existing_frame=1, there shall be one
-and only one HDR10+ metadata OBU preceding the frame header for this frame and
+for each frame with show_frame = 1 or show_existing_frame = 1, there shall be one
+and only one HDR10+ metadata OBU preceding the Frame Header OBU for this frame and
 located after the last OBU of the previous frame (if any) or after the
-Sequence Header (if any) or after the start of the temporal unit (e.g. after the
-temporal delimiter, for storage formats where temporal delimiters are preserved).
+Sequence Header OBU (if any) or after the start of the temporal unit
 

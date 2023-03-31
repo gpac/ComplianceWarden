@@ -2,7 +2,8 @@
 |       av1hdr10plus validation        |
 +--------------------------------------+
 
-Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+Specification description: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
 
 [av1hdr10plus][Rule #2] Error: color_primaries shall be set as 9 ([BT-2020]), found 1
@@ -13,14 +14,7 @@ https://aomediacodec.github.io/av1-hdr10plus/
 
 ===== Involved rules descriptions:
 
-[av1hdr10plus][Rule #2] Section 2.2.1
-Streams shall use the following values for the AV1 color_config:
- - color_primaries = 9 ([BT-2020])
- - transfer_characteristics = 16 ([SMPTE-ST-2084] / [BT-2100])
- - matrix_coefficients = 9 ([BT-2020])
-Additionally, the following recommendations apply:
- - VideoFullRangeFlag should be set to 0
- - subsampling_x and subsampling_y should be set to 0
- - mono_chrome should be 0
- - chroma_sample_position should be set to 2
+[av1hdr10plus][Rule #2] id: assert-2d0cc174
+Section 2.2.1
+color_primaries = 9
 

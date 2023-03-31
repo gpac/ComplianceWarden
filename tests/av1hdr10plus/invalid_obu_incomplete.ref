@@ -5,14 +5,21 @@ Incomplete OBU (remaining to read=24)
 |       av1hdr10plus validation        |
 +--------------------------------------+
 
-Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+Specification description: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
 
 [av1hdr10plus][Rule #2] Error: color_primaries shall be set as 9 ([BT-2020]), found 141
-[av1hdr10plus][Rule #2] Error: transfer_characteristics shall be set as 16 ([SMPTE-ST-2084] / [BT-2100]), found 180
-[av1hdr10plus][Rule #2] Error: matrix_coefficients shall be set as 9 ([BT-2020]), found 2
 Incomplete OBU (remaining to read=24)
-[av1hdr10plus][Rule #3] Error: The first OBU shall be a temporal unit. Aborting.
+[av1hdr10plus][Rule #3] Error: transfer_characteristics shall be set as 16 ([SMPTE-ST-2084] / [BT-2100]), found 180
+Incomplete OBU (remaining to read=24)
+[av1hdr10plus][Rule #4] Error: matrix_coefficients shall be set as 9 ([BT-2020]), found 2
+Incomplete OBU (remaining to read=24)
+Incomplete OBU (remaining to read=24)
+Incomplete OBU (remaining to read=24)
+Incomplete OBU (remaining to read=24)
+Incomplete OBU (remaining to read=24)
+[av1hdr10plus][Rule #9] Error: The first OBU shall be a temporal unit. Aborting.
 
 ========================================
 [av1hdr10plus] 4 error(s), 0 warning(s).
@@ -20,22 +27,22 @@ Incomplete OBU (remaining to read=24)
 
 ===== Involved rules descriptions:
 
-[av1hdr10plus][Rule #2] Section 2.2.1
-Streams shall use the following values for the AV1 color_config:
- - color_primaries = 9 ([BT-2020])
- - transfer_characteristics = 16 ([SMPTE-ST-2084] / [BT-2100])
- - matrix_coefficients = 9 ([BT-2020])
-Additionally, the following recommendations apply:
- - VideoFullRangeFlag should be set to 0
- - subsampling_x and subsampling_y should be set to 0
- - mono_chrome should be 0
- - chroma_sample_position should be set to 2
+[av1hdr10plus][Rule #2] id: assert-2d0cc174
+Section 2.2.1
+color_primaries = 9
 
-[av1hdr10plus][Rule #3] id: assert-45af0987
+[av1hdr10plus][Rule #3] id: assert-0931ac52
+Section 2.2.1
+transfer_characteristics = 16
+
+[av1hdr10plus][Rule #4] id: assert-19a71368
+Section 2.2.1
+matrix_coefficients = 9
+
+[av1hdr10plus][Rule #9] id: assert-45af0987
 Section 2.2.2
-for each frame with show_frame=1 or show_existing_frame=1, there shall be one
-and only one HDR10+ metadata OBU preceding the frame header for this frame and
+for each frame with show_frame = 1 or show_existing_frame = 1, there shall be one
+and only one HDR10+ metadata OBU preceding the Frame Header OBU for this frame and
 located after the last OBU of the previous frame (if any) or after the
-Sequence Header (if any) or after the start of the temporal unit (e.g. after the
-temporal delimiter, for storage formats where temporal delimiters are preserved).
+Sequence Header OBU (if any) or after the start of the temporal unit
 
