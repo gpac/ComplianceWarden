@@ -31,7 +31,8 @@ Additionally, the following recommendations apply:
  - mono_chrome should be 0
  - chroma_sample_position should be set to 2
 
-[av1hdr10plus][Rule #3] Section 2.2.2
+[av1hdr10plus][Rule #3] id: assert-45af0987
+Section 2.2.2
 for each frame with show_frame=1 or show_existing_frame=1, there shall be one
 and only one HDR10+ metadata OBU preceding the frame header for this frame and
 located after the last OBU of the previous frame (if any) or after the

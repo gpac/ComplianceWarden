@@ -3,6 +3,7 @@
 
 #include "box.h"
 #include "box_reader.h" // ParseBoxFunc
+#include <string>
 #include <vector>
 
 struct IReport
@@ -17,8 +18,25 @@ struct IReport
 
 struct RuleDesc
 {
+  RuleDesc(const char* caption, const char* id, void(*check)(Box const &, IReport*)) : caption(caption), id(id), check(check) {}
+
+  // partial constructor for when rule has no id
+  RuleDesc(const char* caption, void(*check)(Box const &, IReport*)) : caption(caption), check(check) {}
+
+  // human readable print
+  std::string print() const
+  {
+    if(!id)
+      return caption;
+
+    return std::string("id: ") + id + "\n" + caption;
+  }
+
   // human-readable description of the rule
   const char* caption;
+
+  // optional id from the specification
+  const char* id = nullptr;
 
   // apply this rule to the file 'root',
   // will push the results (messages) to the 'out' report.

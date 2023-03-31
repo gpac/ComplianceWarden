@@ -68,7 +68,7 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
       }
 
       if(ruleIdxEvent[eventIdx] == ruleIdx)
-        fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
+        fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.print().c_str());
 
       ruleIdx++;
     }
