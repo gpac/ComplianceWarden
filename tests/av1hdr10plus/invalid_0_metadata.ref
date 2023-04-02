@@ -2,10 +2,11 @@
 |       av1hdr10plus validation        |
 +--------------------------------------+
 
-Specification description: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+Specification description: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #3] Error: There shall be one and only one HDR10+ metadata OBU. Found 0 in Temporal Unit #0 (Frame #0)
+[av1hdr10plus][Rule #9] Error: There shall be one and only one HDR10+ metadata OBU. Found 0 in Temporal Unit #0 (Frame #0)
 
 ========================================
 [av1hdr10plus] 1 error(s), 0 warning(s).
@@ -13,10 +14,10 @@ https://aomediacodec.github.io/av1-hdr10plus/
 
 ===== Involved rules descriptions:
 
-[av1hdr10plus][Rule #3] Section 2.2.2
-for each frame with show_frame=1 or show_existing_frame=1, there shall be one
-and only one HDR10+ metadata OBU preceding the frame header for this frame and
+[av1hdr10plus][Rule #9] id: assert-45af0987
+Section 2.2.2
+for each frame with show_frame = 1 or show_existing_frame = 1, there shall be one
+and only one HDR10+ metadata OBU preceding the Frame Header OBU for this frame and
 located after the last OBU of the previous frame (if any) or after the
-Sequence Header (if any) or after the start of the temporal unit (e.g. after the
-temporal delimiter, for storage formats where temporal delimiters are preserved).
+Sequence Header OBU (if any) or after the start of the temporal unit
 

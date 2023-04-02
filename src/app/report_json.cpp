@@ -85,6 +85,17 @@ struct Object : ISerialize
 
 struct Array : ISerialize
 {
+  struct Int : ISerialize
+  {
+    int val;
+    Int(int val) : val(val) {}
+
+    void serialize(int indent) const final
+    {
+      insertSpace(indent);
+      std::cout << val;
+    }
+  };
   struct String : ISerialize
   {
     std::string val;
@@ -149,11 +160,16 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
 
       auto o = std::make_unique<Json::Object>();
       o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(ruleIdx)));
+
+      if(spec->rules[ruleIdx].id)
+        o->content.push_back(std::make_unique<Json::Data>("id", spec->rules[ruleIdx].id));
+
       o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[ruleIdx].caption));
       o->content.push_back(std::make_unique<Json::Data>("description", std::string(buf)));
-      warningArray->content.push_back(std::move(o));
+      errorArray->content.push_back(std::move(o));
 
       *fail = true;
+      ++errorCount;
     }
 
     void warning(const char* fmt, ...) override
@@ -166,25 +182,36 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
 
       auto o = std::make_unique<Json::Object>();
       o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(ruleIdx)));
+
+      if(spec->rules[ruleIdx].id)
+        o->content.push_back(std::make_unique<Json::Data>("id", spec->rules[ruleIdx].id));
+
       o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[ruleIdx].caption));
       o->content.push_back(std::make_unique<Json::Data>("description", std::string(buf)));
       warningArray->content.push_back(std::move(o));
 
       *fail = true;
+      ++warningCount;
+    }
+
+    void covered() override
+    {
+      lastRuleCovered = true;
     }
 
     int ruleIdx = 0;
+    int errorCount = 0;
+    int warningCount = 0;
     bool* fail = nullptr;
     SpecDesc const* spec = nullptr;
-    Json::Array* successArray = nullptr;
     Json::Array* errorArray = nullptr;
     Json::Array* warningArray = nullptr;
+    bool lastRuleCovered = false;
   };
 
   Report out;
   out.spec = spec;
   out.fail = &fail;
-  out.successArray = successArray.get();
   out.errorArray = errorArray.get();
   out.warningArray = warningArray.get();
 
@@ -192,7 +219,21 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
   {
     try
     {
+      out.lastRuleCovered = false;
+      auto const count = out.errorCount + out.warningCount;
       rule.check(file, &out);
+
+      if(count == out.errorCount + out.warningCount && out.lastRuleCovered == true)
+      {
+        auto o = std::make_unique<Json::Object>();
+        o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(out.ruleIdx)));
+
+        if(spec->rules[out.ruleIdx].id)
+          o->content.push_back(std::make_unique<Json::Data>("id", spec->rules[out.ruleIdx].id));
+
+        o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[out.ruleIdx].caption));
+        successArray->content.push_back(std::move(o));
+      }
     }
     catch(std::exception const& e)
     {

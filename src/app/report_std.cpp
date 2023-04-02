@@ -38,6 +38,10 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
       ++warningCount;
     }
 
+    void covered() override
+    {
+    }
+
     int ruleIdx = 0;
     int errorCount = 0;
     int warningCount = 0;
@@ -64,7 +68,7 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
       }
 
       if(ruleIdxEvent[eventIdx] == ruleIdx)
-        fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.caption);
+        fprintf(stdout, "\n[%s][Rule #%d] %s\n", spec->name, ruleIdx, rule.print().c_str());
 
       ruleIdx++;
     }

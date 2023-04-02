@@ -60,7 +60,7 @@ void specListRules(const SpecDesc* spec)
 
   for(auto& r : spec->rules)
   {
-    fprintf(stdout, "[%s] Rule #%04d: %s\n\n", spec->name, ruleIdx, r.caption);
+    fprintf(stdout, "[%s] Rule #%04d: %s\n\n", spec->name, ruleIdx, r.print().c_str());
     ruleIdx++;
   }
 
@@ -79,12 +79,20 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
 
   for(auto& rule : spec.rules)
   {
-    std::stringstream ss(rule.caption);
+    std::stringstream ss(rule.print());
     std::string line;
     std::getline(ss, line);
     std::stringstream ssl(line);
     std::string word;
     ssl >> word;
+
+    // optional id: go to next line
+    if(word == "id:")
+    {
+      std::getline(ss, line);
+      ssl = std::stringstream(line);
+      ssl >> word;
+    }
 
     if(word != "Section")
       throw std::runtime_error("Rule caption is misformed.");
@@ -101,6 +109,11 @@ bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root
         }
 
         void warning(const char*, ...) override
+        {
+          /*ignored*/
+        }
+
+        void covered() override
         {
           /*ignored*/
         }
