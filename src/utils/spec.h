@@ -57,7 +57,7 @@ struct SpecDesc
   // list of compliance checks for this spec.
   std::vector<RuleDesc> rules;
 
-  // checks will only be executed if this returns true.
+  // pre-requisite: checks will only be executed if this returns true.
   bool (* valid)(Box const& root) = nullptr;
 };
 

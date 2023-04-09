@@ -94,7 +94,7 @@ void printUsageAndExit(const char* progName)
 {
   fprintVersion(stderr);
   fprintf(stderr, "\nUsage:\n");
-  fprintf(stderr, "- Run conformance:          %s <spec> input.mp4\n", progName);
+  fprintf(stderr, "- Run conformance:          %s <spec> input.mp4 [json]\n", progName);
   fprintf(stderr, "- List specifications:      %s list\n", progName);
   fprintf(stderr, "- List specification rules: %s <spec> list\n", progName);
   fprintf(stderr, "- Print version:            %s version\n", progName);

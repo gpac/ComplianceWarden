@@ -3,11 +3,13 @@
 
 ## Introduction
 
-The [Compliance Warden](https://github.com/gpac/ComplianceWarden) is a compliance checker.
-It has been developed as a reference software for MPEG MIAF, AOM AVIF, and AOM AV1 HDR10+.
-The Compliance Warden can be extended to check MP4, CMAF, and many other file formats.
+The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbrevated as "the warden" or "cw" or "CW", is compliance checker.
+CW has been developed as a reference software for MPEG MIAF, AOM AVIF, and AOM AV1 HDR10+.
+It is meant to be extended to check MP4, CMAF, and many other file formats.
 
-The Compliance Warden decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
+CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
+
+CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
 
 The Compliance Warden is distributed under the [BSD-3 license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
@@ -19,18 +21,22 @@ An online version is available [here for HEIF/MIAF](https://gpac.github.io/Compl
 
 ### Usage
 
+[We need an option parser](https://github.com/gpac/ComplianceWarden/issues/48):
+
 ```
 $ bin/cw.exe
 Compliance Warden, version v28-master-rev3-g01d9486.
 
 Usage:
-- Run conformance:          bin/cw.exe <spec> input.mp4
+- Run conformance:          bin/cw.exe <spec> input.mp4 [json]
 - List specifications:      bin/cw.exe list
 - List specification rules: bin/cw.exe <spec> list
 - Print version:            bin/cw.exe version
 ```
 
 ### Specifications
+
+CW is mainly [sponsored](#Acknowledgments) by companies and standardization groups to validate specific versions of specifications they develop or use. However, once a specification is validated, we accept to add new rules progressively.
 
 ```
 $ bin/cw.exe list
@@ -71,24 +77,28 @@ MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
 
 ## Building
 
+### Prerequisites
+
+[NASM](https://nasm.us/) and a C++14 compiler.
+
 ### Native build
 
 Linux, Windows:
 ```
-$ make
+$ make -j
 ```
 
 MacOS X and BSD-likes:
 
 ```
-$ CXX=scripts/darwin.sh make
+$ CXX=scripts/darwin.sh make -j
 ```
 
 or
 
 ```
 $ export CXX=scripts/darwin.sh
-$ make
+$ make -j
 ```
 
 ### Cross-compiling
@@ -141,6 +151,7 @@ NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwi
  - GNU Bash
  - GNU g++ version 7+
  - GNU make
+ - NASM 2.01+
 
 ### Code formatter (optional)
 
@@ -155,9 +166,23 @@ $ make -j $(nproc)
 $ sudo make install
 ```
 
-### Adding tests
+### Build and run tests before committing
 
-Uncomment the ```# cp "$new" "$ref"``` line in the ```tests/run``` script to update the script. This avoids tests to halt when an error occurs.
+```
+./check
+```
+
+### Ensure good code coverage
+
+You need ```lcov```/
+
+```
+scripts/cov.sh
+```
+
+### Modifying test results
+
+The tests (launched with ```./check```) will stop running on first error. Uncomment the ```# cp "$new" "$ref"``` line in the ```tests/run``` script to update the script. This avoids tests to halt when an error occurs.
 
 ## Code architecture
 
@@ -195,6 +220,51 @@ The datastructures are generic. This allows to easily serialize them. This is us
 
 A test is a pair of a file format description in the [NASM syntax](https://en.wikipedia.org/wiki/Netwide_Assembler) ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.asm)) and a reference result ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.ref)).
 
+### Adding a test
+
+A test is a function:
+- Input is both a box tree (from the parsing phase) and a link to the report.
+- Output is written to the report: warning, errors, and ```covered()``` to assess that the rule was exercized by the input sample.
+
+```
+struct RuleDesc
+{
+  [...]
+  // human-readable description of the rule
+  const char* caption;
+
+  // optional id from the specification
+  const char* id = nullptr;
+
+  // apply this rule to the file 'root',
+  // will push the results (messages) to the 'out' report.
+  void (* check)(Box const& root, IReport* out);
+};
+```
+
+### Adding a specification
+
+A specification is just a list of rules with some general information:
+```
+struct SpecDesc
+{
+  // short name for the spec (used for command-line spec selection).
+  const char* name;
+
+  // human-readable description of the spec (name, version, date, etc.).
+  const char* caption;
+
+  // list of specs which this spec depends on.
+  std::vector<const char*> dependencies;
+
+  // list of compliance checks for this spec.
+  std::vector<RuleDesc> rules;
+
+  // checks will only be executed if this returns true.
+  bool (* valid)(Box const& root) = nullptr;
+};
+```
+
 ## Limitations
 
 Some aspects are not activated:
@@ -208,5 +278,5 @@ Some aspects are not activated:
 
 This work was initiated as part of the MPEG MIAF conformance software.
 
-The Alliance for Open Media (AOM) sponsored the work on AVIF.
+The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF.
 
