@@ -51,25 +51,25 @@ bool specCheck(const SpecDesc* spec, const char* filename, uint8_t* data, size_t
 
   const std::string fnStr(filename);
 
+  {
+    // remove path
+    auto fnPos = fnStr.find_last_of('/');
+    auto fn = fnStr.substr(fnPos + 1);
+    auto fnPtr = fn.c_str();
+
+    while(*fnPtr)
+    {
+      topReader.myBox.syms.push_back({ "filename", *fnPtr, 8 });
+      fnPtr++;
+    }
+  }
+
   auto const extPos = fnStr.find_last_of('.');
 
   if(extPos == std::string::npos ||
      (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b"))
   {
     probeIsobmff(data, size);
-
-    {
-      // remove path
-      auto fnPos = fnStr.find_last_of('/');
-      auto fn = fnStr.substr(fnPos + 1);
-      auto fnPtr = fn.c_str();
-
-      while(*fnPtr)
-      {
-        topReader.myBox.syms.push_back({ "filename", *fnPtr, 8 });
-        fnPtr++;
-      }
-    }
 
     auto parseFunc = getParseFunction(topReader.myBox.fourcc);
     parseFunc(&topReader);
