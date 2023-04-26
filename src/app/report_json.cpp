@@ -145,6 +145,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
   auto root = std::make_unique<Json::Object>();
   root->content.push_back(std::make_unique<Json::Data>("specification", spec->name));
   auto successArray = std::make_unique<Json::Array>("successful_checks");
+  auto uncheckedArray = std::make_unique<Json::Array>("unchecked");
   auto errorArray = std::make_unique<Json::Array>("errors");
   auto warningArray = std::make_unique<Json::Array>("warnings");
 
@@ -223,7 +224,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
       auto const count = out.errorCount + out.warningCount;
       rule.check(file, &out);
 
-      if(count == out.errorCount + out.warningCount && out.lastRuleCovered == true)
+      if(count == out.errorCount + out.warningCount)
       {
         auto o = std::make_unique<Json::Object>();
         o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(out.ruleIdx)));
@@ -232,7 +233,11 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
           o->content.push_back(std::make_unique<Json::Data>("id", spec->rules[out.ruleIdx].id));
 
         o->content.push_back(std::make_unique<Json::Data>("details", spec->rules[out.ruleIdx].caption));
-        successArray->content.push_back(std::move(o));
+
+        if(out.lastRuleCovered)
+          successArray->content.push_back(std::move(o));
+        else
+          uncheckedArray->content.push_back(std::move(o));
       }
     }
     catch(std::exception const& e)
@@ -246,6 +251,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
   root->content.push_back(std::move(successArray));
   root->content.push_back(std::move(errorArray));
   root->content.push_back(std::move(warningArray));
+  root->content.push_back(std::move(uncheckedArray));
   array->content.push_back(std::move(root));
 
   for(auto dep : spec->dependencies)
