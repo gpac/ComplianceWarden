@@ -10,7 +10,12 @@ else
 fi
 
 ./scripts/reformat.sh
-CXX=$CXX make -j$CORES
+if [ -z ${CXX+x} ]; then
+  make -j$CORES
+else
+  CXX=$CXX make -j$CORES
+fi
+  
 ./tests/run $BIN
 
 lines=$(find $BIN -name "*.lines" | xargs cat | awk '{s+=$1} END {printf "%d\n", (s/1000)}')
