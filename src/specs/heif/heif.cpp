@@ -784,7 +784,7 @@ static const SpecDesc specHeif =
                         {
                           if(properties[sym.value - 1] == FOURCC("ispe"))
                             foundIspe = true;
-                          else if(isTransformative(properties[sym.value - 1]) && !foundIspe) // Romain => ON NE CHECKE PAS SI C'EST UNE IMAGE!!!!
+                          else if(isTransformative(properties[sym.value - 1]) && !foundIspe)
                             out->error("Item ID=%u: transformative property \"%s\" (index=%lld) found prior to \"ispe\"",
                                        localItemId, toString(properties[sym.value - 1]).c_str(), sym.value);
                         }
