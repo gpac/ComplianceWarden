@@ -103,6 +103,16 @@ void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader
       return;
   }
 }
+
+bool isAvifImageSequence(Box const& root)
+{
+  // If the file contains the 'moov' box, then it is an AVIF image sequence.
+  for(auto& box: root.children)
+    if(box.fourcc == FOURCC("moov"))
+      return true;
+
+  return false;
+}
 } // namespace
 
 std::initializer_list<RuleDesc> rulesAvifGeneral =
@@ -221,6 +231,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item Data should have its still_picture flag set to 1.",
     [] (Box const& root, IReport* out)
     {
+      // This rule does not apply for AVIF image sequences.
+      if(isAvifImageSequence(root))
+        return;
+
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
@@ -243,6 +257,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral =
     "The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.",
     [] (Box const& root, IReport* out)
     {
+      // This rule does not apply for AVIF image sequences.
+      if(isAvifImageSequence(root))
+        return;
+
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs)
