@@ -199,8 +199,13 @@ static const SpecDesc specHeif =
                               trackId = (uint32_t)sym.value;
                             }
 
-                  if(handlerType == FOURCC("pict") && trackId)
+                  if(trackId)
                   {
+                    if(handlerType != FOURCC("auxv"))
+                    {
+                      out->error("Found 'auxl' track (trackId: %u) with unexpected handler_type=\"%s\". Must be 'auxv'.", trackId, toString(handlerType).c_str());
+                    }
+
                     auto id = findTrackId(moovChild);
 
                     if(id)

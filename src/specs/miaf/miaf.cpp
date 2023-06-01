@@ -1391,7 +1391,7 @@ std::initializer_list<RuleDesc> rulesMiafGeneral =
                             trackId = (uint32_t)sym.value;
                           }
 
-                if(handlerType == FOURCC("pict") && trackId)
+                if(handlerType == FOURCC("auxv") && trackId)
                 {
                   auto id = findTrackId(moovChild);
 
