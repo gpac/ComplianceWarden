@@ -3,7 +3,7 @@
 
 ## Introduction
 
-The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbrevated as "the warden" or "cw" or "CW", is compliance checker.
+The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbrevated as "CW" or "cw" or "the warden", is compliance checker.
 CW has been developed as a reference software for MPEG MIAF, AOM AVIF, and AOM AV1 HDR10+.
 It is meant to be extended to check MP4, CMAF, and many other file formats.
 
@@ -11,7 +11,7 @@ CW decouples the processing phases. First it parses the input to build an [AST](
 
 CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
 
-The Compliance Warden is distributed under the [BSD-3 license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
+The Compliance Warden is distributed under the [BSD-3 permissive license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
 ## Useful information
 
@@ -36,7 +36,12 @@ Usage:
 
 ### Specifications
 
-CW is mainly [sponsored](#Acknowledgments) by companies and standardization groups to validate specific versions of specifications they develop or use. However, once a specification is validated, we accept to add new rules progressively.
+CW is mainly [sponsored](#Acknowledgments) by companies and standardization groups to validate specific versions of specifications they develop or use.
+
+The master branch only references official specifications. Draft versions or updates are meant to be in spearate branches. To know more please read the [design principles](https://github.com/gpac/ComplianceWarden/issues/55#issuecomment-1517063130).
+
+
+However, once a specification is validated, we accept to add new rules progressively.
 
 ```
 $ bin/cw.exe list
@@ -174,7 +179,7 @@ $ sudo make install
 
 ### Ensure good code coverage
 
-You need ```lcov```/
+You need ```lcov```.
 
 ```
 scripts/cov.sh
@@ -182,7 +187,9 @@ scripts/cov.sh
 
 ### Modifying test results
 
-The tests (launched with ```./check```) will stop running on first error. Uncomment the ```# cp "$new" "$ref"``` line in the ```tests/run``` script to update the script. This avoids tests to halt when an error occurs.
+The tests (launched with ```./check```) will stop running on first error.
+
+To update the test results, uncomment the ```# cp "$new" "$ref"``` line in the ```tests/run``` script. This avoids tests to halt when an error occurs. Please review carefully the changes before updating test results.
 
 ## Code architecture
 
@@ -268,8 +275,8 @@ struct SpecDesc
 ## Limitations
 
 Some aspects are not activated:
- - Brand presence checks are not fully activated. When activated, relaxed brands (e.g. 'MiPr') emit a lot of messages that bring little value to the user. Aggressive shall/should statements need to be balanced at standardization level.
- - Codec-level parsing is incomplete. It should be deferred in most case to an external project that can analyze both the metadata and the data (e.g. [GPAC](http://gpac.io)).
+ - Brand presence checks are not fully activated. When activated, relaxed brands (e.g. 'MiPr') emit a lot of messages that bring little value to the user. Aggressive shall/should normative statements need to be balanced at standardization level.
+ - Codec-level parsing is incomplete. It should be deferred in most case to an external project that can analyze both the metadata and the data (e.g. [GPAC](http://gpac.io)). This hasn't been done due to licensing concerns.
  - Some rules related to pixel formats (color spaces, ...) (computations and consistency) may only be checked by a player. Hence they are considered outside of the scope of this project.
  - Some rules related to pixel formats are only processed for AV1. Because we embed some codec-level parsing for AV1.
  - Some rules are not implemented due to missing content (e.g. Apple Audio Twos).
