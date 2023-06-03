@@ -25,8 +25,10 @@ SpecDesc const* specFind(const char* name)
       return spec;
 
   fprintf(stderr, "Spec '%s' not found: possible values are:", name);
+
   for(auto& spec : g_allSpecs())
     fprintf(stderr, " '%s'", spec->name);
+
   fprintf(stderr, ".\n");
   fflush(stderr);
   exit(1);
