@@ -60,8 +60,17 @@ namespace {
                }
              }
 
-             if (!foundStructural) {
-               out->warning("No structural ISOBMFF brand found among the compatibleBrands");
+             if (!foundStructural) { return; }
+
+             out->covered();
+           }},
+          {"Section 2.1\n"
+           "It SHALL contain at least one track using an AV1SampleEntry",
+           [](Box const &root, IReport *out) {
+             auto av01Boxes = findBoxes(root, FOURCC("av01"));
+
+             if (av01Boxes.empty()) {
+               out->error("No Av1SampleEntry found");
                return;
              }
 
