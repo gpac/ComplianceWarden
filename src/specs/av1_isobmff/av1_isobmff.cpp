@@ -25,9 +25,7 @@ namespace {
              for (auto &ftyp : ftyps) {
                // ftyp->printMe();
                for (auto &sym : ftyp->syms) {
-                 if (std::string(sym.name) != "compatible_brand") { continue; }
-
-                 if (sym.value == FOURCC("av01")) {
+                 if (std::string(sym.name) == "compatible_brand" && sym.value == FOURCC("av01")) {
                    foundAv01 = true;
                    break;
                  }
@@ -36,6 +34,30 @@ namespace {
 
              if (!foundAv01) {
                out->error("No 'av01' found in compatibleBrands");
+               return;
+             }
+
+             out->covered();
+           }},
+          {"Section 2.1\n"
+           "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of the "
+           "FileTypeBox",
+           [](Box const &root, IReport *out) {
+             auto ftyps = findBoxes(root, FOURCC("ftyp"));
+
+             bool foundAv01 = false;
+             for (auto &ftyp : ftyps) {
+               // ftyp->printMe();
+               for (auto &sym : ftyp->syms) {
+                 if (std::string(sym.name) == "compatible_brand" && sym.value == FOURCC("av01")) {
+                   foundAv01 = true;
+                   break;
+                 }
+               }
+             }
+
+             if (!foundAv01) {
+               out->warning("No 'av01' found in compatibleBrands");
                return;
              }
 
