@@ -7,7 +7,7 @@ https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #0] Error: No 'av01' found in compatibleBrands
-[av1isobmff][Rule #1] Warning: No 'av01' found in compatibleBrands
+[av1isobmff][Rule #1] Warning: No structural ISOBMFF brand found among the compatibleBrands
 
 ========================================
 [av1isobmff] 1 error(s), 1 warning(s).

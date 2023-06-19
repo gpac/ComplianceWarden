@@ -23,7 +23,6 @@ namespace {
 
              bool foundAv01 = false;
              for (auto &ftyp : ftyps) {
-               // ftyp->printMe();
                for (auto &sym : ftyp->syms) {
                  if (std::string(sym.name) == "compatible_brand" && sym.value == FOURCC("av01")) {
                    foundAv01 = true;
@@ -45,19 +44,24 @@ namespace {
            [](Box const &root, IReport *out) {
              auto ftyps = findBoxes(root, FOURCC("ftyp"));
 
-             bool foundAv01 = false;
+             bool foundStructural = false;
              for (auto &ftyp : ftyps) {
-               // ftyp->printMe();
                for (auto &sym : ftyp->syms) {
-                 if (std::string(sym.name) == "compatible_brand" && sym.value == FOURCC("av01")) {
-                   foundAv01 = true;
-                   break;
+                 if (std::string(sym.name) == "compatible_brand") {
+                   switch (sym.value) {
+                   case FOURCC("isom"):
+                   case FOURCC("iso2"):
+                   case FOURCC("iso4"):
+                   case FOURCC("iso6"): foundStructural = true; break;
+                   default: break;
+                   }
                  }
+                 if (foundStructural) { break; }
                }
              }
 
-             if (!foundAv01) {
-               out->warning("No 'av01' found in compatibleBrands");
+             if (!foundStructural) {
+               out->warning("No structural ISOBMFF brand found among the compatibleBrands");
                return;
              }
 
