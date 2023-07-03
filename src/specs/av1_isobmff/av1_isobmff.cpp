@@ -10,13 +10,13 @@ std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace {
 
-  struct OBUDetails {
+  struct ResolutionDetails {
     bool valid{false};
     int64_t width{0};
     int64_t height{0};
   };
 
-  OBUDetails getOBUDetails(Box const &root, IReport *out) {
+  ResolutionDetails getOBUDetails(Box const &root, IReport *out) {
     BoxReader br;
 
     auto mdats = findBoxes(root, FOURCC("mdat"));
@@ -50,6 +50,22 @@ namespace {
     return {true, obuWidth, obuHeight};
   }
 
+  ResolutionDetails getAv01Details(Box const &root) {
+    auto av01Boxes = findBoxes(root, FOURCC("av01"));
+
+    for (auto &it : av01Boxes) {
+      auto av01Width = 0;
+      auto av01Height = 0;
+      for (auto &sym : it->syms) {
+        if (std::string(sym.name) == "width") { av01Width = sym.value; }
+        if (std::string(sym.name) == "height") { av01Height = sym.value; }
+      }
+
+      return {true, av01Width, av01Height};
+    }
+    return {false};
+  }
+
   const SpecDesc specAv1ISOBMFF = {
       "av1isobmff",
       "AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019\n"
@@ -81,7 +97,8 @@ namespace {
              out->covered();
            }},
           {"Section 2.1\n"
-           "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of the "
+           "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of "
+           "the "
            "FileTypeBox",
            [](Box const &root, IReport *out) {
              auto ftyps = findBoxes(root, FOURCC("ftyp"));
@@ -135,30 +152,55 @@ namespace {
              auto obuDetails = getOBUDetails(root, out);
              if (!obuDetails.valid) { return; }
 
-             auto av01Boxes = findBoxes(root, FOURCC("av01"));
-
-             bool foundMatch = false;
-             std::string foundResolutions;
-
-             for (auto &it : av01Boxes) {
-               auto av01Width = 0;
-               auto av01Height = 0;
-               for (auto &sym : it->syms) {
-                 if (std::string(sym.name) == "width") { av01Width = sym.value; }
-                 if (std::string(sym.name) == "height") { av01Height = sym.value; }
-               }
-
-               if (av01Width == obuDetails.width && av01Height == obuDetails.height) {
-                 foundMatch = true;
-                 break;
-               }
-               foundResolutions += std::to_string(av01Width) + "x" + std::to_string(av01Height) + " ";
+             auto av01Details = getAv01Details(root);
+             if (av01Details.width != obuDetails.width || av01Details.height != obuDetails.height) {
+               out->error("No match found, OBU specifiex %dx%d");
+               return;
              }
 
-             if (!foundMatch) {
-               out->error("No match found, OBU specifiex %dx%d, found resolutions %s",
-                          obuDetails.width, obuDetails.height, foundResolutions.c_str());
-               return;
+             out->covered();
+           }},
+          {"Section 2.2.4\n"
+           "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively "
+           "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the "
+           "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",
+           [](Box const &root, IReport *out) {
+             auto obuDetails = getOBUDetails(root, out);
+             if (!obuDetails.valid) { return; }
+
+             auto trakBoxes = findBoxes(root, FOURCC("trak"));
+             for (auto &trakBox : trakBoxes) {
+               auto av01Details = getAv01Details(*trakBox);
+               if (!av01Details.valid) { continue; }
+
+               ResolutionDetails tkhdDetails{false};
+
+               auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
+               for (auto &tkhdBox : tkhdBoxes) {
+                 for (auto &sym : tkhdBox->syms) {
+                   if (std::string(sym.name) == "width") { tkhdDetails.width = sym.value; }
+                   if (std::string(sym.name) == "height") { tkhdDetails.height = sym.value; }
+                 }
+                 if (tkhdDetails.width && tkhdDetails.height) { tkhdDetails.valid = true; }
+                 break;
+               }
+               if (!tkhdDetails.valid) {
+                 out->error("No resolution data found in 'tkhd' box");
+                 return;
+               }
+
+               bool expectPixelAspectRatio =
+                   (tkhdDetails.width != obuDetails.width || tkhdDetails.height != obuDetails.height);
+
+               if (!expectPixelAspectRatio) { continue; }
+
+               auto paspBoxes = findBoxes(*trakBox, FOURCC("pasp"));
+               if (paspBoxes.size() != 1) {
+                 out->error("%d 'pasp' boxes found, when 1 is expected", paspBoxes.size());
+                 return;
+               }
+
+               out->error("Unhandled pasp box");
              }
 
              out->covered();
