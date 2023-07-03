@@ -3,6 +3,7 @@
 #include <cstring> // strcmp
 
 #include <iostream>
+#include <string>
 
 bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
@@ -80,6 +81,78 @@ namespace {
 
              if (!av01Found) {
                out->error("No Av1SampleEntry found");
+               return;
+             }
+
+             out->covered();
+           }},
+          {"Section 2.2.4\n"
+           "The width and height fields of the VisualSampleEntry SHALL equal the values of "
+           "max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header "
+           "OBU applying to the samples associated with this sample entry.",
+           [](Box const &root, IReport *out) {
+             BoxReader br;
+
+             auto mdats = findBoxes(root, FOURCC("mdat"));
+             if (mdats.size() != 1) {
+               out->error("%d mdat found, expected 1", mdats.size());
+               return;
+             }
+             br.br = {mdats[0]->original + 8, (int)mdats[0]->size - 8};
+
+             if (br.br.size < 2) {
+               out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
+               return;
+             }
+
+             out->covered();
+
+             Av1State stateUnused;
+             auto obuType = 0;
+             while (obuType != OBU_SEQUENCE_HEADER) {
+               obuType = parseAv1Obus(&br, stateUnused, false);
+             }
+
+             if (obuType != OBU_SEQUENCE_HEADER) {
+               out->error("No OBU Sequence header found");
+               return;
+             }
+
+             auto obuWidth = 0;
+             auto obuHeight = 0;
+
+             for (auto &sym : br.myBox.syms) {
+               if (std::string(sym.name) == "max_frame_width_minus_1") { obuWidth = sym.value + 1; }
+               if (std::string(sym.name) == "max_frame_height_minus_1") {
+                 obuHeight = sym.value + 1;
+               }
+             }
+
+             auto av01Boxes = findBoxes(root, FOURCC("av01"));
+
+             bool foundMatch = false;
+             std::string foundResolutions;
+
+             for (auto &it : av01Boxes) {
+               auto av01Width = 0;
+               auto av01Height = 0;
+               for (auto &sym : it->syms) {
+                 if (std::string(sym.name) == "width") { av01Width = sym.value; }
+                 if (std::string(sym.name) == "height") { av01Height = sym.value; }
+               }
+
+               if (av01Width == obuWidth && av01Height == obuHeight) {
+                 foundMatch = true;
+                 break;
+               } else {
+                 if (foundResolutions.size()) { foundResolutions += ", "; }
+                 foundResolutions += std::to_string(av01Width) + "x" + std::to_string(av01Height);
+               }
+             }
+
+             if (!foundMatch) {
+               out->error("No match found, OBU specifiex %dx%d, found resolutions %s", obuWidth,
+                          obuHeight, foundResolutions.c_str());
                return;
              }
 
