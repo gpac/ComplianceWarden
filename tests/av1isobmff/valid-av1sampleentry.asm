@@ -7,6 +7,7 @@ db "ftyp"
 db "isom"
 dd BE(0x00)
 db "mif1", "miaf"
+db "av01"
 ftyp_end:
 
 moov_start:
