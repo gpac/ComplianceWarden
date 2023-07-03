@@ -9,6 +9,47 @@ bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace {
+
+  struct OBUDetails {
+    bool valid{false};
+    int64_t width{0};
+    int64_t height{0};
+  };
+
+  OBUDetails getOBUDetails(Box const &root, IReport *out) {
+    BoxReader br;
+
+    auto mdats = findBoxes(root, FOURCC("mdat"));
+    if (mdats.size() != 1) {
+      out->error("%d mdat found, expected 1", mdats.size());
+      return {false};
+    }
+    br.br = {mdats[0]->original + 8, (int)mdats[0]->size - 8};
+
+    if (br.br.size < 2) {
+      out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
+      return {false};
+    }
+
+    Av1State stateUnused;
+    auto obuType = 0;
+    while (obuType != OBU_SEQUENCE_HEADER) { obuType = parseAv1Obus(&br, stateUnused, false); }
+
+    if (obuType != OBU_SEQUENCE_HEADER) {
+      out->error("No OBU Sequence header found");
+      return {false};
+    }
+
+    auto obuWidth = 0;
+    auto obuHeight = 0;
+
+    for (auto &sym : br.myBox.syms) {
+      if (std::string(sym.name) == "max_frame_width_minus_1") { obuWidth = sym.value + 1; }
+      if (std::string(sym.name) == "max_frame_height_minus_1") { obuHeight = sym.value + 1; }
+    }
+    return {true, obuWidth, obuHeight};
+  }
+
   const SpecDesc specAv1ISOBMFF = {
       "av1isobmff",
       "AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019\n"
@@ -91,42 +132,8 @@ namespace {
            "max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header "
            "OBU applying to the samples associated with this sample entry.",
            [](Box const &root, IReport *out) {
-             BoxReader br;
-
-             auto mdats = findBoxes(root, FOURCC("mdat"));
-             if (mdats.size() != 1) {
-               out->error("%d mdat found, expected 1", mdats.size());
-               return;
-             }
-             br.br = {mdats[0]->original + 8, (int)mdats[0]->size - 8};
-
-             if (br.br.size < 2) {
-               out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
-               return;
-             }
-
-             out->covered();
-
-             Av1State stateUnused;
-             auto obuType = 0;
-             while (obuType != OBU_SEQUENCE_HEADER) {
-               obuType = parseAv1Obus(&br, stateUnused, false);
-             }
-
-             if (obuType != OBU_SEQUENCE_HEADER) {
-               out->error("No OBU Sequence header found");
-               return;
-             }
-
-             auto obuWidth = 0;
-             auto obuHeight = 0;
-
-             for (auto &sym : br.myBox.syms) {
-               if (std::string(sym.name) == "max_frame_width_minus_1") { obuWidth = sym.value + 1; }
-               if (std::string(sym.name) == "max_frame_height_minus_1") {
-                 obuHeight = sym.value + 1;
-               }
-             }
+             auto obuDetails = getOBUDetails(root, out);
+             if (!obuDetails.valid) { return; }
 
              auto av01Boxes = findBoxes(root, FOURCC("av01"));
 
@@ -141,18 +148,16 @@ namespace {
                  if (std::string(sym.name) == "height") { av01Height = sym.value; }
                }
 
-               if (av01Width == obuWidth && av01Height == obuHeight) {
+               if (av01Width == obuDetails.width && av01Height == obuDetails.height) {
                  foundMatch = true;
                  break;
-               } else {
-                 if (foundResolutions.size()) { foundResolutions += ", "; }
-                 foundResolutions += std::to_string(av01Width) + "x" + std::to_string(av01Height);
                }
+               foundResolutions += std::to_string(av01Width) + "x" + std::to_string(av01Height) + " ";
              }
 
              if (!foundMatch) {
-               out->error("No match found, OBU specifiex %dx%d, found resolutions %s", obuWidth,
-                          obuHeight, foundResolutions.c_str());
+               out->error("No match found, OBU specifiex %dx%d, found resolutions %s",
+                          obuDetails.width, obuDetails.height, foundResolutions.c_str());
                return;
              }
 
