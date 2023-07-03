@@ -67,9 +67,18 @@ namespace {
           {"Section 2.1\n"
            "It SHALL contain at least one track using an AV1SampleEntry",
            [](Box const &root, IReport *out) {
-             auto av01Boxes = findBoxes(root, FOURCC("av01"));
+             bool av01Found = false;
+             auto stsdBoxes = findBoxes(root, FOURCC("stsd"));
 
-             if (av01Boxes.empty()) {
+             for (auto &stsdBox : stsdBoxes) {
+               auto av01Boxes = findBoxes(*stsdBox, FOURCC("av01"));
+               if (!av01Boxes.empty()) {
+                 av01Found = true;
+                 break;
+               }
+             }
+
+             if (!av01Found) {
                out->error("No Av1SampleEntry found");
                return;
              }
