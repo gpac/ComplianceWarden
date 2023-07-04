@@ -166,6 +166,48 @@ namespace {
              out->covered();
            }},
           {"Section 2.2.4\n"
+           "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum "
+           "RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called "
+           "MaxRenderHeight, of all the frames associated with this sample entry",
+           [](Box const &root, IReport *out) {
+             auto obuDetails = getOBUDetails(root, out);
+             if (!obuDetails.valid) { return; }
+
+             auto trakBoxes = findBoxes(root, FOURCC("trak"));
+             for (auto &trakBox : trakBoxes) {
+               auto av01Details = getAv01Details(*trakBox);
+               if (!av01Details.valid) { continue; }
+
+               ResolutionDetails maxRenderSize = getMaxRenderSize();
+
+               if (!maxRenderSize.valid) {
+                 out->error("No maximumRenderSize could be parsed");
+                 return;
+               }
+
+               auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
+               if (tkhdBoxes.size() != 1) {
+                 out->error("%d 'tkhd' boxes found, when 1 is expected", tkhdBoxes.size());
+                 return;
+               }
+
+               ResolutionDetails tkhdResolution{false};
+               for (auto &sym : tkhdBoxes[0]->syms) {
+                 if (std::string(sym.name) == "width") { tkhdResolution.width = sym.value; }
+                 if (std::string(sym.name) == "height") { tkhdResolution.height = sym.value; }
+               }
+               tkhdResolution.valid = tkhdResolution.width && tkhdResolution.height;
+
+               if (maxRenderSize.width != obuDetails.width || maxRenderSize.height != obuDetails.height) {
+                 out->warning(
+                     "MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box");
+                 return;
+               }
+             }
+
+             out->covered();
+           }},
+          {"Section 2.2.4\n"
            "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively "
            "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the "
            "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",

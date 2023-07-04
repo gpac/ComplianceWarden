@@ -6,9 +6,16 @@ Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 De
 https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
+[av1isobmff][Rule #4] Warning: MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box
+
 ========================================
-[av1isobmff] No errors.
+[av1isobmff] 0 error(s), 1 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[av1isobmff][Rule #4] Section 2.2.4
+The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called MaxRenderHeight, of all the frames associated with this sample entry
 
 +--------------------------------------+
 |          isobmff validation          |
