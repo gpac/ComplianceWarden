@@ -6,7 +6,7 @@ Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 De
 https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
-[av1isobmff][Rule #4] Error: Invalid pasp; 1 / 1 != 3514826752 / 1270874112
+[av1isobmff][Rule #4] Error: Invalid pasp; 1 / 1 != 2899232 / 1280000
 
 ========================================
 [av1isobmff] 1 error(s), 0 warning(s).

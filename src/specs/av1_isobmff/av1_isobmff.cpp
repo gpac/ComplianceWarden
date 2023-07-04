@@ -50,6 +50,11 @@ namespace {
     return {true, obuWidth, obuHeight};
   }
 
+  ///\FIXME: Actually parse from the OBU stream
+  ResolutionDetails getMaxRenderSize() {
+    return {true, 2408, 1600};
+  }
+
   ResolutionDetails getAv01Details(Box const &root) {
     auto av01Boxes = findBoxes(root, FOURCC("av01"));
 
@@ -173,24 +178,15 @@ namespace {
                auto av01Details = getAv01Details(*trakBox);
                if (!av01Details.valid) { continue; }
 
-               ResolutionDetails tkhdDetails{false};
+               ResolutionDetails maxRenderSize = getMaxRenderSize();
 
-               auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
-               for (auto &tkhdBox : tkhdBoxes) {
-                 for (auto &sym : tkhdBox->syms) {
-                   if (std::string(sym.name) == "width") { tkhdDetails.width = sym.value; }
-                   if (std::string(sym.name) == "height") { tkhdDetails.height = sym.value; }
-                 }
-                 if (tkhdDetails.width && tkhdDetails.height) { tkhdDetails.valid = true; }
-                 break;
-               }
-               if (!tkhdDetails.valid) {
-                 out->error("No resolution data found in 'tkhd' box");
+               if (!maxRenderSize.valid) {
+                 out->error("No maximumRenderSize could be parsed");
                  return;
                }
 
                bool expectPixelAspectRatio =
-                   (tkhdDetails.width != obuDetails.width || tkhdDetails.height != obuDetails.height);
+                   (maxRenderSize.width != obuDetails.width || maxRenderSize.height != obuDetails.height);
 
                if (!expectPixelAspectRatio) { continue; }
 
@@ -209,14 +205,15 @@ namespace {
                }
 
                double paspRatio = (double)hSpacing / vSpacing;
-               double frameRatio = (double)(tkhdDetails.width * obuDetails.width) /
-                                   (tkhdDetails.height * obuDetails.height);
+               double frameRatio = (double)(maxRenderSize.width * obuDetails.width) /
+                                   (maxRenderSize.height * obuDetails.height);
 
                bool validPASP = (paspRatio == frameRatio);
 
                if (!validPASP) {
                  out->error("Invalid pasp; %u / %u != %u / %u", hSpacing, vSpacing,
-                            (tkhdDetails.width * obuDetails.width), (tkhdDetails.height * obuDetails.height));
+                            (maxRenderSize.width * obuDetails.width),
+                            (maxRenderSize.height * obuDetails.height));
                  return;
                }
              }
