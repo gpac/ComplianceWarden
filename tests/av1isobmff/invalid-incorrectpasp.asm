@@ -47,8 +47,8 @@ tkhd_start:
     db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
     db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
     db 0x40, 0x00, 0x00, 0x00 ; matrix(32) 
-    db 0x00, 0x00, 0x09, 0x68 ; width(32) 
-    db 0x00, 0x00, 0x06, 0x40 ; height(32) 
+    db 0x01, 0xE0, 0x00, 0x00 ; width(32) 
+    db 0x01, 0x0E, 0x00, 0x00 ; height(32) 
 tkhd_end:
 
 mdia_start:
@@ -210,8 +210,8 @@ av01_start:
     pasp_start:
       dd BE(pasp_end - pasp_start)
       dd "pasp"
-      dd BE(90601); Hspacing
-      dd BE(40000);Vspacing
+      dd BE(1); Hspacing
+      dd BE(1);Vspacing
     pasp_end:
 av01_end:
 

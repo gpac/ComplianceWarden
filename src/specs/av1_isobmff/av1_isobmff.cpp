@@ -200,7 +200,25 @@ namespace {
                  return;
                }
 
-               out->error("Unhandled pasp box");
+               auto hSpacing = 0;
+               auto vSpacing = 0;
+
+               for (auto &sym : paspBoxes[0]->syms) {
+                 if (std::string(sym.name) == "hSpacing") { hSpacing = sym.value; }
+                 if (std::string(sym.name) == "vSpacing") { vSpacing = sym.value; }
+               }
+
+               double paspRatio = (double)hSpacing / vSpacing;
+               double frameRatio = (double)(tkhdDetails.width * obuDetails.width) /
+                                   (tkhdDetails.height * obuDetails.height);
+
+               bool validPASP = (paspRatio == frameRatio);
+
+               if (!validPASP) {
+                 out->error("Invalid pasp; %u / %u != %u / %u", hSpacing, vSpacing,
+                            (tkhdDetails.width * obuDetails.width), (tkhdDetails.height * obuDetails.height));
+                 return;
+               }
              }
 
              out->covered();
