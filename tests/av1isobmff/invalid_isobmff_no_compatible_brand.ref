@@ -8,7 +8,7 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #0] Error: No 'av01' found in compatibleBrands
 [av1isobmff][Rule #2] Error: No Av1SampleEntry found
-[av1isobmff][Rule #3] Error: No match found, OBU specifiex 0x-727184824
+[av1isobmff][Rule #3] Error: No match found, OBU specifiex 0x117520968
 
 ========================================
 [av1isobmff] 3 error(s), 0 warning(s).

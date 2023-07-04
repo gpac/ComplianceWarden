@@ -7,7 +7,7 @@ https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #2] Error: No Av1SampleEntry found
-[av1isobmff][Rule #3] Error: No match found, OBU specifiex 0x-453191096
+[av1isobmff][Rule #3] Error: No match found, OBU specifiex 0x1494338120
 
 ========================================
 [av1isobmff] 2 error(s), 0 warning(s).
