@@ -7,15 +7,20 @@ https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #4] Warning: MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box
+[av1isobmff][Rule #7] Error: Marker SHALL be set to 1, found 0
+[av1isobmff][Rule #7] Error: Version SHALL be set to 1, found 0
 
 ========================================
-[av1isobmff] 0 error(s), 1 warning(s).
+[av1isobmff] 2 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
 [av1isobmff][Rule #4] Section 2.2.4
 The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called MaxRenderHeight, of all the frames associated with this sample entry
+
+[av1isobmff][Rule #7] Section 2.3.4
+The marker and version fields SHALL be set to 1
 
 +--------------------------------------+
 |          isobmff validation          |

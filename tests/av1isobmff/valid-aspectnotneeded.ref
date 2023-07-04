@@ -8,9 +8,11 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #4] Warning: MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box
 [av1isobmff][Rule #5] Error: 0 'pasp' boxes found, when 1 is expected
+[av1isobmff][Rule #7] Error: Marker SHALL be set to 1, found 0
+[av1isobmff][Rule #7] Error: Version SHALL be set to 1, found 0
 
 ========================================
-[av1isobmff] 1 error(s), 1 warning(s).
+[av1isobmff] 3 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -20,6 +22,9 @@ The width and height in the TrackHeaderBox SHOULD equal, respectively, the maxim
 
 [av1isobmff][Rule #5] Section 2.2.4
 Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry
+
+[av1isobmff][Rule #7] Section 2.3.4
+The marker and version fields SHALL be set to 1
 
 +--------------------------------------+
 |          isobmff validation          |

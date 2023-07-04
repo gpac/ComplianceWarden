@@ -283,6 +283,30 @@ namespace {
 
              out->covered();
            }},
+          {"Section 2.3.4\n"
+           "The marker and version fields SHALL be set to 1",
+           [](Box const &root, IReport *out) {
+             auto obuDetails = getOBUDetails(root, out);
+             if (!obuDetails.valid) { return; }
+
+             auto trakBoxes = findBoxes(root, FOURCC("trak"));
+             for (auto &trakBox : trakBoxes) {
+               auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
+               for (auto &av1CBox : av1CBoxes) {
+                 for (auto &sym : av1CBox->syms) {
+                   std::cerr << sym.name << ": " << sym.value << std::endl;
+                   if (std::string(sym.name) == "marker" && sym.value != 1) {
+                     out->error("Marker SHALL be set to 1, found %d", sym.value);
+                   }
+                   if (std::string(sym.name) == "version" && sym.value != 1) {
+                     out->error("Version SHALL be set to 1, found %d", sym.value);
+                   }
+                 }
+               }
+             }
+
+             out->covered();
+           }},
       },
       nullptr,
   };
