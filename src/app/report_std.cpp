@@ -1,20 +1,20 @@
-#include "spec.h"
-#include <string>
-#include <cstdio>
 #include <cstdarg>
+#include <cstdio>
 #include <cstring> // strlen
+#include <string>
 
-SpecDesc const* specFind(const char* name);
+#include "spec.h"
 
-bool checkComplianceStd(Box const& file, SpecDesc const* spec)
+SpecDesc const *specFind(const char *name);
+
+bool checkComplianceStd(Box const &file, SpecDesc const *spec)
 {
   // early exit if pre-check fails: this spec doesn't apply
   if(spec->valid && !spec->valid(file))
     return 0;
 
-  struct Report : IReport
-  {
-    void error(const char* fmt, ...) override
+  struct Report : IReport {
+    void error(const char *fmt, ...) override
     {
       va_list args;
       va_start(args, fmt);
@@ -26,7 +26,7 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
       ++errorCount;
     }
 
-    void warning(const char* fmt, ...) override
+    void warning(const char *fmt, ...) override
     {
       va_list args;
       va_start(args, fmt);
@@ -38,29 +38,25 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
       ++warningCount;
     }
 
-    void covered() override
-    {
-    }
+    void covered() override {}
 
     int ruleIdx = 0;
     int errorCount = 0;
     int warningCount = 0;
-    const char* specName = nullptr;
+    const char *specName = nullptr;
   };
 
   Report out;
   out.specName = spec->name;
   std::vector<int> ruleIdxEvent;
 
-  auto printErrorRules = [&] () {
+  auto printErrorRules = [&]() {
     fprintf(stdout, "\n===== Involved rules descriptions:\n");
 
     int ruleIdx = 0, eventIdx = 0;
 
-    for(auto& rule : spec->rules)
-    {
-      while(ruleIdx > ruleIdxEvent[eventIdx])
-      {
+    for(auto &rule : spec->rules) {
+      while(ruleIdx > ruleIdxEvent[eventIdx]) {
         eventIdx++;
 
         if(eventIdx == (int)ruleIdxEvent.size())
@@ -78,22 +74,20 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
   {
     fprintf(stdout, "+%s+\n", std::string(cols - 2, '-').c_str());
     auto const spacing = cols - 11 - 2 - strlen(spec->name);
-    fprintf(stdout, "|%s%s validation%s|\n", std::string(spacing / 2, ' ').c_str(), spec->name, std::string((spacing + 1) / 2, ' ').c_str());
+    fprintf(
+      stdout, "|%s%s validation%s|\n", std::string(spacing / 2, ' ').c_str(), spec->name,
+      std::string((spacing + 1) / 2, ' ').c_str());
     fprintf(stdout, "+%s+\n\n", std::string(cols - 2, '-').c_str());
   }
 
   fprintf(stdout, "Specification description: %s\n\n", spec->caption);
 
-  for(auto& rule : spec->rules)
-  {
+  for(auto &rule : spec->rules) {
     auto curEventCount = out.errorCount + out.warningCount;
 
-    try
-    {
+    try {
       rule.check(file, &out);
-    }
-    catch(std::exception const& e)
-    {
+    } catch(std::exception const &e) {
       out.error("ABORTED TEST: %s\n", e.what());
     }
 
@@ -103,16 +97,13 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
     out.ruleIdx++;
   }
 
-  if(!ruleIdxEvent.empty())
-  {
+  if(!ruleIdxEvent.empty()) {
     fprintf(stdout, "\n%s\n", std::string(cols, '=').c_str());
     fprintf(stdout, "[%s] %d error(s), %d warning(s).\n", spec->name, out.errorCount, out.warningCount);
     fprintf(stdout, "%s\n", std::string(cols, '=').c_str());
     printErrorRules();
     fprintf(stdout, "\n");
-  }
-  else
-  {
+  } else {
     fprintf(stdout, "%s\n", std::string(cols, '=').c_str());
     fprintf(stdout, "[%s] No errors.\n", spec->name);
     fprintf(stdout, "%s\n\n", std::string(cols, '=').c_str());
@@ -127,4 +118,3 @@ bool checkComplianceStd(Box const& file, SpecDesc const* spec)
 
   return eventCount > 0;
 }
-

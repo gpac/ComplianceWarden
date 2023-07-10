@@ -38,7 +38,7 @@ Usage:
 
 CW is mainly [sponsored](#Acknowledgments) by companies and standardization groups to validate specific versions of specifications they develop or use.
 
-The master branch only references official specifications. Draft versions or updates are meant to be in spearate branches. To know more please read the [design principles](https://github.com/gpac/ComplianceWarden/issues/55#issuecomment-1517063130).
+The master branch only references official specifications. Draft versions or updates are meant to be in separate branches. To know more please read the [design principles](https://github.com/gpac/ComplianceWarden/issues/55#issuecomment-1517063130).
 
 
 However, once a specification is validated, we accept to add new rules progressively.
@@ -160,18 +160,9 @@ NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwi
 
 ### Code formatter (optional)
 
-Install [uncrustify](https://github.com/uncrustify/uncrustify)
+Install ```clang-format```.
 
-```
-$ git clone https://github.com/uncrustify/uncrustify.git
-$ cd uncrustify
-$ git checkout uncrustify-0.64
-$ cmake -DCMAKE_BUILD_TYPE=Release ..
-$ make -j $(nproc)
-$ sudo make install
-```
-
-### Build and run tests before committing
+### Pre-commit: format, build and run tests before committing
 
 ```
 ./check

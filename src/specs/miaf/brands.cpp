@@ -1,20 +1,18 @@
-#include "spec.h"
-#include "fourcc.h"
 #include <algorithm> // std::find
 #include <cstring>
 #include <map>
 
-bool isVisualSampleEntry(uint32_t fourcc);
-bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
+#include "fourcc.h"
+#include "spec.h"
 
-const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
+bool isVisualSampleEntry(uint32_t fourcc);
+bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
+
+const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc &spec)
 {
-  static const SpecDesc& globalSpec = spec;
-  static const
-  std::initializer_list<RuleDesc> rulesBrands =
-  {
-    {
-      "Section 10.2\n"
+  static const SpecDesc &globalSpec = spec;
+  static const std::initializer_list<RuleDesc> rulesBrands = {
+    { "Section 10.2\n"
       "'MiPr' in the compatible_brands in the FileTypeBox specifies that a file\n"
       "conforming to 'miaf' brand also conforms to the following constraints:\n"
       "- The MetaBox shall follow the FileTypeBox. There shall be no intervening boxes\n"
@@ -30,13 +28,12 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
       "- The maximum number of bytes from the beginning of the file to the last byte\n"
       "  of the coded data for at least one of the thumbnail images of the primary\n"
       "  item, or the primary item itself, is 128 000 bytes.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         bool found = false;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
-            for(auto& sym : box.syms)
+            for(auto &sym : box.syms)
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiPr"))
                   found = true;
@@ -44,7 +41,7 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
         if(!found)
           return;
 
-        auto boxOrderCheck = [&] () -> bool {
+        auto boxOrderCheck = [&]() -> bool {
           if(root.children.size() < 2)
             return false;
 
@@ -53,18 +50,19 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
 
           if(root.children[1].fourcc == FOURCC("meta"))
             return true;
-          else if(root.children.size() >= 3
-                  && root.children[1].fourcc == FOURCC("fidx") && root.children[2].fourcc == FOURCC("meta"))
+          else if(
+            root.children.size() >= 3 && root.children[1].fourcc == FOURCC("fidx") &&
+            root.children[2].fourcc == FOURCC("meta"))
             return true;
           else
             return false;
         };
 
         if(!boxOrderCheck())
-          out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening BoxFileIndexBox)");
+          out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening "
+                     "BoxFileIndexBox)");
 
-        for(auto& b : root.children)
-        {
+        for(auto &b : root.children) {
           if(b.fourcc == FOURCC("mdat"))
             out->error("'MiPr' brand: the MediaDataBox shall not occur before the MetaBox");
 
@@ -75,16 +73,14 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
         int numFreeSpaceBox = 0;
         bool seenMeta = false;
 
-        for(auto& b : root.children)
-        {
+        for(auto &b : root.children) {
           if(b.fourcc == FOURCC("mdat"))
             break;
 
           if(b.fourcc == FOURCC("meta"))
             seenMeta = true;
 
-          if(b.fourcc == FOURCC("free"))
-          {
+          if(b.fourcc == FOURCC("free")) {
             numFreeSpaceBox++;
 
             if(!seenMeta)
@@ -105,14 +101,13 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
         found = false;
         uint32_t primaryItemId = -1;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
-              if(metaChild.fourcc == FOURCC("pitm"))
-              {
+            for(auto &metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("pitm")) {
                 found = true;
 
-                for(auto& field : metaChild.syms)
+                for(auto &field : metaChild.syms)
                   if(!strcmp(field.name, "item_ID"))
                     primaryItemId = field.value;
               }
@@ -123,25 +118,22 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
         std::map<uint32_t /*itemId*/, int64_t /*offset*/> pitmSelfAndThmbs;
         pitmSelfAndThmbs.insert({ primaryItemId, -1 }); // self
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
-              if(metaChild.fourcc == FOURCC("iref"))
-              {
+            for(auto &metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iref")) {
                 uint32_t boxType = -1;
 
-                for(auto& field : metaChild.syms)
-                {
+                for(auto &field : metaChild.syms) {
                   if(!strcmp(field.name, "box_type"))
                     boxType = field.value;
 
                   if(boxType != FOURCC("thmb"))
                     continue;
 
-                  if(!strcmp(field.name, "to_item_ID"))
-                  {
+                  if(!strcmp(field.name, "to_item_ID")) {
                     if(field.value != primaryItemId)
-                      for(auto& sym : metaChild.syms)
+                      for(auto &sym : metaChild.syms)
                         if(!strcmp(sym.name, "from_item_ID"))
                           pitmSelfAndThmbs.insert({ sym.value, -1 });
                   }
@@ -149,25 +141,23 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
               }
 
         if(pitmSelfAndThmbs.empty())
-          out->error("'MiPr' brand: there is at least one MIAF thumbnail image item present for the primary image item");
+          out->error(
+            "'MiPr' brand: there is at least one MIAF thumbnail image item present for the primary image item");
 
         int64_t pitmFirstOffset = -1;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
-              if(metaChild.fourcc == FOURCC("iloc"))
-              {
+            for(auto &metaChild : box.children)
+              if(metaChild.fourcc == FOURCC("iloc")) {
                 // for MIAF coded image items construction_method==0 and data_reference_index==0
                 uint32_t itemId = 0;
 
-                for(auto& sym : metaChild.syms)
-                {
+                for(auto &sym : metaChild.syms) {
                   if(!strcmp(sym.name, "item_ID"))
                     itemId = sym.value;
 
-                  if(pitmSelfAndThmbs.find(itemId) != pitmSelfAndThmbs.end())
-                  {
+                  if(pitmSelfAndThmbs.find(itemId) != pitmSelfAndThmbs.end()) {
                     if(itemId == primaryItemId)
                       if(!strcmp(sym.name, "base_offset"))
                         pitmFirstOffset = sym.value;
@@ -183,11 +173,12 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
 
         found = false;
 
-        for(auto& item : pitmSelfAndThmbs)
-        {
+        for(auto &item : pitmSelfAndThmbs) {
           if(item.second < pitmSelfAndThmbs[primaryItemId])
-            out->error("'MiPr' brand: coded data offset thumbnail (item_ID=%u offset=%lld) precedes coded data for the primary item (item_ID=%u offset=%lld)",
-                       item.first, item.second, primaryItemId, pitmFirstOffset);
+            out->error(
+              "'MiPr' brand: coded data offset thumbnail (item_ID=%u offset=%lld) precedes coded data for "
+              "the primary item (item_ID=%u offset=%lld)",
+              item.first, item.second, primaryItemId, pitmFirstOffset);
 
           if(item.second < 128000)
             found = true;
@@ -197,10 +188,8 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
           out->error("'MiPr' brand: The maximum number of bytes from the beginning of the file to\n"
                      "  the last byte of the coded data for at least one of the thumbnail images of the\n"
                      "  primary item, or the primary item itself, is 128 000 bytes.");
-      }
-    },
-    {
-      "Section 10.3\n"
+      } },
+    { "Section 10.3\n"
       "The presence of the animation MIAF application brand indication ('MiAn') in the\n"
       "FileTypeBox indicates that the file conforms to the following additional\n"
       "constraints:\n"
@@ -213,13 +202,12 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
       "- The luma sample rate of each video track shall be less than or equal to\n"
       "  62 914 560 samples per second.\n"
       "- The constraints of subclause 8.6 apply.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         bool found = false;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
-            for(auto& sym : box.syms)
+            for(auto &sym : box.syms)
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiAn"))
                   found = true;
@@ -231,49 +219,45 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
           std::vector<uint32_t> trackHandlers;
           bool foundAlphaTrack = false;
 
-          for(auto& box : root.children)
+          for(auto &box : root.children)
             if(box.fourcc == FOURCC("moov"))
-              for(auto& moovChild : box.children)
+              for(auto &moovChild : box.children)
                 if(moovChild.fourcc == FOURCC("trak"))
-                  for(auto& trakChild : moovChild.children)
-                    if(trakChild.fourcc == FOURCC("mdia"))
-                    {
-                      for(auto& mdiaChild : trakChild.children)
-                        if(mdiaChild.fourcc == FOURCC("minf"))
-                        {
-                          for(auto& minfChild : mdiaChild.children)
+                  for(auto &trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("mdia")) {
+                      for(auto &mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf")) {
+                          for(auto &minfChild : mdiaChild.children)
                             if(minfChild.fourcc == FOURCC("stbl"))
-                              for(auto& stblChild : minfChild.children)
+                              for(auto &stblChild : minfChild.children)
                                 if(stblChild.fourcc == FOURCC("stsd"))
-                                  for(auto& stsdChild : stblChild.children)
+                                  for(auto &stsdChild : stblChild.children)
                                     if(isVisualSampleEntry(stsdChild.fourcc))
-                                      for(auto& sampleEntryChild : stsdChild.children)
-                                        if(sampleEntryChild.fourcc == FOURCC("auxi"))
-                                        {
+                                      for(auto &sampleEntryChild : stsdChild.children)
+                                        if(sampleEntryChild.fourcc == FOURCC("auxi")) {
                                           std::string auxType;
 
-                                          for(auto& sym : sampleEntryChild.syms)
-                                            if(!strcmp(sym.name, "aux_track_type"))
-                                            {
+                                          for(auto &sym : sampleEntryChild.syms)
+                                            if(!strcmp(sym.name, "aux_track_type")) {
                                               auxType.push_back((char)sym.value);
 
-                                              if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                                              if(
+                                                auxType ==
+                                                "urn:mpeg:mpegB:cicp:"
+                                                "systems:auxiliary:alpha")
                                                 foundAlphaTrack = true;
                                             }
                                         }
-                        }
-                        else if(mdiaChild.fourcc == FOURCC("hdlr"))
-                          for(auto& sym : mdiaChild.syms)
+                        } else if(mdiaChild.fourcc == FOURCC("hdlr"))
+                          for(auto &sym : mdiaChild.syms)
                             if(!strcmp(sym.name, "handler_type"))
                               trackHandlers.push_back(sym.value);
                     }
 
           int numVideoTracks = 0, numAudioTracks = 0, numAuxTracks = 0;
 
-          for(auto hdlr : trackHandlers)
-          {
-            switch(hdlr)
-            {
+          for(auto hdlr : trackHandlers) {
+            switch(hdlr) {
             case FOURCC("vide"):
             case FOURCC("pict"):
               numVideoTracks++;
@@ -285,40 +269,45 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
               numAuxTracks++;
               break;
             default:
-              out->error("'MiAn' brand: no other media tracks than video/image sequence, audio, and auxiliary allowed. Found \"%s\"", toString(hdlr).c_str());
+              out->error(
+                "'MiAn' brand: no other media tracks than video/image sequence, audio, and auxiliary "
+                "allowed. Found \"%s\"",
+                toString(hdlr).c_str());
               break;
             }
 
             if(numVideoTracks != 1)
-              out->error("'MiAn' brand: there shall be exactly one non-auxiliary video track or non-auxiliary image sequence track, found %d", numVideoTracks);
+              out->error(
+                "'MiAn' brand: there shall be exactly one non-auxiliary video track or non-auxiliary "
+                "image sequence track, found %d",
+                numVideoTracks);
 
             if(numAudioTracks > 1)
               out->error("'MiAn' brand: at most one audio track, found %d", numAudioTracks);
 
             if(numAuxTracks > 1 || !foundAlphaTrack)
-              out->error("'MiAn' brand: there shall be at most one auxiliary video track 'auxv' (found %d) (which shall be an alpha plane track: \"%s\")",
-                         numAuxTracks, foundAlphaTrack ? "true" : "false");
+              out->error(
+                "'MiAn' brand: there shall be at most one auxiliary video track 'auxv' (found %d) (which "
+                "shall be an alpha plane track: \"%s\")",
+                numAuxTracks, foundAlphaTrack ? "true" : "false");
           }
 
           if(!checkRuleSection(globalSpec, "10.6", root))
             out->error(" 'MiAn' brand: this file shall conform to the 'MiCm' brand");
         }
-      }
-    },
-    {
-      "Section 10.4\n"
+      } },
+    { "Section 10.4\n"
       "A track indicated to conform to this brand shall be constrained as follows:\n"
       "- The track shall be an image sequence ('pict') track.\n"
       "- In the image sequence track, any single coded picture shall be decodable by\n"
       "  decoding a maximum of two coded pictures (i.e. the picture itself and at most\n"
       "  one reference), and these two coded pictures shall be a valid bitstream.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         bool found = false;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
-            for(auto& sym : box.syms)
+            for(auto &sym : box.syms)
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiBu"))
                   found = true;
@@ -326,18 +315,16 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
         if(!found)
           return;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
+            for(auto &metaChild : box.children)
               if(metaChild.fourcc == FOURCC("hdlr"))
-                for(auto& field : metaChild.syms)
+                for(auto &field : metaChild.syms)
                   if(!strcmp(field.name, "handler_type"))
                     if(field.value != FOURCC("pict"))
                       out->error("'MiBu' brand: the track shall be an image sequence ('pict') track");
-      }
-    },
-    {
-      "Section 10.5\n"
+      } },
+    { "Section 10.5\n"
       "The presence of the brand 'MiAC' in the FileTypeBox indicates that the file\n"
       "conforms to the following additional constraints:\n"
       " - It conforms to the constraints of both the 'MiCm' and the 'MiAn' brands,\n"
@@ -346,13 +333,12 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
       " - The non-auxiliary video track uses the 'vide' handler, and is not\n"
       "   pre-multiplied.\n"
       " - The tracks are fragmented.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         bool found = false;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
-            for(auto& sym : box.syms)
+            for(auto &sym : box.syms)
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiAC"))
                   found = true;
@@ -369,75 +355,83 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
         {
           int alphaTrackNum = 0;
 
-          for(auto& box : root.children)
+          for(auto &box : root.children)
             if(box.fourcc == FOURCC("moov"))
-              for(auto& moovChild : box.children)
+              for(auto &moovChild : box.children)
                 if(moovChild.fourcc == FOURCC("trak"))
-                  for(auto& trakChild : moovChild.children)
+                  for(auto &trakChild : moovChild.children)
                     if(trakChild.fourcc == FOURCC("mdia"))
-                      for(auto& mdiaChild : trakChild.children)
+                      for(auto &mdiaChild : trakChild.children)
                         if(mdiaChild.fourcc == FOURCC("minf"))
-                          for(auto& minfChild : mdiaChild.children)
+                          for(auto &minfChild : mdiaChild.children)
                             if(minfChild.fourcc == FOURCC("stbl"))
-                              for(auto& stblChild : minfChild.children)
+                              for(auto &stblChild : minfChild.children)
                                 if(stblChild.fourcc == FOURCC("stsd"))
-                                  for(auto& stsdChild : stblChild.children)
+                                  for(auto &stsdChild : stblChild.children)
                                     if(isVisualSampleEntry(stsdChild.fourcc))
-                                      for(auto& sampleEntryChild : stsdChild.children)
-                                        if(sampleEntryChild.fourcc == FOURCC("auxi"))
-                                        {
+                                      for(auto &sampleEntryChild : stsdChild.children)
+                                        if(sampleEntryChild.fourcc == FOURCC("auxi")) {
                                           std::string auxType;
 
-                                          for(auto& sym : sampleEntryChild.syms)
-                                            if(!strcmp(sym.name, "aux_track_type"))
-                                            {
+                                          for(auto &sym : sampleEntryChild.syms)
+                                            if(!strcmp(sym.name, "aux_track_type")) {
                                               auxType.push_back((char)sym.value);
 
-                                              if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                                              if(
+                                                auxType ==
+                                                "urn:mpeg:mpegB:cicp:"
+                                                "systems:auxiliary:alpha")
                                                 alphaTrackNum++;
                                             }
                                         }
 
           if(alphaTrackNum != 1)
-            out->error("'MiAC' brand: there shall be exactly one auxiliary alpha video track, found %d.", alphaTrackNum);
+            out->error(
+              "'MiAC' brand: there shall be exactly one auxiliary alpha video track, found %d.", alphaTrackNum);
         }
 
         {
           std::vector<uint32_t /*hdlr*/> trackHandlers;
 
-          for(auto& box : root.children)
+          for(auto &box : root.children)
             if(box.fourcc == FOURCC("moov"))
-              for(auto& moovChild : box.children)
+              for(auto &moovChild : box.children)
                 if(moovChild.fourcc == FOURCC("trak"))
-                  for(auto& trakChild : moovChild.children)
+                  for(auto &trakChild : moovChild.children)
                     if(trakChild.fourcc == FOURCC("mdia"))
-                      for(auto& mdiaChild : trakChild.children)
+                      for(auto &mdiaChild : trakChild.children)
                         if(mdiaChild.fourcc == FOURCC("hdlr"))
-                          for(auto& sym : mdiaChild.syms)
+                          for(auto &sym : mdiaChild.syms)
                             if(!strcmp(sym.name, "handler_type"))
                               trackHandlers.push_back((uint32_t)sym.value);
 
           if(trackHandlers.size() != 2)
-            out->error("'MiAC' brand: \"the non-auxiliary video track shall use the 'vide' handler\" implies 2 tracks but %d were found", (int)trackHandlers.size());
+            out->error(
+              "'MiAC' brand: \"the non-auxiliary video track shall use the 'vide' handler\" implies 2 "
+              "tracks but %d were found",
+              (int)trackHandlers.size());
 
-          if(!(trackHandlers[0] == FOURCC("auxv") && trackHandlers[1] == FOURCC("vide")) && !(trackHandlers[0] == FOURCC("vide") && trackHandlers[1] == FOURCC("auxv")))
-            out->error("'MiAC' brand: the non-auxiliary video track shall use the 'vide' handler, found handlers '%s' and '%s'", toString(trackHandlers[0]).c_str(), toString(trackHandlers[1]).c_str());
+          if(
+            !(trackHandlers[0] == FOURCC("auxv") && trackHandlers[1] == FOURCC("vide")) &&
+            !(trackHandlers[0] == FOURCC("vide") && trackHandlers[1] == FOURCC("auxv")))
+            out->error(
+              "'MiAC' brand: the non-auxiliary video track shall use the 'vide' handler, found handlers "
+              "'%s' and '%s'",
+              toString(trackHandlers[0]).c_str(), toString(trackHandlers[1]).c_str());
         }
 
         found = false;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
-            for(auto& moovChild : box.children)
+            for(auto &moovChild : box.children)
               if(moovChild.fourcc == FOURCC("mvex"))
                 found = true;
 
         if(!found)
           out->error("'MiAC' brand: the tracks are fragmented");
-      }
-    },
-    {
-      "Section 10.6\n"
+      } },
+    { "Section 10.6\n"
       "The presence of the brand 'MiCm' in the FileTypeBox indicates that the file\n"
       "contains movie fragments that conform to the constraints of the 'cmfc' brand of\n"
       "ISO/IEC 23000-19, and the following additional constraints that apply when a\n"
@@ -455,13 +449,12 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
       "   same duration, same number of fragments and fragments shall be time-aligned.\n"
       "   Fragments of the different CMAF tracks shall also be interleaved in the MIAF\n"
       "   file.",
-      [] (Box const& root, IReport* /*out*/)
-      {
+      [](Box const &root, IReport * /*out*/) {
         bool found = false;
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("ftyp"))
-            for(auto& sym : box.syms)
+            for(auto &sym : box.syms)
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("MiCm"))
                   found = true;
@@ -470,8 +463,7 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
           return;
 
         // TODO: CMAF
-      }
-    },
+      } },
 #if 0
     {
       "Section 7.2.1.2\n"
@@ -507,4 +499,3 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc& spec)
   };
   return rulesBrands;
 }
-
