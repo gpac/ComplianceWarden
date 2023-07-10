@@ -5,15 +5,13 @@
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
-[isobmff][Rule #13] Error: Found non-unique track identifier 2
+[isobmff][Rule #0] Warning: The major_brand "heic" should be repeated in the compatible_brands list
 
 ========================================
-[isobmff] 1 error(s), 0 warning(s).
+[isobmff] 0 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[isobmff][Rule #13] Section 6.1.4
-The track identifiers used in an ISO file are unique within that file;
-no two tracks shall use the same identifier.
+[isobmff][Rule #0] Section 4.3.1: the major_brand should be repeated in the compatible_brands list
 

@@ -5,6 +5,7 @@ ftyp_start:
     dd "ftyp"
     db 0x6D, 0x69, 0x66, 0x31 ; brand(32) ('mif1') 
     db 0x00, 0x00, 0x00, 0x00 ; version(32) 
+    db 0x6D, 0x69, 0x66, 0x31 ; brand(32) ('mif1') 
 ftyp_end:
 meta_start:
     dd BE(meta_end - meta_start)

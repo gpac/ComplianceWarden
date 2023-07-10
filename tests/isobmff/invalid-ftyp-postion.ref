@@ -5,9 +5,9 @@
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
-[isobmff][Rule #11] Error: MovieBox (position=0) placed before FileTypeBox (position=350) in file
-[isobmff][Rule #11] Error: MediaDataBox (position=341) placed before FileTypeBox (position=350) in file
-[isobmff][Rule #11] Error: FreeSpaceBox (position=333) placed before FileTypeBox (position=350) in file
+[isobmff][Rule #12] Error: MovieBox (position=0) placed before FileTypeBox (position=350) in file
+[isobmff][Rule #12] Error: MediaDataBox (position=341) placed before FileTypeBox (position=350) in file
+[isobmff][Rule #12] Error: FreeSpaceBox (position=333) placed before FileTypeBox (position=350) in file
 
 ========================================
 [isobmff] 3 error(s), 0 warning(s).
@@ -15,7 +15,7 @@ MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
 ===== Involved rules descriptions:
 
-[isobmff][Rule #11] Section 4.3.1
+[isobmff][Rule #12] Section 4.3.1
 The 'ftyp' box shall be placed as early as possible in the file (e.g. after any
 obligatory signature, but before any significant variable-size boxes such as a
 MovieBox, MediaDataBox, or FreeSpaceBox).

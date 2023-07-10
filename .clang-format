@@ -1,6 +1,6 @@
 BasedOnStyle: WebKit
 UseTab: Never
-ColumnLimit: 120
+ColumnLimit: 130
 Language: Cpp
 DisableFormat: false
 IndentWidth: 2

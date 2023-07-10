@@ -43,6 +43,27 @@ const SpecDesc specIsobmff = {
   "MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)",
   {},
   {
+    { "Section 4.3.1: the major_brand should be repeated in the compatible_brands list",
+      [](Box const &root, IReport *out) {
+        uint32_t majorBrand = 0;
+        bool found = false;
+
+        for(auto &box : root.children)
+          if(box.fourcc == FOURCC("ftyp")) {
+            for(auto &sym : box.syms)
+              if(!strcmp(sym.name, "major_brand"))
+                majorBrand = sym.value;
+
+            for(auto &sym : box.syms)
+              if(!strcmp(sym.name, "compatible_brand"))
+                if(sym.value == majorBrand)
+                  found = true;
+          }
+
+        if(!found)
+          out->warning(
+            "The major_brand \"%s\" should be repeated in the compatible_brands list", toString(majorBrand).c_str());
+      } },
     { "Section 12.1.3.2\n"
       "CleanApertureBox 'clap' and PixelAspectRatioBox 'pasp' in VisualSampleEntry",
       [](Box const &root, IReport *out) {
@@ -443,8 +464,8 @@ const SpecDesc specIsobmff = {
         boxCheck(root, out, { FOURCC("sbgp") }, { FOURCC("stbl") }, { 0, INT32_MAX });
         boxCheck(
           root, out, { FOURCC("sgpd") }, { FOURCC("stbl") },
-          { 0, INT32_MAX }); // Zero or more, with exactly one for each grouping_type in a
-                             // SampleToGroupBox
+          { 0, INT32_MAX }); // Zero or more, with exactly one for each
+                             // grouping_type in a SampleToGroupBox
         boxCheck(root, out, { FOURCC("subs") }, { FOURCC("stbl") }, { 0, INT32_MAX });
         boxCheck(root, out, { FOURCC("saiz") }, { FOURCC("stbl") }, { 0, INT32_MAX });
         boxCheck(root, out, { FOURCC("saio") }, { FOURCC("stbl") }, { 0, INT32_MAX });
