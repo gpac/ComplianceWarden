@@ -21,11 +21,26 @@ An online version is available [here for HEIF/MIAF](https://gpac.github.io/Compl
 
 ### Usage
 
+```
+$ bin/cw.exe -h
+Compliance Warden, version v32-master-rev14-g363d8d3
+
+Usage:
+    -s, --spec                              Specification name.
+    -f, --format                            Output format: "raw" (default), or "json"
+    -l, --list                              List available specifications or available rules.
+    -v, --version                           Print version and exit.
+    -h, --help                              Print usage and exit.
+    -t, --test                              Don't print warnings when switching to legacy mode.
+```
+
 [We need an option parser](https://github.com/gpac/ComplianceWarden/issues/48):
+
+The old usage is deprecated and will be removed soon:
 
 ```
 $ bin/cw.exe
-Compliance Warden, version v28-master-rev3-g01d9486.
+Compliance Warden, version v32-master-rev14-g363d8d3
 
 Usage:
 - Run conformance:          bin/cw.exe <spec> input.mp4 [json]

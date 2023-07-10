@@ -1,6 +1,7 @@
 #include <cstring> // strcmp
 
 #include "box_reader_impl.h"
+#include "options.h"
 
 extern const char *g_version;
 
@@ -85,7 +86,7 @@ bool specCheck(const SpecDesc *spec, const char *filename, uint8_t *data, size_t
 
 void fprintVersion(FILE *const stream)
 {
-  fprintf(stream, "%s, version %s.\n", g_appName, g_version);
+  fprintf(stream, "%s, version %s\n", g_appName, g_version);
   fflush(stream);
 }
 
@@ -103,7 +104,8 @@ void printUsageAndExit(const char *progName)
 
 #ifndef CW_WASM
 
-int main(int argc, const char *argv[])
+// TODO: remove: introduce in July 2023 for v32
+int mainLegacy(int argc, const char *argv[])
 {
   if(argc < 2 || argc > 4)
     printUsageAndExit(argv[0]);
@@ -131,6 +133,73 @@ int main(int argc, const char *argv[])
   auto buf = loadFile(argv[2]);
 
   return specCheck(spec, argv[2], buf.data(), (int)buf.size(), outputJson);
+}
+
+int main(int argc, const char *argv[])
+{
+  bool help = false, list = false, version = false, testMode = false;
+  std::string specName, format = "text";
+
+  OptionHandler opt;
+  opt.add("s", "spec", &specName, "Specification name.");
+  opt.add("f", "format", &format, "Output format: \"raw\" (default), or \"json\"");
+  opt.addFlag("l", "list", &list, "List available specifications or available rules.");
+  opt.addFlag("v", "version", &version, "Print version and exit.");
+  opt.addFlag("h", "help", &help, "Print usage and exit.");
+  // TODO: remove (used to support deprecated legacy mode)
+  opt.addFlag("t", "test", &testMode, "Don't print warnings when switching to legacy mode.");
+
+  auto urls = opt.parse(argc, argv);
+
+  if(help) {
+    fprintVersion(stdout);
+    opt.printHelp(stdout);
+    return 0;
+  }
+
+  if(version) {
+    fprintVersion(stdout);
+    return 0;
+  }
+
+  if(list) {
+    if(specName.empty()) {
+      for(auto &spec : g_allSpecs())
+        printSpecDescription(spec);
+    } else {
+      auto spec = specFind(specName.c_str());
+      specListRules(spec);
+    }
+    return 0;
+  }
+
+  if(format != "text" && format != "json") {
+    fprintf(stderr, "invalid format, only \"text\" or \"json\" are supported");
+    return 1;
+  }
+
+  if(specName.empty() || urls.size() != 1) {
+    if(!testMode) {
+      fprintf(stderr, "/!\\ Failed argument parsing. Switching to legacy mode. /!\\\n\n");
+      opt.printHelp(stderr);
+    } else {
+      for(int i = 1, j = 1; i < argc; ++i, ++j) {
+        if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--test")) {
+          j--;
+          continue;
+        }
+        argv[j] = argv[i];
+      }
+      argc--;
+    }
+    return mainLegacy(argc, argv);
+    // fprintf(stderr, "expected one input file, got %" urls.size());
+    // return 1;
+  }
+
+  auto spec = specFind(specName.c_str());
+  auto buf = loadFile(urls[0].c_str());
+  return specCheck(spec, urls[0].c_str(), buf.data(), (int)buf.size(), format == "json");
 }
 
 #else
