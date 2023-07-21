@@ -226,7 +226,7 @@ void specListRulesC(const SpecDesc *spec)
 
 void specCheckC(const SpecDesc *spec, const char *filename, uint8_t *data, size_t size)
 {
-  specCheck(spec, filename, data, size);
+  specCheck(spec, filename, data, size, false);
 }
 
 void printVersion()
