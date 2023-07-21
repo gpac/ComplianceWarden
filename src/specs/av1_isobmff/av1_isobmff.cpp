@@ -103,8 +103,7 @@ namespace {
            }},
           {"Section 2.1\n"
            "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of "
-           "the "
-           "FileTypeBox",
+           "the FileTypeBox",
            [](Box const &root, IReport *out) {
              auto ftyps = findBoxes(root, FOURCC("ftyp"));
 
@@ -232,6 +231,8 @@ namespace {
 
                if (!expectPixelAspectRatio) { continue; }
 
+               out->covered();
+
                auto paspBoxes = findBoxes(*trakBox, FOURCC("pasp"));
                if (paspBoxes.size() != 1) {
                  out->error("%d 'pasp' boxes found, when 1 is expected", paspBoxes.size());
@@ -259,8 +260,6 @@ namespace {
                  return;
                }
              }
-
-             out->covered();
            }},
           {"Section 2.2.4\n"
            "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples "
@@ -278,13 +277,13 @@ namespace {
                    out->error("%d AV1CodecConfiguration box(es) found, expected 1", av1CBoxes.size());
                    return;
                  }
+                 if (!av1CBoxes.empty())
+                   out->covered();
                }
              }
-
-             out->covered();
            }},
           {"Section 2.3.4\n"
-           "The marker and version fields SHALL be set to 1",
+           "The AV1CodecConfigurationRecord marker field SHALL be set to 1",
            [](Box const &root, IReport *out) {
              auto obuDetails = getOBUDetails(root, out);
              if (!obuDetails.valid) { return; }
@@ -298,14 +297,30 @@ namespace {
                    if (std::string(sym.name) == "marker" && sym.value != 1) {
                      out->error("Marker SHALL be set to 1, found %d", sym.value);
                    }
-                   if (std::string(sym.name) == "version" && sym.value != 1) {
-                     out->error("Version SHALL be set to 1, found %d", sym.value);
-                   }
+                   out->covered();
                  }
                }
              }
+           }},
+          {"Section 2.3.4\n"
+           "The AV1CodecConfigurationRecord version field SHALL be set to 1",
+           [](Box const &root, IReport *out) {
+             auto obuDetails = getOBUDetails(root, out);
+             if (!obuDetails.valid) { return; }
 
-             out->covered();
+             auto trakBoxes = findBoxes(root, FOURCC("trak"));
+             for (auto &trakBox : trakBoxes) {
+               auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
+               for (auto &av1CBox : av1CBoxes) {
+                 for (auto &sym : av1CBox->syms) {
+                   std::cerr << sym.name << ": " << sym.value << std::endl;
+                   if (std::string(sym.name) == "version" && sym.value != 1) {
+                     out->error("Version SHALL be set to 1, found %d", sym.value);
+                   }
+                   out->covered();
+                 }
+               }
+             }
            }},
       },
       nullptr,
