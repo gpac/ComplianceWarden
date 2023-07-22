@@ -64,6 +64,7 @@ std::vector<Symbol> getAv1CSeqHdr(const Box* av1C)
 
   return av1cSymbols;
 }
+} // namespace
 
 void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader& br, Av1State& stateUnused)
 {
@@ -103,7 +104,6 @@ void probeAV1ImageItem(Box const& root, IReport* out, uint32_t itemId, BoxReader
       return;
   }
 }
-} // namespace
 
 std::initializer_list<RuleDesc> rulesAvifGeneral =
 {

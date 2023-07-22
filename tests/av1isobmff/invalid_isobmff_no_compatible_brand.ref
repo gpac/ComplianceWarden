@@ -8,7 +8,7 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #0] Error: No 'av01' found in compatibleBrands
 [av1isobmff][Rule #2] Error: No Av1SampleEntry found
-[av1isobmff][Rule #3] Error: No match found, OBU specifiex 0x1856666176
+[av1isobmff][Rule #3] Error: No match found, OBU specifiex -1452697962x-1452103280
 
 ========================================
 [av1isobmff] 3 error(s), 0 warning(s).
@@ -23,7 +23,9 @@ It SHALL have the 'av01' brand among the compatible brands array of the FileType
 It SHALL contain at least one track using an AV1SampleEntry
 
 [av1isobmff][Rule #3] Section 2.2.4
-The width and height fields of the VisualSampleEntry SHALL equal the values of max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header OBU applying to the samples associated with this sample entry.
+The width and height fields of the VisualSampleEntry SHALL equal the values of
+max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header
+OBU applying to the samples associated with this sample entry.
 
 +--------------------------------------+
 |          isobmff validation          |

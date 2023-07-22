@@ -32,7 +32,7 @@ const SpecDesc specAv1Hdr10plus =
   "HDR10+ AV1 Metadata Handling Specification, 7 December 2022\n"
   "https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf\n"
   "https://aomediacodec.github.io/av1-hdr10plus/",
-  { "isobmff" },
+  { "av1isobmff" },
   {
     { // This rule does not exist in the AV1 HDR10+ spec. Should it be in some dependency?
       "Section 2.1\n"

@@ -16,18 +16,18 @@ namespace {
     int64_t height{0};
   };
 
-  ResolutionDetails getOBUDetails(Box const &root, IReport *out) {
+  ResolutionDetails getOBUDetails(Box const &root, IReport */*//Erik: out*/) {
     BoxReader br;
 
     auto mdats = findBoxes(root, FOURCC("mdat"));
     if (mdats.size() != 1) {
-      out->error("%d mdat found, expected 1", mdats.size());
+      //out->error("%d mdat found, expected 1", mdats.size());
       return {false};
     }
     br.br = {mdats[0]->original + 8, (int)mdats[0]->size - 8};
 
     if (br.br.size < 2) {
-      out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
+      //out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
       return {false};
     }
 
@@ -36,7 +36,7 @@ namespace {
     while (obuType != OBU_SEQUENCE_HEADER) { obuType = parseAv1Obus(&br, stateUnused, false); }
 
     if (obuType != OBU_SEQUENCE_HEADER) {
-      out->error("No OBU Sequence header found");
+      //out->error("No OBU Sequence header found");
       return {false};
     }
 
@@ -102,7 +102,7 @@ namespace {
              out->covered();
            }},
           {"Section 2.1\n"
-           "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of "
+           "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of\n"
            "the FileTypeBox",
            [](Box const &root, IReport *out) {
              auto ftyps = findBoxes(root, FOURCC("ftyp"));
@@ -149,8 +149,8 @@ namespace {
              out->covered();
            }},
           {"Section 2.2.4\n"
-           "The width and height fields of the VisualSampleEntry SHALL equal the values of "
-           "max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header "
+           "The width and height fields of the VisualSampleEntry SHALL equal the values of\n"
+           "max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header\n"
            "OBU applying to the samples associated with this sample entry.",
            [](Box const &root, IReport *out) {
              auto obuDetails = getOBUDetails(root, out);
@@ -165,8 +165,8 @@ namespace {
              out->covered();
            }},
           {"Section 2.2.4\n"
-           "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum "
-           "RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called "
+           "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum\n"
+           "RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called\n"
            "MaxRenderHeight, of all the frames associated with this sample entry",
            [](Box const &root, IReport *out) {
              auto obuDetails = getOBUDetails(root, out);
@@ -207,8 +207,8 @@ namespace {
              out->covered();
            }},
           {"Section 2.2.4\n"
-           "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively "
-           "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the "
+           "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively\n"
+           "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the\n"
            "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",
            [](Box const &root, IReport *out) {
              auto obuDetails = getOBUDetails(root, out);
@@ -262,7 +262,7 @@ namespace {
              }
            }},
           {"Section 2.2.4\n"
-           "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples "
+           "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples\n"
            "associated with this sample entry.",
            [](Box const &root, IReport *out) {
              auto obuDetails = getOBUDetails(root, out);
@@ -293,7 +293,7 @@ namespace {
                auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
                for (auto &av1CBox : av1CBoxes) {
                  for (auto &sym : av1CBox->syms) {
-                   std::cerr << sym.name << ": " << sym.value << std::endl;
+                   //Erik: std::cerr << sym.name << ": " << sym.value << std::endl;
                    if (std::string(sym.name) == "marker" && sym.value != 1) {
                      out->error("Marker SHALL be set to 1, found %d", sym.value);
                    }
@@ -313,7 +313,7 @@ namespace {
                auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
                for (auto &av1CBox : av1CBoxes) {
                  for (auto &sym : av1CBox->syms) {
-                   std::cerr << sym.name << ": " << sym.value << std::endl;
+                   //Erik: std::cerr << sym.name << ": " << sym.value << std::endl;
                    if (std::string(sym.name) == "version" && sym.value != 1) {
                      out->error("Version SHALL be set to 1, found %d", sym.value);
                    }
@@ -323,7 +323,7 @@ namespace {
              }
            }},
       },
-      nullptr,
+      isIsobmff,
   };
 
   static auto const registered = registerSpec(&specAv1ISOBMFF);

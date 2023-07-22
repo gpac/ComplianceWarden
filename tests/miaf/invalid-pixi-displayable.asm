@@ -145,7 +145,7 @@ meta_start:
             av1C_start:
                 dd BE(av1C_end - av1C_start)
                 dd "av1C"
-                db 0x00, 0x00, 0x00, 0x00
+                db 0x81, 0x00, 0x00, 0x00
             av1C_end:
             auxC_start:
                 dd BE(auxC_end - auxC_start)
@@ -204,7 +204,7 @@ meta_start:
             av1C2_start:
                 dd BE(av1C2_end - av1C2_start)
                 dd "av1C"
-                db 0x00, 0x00, 0x00, 0x00
+                db 0x81, 0x00, 0x00, 0x00
             av1C2_end:
             pixi2_start:
                 dd BE(pixi2_end - pixi2_start)
@@ -394,7 +394,7 @@ moov_start:
                             av1C3_start:
                                 dd BE(av1C3_end - av1C3_start)
                                 dd "av1C"
-                                db 0x00, 0x00, 0x00, 0x00
+                                db 0x81, 0x00, 0x00, 0x00
                             av1C3_end:
                             ccst_start:
                                 dd BE(ccst_end - ccst_start)
@@ -616,7 +616,7 @@ moov_start:
                             av1C4_start:
                                 dd BE(av1C4_end - av1C4_start)
                                 dd "av1C"
-                                db 0x00, 0x00, 0x00, 0x00
+                                db 0x81, 0x00, 0x00, 0x00
                             av1C4_end:
                             ccst2_start:
                                 dd BE(ccst2_end - ccst2_start)

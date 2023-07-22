@@ -177,7 +177,7 @@ av01_start:
     av1C3_start:
         dd BE(av1C3_end - av1C3_start)
         dd "av1C"
-        db 0x00, 0x00, 0x00, 0x00
+        db 0x81, 0x00, 0x00, 0x00
     av1C3_end:
     ccst_start:
         dd BE(ccst_end - ccst_start)
