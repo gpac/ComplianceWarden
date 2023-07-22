@@ -93,6 +93,17 @@ void parseStco(IReader* br)
     br->sym("chunk_offset", 32);
 }
 
+void parseCo64(IReader* br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entry_count = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entry_count; i++)
+    br->sym("chunk_offset", 64);
+}
+
 void parseReferenceTypeChildren(IReader* br)
 {
   while(!br->empty())
@@ -823,6 +834,8 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
     return &parseTkhd;
   case FOURCC("stco"):
     return &parseStco;
+  case FOURCC("co64"):
+    return &parseCo64;
   case FOURCC("elst"):
     return &parseElst;
   case FOURCC("stsd"):
