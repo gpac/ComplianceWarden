@@ -7,7 +7,7 @@ https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #4] Warning: MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box
-[av1isobmff][Rule #5] Error: Invalid pasp; 1 / 1 != 2899232 / 1280000
+[av1isobmff][Rule #5] Error: Invalid pasp; 1 / 1 != 9863168 / 3456000
 
 ========================================
 [av1isobmff] 1 error(s), 1 warning(s).

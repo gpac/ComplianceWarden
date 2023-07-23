@@ -177,7 +177,19 @@ av01_start:
     av1C3_start:
         dd BE(av1C3_end - av1C3_start)
         dd "av1C"
-        db 0x81, 0x00, 0x00, 0x00
+        db 0x81 ; marker(1) version(7) 
+        db 0x05 ; seq_profile(3) seq_level_idx_0(5) 
+        db 0x0C ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
+        db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
+            ; configOBUs(0) 
+            ; obu(0) 
+        db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
+        db 0x07 ; leb128_byte(8) 
+            ; seqhdr(0) 
+        db 0x19, 0x6A, 0x65, 0x9E, 0x3F ; seq_profile(3) still_picture(1) reduced_still_picture_header(1) timing_info_present_flag(0) decoder_model_info_present_flag(0) initial_display_delay_present_flag(0) operating_points_cnt_minus_1(0) operating_point_idc_0(0) seq_level_idx_0(5) seq_tier_0(0) decoder_model_present_for_this_op_0(0) initial_display_delay_present_for_this_op_0(0) frame_width_bits_minus_1(4) frame_height_bits_minus_1(4) max_frame_width_minus_1(11) max_frame_height_minus_1(10) use_128x128_superblock(1) 
+        db 0xC8 ; enable_filter_intra(1) enable_intra_edge_filter(1) enable_interintra_compound(0) enable_masked_compound(0) enable_warped_motion(0) enable_dual_filter(0) enable_order_hint(0) enable_jnt_comp(0) enable_ref_frame_mvs(0) seq_force_screen_content_tools(0) seq_force_integer_mv(0) OrderHintBits(0) enable_superres(1) enable_cdef(1) enable_restoration(1) high_bitdepth(1) mono_chrome(1) color_description_present_flag(1) 
+        db 0x04 ; color_range(1) chroma_sample_position(1) separate_uv_delta_q(1) film_grain_params_present(1) bits(4) 
+            ; /seqhdr(0) 
     av1C3_end:
     ccst_start:
         dd BE(ccst_end - ccst_start)
@@ -378,19 +390,33 @@ trak2_end:
 moov_end:
 
 mdat_start:
-dd BE(mdat_end - mdat_start)
-db "mdat"
-db 0x0A ; (8) 
-db 0x07 ; (8) 
-db 0x29 ; (8) 
-db 0x6A ; (8) ('j') 
-db 0x65 ; (8) ('e') 
-db 0x9E ; (8) 
-db 0x3F ; (8) ('?') 
-db 0xC8 ; (8) 
-db 0x04 ; (8) 
-db 0x32 ; (8) ('2') 
-db 0x00 ; (8) 
+    dd BE(mdat_end - mdat_start)
+    dd "mdat"
+     ; obu(0) 
+    db 0x12 ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
+    db 0x00 ; leb128_byte(8) 
+     ; obu(0) 
+    db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
+    db 0x0F ; leb128_byte(8) 
+     ; seqhdr(0) 
+    db 0x00, 0x00, 0x00 ; seq_profile(3) still_picture(1) reduced_still_picture_header(1) timing_info_present_flag(1) initial_display_delay_present_flag(1) operating_points_cnt_minus_1(5) operating_point_idc[i])(12) 
+    db 0x6A, 0xEF, 0xFF, 0xE1, 0xBD ; seq_level_idx[i](5) seq_tier[i](1) frame_width_bits_minus_1(4) frame_height_bits_minus_1(4) max_frame_width_minus_1(12) max_frame_height_minus_1(12) frame_id_numbers_present_flag(1) use_128x128_superblock(1) 
+    db 0xFF ; enable_filter_intra(1) enable_intra_edge_filter(1) enable_interintra_compound(1) enable_masked_compound(1) enable_warped_motion(1) enable_dual_filter(1) enable_order_hint(1) enable_jnt_comp(1) 
+    db 0xF9 ; enable_ref_frame_mvs(1) seq_choose_screen_content_tools(1) seq_choose_integer_mv(1) order_hint_bits_minus_1(3) enable_superres(1) enable_cdef(1) 
+    db 0xD0, 0x91, 0x00, 0x94 ; enable_restoration(1) high_bitdepth(1) mono_chrome(1) color_description_present_flag(1) color_primaries(8) transfer_characteristics(8) matrix_coefficients(8) color_range(1) chroma_sample_position(2) separate_uv_delta_q(1) 
+    db 0x40 ; film_grain_params_present(1) ('@') bits(7) ('@') 
+     ; /seqhdr(0) 
+     ; obu(0) 
+    db 0x2A ; forbidden(1) ('*') obu_type(4) ('*') obu_extension_flag(1) ('*') obu_has_size_field(1) ('*') obu_reserved_1bit(1) ('*') 
+    db 0x06 ; leb128_byte(8) 
+    db 0x04 ; leb128_byte(8) 
+    db 0xB5 ; itu_t_t35_country_code(8) 
+    db 0x00, 0x3C ; itu_t_t35_terminal_provider_code(16) 
+    db 0x00, 0x01 ; itu_t_t35_terminal_provider_oriented_code(16) 
+     ; obu(0) 
+    db 0x32 ; forbidden(1) ('2') obu_type(4) ('2') obu_extension_flag(1) ('2') obu_has_size_field(1) ('2') obu_reserved_1bit(1) ('2') 
+    db 0x01 ; leb128_byte(8) 
+    db 0x80 ; show_existing_frame(1) frame_to_show_map_idx(3) bits(4) 
 mdat_end:
 
 ; vim: syntax=nasm

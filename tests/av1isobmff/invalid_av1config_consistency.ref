@@ -7,10 +7,16 @@ https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #4] Warning: MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box
-[av1isobmff][Rule #5] Error: 0 'pasp' boxes found, when 1 is expected
+[av1isobmff][Rule #5] Error: Invalid pasp; 90601 / 40000 != 9863168 / 3456000
+[av1isobmff][Rule #9] Error: [TrackId=2] The AV1CodecConfigurationBox seq_profile field value (0) SHALL be
+equal to the seq_profile value from the first Sequence Header OBU in the mdat (7)
+
+[av1isobmff][Rule #9] Error: [TrackId=2] The AV1CodecConfigurationBox seq_profile field value (0) SHALL be
+equal to the seq_profile value from the first Sequence Header OBU in configOBUS (4)
+
 
 ========================================
-[av1isobmff] 1 error(s), 1 warning(s).
+[av1isobmff] 3 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -24,6 +30,10 @@ MaxRenderHeight, of all the frames associated with this sample entry
 Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively
 the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the
 Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry
+
+[av1isobmff][Rule #9] Section 2.3.4
+The seq_profile field indicates the AV1 profile and SHALL be equal to
+the seq_profile value from the Sequence Header OBU.
 
 +--------------------------------------+
 |          isobmff validation          |

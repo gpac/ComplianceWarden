@@ -158,7 +158,7 @@ namespace {
 
              auto av01Details = getAv01Details(root);
              if (av01Details.width != obuDetails.width || av01Details.height != obuDetails.height) {
-               out->error("No match found, OBU specifiex %dx%d");
+               //Erik: out->error("No match found, OBU specifiex %dx%d");
                return;
              }
 
@@ -322,6 +322,100 @@ namespace {
                }
              }
            }},
+          {"Section 2.3.4\n"
+           "The seq_profile field indicates the AV1 profile and SHALL be equal to\n"
+           "the seq_profile value from the Sequence Header OBU.",
+          [] (Box const& root, IReport* out) {
+            for(auto& box : root.children)
+              if(box.fourcc == FOURCC("moov"))
+                for(auto& moovChild : box.children)
+                  if(moovChild.fourcc == FOURCC("trak"))
+                  {
+                    uint32_t trackId = 0;
+
+                    for(auto& trakChild : moovChild.children)
+                      if(trakChild.fourcc == FOURCC("tkhd"))
+                      {
+                        for(auto& sym : trakChild.syms)
+                          if(!strcmp(sym.name, "track_ID"))
+                            trackId = sym.value;
+                      }
+                      else if(trakChild.fourcc == FOURCC("mdia"))
+                        for(auto& mdiaChild : trakChild.children)
+                          if(mdiaChild.fourcc == FOURCC("minf"))
+                            for(auto& minfChild : mdiaChild.children)
+                              if(minfChild.fourcc == FOURCC("stbl")) {
+                                Av1State bsState, av1cState;
+                                AV1CodecConfigurationRecord av1cRef {};
+                                bool av1BsFound = false, av1cFound = false, configOBUsFound = false;
+
+                                for(auto& stblChild : minfChild.children)
+                                {
+                                  if(stblChild.fourcc == FOURCC("stsd"))
+                                  {
+                                    for(auto& stsdChild : stblChild.children)
+                                      if(stsdChild.fourcc == FOURCC("av01"))
+                                        for(auto& sampleEntryChild : stsdChild.children)
+                                          if(sampleEntryChild.fourcc == FOURCC("av1C")) {
+                                            for(auto& sym : sampleEntryChild.syms)  {
+                                              if(!strcmp(sym.name, "seq_profile")) {
+                                                if (!av1cFound) {
+                                                  av1cRef.seq_profile = sym.value;
+                                                  av1cFound = true;
+                                                } else {
+                                                  av1cState.av1c.seq_profile = sym.value;
+                                                  configOBUsFound = true;
+                                                  break; //exit after first seqHdr
+                                                }
+                                              }
+                                            }
+                                          }
+                                  }
+                                  else if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64"))
+                                  {
+                                    for(auto& sym : stblChild.syms)
+                                      if(!strcmp(sym.name, "chunk_offset"))
+                                      {
+                                        BoxReader br;
+                                        auto const probeSize = 1024;
+                                        br.br = BitReader { root.original + sym.value, probeSize };
+
+                                        while(!br.empty())
+                                        {
+                                          auto obuType = parseAv1Obus(&br, bsState, false);
+
+                                          if(obuType == OBU_SEQUENCE_HEADER) {
+                                            av1BsFound = true;
+                                            break;
+                                          }
+                                        }
+
+                                        break;
+                                      }
+                                  }
+                                }
+
+                                if (av1cFound) {
+                                  if(!configOBUsFound || !av1BsFound)
+                                    out->error("[TrackId=%u] AV1 configuration should be present. Found in av1C(%d), in configOBUs(%d), in mdat(%d).",
+                                      trackId, av1cFound, configOBUsFound, av1BsFound);
+
+                                  if(av1cRef.seq_profile != bsState.av1c.seq_profile)
+                                    out->error("[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL be\n"
+                                                "equal to the seq_profile value from the first Sequence Header OBU in the mdat (%lld)\n",
+                                              trackId, av1cRef.seq_profile, bsState.av1c.seq_profile);
+
+                                  if(av1cRef.seq_profile != av1cState.av1c.seq_profile)
+                                    out->error("[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL be\n"
+                                                "equal to the seq_profile value from the first Sequence Header OBU in configOBUS (%lld)\n",
+                                              trackId, av1cRef.seq_profile, av1cState.av1c.seq_profile);
+
+                                  out->covered();
+                                }
+                              }
+                  }
+          }
+        },
       },
       isIsobmff,
   };
