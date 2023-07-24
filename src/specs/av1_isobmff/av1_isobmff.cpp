@@ -71,7 +71,9 @@ namespace {
     return {false};
   }
 
-  bool parseAv1Configs(Box const &root, IReport *out, uint32_t trackId, const Box &minfChild, Av1State &bsState, Av1State &av1cState, AV1CodecConfigurationRecord &av1cRef, bool displayParsingErrors, bool obuSizeShallBeOne) {
+  bool parseAv1Configs(Box const &root, IReport *out, uint32_t trackId, const Box &minfChild,
+                       Av1State &bsState, Av1State &av1cState, AV1CodecConfigurationRecord &av1cRef,
+                      bool displayParsingErrors, bool obuSizeShallBeOne, bool timingInfoShoudBeZero) {
     bool av1BsFound = false, av1cFound = false, configOBUsFound = false;
 
     for(auto& stblChild : minfChild.children)
@@ -136,8 +138,11 @@ namespace {
                     else
                       av1cState.av1c.chroma_sample_position = sym.value;
                   } else if(!strcmp(sym.name, "obu_has_size_field")) {
-                      if (obuSizeShallBeOne && sym.value != 1)
-                        out->error("The flag obu_has_size_field SHALL be set to 1");
+                    if (obuSizeShallBeOne && sym.value != 1)
+                      out->error("The flag obu_has_size_field SHALL be set to 1");
+                  } else if(!strcmp(sym.name, "timing_info_present_flag")) {
+                    if (timingInfoShoudBeZero && sym.value != 0)
+                      out->warning("timing_info_present_flag should be zero");
                   }
                 }
               }
@@ -457,7 +462,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false)) {
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                                 if(av1cRef.seq_profile != bsState.av1c.seq_profile)
                                   out->error("[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL be\n"
                                               "equal to the seq_profile value from the first Sequence Header OBU in the mdat (%lld)",
@@ -497,7 +502,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false)) {
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                                 if(av1cRef.seq_level_idx_0 != bsState.av1c.seq_level_idx_0)
                                   out->error("[TrackId=%u] The AV1CodecConfigurationBox seq_level_idx_0 field value (%lld) SHALL be\n"
                                               "equal to the seq_level_idx_0 value from the first Sequence Header OBU in the mdat (%lld)",
@@ -537,7 +542,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false)) {
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                                 if(av1cRef.seq_tier_0 != bsState.av1c.seq_tier_0)
                                   out->error("[TrackId=%u] The AV1CodecConfigurationBox seq_tier_0 field value (%lld) SHALL be\n"
                                               "equal to the seq_tier_0 value from the first Sequence Header OBU in the mdat (%lld)",
@@ -576,7 +581,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false)) {
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                                 if(av1cRef.high_bitdepth != bsState.av1c.high_bitdepth)
                                   out->error("[TrackId=%u] The AV1CodecConfigurationBox high_bitdepth field value (%lld) SHALL be\n"
                                               "equal to the high_bitdepth value from the first Sequence Header OBU in the mdat (%lld)",
@@ -616,7 +621,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false)) {
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                                 if(av1cRef.twelve_bit != bsState.av1c.twelve_bit)
                                   out->error("[TrackId=%u] The AV1CodecConfigurationBox twelve_bit field value (%lld) SHALL be\n"
                                               "equal to the twelve_bit value from the first Sequence Header OBU in the mdat (%lld)",
@@ -654,7 +659,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, true, false);
+                              parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, true, false, false);
                             }
                 }
         }},
@@ -682,7 +687,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, true);
+                              parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, true, false);
                             }
                 }
         }},
@@ -713,7 +718,7 @@ namespace {
                             if(minfChild.fourcc == FOURCC("stbl")) {
                               Av1State bsState, av1cState;
                               AV1CodecConfigurationRecord av1cRef {};
-                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false)) {
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                                 if(memcmp(&av1cState.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
                                   out->error("[TrackId=%u] The values of the AV1CodecConfigurationBox shall match\n"
                                             "the Sequence Header OBU in the AV1 Image Item Data:\n"
@@ -726,7 +731,31 @@ namespace {
         }},
         {"Section 2.3.4\n"
           "The timing_info_present_flag in the Sequence Header OBU (in the configOBUs field or in the associated samples) SHOULD be set to 0.",
-        [] (Box const& /*root*/, IReport* /*out*/) {
+        [] (Box const& root, IReport* out) {
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                {
+                  uint32_t trackId = 0;
+
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("tkhd"))
+                    {
+                      for(auto& sym : trakChild.syms)
+                        if(!strcmp(sym.name, "track_ID"))
+                          trackId = sym.value;
+                    }
+                    else if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl")) {
+                              Av1State bsState, av1cState;
+                              AV1CodecConfigurationRecord av1cRef {};
+                              parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, true);
+                            }
+                }
         }},
         {"Section 2.3.4\n"
           "The sample entry SHOULD contain a colr box with a colour_type set to nclx.\n"
