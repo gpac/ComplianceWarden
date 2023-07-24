@@ -88,7 +88,7 @@ const SpecDesc specIsobmff =
 
         for(size_t i = 0; i < FourCCs.size(); ++i)
         {
-          if(FourCCs[i] != expected[i])
+          if(FourCCs[i] != expected[0] && FourCCs[i] != expected[1])
           {
             out->error("Expecting: 'clap', 'pasp', got:");
 

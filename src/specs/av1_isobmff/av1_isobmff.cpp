@@ -770,7 +770,41 @@ namespace {
         }},
         {"Section 2.3.4\n"
           "The CleanApertureBox clap SHOULD not be present.",
-        [] (Box const& /*root*/, IReport* /*out*/) {
+        [] (Box const& root, IReport* out) {
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                {
+                  uint32_t trackId = 0;
+                  bool foundAv1C = false;
+
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("tkhd"))
+                    {
+                      for(auto& sym : trakChild.syms)
+                        if(!strcmp(sym.name, "track_ID"))
+                          trackId = sym.value;
+                    }
+                    else if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl"))
+                              for(auto& stblChild : minfChild.children)
+                                if(stblChild.fourcc == FOURCC("stsd"))
+                                  for(auto& stsdChild : stblChild.children)
+                                    if(stsdChild.fourcc == FOURCC("av01")) {
+                                      for(auto& sampleEntryChild : stsdChild.children)
+                                        if(sampleEntryChild.fourcc == FOURCC("av1C"))
+                                          foundAv1C = true;
+
+                                      for(auto& sampleEntryChild : stsdChild.children)
+                                        if(sampleEntryChild.fourcc == FOURCC("clap"))
+                                          if (foundAv1C)
+                                            out->warning("[TrackId=%u] The CleanApertureBox clap SHOULD not be present.", trackId);
+                                    }
+                }
         }},
         {"Section 2.3.4\n"
           "For sample entries corresponding to HDR content, the\n"

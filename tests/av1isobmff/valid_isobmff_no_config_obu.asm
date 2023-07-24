@@ -206,18 +206,6 @@ av01_start:
         dd BE(btrt_end - btrt_start)
         dd "btrt"
     btrt_end:
-    clap_start:
-      dd BE(clap_end - clap_start)
-      dd "clap"
-      dd BE(0)
-      dd BE(0)
-      dd BE(0)
-      dd BE(0)
-      dd BE(0)
-      dd BE(0)
-      dd BE(0)
-      dd BE(0)
-    clap_end:
     pasp_start:
       dd BE(pasp_end - pasp_start)
       dd "pasp"
