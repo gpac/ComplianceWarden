@@ -95,11 +95,6 @@ namespace {
                         out->error("The configOBUs field SHALL contain at most one Sequence Header OBU. Found several.");
                       break; //exit after first seqHdr
                     }
-                  } else if(!strcmp(sym.name, "twelve_bit")) {
-                    if (!configOBUsFound)
-                      av1cRef.twelve_bit = sym.value;
-                    else
-                      av1cState.av1c.twelve_bit = sym.value;
                   } else if(!strncmp(sym.name, "seq_level_idx", 13)) {
                     if (!configOBUsFound)
                       av1cRef.seq_level_idx_0 = sym.value;
@@ -115,6 +110,31 @@ namespace {
                       av1cRef.high_bitdepth = sym.value;
                     else
                       av1cState.av1c.high_bitdepth = sym.value;
+                  } else if(!strcmp(sym.name, "twelve_bit")) {
+                    if (!configOBUsFound)
+                      av1cRef.twelve_bit = sym.value;
+                    else
+                      av1cState.av1c.twelve_bit = sym.value;
+                  } else if(!strcmp(sym.name, "mono_chrome")) {
+                    if (!configOBUsFound)
+                      av1cRef.mono_chrome = sym.value;
+                    else
+                      av1cState.av1c.mono_chrome = sym.value;
+                  } else if(!strcmp(sym.name, "chroma_subsampling_x")) {
+                    if (!configOBUsFound)
+                      av1cRef.chroma_subsampling_x = sym.value;
+                    else
+                      av1cState.av1c.chroma_subsampling_x = sym.value;
+                  } else if(!strcmp(sym.name, "chroma_subsampling_y")) {
+                    if (!configOBUsFound)
+                      av1cRef.chroma_subsampling_y = sym.value;
+                    else
+                      av1cState.av1c.chroma_subsampling_y = sym.value;
+                  } else if(!strcmp(sym.name, "chroma_sample_position")) {
+                    if (!configOBUsFound)
+                      av1cRef.chroma_sample_position = sym.value;
+                    else
+                      av1cState.av1c.chroma_sample_position = sym.value;
                   }
                 }
               }
@@ -149,7 +169,7 @@ namespace {
           trackId, av1cFound, configOBUsFound, av1BsFound);
 
       if(!configOBUsFound)
-        av1cState = bsState;
+        av1cState.av1c = av1cRef;
 
       out->covered();
       return true;
@@ -634,6 +654,75 @@ namespace {
                               parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, true);
                             }
                 }
+        }},
+        {"Section 2.3.4\n"
+          "ConfigOBUs: the flag obu_has_size_field SHALL be set to 1.",
+        [] (Box const& /*root*/, IReport* /*out*/) {
+        }},
+        {"Section 2.3.4\n"
+          "When a Sequence Header OBU is contained within the configOBUs of the\n"
+          "AV1CodecConfigurationRecord, the values present in the Sequence Header OBU\n"
+          "contained within configOBUs SHALL match the values of the\n"
+          "AV1CodecConfigurationRecord.",
+        [] (Box const& root, IReport* out) {
+          for(auto& box : root.children)
+            if(box.fourcc == FOURCC("moov"))
+              for(auto& moovChild : box.children)
+                if(moovChild.fourcc == FOURCC("trak"))
+                {
+                  uint32_t trackId = 0;
+
+                  for(auto& trakChild : moovChild.children)
+                    if(trakChild.fourcc == FOURCC("tkhd"))
+                    {
+                      for(auto& sym : trakChild.syms)
+                        if(!strcmp(sym.name, "track_ID"))
+                          trackId = sym.value;
+                    }
+                    else if(trakChild.fourcc == FOURCC("mdia"))
+                      for(auto& mdiaChild : trakChild.children)
+                        if(mdiaChild.fourcc == FOURCC("minf"))
+                          for(auto& minfChild : mdiaChild.children)
+                            if(minfChild.fourcc == FOURCC("stbl")) {
+                              Av1State bsState, av1cState;
+                              AV1CodecConfigurationRecord av1cRef {};
+                              if (parseAv1Configs(root, out, trackId, minfChild, bsState, av1cState, av1cRef, false)) {
+                                if(memcmp(&av1cState.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
+                                  out->error("[TrackId=%u] The values of the AV1CodecConfigurationBox shall match\n"
+                                            "the Sequence Header OBU in the AV1 Image Item Data:\n"
+                                            "\tAV1CodecConfigurationBox:\n%s\n"
+                                            "\tSequence Header OBU in the AV1 Image Item Data:\n%s\n",
+                                            trackId, av1cRef.toString().c_str(), av1cState.av1c.toString().c_str());
+                              }
+                            }
+                }
+        }},
+        {"Section 2.3.4\n"
+          "The timing_info_present_flag in the Sequence Header OBU (in the configOBUs field or in the associated samples) SHOULD be set to 0.",
+        [] (Box const& /*root*/, IReport* /*out*/) {
+        }},
+        {"Section 2.3.4\n"
+          "The sample entry SHOULD contain a colr box with a colour_type set to nclx.\n"
+          "If present, the values of colour_primaries, transfer_characteristics, and\n"
+          "matrix_coefficients SHALL match the values given in the Sequence Header OBU (in\n"
+          "the configOBUs field or in the associated samples) if the\n"
+          "color_description_present_flag is set to 1. Similarly, the full_range_flag in\n"
+          "the colr box shall match the color_range flag in the Sequence Header OBU. When\n"
+          "configOBUs does not contain a Sequence Header OBU, this box with colour_type set\n"
+          "to nclx SHALL be present.",
+        [] (Box const& /*root*/, IReport* /*out*/) {
+        }},
+        {"Section 2.3.4\n"
+          "The CleanApertureBox clap SHOULD not be present.",
+        [] (Box const& /*root*/, IReport* /*out*/) {
+        }},
+        {"Section 2.3.4\n"
+          "For sample entries corresponding to HDR content, the\n"
+          "MasteringDisplayColourVolumeBox mdcv and ContentLightLevelBox clli SHOULD be\n"
+          "present, and their values SHALL match the values of contained in the Metadata\n"
+          "OBUs of type METADATA_TYPE_HDR_CLL and METADATA_TYPE_HDR_MDCV, if present (in\n"
+          "the configOBUs or in the samples).",
+        [] (Box const& /*root*/, IReport* /*out*/) {
         }},
       },
       isIsobmff,

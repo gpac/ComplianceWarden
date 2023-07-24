@@ -27,9 +27,32 @@ equal to the high_bitdepth value from the first Sequence Header OBU in configOBU
 equal to the twelve_bit value from the first Sequence Header OBU in the mdat (0)
 [av1isobmff][Rule #13] Error: [TrackId=2] The AV1CodecConfigurationBox twelve_bit field value (1) SHALL be
 equal to the twelve_bit value from the first Sequence Header OBU in configOBUS (0)
+[av1isobmff][Rule #16] Error: [TrackId=2] The values of the AV1CodecConfigurationBox shall match
+the Sequence Header OBU in the AV1 Image Item Data:
+	AV1CodecConfigurationBox:
+		seq_profile=0
+		seq_level_idx_0=5
+		seq_tier_0=1
+		high_bitdepth=1
+		twelve_bit=1
+		mono_chrome=0
+		chroma_subsampling_x=1
+		chroma_subsampling_y=1
+		chroma_sample_position=0
+	Sequence Header OBU in the AV1 Image Item Data:
+		seq_profile=4
+		seq_level_idx_0=7
+		seq_tier_0=0
+		high_bitdepth=0
+		twelve_bit=0
+		mono_chrome=0
+		chroma_subsampling_x=0
+		chroma_subsampling_y=0
+		chroma_sample_position=0
+
 
 ========================================
-[av1isobmff] 10 error(s), 1 warning(s).
+[av1isobmff] 11 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -61,6 +84,12 @@ Sequence Header OBU.
 The twelve_bit field indicates the value of the twelve_bit flag from the
 Sequence Header OBU. When twelve_bit is not present in the Sequence Header
 OBU the AV1CodecConfigurationRecord twelve_bit value SHALL be 0.
+
+[av1isobmff][Rule #16] Section 2.3.4
+When a Sequence Header OBU is contained within the configOBUs of the
+AV1CodecConfigurationRecord, the values present in the Sequence Header OBU
+contained within configOBUs SHALL match the values of the
+AV1CodecConfigurationRecord.
 
 +--------------------------------------+
 |          isobmff validation          |
