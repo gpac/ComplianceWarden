@@ -350,7 +350,7 @@ const SpecDesc specAv1Hdr10plus =
           {
             if(obu.type != OBU_TEMPORAL_DELIMITER)
             {
-              out->error("The first OBU shall be a temporal unit. Aborting.");
+              out->error("The first OBU shall be a temporal delimiter. Aborting.");
               break;
             }
 
@@ -439,15 +439,6 @@ const SpecDesc specAv1Hdr10plus =
               out->error("There shall be one and only one HDR10+ metadata OBU. Found %d in Temporal Unit #%d (Frame #%d)", numHdr10p, tu, frame);
               continue;
             }
-
-#if 0 // this makes no sense
-
-            if(av1Stream[tu][frame].size() >= 2)
-              if(av1Stream[tu][frame][0].type == OBU_TEMPORAL_DELIMITER && av1Stream[tu][frame][1].isHdr10p)
-                // right after the Temporal Unit Delimiter
-                continue;
-
-#endif
 
             bool seenFrameHeader = false, seenFrame = false, seenSeqHdr = false, hasSeqHdr = false;
 

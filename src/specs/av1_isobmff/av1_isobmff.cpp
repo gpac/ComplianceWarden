@@ -865,7 +865,7 @@ namespace {
           "as belonging to the same alternate group and should use a track selection box\n"
           "with an appropriate attribute (e.g. bitr).",
         [] (Box const& /*root*/, IReport* /*out*/) {
-          //TODO
+          //TODO: question sent to know if testable
         }},
         {"Section 2.4\n"
           "Metadata OBUs may be carried in sample data. In this case, the\n"
@@ -899,12 +899,7 @@ namespace {
         {"Section 2.8.4\n"
           "metadata_specific_parameters is only defined when metadata_type is set to\n"
           "METADATA_TYPE_ITUT_T35 in which case its value SHALL be set to the first 24 bits\n"
-          "of the metadata_itut_t35 structure.",
-        [] (Box const& /*root*/, IReport* /*out*/) {
-          //TODO
-        }},
-        {"Section 2.8.4\n"
-          "For other types of metadata, its[metadata_specific_parameters] value SHOULD be set to 0.",
+          "of the metadata_itut_t35 structure. For other types of metadata, its[metadata_specific_parameters] value SHOULD be set to 0.",
         [] (Box const& /*root*/, IReport* /*out*/) {
           //TODO
         }},
@@ -931,3 +926,4 @@ namespace {
 
   static auto const registered = registerSpec(&specAv1ISOBMFF);
 } // namespace
+

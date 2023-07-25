@@ -19,7 +19,7 @@ Incomplete OBU (remaining to read=24)
 Incomplete OBU (remaining to read=24)
 Incomplete OBU (remaining to read=24)
 Incomplete OBU (remaining to read=24)
-[av1hdr10plus][Rule #9] Error: The first OBU shall be a temporal unit. Aborting.
+[av1hdr10plus][Rule #9] Error: The first OBU shall be a temporal delimiter. Aborting.
 
 ========================================
 [av1hdr10plus] 4 error(s), 0 warning(s).
