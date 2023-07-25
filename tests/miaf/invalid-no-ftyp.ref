@@ -58,19 +58,22 @@ This is rather a safety check than a formal rule.
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
-[isobmff][Rule #10] Error: Wrong arity for boxes { ftyp } in parents { root }: expected in range [1-1], found 0
-[isobmff][Rule #11] Error: One 'ftyp' boxes expected, found 0. Discarding test
+[isobmff][Rule #0] Warning: The major_brand "" should be repeated in the compatible_brands list
+[isobmff][Rule #11] Error: Wrong arity for boxes { ftyp } in parents { root }: expected in range [1-1], found 0
+[isobmff][Rule #12] Error: One 'ftyp' boxes expected, found 0. Discarding test
 
 ========================================
-[isobmff] 2 error(s), 0 warning(s).
+[isobmff] 2 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[isobmff][Rule #10] Table 1: box structure and arity
+[isobmff][Rule #0] Section 4.3.1: the major_brand should be repeated in the compatible_brands list
+
+[isobmff][Rule #11] Table 1: box structure and arity
 This is rather a safety check than a formal rule.
 
-[isobmff][Rule #11] Section 4.3.1
+[isobmff][Rule #12] Section 4.3.1
 The 'ftyp' box shall be placed as early as possible in the file (e.g. after any
 obligatory signature, but before any significant variable-size boxes such as a
 MovieBox, MediaDataBox, or FreeSpaceBox).

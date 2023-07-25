@@ -34,30 +34,30 @@ function run_test
 
 function real_mp4_aac
 {
-  $BIN/cw.exe isobmff $scriptDir/aac.mp4 > $tmpDir/aac.new
+  $BIN/cw.exe -t isobmff $scriptDir/aac.mp4 > $tmpDir/aac.new
   compare $scriptDir/aac.ref $tmpDir/aac.new
 }
 
 function real_mp4_avc
 {
-  $BIN/cw.exe isobmff $scriptDir/avc.mp4 > $tmpDir/avc.new
+  $BIN/cw.exe -t isobmff $scriptDir/avc.mp4 > $tmpDir/avc.new
   compare $scriptDir/avc.ref $tmpDir/avc.new
 }
 
 function real_mp4_heif
 {
   #generated with 'isoifftool -m 0 -t avc -i avc.264 -o heif.mp4 -s 320 240'
-  $BIN/cw.exe heif $scriptDir/heif.mp4 > $tmpDir/heif.new  || true
+  $BIN/cw.exe -t heif $scriptDir/heif.mp4 > $tmpDir/heif.new  || true
   compare $scriptDir/heif.ref $tmpDir/heif.new
 
-  $BIN/cw.exe miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new  || true
+  $BIN/cw.exe -t miaf $scriptDir/heif.mp4 > $tmpDir/miaf.new  || true
   compare $scriptDir/miaf.ref $tmpDir/miaf.new
 }
 
 function miaf_file_extension
 {
   cp $scriptDir/heif.mp4 $tmpDir/heif_no_ext
-  $BIN/cw.exe miaf $tmpDir/heif_no_ext > $tmpDir/no_file_extension.new  || true
+  $BIN/cw.exe -t miaf $tmpDir/heif_no_ext > $tmpDir/no_file_extension.new  || true
   compare $scriptDir/no_file_extension.ref $tmpDir/no_file_extension.new
 }
 
@@ -72,9 +72,9 @@ function check_rules
   nasm $scriptDir/$name.asm -f bin -o $filepath
 
   if [[ $name == *invalid* ]] ; then
-    $BIN/cw.exe $spec $filepath > $tmpDir/$name.new 2>&1  || true
+    $BIN/cw.exe -t $spec $filepath > $tmpDir/$name.new 2>&1  || true
   else
-    $BIN/cw.exe $spec $filepath > $tmpDir/$name.new  || true
+    $BIN/cw.exe -t $spec $filepath > $tmpDir/$name.new  || true
   fi
 
   compare $scriptDir/$name.ref $tmpDir/$name.new

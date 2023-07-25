@@ -6,6 +6,10 @@ for p in "$@" ; do
   case $p in
     -Wl,-gc-sections)
       ;;
+    -Xlinker)
+      ;;
+    -s)
+      ;;
     *)
       params+=("$p")
       ;;

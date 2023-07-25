@@ -1,28 +1,30 @@
 // Box-parsers for MP4 and MPEG-DASH
 #include "common_boxes.h"
-#include "fourcc.h"
-#include <vector>
-#include <cassert>
 
-void parseAv1C(IReader* br);
+#include <cassert>
+#include <vector>
+
+#include "fourcc.h"
+
+void parseAv1C(IReader *br);
 
 std::string toString(uint32_t fourcc)
 {
   char fourccStr[5] = {};
-  snprintf(fourccStr, 5, "%c%c%c%c",
-           (fourcc >> 24) & 0xff,
-           (fourcc >> 16) & 0xff,
-           (fourcc >> 8) & 0xff,
-           (fourcc >> 0) & 0xff);
+  snprintf(
+    fourccStr, 5, "%c%c%c%c", (fourcc >> 24) & 0xff, (fourcc >> 16) & 0xff, (fourcc >> 8) & 0xff, (fourcc >> 0) & 0xff);
   return fourccStr;
 }
 
 bool isMpegAudio(uint8_t oti)
 {
-  switch(oti)
-  {
-  case 0x40: case 0x6b: case 0x69:
-  case 0x66: case 0x67: case 0x68:
+  switch(oti) {
+  case 0x40:
+  case 0x6b:
+  case 0x69:
+  case 0x66:
+  case 0x67:
+  case 0x68:
     return true;
   default:
     return false;
@@ -31,13 +33,13 @@ bool isMpegAudio(uint8_t oti)
 
 namespace
 {
-void parseRaw(IReader* br)
+void parseRaw(IReader *br)
 {
   while(!br->empty())
     br->sym("", 8);
 }
 
-void parseFtyp(IReader* br)
+void parseFtyp(IReader *br)
 {
   br->sym("major_brand", 32);
   br->sym("minor_version", 32);
@@ -46,20 +48,18 @@ void parseFtyp(IReader* br)
     br->sym("compatible_brand", 32);
 }
 
-void parseTkhd(IReader* br)
+void parseTkhd(IReader *br)
 {
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
 
-  if(version == 1)
-  {
+  if(version == 1) {
     br->sym("version", 64);
     br->sym("modification_time", 64);
     br->sym("track_ID", 32);
     br->sym("reserved", 32);
     br->sym("duration", 64);
-  }
-  else // version==0
+  } else // version==0
   {
     br->sym("creation_time", 32);
     br->sym("modification_time", 32);
@@ -82,7 +82,7 @@ void parseTkhd(IReader* br)
   br->sym("height", 32); // fixed 16.16
 }
 
-void parseStco(IReader* br)
+void parseStco(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -93,7 +93,7 @@ void parseStco(IReader* br)
     br->sym("chunk_offset", 32);
 }
 
-void parseCo64(IReader* br)
+void parseCo64(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -104,27 +104,24 @@ void parseCo64(IReader* br)
     br->sym("chunk_offset", 64);
 }
 
-void parseReferenceTypeChildren(IReader* br)
+void parseReferenceTypeChildren(IReader *br)
 {
   while(!br->empty())
     br->sym("track_IDs", 32);
 }
 
-void parseElst(IReader* br)
+void parseElst(IReader *br)
 {
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
 
   auto entry_count = br->sym("entry_count", 32);
 
-  for(int64_t i = 1; i <= entry_count; i++)
-  {
-    if(version == 1)
-    {
+  for(int64_t i = 1; i <= entry_count; i++) {
+    if(version == 1) {
       br->sym("edit_duration", 64);
       br->sym("media_time", 64);
-    }
-    else // version==0
+    } else // version==0
     {
       br->sym("edit_duration", 32);
       br->sym("media_time", 32);
@@ -135,7 +132,7 @@ void parseElst(IReader* br)
   }
 }
 
-void parseStsd(IReader* br)
+void parseStsd(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -146,7 +143,7 @@ void parseStsd(IReader* br)
     br->box();
 }
 
-void parseAvcC(IReader* br)
+void parseAvcC(IReader *br)
 {
   br->sym("configurationVersion", 8);
   auto AVCProfileIndication = br->sym("AVCProfileIndication", 8);
@@ -158,8 +155,7 @@ void parseAvcC(IReader* br)
   br->sym("reserved8", 3);
   auto numOfSequenceParameterSets = br->sym("numOfSequenceParameterSets", 5);
 
-  for(auto i = 0; i < numOfSequenceParameterSets; i++)
-  {
+  for(auto i = 0; i < numOfSequenceParameterSets; i++) {
     auto sequenceParameterSetLength = br->sym("sequenceParameterSetLength", 16);
 
     while(sequenceParameterSetLength--)
@@ -168,16 +164,14 @@ void parseAvcC(IReader* br)
 
   auto numOfPictureParameterSets = br->sym("numOfPictureParameterSets", 8);
 
-  for(auto i = 0; i < numOfPictureParameterSets; i++)
-  {
+  for(auto i = 0; i < numOfPictureParameterSets; i++) {
     auto pictureParameterSetLength = br->sym("pictureParameterSetLength", 16);
 
     while(pictureParameterSetLength--)
       br->sym("pictureParameterSet", 8);
   }
 
-  if(AVCProfileIndication != 66 && AVCProfileIndication != 77 && AVCProfileIndication != 88)
-  {
+  if(AVCProfileIndication != 66 && AVCProfileIndication != 77 && AVCProfileIndication != 88) {
     br->sym("reserved9", 6);
     br->sym("chroma_format", 2);
     br->sym("reserved10", 5);
@@ -187,8 +181,7 @@ void parseAvcC(IReader* br)
 
     auto numOfSequenceParameterSetExt = br->sym("numOfSequenceParameterSetExt", 8);
 
-    for(auto i = 0; i < numOfSequenceParameterSetExt; i++)
-    {
+    for(auto i = 0; i < numOfSequenceParameterSetExt; i++) {
       auto sequenceParameterSetExtLength = br->sym("sequenceParameterSetExtLength", 16);
 
       while(sequenceParameterSetExtLength--)
@@ -200,7 +193,7 @@ void parseAvcC(IReader* br)
     br->box(); // optional MPEG4ExtensionDescriptorsBox-es
 }
 
-void parseHvcC(IReader* br)
+void parseHvcC(IReader *br)
 {
   br->sym("configurationVersion", 8);
   br->sym("general_profile_space", 2);
@@ -226,15 +219,13 @@ void parseHvcC(IReader* br)
   br->sym("lengthSizeMinusOne", 2);
   auto numOfArrays = br->sym("numOfArrays", 8);
 
-  for(int j = 0; j < numOfArrays; j++)
-  {
+  for(int j = 0; j < numOfArrays; j++) {
     br->sym("array_completeness", 1);
     br->sym("reserved", 1);
     br->sym("NAL_unit_type", 6);
     auto numNalus = br->sym("numNalus", 16);
 
-    for(int i = 0; i < numNalus; i++)
-    {
+    for(int i = 0; i < numNalus; i++) {
       auto nalUnitLength = br->sym("nalUnitLength", 16);
 
       while(nalUnitLength--)
@@ -246,18 +237,17 @@ void parseHvcC(IReader* br)
     br->box(); // optional MPEG4ExtensionDescriptorsBox-es
 }
 
-void processEsDescriptor(IReader* br);
-void processDecoderConfigDescriptor(IReader* br);
-void processAudioSpecificInfoConfig(IReader* br, int size);
+void processEsDescriptor(IReader *br);
+void processDecoderConfigDescriptor(IReader *br);
+void processAudioSpecificInfoConfig(IReader *br, int size);
 
-void processDescriptor(IReader* br, uint8_t oti /*0 if unknown/unrelevant*/)
+void processDescriptor(IReader *br, uint8_t oti /*0 if unknown/unrelevant*/)
 {
-  auto parseVlc = [] (IReader* br) {
+  auto parseVlc = [](IReader *br) {
     int val = 0;
     int n = 4;
 
-    while(n--)
-    {
+    while(n--) {
       int c = br->sym("byte", 8);
       val <<= 7;
       val = c & 0x7f;
@@ -271,8 +261,7 @@ void processDescriptor(IReader* br, uint8_t oti /*0 if unknown/unrelevant*/)
 
   auto const tag = br->sym("tag", 8);
   auto const len = parseVlc(br);
-  switch(tag)
-  {
+  switch(tag) {
   case 0x03:
     processEsDescriptor(br);
     break;
@@ -298,7 +287,7 @@ void processDescriptor(IReader* br, uint8_t oti /*0 if unknown/unrelevant*/)
 }
 
 // ISO 14496-1 7.2.6.5.1
-void processEsDescriptor(IReader* br)
+void processEsDescriptor(IReader *br)
 {
   br->sym("ES_ID", 16);
 
@@ -320,7 +309,7 @@ void processEsDescriptor(IReader* br)
 }
 
 // ISO 14496-1 7.2.6.6.1
-void processDecoderConfigDescriptor(IReader* br)
+void processDecoderConfigDescriptor(IReader *br)
 {
   auto objectTypeIndication = br->sym("objectTypeIndication", 8);
   br->sym("streamType", 6);
@@ -333,7 +322,7 @@ void processDecoderConfigDescriptor(IReader* br)
   processDescriptor(br, objectTypeIndication);
 }
 
-void processAudioSpecificInfoConfig(IReader* br, int size)
+void processAudioSpecificInfoConfig(IReader *br, int size)
 {
   int readBits = 0;
 
@@ -341,15 +330,13 @@ void processAudioSpecificInfoConfig(IReader* br, int size)
   auto audioObjectType = br->sym("audioObjectType", 5);
   readBits += 5;
 
-  if(audioObjectType == 31)
-  {
+  if(audioObjectType == 31) {
     br->sym("audioObjectTypeExt", 5); // audioObjectType = 32 + audioObjectTypeExt
     readBits += 5;
   }
 
   // Skip
-  if(readBits % 8)
-  {
+  if(readBits % 8) {
     auto remainderBits = 8 - (readBits % 8);
     br->sym("bits", remainderBits);
     readBits += remainderBits;
@@ -359,7 +346,7 @@ void processAudioSpecificInfoConfig(IReader* br, int size)
     br->sym("byte", 8);
 }
 
-void parseEsds(IReader* br)
+void parseEsds(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -368,21 +355,20 @@ void parseEsds(IReader* br)
     processDescriptor(br, 0);
 }
 
-void parseStts(IReader* br)
+void parseStts(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
 
   auto entryCount = br->sym("entry_count", 32);
 
-  for(auto i = 1; i <= entryCount; i++)
-  {
+  for(auto i = 1; i <= entryCount; i++) {
     br->sym("sample_count", 32);
     br->sym("sample_delta", 32);
   }
 }
 
-void parseStss(IReader* br)
+void parseStss(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -393,13 +379,13 @@ void parseStss(IReader* br)
     br->sym("sample_number", 32);
 }
 
-void parsePasp(IReader* br)
+void parsePasp(IReader *br)
 {
   br->sym("hSpacing", 32);
   br->sym("vSpacing", 32);
 }
 
-void parseAudioSampleEntry(IReader* br)
+void parseAudioSampleEntry(IReader *br)
 {
   // SampleEntry
   br->sym("reserved1", 8);
@@ -425,7 +411,7 @@ void parseAudioSampleEntry(IReader* br)
     br->box();
 }
 
-void parseVisualSampleEntry(IReader* br)
+void parseVisualSampleEntry(IReader *br)
 {
   // SampleEntry
   br->sym("reserved1", 8);
@@ -459,7 +445,7 @@ void parseVisualSampleEntry(IReader* br)
     br->box(); // clap, pasp
 }
 
-void parseMeta(IReader* br)
+void parseMeta(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -468,20 +454,18 @@ void parseMeta(IReader* br)
     br->box();
 }
 
-void parseAuxc(IReader* br)
+void parseAuxc(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
 
-  while(br->sym("aux_type", 8))
-  {
-  }
+  while(br->sym("aux_type", 8)) {}
 
   while(!br->empty())
     br->sym("aux_subtype", 8);
 }
 
-void parseAuxi(IReader* br)
+void parseAuxi(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -490,7 +474,7 @@ void parseAuxi(IReader* br)
     br->sym("aux_track_type", 8);
 }
 
-void parseCcst(IReader* br)
+void parseCcst(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -504,7 +488,7 @@ void parseCcst(IReader* br)
     br->sym("", 8);
 }
 
-void parseIloc(IReader* br)
+void parseIloc(IReader *br)
 {
   auto version = br->sym("version", 8);
 
@@ -528,15 +512,13 @@ void parseIloc(IReader* br)
   else if(version == 2)
     item_count = br->sym("item_count", 32);
 
-  for(auto i = 0; i < item_count; i++)
-  {
+  for(auto i = 0; i < item_count; i++) {
     if(version < 2)
       br->sym("item_ID", 16);
     else if(version == 2)
       br->sym("item_ID", 32);
 
-    if((version == 1) || (version == 2))
-    {
+    if((version == 1) || (version == 2)) {
       br->sym("reserved2", 12);
       br->sym("construction_method", 4);
     }
@@ -545,8 +527,7 @@ void parseIloc(IReader* br)
     br->sym("base_offset", base_offset_size * 8);
     auto extent_count = br->sym("extent_count", 16);
 
-    for(auto j = 0; j < extent_count; j++)
-    {
+    for(auto j = 0; j < extent_count; j++) {
       if(((version == 1) || (version == 2)) && (index_size > 0))
         br->sym("item_reference_index", index_size * 8);
 
@@ -556,7 +537,7 @@ void parseIloc(IReader* br)
   }
 }
 
-void parseIinf(IReader* br)
+void parseIinf(IReader *br)
 {
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
@@ -572,13 +553,12 @@ void parseIinf(IReader* br)
     br->box(); // ItemInfoEntry
 }
 
-void parseInfe(IReader* br)
+void parseInfe(IReader *br)
 {
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
 
-  if((version == 0) || (version == 1))
-  {
+  if((version == 0) || (version == 1)) {
     br->sym("item_ID", 16);
     br->sym("item_protection_index", 16);
 
@@ -592,19 +572,13 @@ void parseInfe(IReader* br)
       ; // content_encoding
   }
 
-  if(version == 1)
-  {
+  if(version == 1) {
     while(!br->empty())
       br->sym("ItemInfoExtension(extension_type)", 8);
-  }
-  else if(version >= 2)
-  {
-    if(version == 2)
-    {
+  } else if(version >= 2) {
+    if(version == 2) {
       br->sym("item_ID", 16);
-    }
-    else if(version == 3)
-    {
+    } else if(version == 3) {
       br->sym("item_ID", 32);
     }
 
@@ -614,23 +588,20 @@ void parseInfe(IReader* br)
     while(br->sym("item_name", 8))
       ; // item_name
 
-    if(item_type == FOURCC("mime"))
-    {
+    if(item_type == FOURCC("mime")) {
       while(br->sym("content_type", 8))
         ; // content_type
 
       while(!br->empty() && br->sym("content_encoding", 8))
         ; // content_encoding
-    }
-    else if(item_type == FOURCC("uri "))
-    {
+    } else if(item_type == FOURCC("uri ")) {
       while(br->sym("item_uri_type", 8))
         ; // item_uri_type
     }
   }
 }
 
-void parseIspe(IReader* br)
+void parseIspe(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -639,52 +610,44 @@ void parseIspe(IReader* br)
   br->sym("image_height", 32);
 }
 
-void parseIref(IReader* br)
+void parseIref(IReader *br)
 {
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
 
-  if(version == 0)
-  {
-    while(!br->empty())
-    {
+  if(version == 0) {
+    while(!br->empty()) {
       br->sym("box_size", 32);
       br->sym("box_type", 32);
       br->sym("from_item_ID", 16);
       auto reference_count = br->sym("reference_count", 16);
 
-      for(auto j = 0; j < reference_count; j++)
-      {
+      for(auto j = 0; j < reference_count; j++) {
         br->sym("to_item_ID", 16);
       }
     }
-  }
-  else if(version == 1)
-  {
-    while(!br->empty())
-    {
+  } else if(version == 1) {
+    while(!br->empty()) {
       br->sym("box_size", 32);
       br->sym("box_type", 32);
       br->sym("from_item_ID", 32);
       auto reference_count = br->sym("reference_count", 16);
 
-      for(auto j = 0; j < reference_count; j++)
-      {
+      for(auto j = 0; j < reference_count; j++) {
         br->sym("to_item_ID", 32);
       }
     }
   }
 }
 
-void parseIpma(IReader* br)
+void parseIpma(IReader *br)
 {
   auto version = br->sym("version", 8);
   auto flags = br->sym("flags", 24);
 
   auto entry_count = br->sym("entry_count", 32);
 
-  for(auto i = 0; i < entry_count; i++)
-  {
+  for(auto i = 0; i < entry_count; i++) {
     if(version < 1)
       br->sym("item_ID", 16);
     else
@@ -692,8 +655,7 @@ void parseIpma(IReader* br)
 
     auto association_count = br->sym("association_count", 8);
 
-    for(auto i = 0; i < association_count; i++)
-    {
+    for(auto i = 0; i < association_count; i++) {
       br->sym("essential", 1);
 
       if(flags & 1)
@@ -704,7 +666,7 @@ void parseIpma(IReader* br)
   }
 }
 
-void parseHdlr(IReader* br)
+void parseHdlr(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -718,20 +680,19 @@ void parseHdlr(IReader* br)
     br->sym("name", 8);
 }
 
-void parseDref(IReader* br)
+void parseDref(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
 
   auto entry_count = br->sym("entry_count", 32);
 
-  for(auto i = 1; i <= entry_count; i++)
-  {
+  for(auto i = 1; i <= entry_count; i++) {
     br->box();
   }
 }
 
-void parseUrx(IReader* br)
+void parseUrx(IReader *br)
 {
   br->sym("version", 8);
   br->sym("flags", 24);
@@ -740,7 +701,7 @@ void parseUrx(IReader* br)
     br->sym("byte", 8);
 }
 
-void parseClap(IReader* br)
+void parseClap(IReader *br)
 {
   br->sym("cleanApertureWidthN", 32);
   br->sym("cleanApertureWidthD", 32);
@@ -752,13 +713,13 @@ void parseClap(IReader* br)
   br->sym("vertOffD", 32);
 }
 
-void parseClli(IReader* br)
+void parseClli(IReader *br)
 {
   br->sym("max_content_light_level", 16);
   br->sym("max_pic_average_light_level", 16);
 }
 
-void parseMdcv(IReader* br)
+void parseMdcv(IReader *br)
 {
   br->sym("display_primaries_x_0", 16);
   br->sym("display_primaries_y_0", 16);
@@ -772,7 +733,7 @@ void parseMdcv(IReader* br)
   br->sym("min_display_mastering_luminance", 32);
 }
 
-void parsePitm(IReader* br)
+void parsePitm(IReader *br)
 {
   auto version = br->sym("version", 8);
   br->sym("flags", 24);
@@ -783,19 +744,16 @@ void parsePitm(IReader* br)
     br->sym("item_ID", 32);
 }
 
-void parseChildren(IReader* br)
+void parseChildren(IReader *br)
 {
   while(!br->empty())
     br->box();
 }
 }
 
-std::vector<uint32_t> visualSampleEntryFourccs =
-{
-  FOURCC("avc1"), FOURCC("avc2"), FOURCC("avc3"), FOURCC("avc4"),
-  FOURCC("hev1"), FOURCC("hev2"), FOURCC("hvc1"), FOURCC("hvc2"),
-  FOURCC("av01")
-};
+std::vector<uint32_t> visualSampleEntryFourccs = { FOURCC("avc1"), FOURCC("avc2"), FOURCC("avc3"),
+                                                   FOURCC("avc4"), FOURCC("hev1"), FOURCC("hev2"),
+                                                   FOURCC("hvc1"), FOURCC("hvc2"), FOURCC("av01") };
 
 bool isVisualSampleEntry(uint32_t fourcc)
 {
@@ -806,10 +764,9 @@ bool isVisualSampleEntry(uint32_t fourcc)
   return false;
 }
 
-ParseBoxFunc* getParseFunction(uint32_t fourcc)
+ParseBoxFunc *getParseFunction(uint32_t fourcc)
 {
-  switch(fourcc)
-  {
+  switch(fourcc) {
   case FOURCC("root"):
     return &parseChildren;
   case FOURCC("moov"):
@@ -905,4 +862,3 @@ ParseBoxFunc* getParseFunction(uint32_t fourcc)
 
   return &parseRaw;
 }
-

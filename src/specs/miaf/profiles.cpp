@@ -1,27 +1,28 @@
-#include "spec.h"
-#include "fourcc.h"
 #include <algorithm> // find
 #include <cstring>
-#include <vector>
 #include <map>
+#include <vector>
 
-bool checkRuleSection(const SpecDesc& spec, const char* section, Box const& root);
-std::vector<const Box*> findBoxes(const Box& root, uint32_t fourcc);
+#include "fourcc.h"
+#include "spec.h"
+
+bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
+std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace
 {
-std::map<int64_t, std::string> hevcProfiles {
+std::map<int64_t, std::string> hevcProfiles{
   { 0x01, "Main" },
   { 0x02, "Main 10" },
   { 0x03, "Main Still Picture" },
   { 0x04, "Range Extensions" },
 };
 
-bool usesBrand(Box const& root, uint32_t brandFourcc)
+bool usesBrand(Box const &root, uint32_t brandFourcc)
 {
-  for(auto& box : root.children)
+  for(auto &box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
-      for(auto& sym : box.syms)
+      for(auto &sym : box.syms)
         if(!strcmp(sym.name, "compatible_brand"))
           if(sym.value == brandFourcc)
             return true;
@@ -29,7 +30,7 @@ bool usesBrand(Box const& root, uint32_t brandFourcc)
   return false;
 }
 
-void profileCommonChecks(const SpecDesc& spec, const char* profileName, Box const& root, IReport* out)
+void profileCommonChecks(const SpecDesc &spec, const char *profileName, Box const &root, IReport *out)
 {
   if(!checkRuleSection(spec, "8.2", root))
     out->error("%s: self-containment (subclause 8.2) is not conform", profileName);
@@ -47,7 +48,7 @@ void profileCommonChecks(const SpecDesc& spec, const char* profileName, Box cons
     out->error("%s: matched-duration (subclause 8.7) is not conform", profileName);
 }
 
-void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLevel, double maxLevel)
+void checkAvcHevcLevel(IReport *out, const char *profileName, int rawLevel, double maxLevel)
 {
   auto const level = (double)rawLevel / 30.0;
 
@@ -55,36 +56,35 @@ void checkAvcHevcLevel(IReport* out, const char* profileName, int rawLevel, doub
     out->error("%s: invalid level %g found, expecting %g or lower.", profileName, level, maxLevel);
 }
 
-void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<const Box*> hvcCs, std::vector<std::string> profiles, double maxLevel, bool max10bit, bool max422chroma)
+void checkHevcProfilesLevels(
+  IReport *out, const char *profileName, std::vector<const Box *> hvcCs, std::vector<std::string> profiles,
+  double maxLevel, bool max10bit, bool max422chroma)
 {
-  for(auto& hvcc : hvcCs)
-  {
-    for(auto& sym : hvcc->syms)
-    {
-      if(!strcmp(sym.name, "general_profile_idc"))
-      {
+  for(auto &hvcc : hvcCs) {
+    for(auto &sym : hvcc->syms) {
+      if(!strcmp(sym.name, "general_profile_idc")) {
         bool found = false;
 
         if(hevcProfiles.find(sym.value) != hevcProfiles.end())
-          for(auto& profile : profiles)
+          for(auto &profile : profiles)
             if(hevcProfiles[sym.value] == profile)
               found = true;
 
         if(!found)
           out->error("%s: invalid profile 0x%llx found", profileName, sym.value);
-      }
-      else if(!strcmp(sym.name, "general_constraint_indicator_flags"))
-      {
+      } else if(!strcmp(sym.name, "general_constraint_indicator_flags")) {
         if(max10bit)
           if(!(sym.value & 0x20 /*6th bit: general_max_10bit_constraint_flag*/))
-            out->error("%s: expecting maximum 10 bits but general_max_10bit_constraint_flag flag is not set.", profileName);
+            out->error(
+              "%s: expecting maximum 10 bits but general_max_10bit_constraint_flag flag is not set.", profileName);
 
         if(max422chroma)
           if(!(sym.value & 0x80 /*8th bit: general_max_422chroma_constraint_flag*/))
-            out->error("%s: expecting maximum 4:2:2 chroma format but general_max_422chroma_constraint_flag flag is not set.", profileName);
-      }
-      else if(!strcmp(sym.name, "general_level_idc"))
-      {
+            out->error(
+              "%s: expecting maximum 4:2:2 chroma format but general_max_422chroma_constraint_flag flag is "
+              "not set.",
+              profileName);
+      } else if(!strcmp(sym.name, "general_level_idc")) {
         checkAvcHevcLevel(out, profileName, sym.value, maxLevel);
       }
     }
@@ -92,15 +92,12 @@ void checkHevcProfilesLevels(IReport* out, const char* profileName, std::vector<
 }
 } /*anonymous namespace*/
 
-const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
+const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc &spec)
 {
-  static const SpecDesc& globalSpec = spec;
+  static const SpecDesc &globalSpec = spec;
   (void)globalSpec;
-  static const
-  std::initializer_list<RuleDesc> rulesProfiles =
-  {
-    {
-      "Section A.3\n"
+  static const std::initializer_list<RuleDesc> rulesProfiles = {
+    { "Section A.3\n"
       "MIAF HEVC Basic profile\n"
       "Section A.3.1\n"
       "This profile includes the requirements of\n"
@@ -126,8 +123,7 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
       "supported by the MIAF reader.\n"
       "A.3.4 Brand identification\n"
       "The brand to identify files that conform to the MIAF HEVC basic profile is 'MiHB'.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         if(!usesBrand(root, FOURCC("MiHB")))
           return;
 
@@ -135,18 +131,17 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
 
         profileCommonChecks(globalSpec, profileName, root, out);
 
-        for(auto& box : root.children)
-        {
+        for(auto &box : root.children) {
           if(box.fourcc == FOURCC("meta"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0, false, false);
+            checkHevcProfilesLevels(
+              out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 6.0, false, false);
 
           if(box.fourcc == FOURCC("moov"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1, false, false);
+            checkHevcProfilesLevels(
+              out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main", "Main Still Picture" }, 5.1, false, false);
         }
-      }
-    },
-    {
-      "Section A.4\n"
+      } },
+    { "Section A.4\n"
       "MIAF HEVC Advanced profile\n"
       "A.4.1 Adopted shared constraints\n"
       "This profile includes the requirements of\n"
@@ -175,8 +170,7 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
       "A.4.4 Brand identification\n"
       "The brand to identify files that conform to the MIAF HEVC advanced profile is\n"
       "'MiHA'.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         if(!usesBrand(root, FOURCC("MiHA")))
           return;
 
@@ -188,18 +182,16 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
         if(checkRuleSection(globalSpec, "A.3", root))
           return;
 
-        for(auto& box : root.children)
-        {
+        for(auto &box : root.children) {
           if(box.fourcc == FOURCC("meta"))
             checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), {}, 6.0, true, true);
 
           if(box.fourcc == FOURCC("moov"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Range Extensions" }, 5.1, true, true);
+            checkHevcProfilesLevels(
+              out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Range Extensions" }, 5.1, true, true);
         }
-      }
-    },
-    {
-      "Section A.5\n"
+      } },
+    { "Section A.5\n"
       "MIAF HEVC Extended profile\n"
       "A.5.1 Adopted shared constraints\n"
       "This profile includes the requirements of\n"
@@ -209,7 +201,10 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
       "- single-track (subclause 8.5),\n"
       "- matched-duration (subclause 8.7).\n"
       "A.5.2 Image item coding\n"
-      "Images conforming to the MIAF HEVC basic profile or MIAF HEVC advanced profile or coded with the following HEVC profiles at Main tier may be present and shall be supported by the MIAF reader and MIAF renderer; the level signalled by the file shall be the indicated level or lower:\n"
+      "Images conforming to the MIAF HEVC basic profile or MIAF HEVC advanced profile or coded with the following "
+      "HEVC "
+      "profiles at Main tier may be present and shall be supported by the MIAF reader and MIAF renderer; the level "
+      "signalled by the file shall be the indicated level or lower:\n"
       "- Main 4:4:4 10, Level 6,\n"
       "- Main 4:4:4 Still Picture, Level 6,\n"
       "- Main 4:4:4 10 Intra, Level 6,\n"
@@ -217,12 +212,17 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
       "- Monochrome 10, Level 6,\n"
       "- Monochrome, Level 6.\n"
       "A.5.3 Image sequence and video coding\n"
-      "For image sequence tracks conforming to this MIAF profile, the requirements are the same as for image items in subclause A.5.2.\n"
-      "For video tracks conforming to this MIAF profile, the requirements of the MIAF HEVC advanced Profile apply or HEVC Main 4:4:4 10 profile at Main tier level 5.1 or lower shall be indicated in the sample entry and shall be supported by the MIAF reader.\n"
+      "For image sequence tracks conforming to this MIAF profile, the requirements are the same as for image items "
+      "in "
+      "subclause A.5.2.\n"
+      "For video tracks conforming to this MIAF profile, the requirements of the MIAF HEVC advanced Profile apply "
+      "or "
+      "HEVC Main 4:4:4 10 profile at Main tier level 5.1 or lower shall be indicated in the sample entry and shall "
+      "be "
+      "supported by the MIAF reader.\n"
       "A.5.4 Brand identification\n"
       "The brand to identify files that conform to the MIAF HEVC extended profile is 'MiHE'.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         if(!usesBrand(root, FOURCC("MiHE")))
           return;
 
@@ -234,18 +234,16 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
         if(checkRuleSection(globalSpec, "A.3", root) || checkRuleSection(globalSpec, "A.4", root))
           return;
 
-        for(auto& box : root.children)
-        {
+        for(auto &box : root.children) {
           if(box.fourcc == FOURCC("meta"))
             checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), {}, 6.0, true, false);
 
           if(box.fourcc == FOURCC("moov"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Range Extensions" }, 5.1, true, false);
+            checkHevcProfilesLevels(
+              out, profileName, findBoxes(box, FOURCC("hvcC")), { "Main 10", "Range Extensions" }, 5.1, true, false);
         }
-      }
-    },
-    {
-      "Section A.6\n"
+      } },
+    { "Section A.6\n"
       "A.6 MIAF AVC Basic profile\n"
       "A.6.1 Adopted shared constraints\n"
       "This profile includes the requirements of\n"
@@ -255,17 +253,22 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
       "- single-track (subclause 8.5),\n"
       "- matched-duration (subclause 8.7).\n"
       "A.6.2 Image item coding\n"
-      "Images coded with the following profiles may be present and shall be supported by the MIAF reader as coded image items; the level signalled by the file shall be the indicated level or lower:\n"
+      "Images coded with the following profiles may be present and shall be supported by the MIAF reader as coded "
+      "image "
+      "items; the level signalled by the file shall be the indicated level or lower:\n"
       "- AVC Progressive High Profile, Level 5.2,\n"
       "- AVC Constrained High Profile, Level 5.2.\n"
       "A.6.3 Image sequence and video coding\n"
       "AVC image sequences shall be stored in accordance with ISO/IEC 14496-15.\n"
-      "For image sequence tracks conforming to this MIAF profile, the requirements are the same as for image items in subclause A.6.2.\n"
-      "For video tracks conforming to this MIAF profile, AVC High Profile level 5.1 or lower shall be indicated in the sample entry and shall be supported by the MIAF reader.\n"
+      "For image sequence tracks conforming to this MIAF profile, the requirements are the same as for image items "
+      "in "
+      "subclause A.6.2.\n"
+      "For video tracks conforming to this MIAF profile, AVC High Profile level 5.1 or lower shall be indicated in "
+      "the "
+      "sample entry and shall be supported by the MIAF reader.\n"
       "A.6.4 Brand identification\n"
       "The brand to identify files that conform to the MIAF AVC Basic profile is 'MiAB'.",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         if(!usesBrand(root, FOURCC("MiAB")))
           return;
 
@@ -273,62 +276,45 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
 
         profileCommonChecks(globalSpec, profileName, root, out);
 
-        for(auto& box : root.children)
-        {
-          if(box.fourcc == FOURCC("meta"))
-          {
+        for(auto &box : root.children) {
+          if(box.fourcc == FOURCC("meta")) {
             auto avcCs = findBoxes(box, FOURCC("avcC"));
 
-            for(auto& avcc : avcCs)
-            {
+            for(auto &avcc : avcCs) {
               int profileIdc = 0;
 
-              for(auto& sym : avcc->syms)
-              {
-                if(!strcmp(sym.name, "AVCProfileIndication"))
-                {
+              for(auto &sym : avcc->syms) {
+                if(!strcmp(sym.name, "AVCProfileIndication")) {
                   profileIdc = sym.value;
 
                   if(sym.value > 100)
                     out->error("%s: profile_idc (0x%llx) is higher than 100)", profileName, sym.value);
-                }
-                else if(!strcmp(sym.name, "profile_compatibility"))
-                {
-                  if((profileIdc == 77 || profileIdc == 88 || profileIdc == 100)
-                     && !((uint8_t)sym.value & 0b00001000))
+                } else if(!strcmp(sym.name, "profile_compatibility")) {
+                  if((profileIdc == 77 || profileIdc == 88 || profileIdc == 100) && !((uint8_t)sym.value & 0b00001000))
                     out->warning("%s: AVC should be Progressive or Constrained High Profile", profileName, sym.value);
-                }
-                else if(!strcmp(sym.name, "AVCLevelIndication"))
-                {
+                } else if(!strcmp(sym.name, "AVCLevelIndication")) {
                   checkAvcHevcLevel(out, profileName, sym.value, 5.2);
                 }
               }
             }
           }
 
-          if(box.fourcc == FOURCC("moov"))
-          {
+          if(box.fourcc == FOURCC("moov")) {
             auto avcCs = findBoxes(box, FOURCC("avcC"));
 
-            for(auto& avcc : avcCs)
-            {
-              for(auto& sym : avcc->syms)
-              {
-                if(!strcmp(sym.name, "AVCProfileIndication"))
-                {
+            for(auto &avcc : avcCs) {
+              for(auto &sym : avcc->syms) {
+                if(!strcmp(sym.name, "AVCProfileIndication")) {
                   if(sym.value > 100)
                     out->error("%s: profile_idc (0x%llx) is higher than 100)", profileName, sym.value);
-                }
-                else if(!strcmp(sym.name, "AVCLevelIndication"))
-                {
+                } else if(!strcmp(sym.name, "AVCLevelIndication")) {
                   checkAvcHevcLevel(out, profileName, sym.value, 5.1);
                 }
               }
             }
           }
         }
-      }
-    },
+      } },
 #if 0 // enable when codec rules are implemented
     {
       "Section 7.2.1.2\n"
@@ -362,4 +348,3 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc& spec)
 
   return rulesProfiles;
 }
-

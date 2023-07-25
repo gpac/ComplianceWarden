@@ -1,16 +1,17 @@
-#include "spec.h"
+#include <cstdarg>
+#include <cstring> // strcmp
+#include <iomanip> // setw, setfill
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <iomanip> // setw, setfill
 #include <string>
 #include <vector>
-#include <cstdarg>
-#include <cstring> // strcmp
 
-extern const char* g_version;
+#include "spec.h"
 
-SpecDesc const* specFind(const char* name);
+extern const char *g_version;
+
+SpecDesc const *specFind(const char *name);
 
 namespace Json
 {
@@ -22,12 +23,11 @@ void insertSpace(int indent)
     std::cout << space;
 }
 
-std::string escape(const std::string& s)
+std::string escape(const std::string &s)
 {
   std::ostringstream o;
 
-  for(auto c = s.cbegin(); c != s.cend(); ++c)
-  {
+  for(auto c = s.cbegin(); c != s.cend(); ++c) {
     if(*c == '"' || *c == '\\' || ('\x00' <= *c && *c <= '\x1f'))
       o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(*c);
     else
@@ -37,15 +37,17 @@ std::string escape(const std::string& s)
   return o.str();
 }
 
-struct ISerialize
-{
+struct ISerialize {
   virtual ~ISerialize() = default;
   virtual void serialize(int indent) const = 0;
 };
 
-struct Data : ISerialize
-{
-  Data(std::string name, std::string value) : name(name), value(value) {}
+struct Data : ISerialize {
+  Data(std::string name, std::string value)
+      : name(name)
+      , value(value)
+  {
+  }
 
   std::string const name, value;
   void serialize(int indent) const final
@@ -54,22 +56,17 @@ struct Data : ISerialize
     std::cout << "\"" << escape(name) << "\": \"" << escape(value) << "\"";
   }
 
-  bool operator != (const Data& other) const
-  {
-    return !(this->name == other.name && this->value == other.value);
-  }
+  bool operator!=(const Data &other) const { return !(this->name == other.name && this->value == other.value); }
 };
 
-struct Object : ISerialize
-{
+struct Object : ISerialize {
   std::vector<std::unique_ptr<ISerialize>> content; // either Data, Object or Array
   void serialize(int indent) const final
   {
     insertSpace(indent);
     std::cout << "{" << std::endl;
 
-    for(auto& c: content)
-    {
+    for(auto &c : content) {
       c->serialize(indent + 1);
 
       if(c != content.back())
@@ -83,12 +80,13 @@ struct Object : ISerialize
   }
 };
 
-struct Array : ISerialize
-{
-  struct Int : ISerialize
-  {
+struct Array : ISerialize {
+  struct Int : ISerialize {
     int val;
-    Int(int val) : val(val) {}
+    Int(int val)
+        : val(val)
+    {
+    }
 
     void serialize(int indent) const final
     {
@@ -96,10 +94,12 @@ struct Array : ISerialize
       std::cout << val;
     }
   };
-  struct String : ISerialize
-  {
+  struct String : ISerialize {
     std::string val;
-    String(std::string val) : val(val) {}
+    String(std::string val)
+        : val(val)
+    {
+    }
 
     void serialize(int indent) const final
     {
@@ -108,7 +108,10 @@ struct Array : ISerialize
     }
   };
 
-  Array(std::string name) : name(name) {}
+  Array(std::string name)
+      : name(name)
+  {
+  }
 
   const std::string name;
   std::vector<std::unique_ptr<ISerialize>> content;
@@ -117,8 +120,7 @@ struct Array : ISerialize
     insertSpace(indent);
     std::cout << "\"" << escape(name) << "\": [" << std::endl;
 
-    for(auto& c: content)
-    {
+    for(auto &c : content) {
       c->serialize(indent + 1);
 
       if(c != content.back())
@@ -135,7 +137,7 @@ struct Array : ISerialize
 
 namespace
 {
-bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array* const array)
+bool checkComplianceJsonSpec(Box const &file, SpecDesc const *spec, Json::Array *const array)
 {
   // early exit if pre-check fails: this spec doesn't apply
   if(spec->valid && !spec->valid(file))
@@ -149,9 +151,8 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
   auto errorArray = std::make_unique<Json::Array>("errors");
   auto warningArray = std::make_unique<Json::Array>("warnings");
 
-  struct Report : IReport
-  {
-    void error(const char* fmt, ...) override
+  struct Report : IReport {
+    void error(const char *fmt, ...) override
     {
       char buf[4096];
       va_list args;
@@ -173,7 +174,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
       ++errorCount;
     }
 
-    void warning(const char* fmt, ...) override
+    void warning(const char *fmt, ...) override
     {
       char buf[4096];
       va_list args;
@@ -195,18 +196,15 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
       ++warningCount;
     }
 
-    void covered() override
-    {
-      lastRuleCovered = true;
-    }
+    void covered() override { lastRuleCovered = true; }
 
     int ruleIdx = 0;
     int errorCount = 0;
     int warningCount = 0;
-    bool* fail = nullptr;
-    SpecDesc const* spec = nullptr;
-    Json::Array* errorArray = nullptr;
-    Json::Array* warningArray = nullptr;
+    bool *fail = nullptr;
+    SpecDesc const *spec = nullptr;
+    Json::Array *errorArray = nullptr;
+    Json::Array *warningArray = nullptr;
     bool lastRuleCovered = false;
   };
 
@@ -216,16 +214,13 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
   out.errorArray = errorArray.get();
   out.warningArray = warningArray.get();
 
-  for(auto& rule : spec->rules)
-  {
-    try
-    {
+  for(auto &rule : spec->rules) {
+    try {
       out.lastRuleCovered = false;
       auto const count = out.errorCount + out.warningCount;
       rule.check(file, &out);
 
-      if(count == out.errorCount + out.warningCount)
-      {
+      if(count == out.errorCount + out.warningCount) {
         auto o = std::make_unique<Json::Object>();
         o->content.push_back(std::make_unique<Json::Data>("rule", std::to_string(out.ruleIdx)));
 
@@ -239,9 +234,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
         else
           uncheckedArray->content.push_back(std::move(o));
       }
-    }
-    catch(std::exception const& e)
-    {
+    } catch(std::exception const &e) {
       out.error("ABORTED TEST: %s\n", e.what());
     }
 
@@ -261,7 +254,7 @@ bool checkComplianceJsonSpec(Box const& file, SpecDesc const* spec, Json::Array*
 }
 }
 
-bool checkComplianceJson(Box const& file, SpecDesc const* spec)
+bool checkComplianceJson(Box const &file, SpecDesc const *spec)
 {
   Json::Object root;
   root.content.push_back(std::make_unique<Json::Data>("cw_version", g_version));
@@ -269,7 +262,7 @@ bool checkComplianceJson(Box const& file, SpecDesc const* spec)
   {
     std::string filename;
 
-    for(auto& field : file.syms)
+    for(auto &field : file.syms)
       if(!strcmp(field.name, "filename"))
         filename.push_back((char)field.value);
 
@@ -289,8 +282,7 @@ bool checkComplianceJson(Box const& file, SpecDesc const* spec)
 
   bool fail = false;
 
-  for(auto& dep : spec->dependencies)
-  {
+  for(auto &dep : spec->dependencies) {
     depsArrayPtr->content.push_back(std::make_unique<Json::Array::String>(dep));
     fail |= checkComplianceJsonSpec(file, spec, validationArrayPtr);
   }
@@ -300,4 +292,3 @@ bool checkComplianceJson(Box const& file, SpecDesc const* spec)
 
   return fail;
 }
-

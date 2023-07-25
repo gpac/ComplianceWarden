@@ -1,73 +1,80 @@
-#include "spec.h"
-#include "fourcc.h"
-#include "isobmff_derivations.h"
 #include <algorithm> // find
 #include <cstring> // strcmp
 
-std::vector<uint32_t /*itemId*/> findImageItems(Box const& root, uint32_t fourcc);
-std::vector<const Box*> findBoxesWithProperty(Box const& root, uint32_t itemId, uint32_t fourcc);
-std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(Box const& root, IReport* out);
+#include "fourcc.h"
+#include "isobmff_derivations.h"
+#include "spec.h"
+
+std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc);
+std::vector<const Box *> findBoxesWithProperty(Box const &root, uint32_t itemId, uint32_t fourcc);
+std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(Box const &root, IReport *out);
 
 namespace
 {
-enum Codec
-{
+enum Codec {
   HEVC,
   AV1,
   AVC,
   UNKNOWN,
 };
 
-Codec codecDetection(Box const& root)
+Codec codecDetection(Box const &root)
 {
   Codec codec = UNKNOWN;
 
-  for(auto& box : root.children)
+  for(auto &box : root.children)
     if(box.fourcc == FOURCC("ftyp"))
-      for(auto& sym : box.syms)
+      for(auto &sym : box.syms)
         if(!strcmp(sym.name, "major_brand") || !strcmp(sym.name, "compatible_brand"))
-          switch(sym.value)
-          {
-          case FOURCC("avif"): case FOURCC("avis"): case FOURCC("avio"):
+          switch(sym.value) {
+          case FOURCC("avif"):
+          case FOURCC("avis"):
+          case FOURCC("avio"):
             return AV1;
-          case FOURCC("heic"): case FOURCC("heix"): case FOURCC("heim"):
-          case FOURCC("heis"): case FOURCC("hevc"): case FOURCC("hevx"):
-          case FOURCC("hevm"): case FOURCC("hevs"):
+          case FOURCC("heic"):
+          case FOURCC("heix"):
+          case FOURCC("heim"):
+          case FOURCC("heis"):
+          case FOURCC("hevc"):
+          case FOURCC("hevx"):
+          case FOURCC("hevm"):
+          case FOURCC("hevs"):
             return HEVC;
-          case FOURCC("avci"): case FOURCC("avcs"):
+          case FOURCC("avci"):
+          case FOURCC("avcs"):
             codec = AVC;
             break;
-          default: break;
+          default:
+            break;
           }
 
   return codec;
 }
 
-std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getHevcItemColorspaces(Box const& root, IReport* out)
+std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getHevcItemColorspaces(Box const &root, IReport *out)
 {
   std::vector<std::pair<uint32_t /*ItemId*/, std::string>> ret;
 
-  auto check = [&] (uint32_t fourcc) {
+  auto check = [&](uint32_t fourcc) {
     auto const av1ImageItemIDs = findImageItems(root, fourcc);
 
-    for(auto itemId : av1ImageItemIDs)
-    {
+    for(auto itemId : av1ImageItemIDs) {
       auto hvcCs = findBoxesWithProperty(root, itemId, FOURCC("hvcC"));
 
-      if(hvcCs.empty())
-      {
+      if(hvcCs.empty()) {
         out->error("[ItemId=%u] No hvcC configuration found (expected 1)", itemId);
         continue;
-      }
-      else if(hvcCs.size() > 1)
-        out->error("[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be considered", itemId, (int)hvcCs.size());
+      } else if(hvcCs.size() > 1)
+        out->error(
+          "[ItemId=%u] Found %d av1C (expected 1) - for conformance, only the first associated av1C will be "
+          "considered",
+          itemId, (int)hvcCs.size());
 
       auto hvcC = hvcCs[0];
 
-      for(auto& sym : hvcC->syms)
+      for(auto &sym : hvcC->syms)
         if(!strcmp(sym.name, "chroma_format_idc"))
-          switch(sym.value)
-          {
+          switch(sym.value) {
           case 0:
             ret.push_back({ itemId, "Monochrome 4:0:0" });
             break;
@@ -92,10 +99,9 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getHevcItemColorspaces(
   return ret;
 }
 
-std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box const& root, IReport* out)
+std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box const &root, IReport *out)
 {
-  switch(codecDetection(root))
-  {
+  switch(codecDetection(root)) {
   case AV1:
     return getAv1ItemColorspaces(root, out);
   case HEVC:
@@ -109,18 +115,14 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box 
 
 const std::initializer_list<RuleDesc> getRulesMiafColours()
 {
-  static const
-  std::initializer_list<RuleDesc> rulesProfiles =
-  {
-    {
-      "Section 7.3.6.7\n"
+  static const std::initializer_list<RuleDesc> rulesProfiles = {
+    { "Section 7.3.6.7\n"
       "Clean aperture:"
       "- when the image is 4:2:2 the horizontal cropped offset and width shall be\n"
       "  even numbers and the vertical values shall be integers\n"
       "- when the image is 4:2:0 both the horizontal and vertical cropped offsets and\n"
       "widths shall be even numbers",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         auto const codec = codecDetection(root);
 
         if(codec == AVC)
@@ -129,22 +131,20 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
         if(codec != AV1 && codec != HEVC)
           return;
 
-        std::map<uint32_t /*1-based*/, const Box*> clapIndices;
-        std::map<uint32_t /*ItemId*/, const Box*> clapItemIds;
+        std::map<uint32_t /*1-based*/, const Box *> clapIndices;
+        std::map<uint32_t /*ItemId*/, const Box *> clapItemIds;
 
         // find CleanAperture boxes
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
+            for(auto &metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iprp"))
-                for(auto& iprpChild : metaChild.children)
-                  if(iprpChild.fourcc == FOURCC("ipco"))
-                  {
+                for(auto &iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipco")) {
                     int index = 1;
 
-                    for(auto& ipcoChild : iprpChild.children)
-                    {
+                    for(auto &ipcoChild : iprpChild.children) {
                       if(ipcoChild.fourcc == FOURCC("clap"))
                         clapIndices[index] = &ipcoChild;
 
@@ -152,17 +152,15 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
                     }
                   }
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
+            for(auto &metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iprp"))
-                for(auto& iprpChild : metaChild.children)
-                  if(iprpChild.fourcc == FOURCC("ipma"))
-                  {
+                for(auto &iprpChild : metaChild.children)
+                  if(iprpChild.fourcc == FOURCC("ipma")) {
                     uint32_t localItemId = 0;
 
-                    for(auto& sym : iprpChild.syms)
-                    {
+                    for(auto &sym : iprpChild.syms) {
                       if(!strcmp(sym.name, "item_ID"))
                         localItemId = sym.value;
                       else if(!strcmp(sym.name, "property_index"))
@@ -177,8 +175,7 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
         // checks
 
-        for(auto& item : itemCsps)
-        {
+        for(auto &item : itemCsps) {
           if(item.second != "YUV 4:2:2" && item.second != "YUV 4:2:0")
             continue;
 
@@ -187,10 +184,10 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
           auto clapItemId = clapItemIds[item.first];
 
-          uint32_t cleanApertureWidthN = 0, cleanApertureWidthD = 0, cleanApertureHeightN = 0, cleanApertureHeightD = 0, horizOffN = 0, horizOffD = 0, vertOffN = 0, vertOffD = 0;
+          uint32_t cleanApertureWidthN = 0, cleanApertureWidthD = 0, cleanApertureHeightN = 0, cleanApertureHeightD = 0,
+                   horizOffN = 0, horizOffD = 0, vertOffN = 0, vertOffD = 0;
 
-          for(auto sym : clapItemId->syms)
-          {
+          for(auto sym : clapItemId->syms) {
             if(!strcmp(sym.name, "cleanApertureWidthN"))
               cleanApertureWidthN = sym.value;
             else if(!strcmp(sym.name, "cleanApertureWidthD"))
@@ -209,51 +206,54 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
               vertOffD = sym.value;
           }
 
-          if(item.second == "YUV 4:2:2")
-          {
+          if(item.second == "YUV 4:2:2") {
             if(horizOffD == 0 || horizOffN % (2 * horizOffD))
-              out->error("[ItemId=%u] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found %u/%u",
-                         item.first, horizOffN, horizOffD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:2: the horizontal cropped offset shall be an even number. Found %u/%u", item.first,
+                horizOffN, horizOffD);
 
             if(cleanApertureWidthD == 0 || cleanApertureWidthN % (2 * cleanApertureWidthD))
-              out->error("[ItemId=%u] YUV 4:2:2: the cropped width shall be an even number. Found %u/%u",
-                         item.first, cleanApertureWidthN, cleanApertureWidthD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:2: the cropped width shall be an even number. Found %u/%u", item.first,
+                cleanApertureWidthN, cleanApertureWidthD);
 
             if(vertOffD == 0 || vertOffN % vertOffD)
-              out->error("[ItemId=%u] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found %u/%u",
-                         item.first, vertOffN, vertOffD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:2: the vertival cropped offset shall be an integer number. Found "
+                "%u/%u",
+                item.first, vertOffN, vertOffD);
 
             if(cleanApertureHeightD == 0 || cleanApertureHeightN % cleanApertureHeightD)
-              out->error("[ItemId=%u] YUV 4:2:2: the cropped height shall be an integer number. Found %u/%u",
-                         item.first, cleanApertureHeightN, cleanApertureHeightD);
-          }
-          else if(item.second == "YUV 4:2:0")
-          {
+              out->error(
+                "[ItemId=%u] YUV 4:2:2: the cropped height shall be an integer number. Found %u/%u", item.first,
+                cleanApertureHeightN, cleanApertureHeightD);
+          } else if(item.second == "YUV 4:2:0") {
             if(horizOffD == 0 || horizOffN % (2 * horizOffD))
-              out->error("[ItemId=%u] YUV 4:2:0: the horizontal cropped offset shall be an even number. Found %u/%u",
-                         item.first, horizOffN, horizOffD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:0: the horizontal cropped offset shall be an even number. Found %u/%u", item.first,
+                horizOffN, horizOffD);
 
             if(cleanApertureWidthD == 0 || cleanApertureWidthN % (2 * cleanApertureWidthD))
-              out->error("[ItemId=%u] YUV 4:2:0: the cropped width shall be an even number. Found %u/%u",
-                         item.first, cleanApertureWidthN, cleanApertureWidthD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:0: the cropped width shall be an even number. Found %u/%u", item.first,
+                cleanApertureWidthN, cleanApertureWidthD);
 
             if(vertOffD == 0 || vertOffN % (2 * vertOffD))
-              out->error("[ItemId=%u] YUV 4:2:0: the vertival cropped offset shall be an even number. Found %u/%u",
-                         item.first, vertOffN, vertOffD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:0: the vertival cropped offset shall be an even number. Found %u/%u", item.first,
+                vertOffN, vertOffD);
 
             if(cleanApertureHeightD == 0 || cleanApertureHeightN % (2 * cleanApertureHeightD))
-              out->error("[ItemId=%u] YUV 4:2:0: the cropped height shall be an even number. Found %u/%u",
-                         item.first, cleanApertureHeightN, cleanApertureHeightD);
+              out->error(
+                "[ItemId=%u] YUV 4:2:0: the cropped height shall be an even number. Found %u/%u", item.first,
+                cleanApertureHeightN, cleanApertureHeightD);
           }
         }
-      }
-    },
-    {
-      "Section 7.3.11.4.1\n"
+      } },
+    { "Section 7.3.11.4.1\n"
       "All input images of a grid image item shall use the same coding format,\n"
       "chroma sampling format, and the same decoder configuration",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         auto const codec = codecDetection(root);
 
         if(codec == AVC)
@@ -266,17 +266,15 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
         // find 'grid' items
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
+            for(auto &metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iinf"))
-                for(auto& iinfChild : metaChild.children)
-                  if(iinfChild.fourcc == FOURCC("infe"))
-                  {
+                for(auto &iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe")) {
                     uint32_t itemId = 0;
 
-                    for(auto& sym : iinfChild.syms)
-                    {
+                    for(auto &sym : iinfChild.syms) {
                       if(!strcmp(sym.name, "item_ID"))
                         itemId = sym.value;
                       else if(!strcmp(sym.name, "item_type"))
@@ -293,45 +291,39 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
         auto d = getDerivationsInfo(root, FOURCC("dimg"));
 
-        for(auto gridItemId : gridItemIds)
-        {
+        for(auto gridItemId : gridItemIds) {
           std::string colorspace;
 
-          for(auto& iref : d.itemRefs)
-            if(iref.first == gridItemId)
-            {
-              for(auto toItemId : iref.second)
-              {
-                if(std::find(iref.second.begin(), iref.second.end(), toItemId) == iref.second.end())
-                {
+          for(auto &iref : d.itemRefs)
+            if(iref.first == gridItemId) {
+              for(auto toItemId : iref.second) {
+                if(std::find(iref.second.begin(), iref.second.end(), toItemId) == iref.second.end()) {
                   out->error("[ItemId=%u, gridItemId=%u] no colorspace information attached", toItemId, gridItemId);
                   continue;
                 }
 
-                for(auto& item : itemCsps)
-                {
+                for(auto &item : itemCsps) {
                   if(item.first != toItemId)
                     continue;
 
                   if(colorspace.empty())
                     colorspace = item.second;
                   else if(colorspace != item.second)
-                    out->error("[ItemId=%u, gridItemId=%u] found colorspace \"%s\" instead of previous found \"%s\"",
-                               item.first, gridItemId, item.second.c_str(), colorspace.c_str());
+                    out->error(
+                      "[ItemId=%u, gridItemId=%u] found colorspace \"%s\" instead of previous found "
+                      "\"%s\"",
+                      item.first, gridItemId, item.second.c_str(), colorspace.c_str());
                 }
               }
             }
         }
-      }
-    },
-    {
-      "Section 7.3.11.4.1\n"
+      } },
+    { "Section 7.3.11.4.1\n"
       "The tile size is restricted according to the chroma sampling format of the\n"
       "input images; the cropping shall select an integer number of samples for\n"
       "all planes, and result in an output image that also includes an integer number\n"
       "of samples for all planes",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         auto const codec = codecDetection(root);
 
         if(codec == AVC)
@@ -344,17 +336,15 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
         // find 'grid' items
 
-        for(auto& box : root.children)
+        for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
-            for(auto& metaChild : box.children)
+            for(auto &metaChild : box.children)
               if(metaChild.fourcc == FOURCC("iinf"))
-                for(auto& iinfChild : metaChild.children)
-                  if(iinfChild.fourcc == FOURCC("infe"))
-                  {
+                for(auto &iinfChild : metaChild.children)
+                  if(iinfChild.fourcc == FOURCC("infe")) {
                     uint32_t itemId = 0;
 
-                    for(auto& sym : iinfChild.syms)
-                    {
+                    for(auto &sym : iinfChild.syms) {
                       if(!strcmp(sym.name, "item_ID"))
                         itemId = sym.value;
                       else if(!strcmp(sym.name, "item_type"))
@@ -371,29 +361,22 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
         auto d = getDerivationsInfo(root, FOURCC("dimg"));
 
-        for(auto gridItemId : gridItemIds)
-        {
+        for(auto gridItemId : gridItemIds) {
           std::string colorspace;
 
-          for(auto& iref : d.itemRefs)
-          {
-            if(iref.first == gridItemId)
-            {
-              for(auto toItemId : iref.second)
-              {
-                if(std::find(iref.second.begin(), iref.second.end(), toItemId) == iref.second.end())
-                {
+          for(auto &iref : d.itemRefs) {
+            if(iref.first == gridItemId) {
+              for(auto toItemId : iref.second) {
+                if(std::find(iref.second.begin(), iref.second.end(), toItemId) == iref.second.end()) {
                   out->error("[ItemId=%u, gridItemId=%u] no colorspace information attached", toItemId, gridItemId);
                   continue;
                 }
 
-                for(auto& item : itemCsps)
-                {
+                for(auto &item : itemCsps) {
                   if(item.first != toItemId)
                     continue;
 
-                  if(colorspace.empty())
-                  {
+                  if(colorspace.empty()) {
                     colorspace = item.second;
                     break; // stop at first tile: consistency is checked elsewhere
                   }
@@ -407,13 +390,10 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
           Resolution resIspe;
 
-          for(auto& iref : d.itemRefs)
-          {
+          for(auto &iref : d.itemRefs) {
             if(iref.first == gridItemId)
-              for(auto itemId : iref.second)
-              {
-                if(resIspe.width == Resolution().width)
-                {
+              for(auto itemId : iref.second) {
+                if(resIspe.width == Resolution().width) {
                   resIspe = d.itemRes[itemId];
                   break; // stop at first tile: consistency is checked elsewhere
                 }
@@ -425,20 +405,19 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
 
           if(colorspace == "YUV 4:2:0")
             if((resIspe.width % 2) || (resIspe.height % 2))
-              out->error("[gridItemId=%u] for YUV 4:2:0 width(%d) and height(%d) should be even", gridItemId, resIspe.width, resIspe.height);
+              out->error(
+                "[gridItemId=%u] for YUV 4:2:0 width(%d) and height(%d) should be even", gridItemId, resIspe.width,
+                resIspe.height);
 
           if(colorspace == "YUV 4:2:2")
             if(resIspe.width % 2)
               out->error("[gridItemId=%u] for YUV 4:2:2 width(%d) should be even", gridItemId, resIspe.width);
         }
-      }
-    },
-    {
-      "Section 7.3.5.1\n"
+      } },
+    { "Section 7.3.5.1\n"
       "Depth maps and alpha planes [...] if [...] encoded in colour [...] shall be\n"
       "encoded in a colour format with a luma plane and chroma planes",
-      [] (Box const& root, IReport* out)
-      {
+      [](Box const &root, IReport *out) {
         auto const codec = codecDetection(root);
 
         if(codec == AVC)
@@ -448,10 +427,8 @@ const std::initializer_list<RuleDesc> getRulesMiafColours()
           return;
 
         // AV1, AVC and HEVC are YCbCr-based: nothing to do
-      }
-    }
+      } }
   };
 
   return rulesProfiles;
 }
-

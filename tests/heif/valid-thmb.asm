@@ -6,7 +6,7 @@ db "ftyp"
 
 db "isom"
 dd BE(0x00)
-db "mif1", "miaf"
+db "mif1", "miaf", "isom"
 
 ftyp_end:
 

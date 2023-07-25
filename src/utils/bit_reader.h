@@ -2,11 +2,10 @@
 
 #include <cstdint>
 
-void ENSURE(bool cond, const char* format, ...);
+void ENSURE(bool cond, const char *format, ...);
 
-struct BitReader
-{
-  uint8_t* src;
+struct BitReader {
+  uint8_t *src;
   int size = 0;
 
   int64_t u(int n)
@@ -24,7 +23,7 @@ struct BitReader
     ENSURE((m_pos % 8) == 0, "BitReader::sub(): not byte-aligned");
     ENSURE(byteCount <= size, "BitReader::sub(): overflow asking %d bytes with %d available", byteCount, size - m_pos);
 
-    auto sub = BitReader { src + m_pos / 8, byteCount };
+    auto sub = BitReader{ src + m_pos / 8, byteCount };
     m_pos += byteCount * 8;
     return sub;
   }
@@ -40,11 +39,7 @@ struct BitReader
     return (src[byteOffset] >> (7 - bitOffset)) & 1;
   }
 
-  bool empty() const
-  {
-    return m_pos / 8 >= size;
-  }
+  bool empty() const { return m_pos / 8 >= size; }
 
   int m_pos = 0;
 };
-

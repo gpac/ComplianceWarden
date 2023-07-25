@@ -7,6 +7,7 @@ ftyp_start:
     db 0x00, 0x00, 0x00, 0x00 ; "minor_version(32)" 
     db 0x6D, 0x69, 0x66, 0x31 ; "compatible_brand(32)" ('mif1') 
     db 0x6D, 0x69, 0x61, 0x66 ; "compatible_brand(32)" ('miaf') 
+    db 0x61, 0x76, 0x69, 0x66 ; "compatible_brand(32)" ('avif') 
 ftyp_end:
 meta_start:
     dd BE(meta_end - meta_start)

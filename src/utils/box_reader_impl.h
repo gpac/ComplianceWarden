@@ -1,24 +1,20 @@
 #pragma once
 
-#include "bit_reader.h"
-#include "spec.h"
-#include "common_boxes.h"
-#include "fourcc.h"
 #include <cstring> // strcmp
 
-struct BoxReader : IReader
-{
-  bool empty() override
-  {
-    return br.empty();
-  }
+#include "bit_reader.h"
+#include "common_boxes.h"
+#include "fourcc.h"
+#include "spec.h"
 
-  int64_t sym(const char* name, int bits) override
+struct BoxReader : IReader {
+  bool empty() override { return br.empty(); }
+
+  int64_t sym(const char *name, int bits) override
   {
     auto val = br.u(bits);
 
-    if(!strcmp(name, ""))
-    {
+    if(!strcmp(name, "")) {
       // Avoid allocating for unparsed symbols.
       // Our current data structure is naive and memory-greedy.
       // It breaks the WebAssembly runtime.
@@ -27,9 +23,7 @@ struct BoxReader : IReader
         myBox.syms.back().numBits += bits;
       else
         myBox.syms.push_back({ name, val, bits });
-    }
-    else
-    {
+    } else {
       myBox.syms.push_back({ name, val, bits });
     }
 
@@ -50,20 +44,18 @@ struct BoxReader : IReader
     subReader.myBox.syms.push_back({ "fourcc", (int64_t)subReader.myBox.fourcc, 32 });
     unsigned boxHeaderSize = 8;
 
-    if(size == 1)
-    {
+    if(size == 1) {
       size = subReader.myBox.size = br.u(64); // large size
       subReader.myBox.syms.push_back({ "size", (int64_t)subReader.myBox.size, 64 });
       boxHeaderSize += 8;
-    }
-    else if(size == 0)
-    {
+    } else if(size == 0) {
       // until the end of container - may be impossible to get right in some wrong cases
       size = subReader.myBox.size = myBox.size + boxHeaderSize - br.m_pos / 8;
     }
 
-    ENSURE(size >= boxHeaderSize, "BoxReader::box(): box size %llu < %u bytes (fourcc='%s')",
-           size, boxHeaderSize, toString(subReader.myBox.fourcc).c_str());
+    ENSURE(
+      size >= boxHeaderSize, "BoxReader::box(): box size %llu < %u bytes (fourcc='%s')", size, boxHeaderSize,
+      toString(subReader.myBox.fourcc).c_str());
 
     subReader.br = br.sub((int)size);
     auto pos = subReader.br.m_pos;
@@ -74,14 +66,13 @@ struct BoxReader : IReader
     parseFunc(&subReader);
     myBox.children.push_back(std::move(subReader.myBox));
 
-    ENSURE((uint64_t)subReader.br.m_pos == pos + size * 8,
-           "Box '%s': read %d bits instead of %llu bits",
-           toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, size * 8);
+    ENSURE(
+      (uint64_t)subReader.br.m_pos == pos + size * 8, "Box '%s': read %d bits instead of %llu bits",
+      toString(subReader.myBox.fourcc).c_str(), subReader.br.m_pos - pos, size * 8);
   }
 
   BitReader br;
 
-  Box myBox {};
-  std::vector<const SpecDesc*> specs;
+  Box myBox{};
+  std::vector<const SpecDesc *> specs;
 };
-
