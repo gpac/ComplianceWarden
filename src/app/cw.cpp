@@ -180,7 +180,9 @@ int main(int argc, const char *argv[])
 
   if(specName.empty() || urls.size() != 1) {
     if(!testMode) {
-      fprintf(stderr, "/!\\ Failed argument parsing. Switching to legacy mode. /!\\\n\n");
+      fprintf(stderr, "+------------------------------------------------------------+\n");
+      fprintf(stderr, "| /!\\ Failed argument parsing. Switching to legacy mode. /!\\ |\n");
+      fprintf(stderr, "+------------------------------------------------------------+\n");
       opt.printHelp(stderr);
     } else {
       for(int i = 1, j = 1; i < argc; ++i, ++j) {
