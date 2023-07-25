@@ -17,19 +17,20 @@ struct ResolutionDetails {
   int64_t height{ 0 };
 };
 
-ResolutionDetails getOBUDetails(Box const &root, IReport * /*//Erik: out*/)
+ResolutionDetails getOBUDetails(Box const &root, IReport *out)
 {
   BoxReader br;
 
+  // Romain: we should add checks to get the offsets?
+
   auto mdats = findBoxes(root, FOURCC("mdat"));
   if(mdats.size() != 1) {
-    // out->error("%d mdat found, expected 1", mdats.size());
+    out->error("%llu mdat found, expected 1", mdats.size());
     return { false };
   }
   br.br = { mdats[0]->original + 8, (int)mdats[0]->size - 8 };
 
   if(br.br.size < 2) {
-    // out->error("Not enough bytes(=%llu) to contain an OBU", br.br.size);
     return { false };
   }
 
@@ -40,7 +41,7 @@ ResolutionDetails getOBUDetails(Box const &root, IReport * /*//Erik: out*/)
   }
 
   if(obuType != OBU_SEQUENCE_HEADER) {
-    // out->error("No OBU Sequence header found");
+    out->error("No OBU Sequence header found");
     return { false };
   }
 
@@ -56,12 +57,6 @@ ResolutionDetails getOBUDetails(Box const &root, IReport * /*//Erik: out*/)
     }
   }
   return { true, obuWidth, obuHeight };
-}
-
-///\FIXME: Actually parse from the OBU stream
-ResolutionDetails getMaxRenderSize()
-{
-  return { true, 2408, 1600 };
 }
 
 ResolutionDetails getAv01Details(Box const &root)
@@ -291,8 +286,15 @@ const SpecDesc specAv1ISOBMFF = {
         }
 
         auto av01Details = getAv01Details(root);
+        if(!av01Details.valid) {
+          return;
+        }
+
         if(av01Details.width != obuDetails.width || av01Details.height != obuDetails.height) {
-          // Erik: out->error("No match found, OBU specifiex %dx%d");
+          out->error(
+            "Width and height of the VisualSampleEntry (%lldx%lld) don't match with the Sequence Header OBU "
+            "(%lldx%lld)",
+            av01Details.width, av01Details.height, obuDetails.width, obuDetails.height);
           return;
         }
 
@@ -315,32 +317,27 @@ const SpecDesc specAv1ISOBMFF = {
             continue;
           }
 
-          ResolutionDetails maxRenderSize = getMaxRenderSize();
-
-          if(!maxRenderSize.valid) {
-            out->error("No maximumRenderSize could be parsed");
-            return;
-          }
-
           auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
           if(tkhdBoxes.size() != 1) {
-            out->error("%d 'tkhd' boxes found, when 1 is expected", tkhdBoxes.size());
+            out->error("%llu 'tkhd' boxes found, when 1 is expected", tkhdBoxes.size());
             return;
           }
 
           ResolutionDetails tkhdResolution{ false };
           for(auto &sym : tkhdBoxes[0]->syms) {
             if(std::string(sym.name) == "width") {
-              tkhdResolution.width = sym.value;
+              tkhdResolution.width = sym.value >> 16;
             }
             if(std::string(sym.name) == "height") {
-              tkhdResolution.height = sym.value;
+              tkhdResolution.height = sym.value >> 16;
             }
           }
           tkhdResolution.valid = tkhdResolution.width && tkhdResolution.height;
 
-          if(maxRenderSize.width != obuDetails.width || maxRenderSize.height != obuDetails.height) {
-            out->warning("MaxRenderWidth and/or MaxRenderHeight do not correspond to tkhd box");
+          if(obuDetails.width != tkhdResolution.width || obuDetails.height != tkhdResolution.height) {
+            out->warning(
+              "MaxRenderWidth/MaxRenderHeight (%lldx%lld) differ to tkhd box (%lldx%lld)", obuDetails.width,
+              obuDetails.height, tkhdResolution.width, tkhdResolution.height);
             return;
           }
         }
@@ -351,7 +348,8 @@ const SpecDesc specAv1ISOBMFF = {
       "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively\n"
       "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the\n"
       "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",
-      [](Box const &root, IReport *out) {
+      [](Box const & /*root*/, IReport * /*out*/) {
+#if 0 // Romain: we need to parse
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
           return;
@@ -364,15 +362,8 @@ const SpecDesc specAv1ISOBMFF = {
             continue;
           }
 
-          ResolutionDetails maxRenderSize = getMaxRenderSize();
-
-          if(!maxRenderSize.valid) {
-            out->error("No maximumRenderSize could be parsed");
-            return;
-          }
-
           bool expectPixelAspectRatio =
-            (maxRenderSize.width != obuDetails.width || maxRenderSize.height != obuDetails.height);
+            (obuDetails.width != obuDetails.width || obuDetails.height != obuDetails.height);
 
           if(!expectPixelAspectRatio) {
             continue;
@@ -382,7 +373,7 @@ const SpecDesc specAv1ISOBMFF = {
 
           auto paspBoxes = findBoxes(*trakBox, FOURCC("pasp"));
           if(paspBoxes.size() != 1) {
-            out->error("%d 'pasp' boxes found, when 1 is expected", paspBoxes.size());
+            out->error("%llu 'pasp' boxes found, when 1 is expected", paspBoxes.size());
             return;
           }
 
@@ -399,18 +390,18 @@ const SpecDesc specAv1ISOBMFF = {
           }
 
           double paspRatio = (double)hSpacing / vSpacing;
-          double frameRatio =
-            (double)(maxRenderSize.width * obuDetails.width) / (maxRenderSize.height * obuDetails.height);
+          double frameRatio = (double)(obuDetails.width * obuDetails.width) / (obuDetails.height * obuDetails.height);
 
           bool validPASP = (paspRatio == frameRatio);
 
           if(!validPASP) {
             out->error(
-              "Invalid pasp; %u / %u != %u / %u", hSpacing, vSpacing, (maxRenderSize.width * obuDetails.width),
-              (maxRenderSize.height * obuDetails.height));
+              "Invalid pasp: %u / %u != %u / %u", hSpacing, vSpacing, (obuDetails.width * obuDetails.width),
+              (obuDetails.height * obuDetails.height));
             return;
           }
         }
+#endif
       } },
     { "Section 2.2.4\n"
       "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples\n"
@@ -427,7 +418,7 @@ const SpecDesc specAv1ISOBMFF = {
           for(auto &av01Box : av01Boxes) {
             auto av1CBoxes = findBoxes(*av01Box, FOURCC("av1C"));
             if(av1CBoxes.size() != 1) {
-              out->error("%d AV1CodecConfiguration box(es) found, expected 1", av1CBoxes.size());
+              out->error("%llu AV1CodecConfiguration box(es) found, expected 1", av1CBoxes.size());
               return;
             }
             if(!av1CBoxes.empty())
@@ -448,9 +439,8 @@ const SpecDesc specAv1ISOBMFF = {
           auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
           for(auto &av1CBox : av1CBoxes) {
             for(auto &sym : av1CBox->syms) {
-              // Erik: std::cerr << sym.name << ": " << sym.value << std::endl;
               if(std::string(sym.name) == "marker" && sym.value != 1) {
-                out->error("Marker SHALL be set to 1, found %d", sym.value);
+                out->error("Marker SHALL be set to 1, found %lld", sym.value);
               }
               out->covered();
             }
@@ -470,9 +460,8 @@ const SpecDesc specAv1ISOBMFF = {
           auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
           for(auto &av1CBox : av1CBoxes) {
             for(auto &sym : av1CBox->syms) {
-              // Erik: std::cerr << sym.name << ": " << sym.value << std::endl;
               if(std::string(sym.name) == "version" && sym.value != 1) {
-                out->error("Version SHALL be set to 1, found %d", sym.value);
+                out->error("Version SHALL be set to 1, found %lld", sym.value);
               }
               out->covered();
             }
