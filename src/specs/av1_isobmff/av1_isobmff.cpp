@@ -365,15 +365,19 @@ const SpecDesc specAv1ISOBMFF = {
           return;
         }
 
-        auto trakBoxes = findBoxes(root, FOURCC("trak"));
-        for(auto &trakBox : trakBoxes) {
-          auto av01Details = getAv01Details(*trakBox);
-          if(!av01Details.valid) {
-            continue;
+        auto av01Boxes = findBoxes(root, FOURCC("av01"));
+        for(auto av01Box : av01Boxes) {
+          int vSpace = 0, hSpace = 0;
+          for(auto &sym : av01Box->syms) {
+            if(std::string(sym.name) == "horizresolution") {
+              vSpace = sym.value >> 16;
+            }
+            if(std::string(sym.name) == "vertresolution") {
+              hSpace = sym.value >> 16;
+            }
           }
 
-          bool expectPixelAspectRatio =
-            (obuDetails.width != av01Details.width || obuDetails.height != av01Details.height);
+          bool expectPixelAspectRatio = vSpace != hSpace;
 
           if(!expectPixelAspectRatio) {
             continue;
@@ -381,7 +385,7 @@ const SpecDesc specAv1ISOBMFF = {
 
           out->covered();
 
-          auto paspBoxes = findBoxes(*trakBox, FOURCC("pasp"));
+          auto paspBoxes = findBoxes(*av01Box, FOURCC("pasp"));
           if(paspBoxes.size() != 1) {
             out->error("%llu 'pasp' boxes found, when 1 is expected", paspBoxes.size());
             return;
@@ -400,12 +404,12 @@ const SpecDesc specAv1ISOBMFF = {
           }
 
           double paspRatio = (double)hSpacing / vSpacing;
-          double frameRatio = (double)(obuDetails.width) / (obuDetails.height);
+          double frameRatio = (double)(obuDetails.width * vSpace) / (obuDetails.height * hSpace);
 
-          bool validPASP = (paspRatio == frameRatio);
+          bool validPASP = (paspRatio - frameRatio < 0.001);
 
           if(!validPASP) {
-            out->error("Invalid pasp: %u / %u != %u / %u", hSpacing, vSpacing, obuDetails.width, obuDetails.height);
+            out->error("Invalid pasp: found %ux%u instead of %ux%u", hSpacing, vSpacing, hSpace, vSpace);
             return;
           }
         }

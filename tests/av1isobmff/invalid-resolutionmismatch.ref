@@ -6,11 +6,10 @@ Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 De
 https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
-[av1isobmff][Rule #3] Error: Width and height of the VisualSampleEntry (640x480) don't match with the Sequence Header OBU (4096x2160)
-[av1isobmff][Rule #5] Error: 0 'pasp' boxes found, when 1 is expected
+[av1isobmff][Rule #3] Error: Width and height of the VisualSampleEntry (4224x2176) don't match with the Sequence Header OBU (4096x2160)
 
 ========================================
-[av1isobmff] 2 error(s), 0 warning(s).
+[av1isobmff] 1 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -19,11 +18,6 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 The width and height fields of the VisualSampleEntry SHALL equal the values of
 max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header
 OBU applying to the samples associated with this sample entry.
-
-[av1isobmff][Rule #5] Section 2.2.4
-Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively
-the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the
-Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry
 
 +--------------------------------------+
 |          isobmff validation          |

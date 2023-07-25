@@ -139,7 +139,7 @@ av01_start:
     db 0x10, 0x00 ; "width(16)" 
     db 0x08, 0x70 ; "height(16)" 
     db 0x00, 0x48, 0x00, 0x00 ; "horizresolution(32)" 
-    db 0x00, 0x48, 0x00, 0x00 ; "vertresolution(32)" 
+    db 0x00, 0x49, 0x00, 0x00 ; "vertresolution(32)" 
     db 0x00, 0x00, 0x00, 0x00 ; "reserved8(32)" 
     db 0x00, 0x01 ; "frame_count(16)" 
     db 0x00 ; "compressorname(8)" 
@@ -212,6 +212,12 @@ av01_start:
         dd BE(btrt_end - btrt_start)
         dd "btrt"
     btrt_end:
+    pasp_start:
+      dd BE(pasp_end - pasp_start)
+      dd "pasp"
+      dd BE(90601) ; Hspacing
+      dd BE(40000) ; Vspacing
+    pasp_end:
 av01_end:
 
 
