@@ -863,7 +863,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "The sample data SHALL be a sequence of OBUs forming a Temporal Unit",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Erik
       } },
     { "Section 2.4\n"
       "Each OBU SHALL follow the open_bitstream_unit Low Overhead Bitstream Format\n"
@@ -871,38 +871,44 @@ const SpecDesc specAv1ISOBMFF = {
       "to 1 except for the last OBU in the sample, for which obu_has_size_field MAY be\n"
       "set to 0, in which case it is assumed to fill the remainder of the sample",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Erik
       } },
     { "Section 2.4\n"
       "OBU trailing bits SHOULD be limited to byte alignment and SHOULD not be used for padding",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Erik
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TILE_LIST SHALL NOT be used.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Erik
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Erik
       } },
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Erik
       } },
     { "Section 2.4\n"
       "Delayed Random Access Points SHOULD be signaled using sample groups and the\n"
       "AV1ForwardKeyFrameSampleGroupEntry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Romain
+        /*
+         delayed random access point is defined as being a frame:
+• with frame_type equal to KEY_FRAME
+• with show_frame equal to 0
+• that is contained in a temporal unit that also contains a sequence header OBU
+        */
       } },
     { "Section 2.4\n"
       "Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO: question sent to know if testable
       } },
     { "Section 2.4\n"
       "If a file contains multiple tracks that are alternative representations of the\n"
@@ -916,14 +922,14 @@ const SpecDesc specAv1ISOBMFF = {
       "Metadata OBUs may be carried in sample data. In this case, the\n"
       "AV1MetadataSampleGroupEntry SHOULD be used.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Romain
       } },
     { "Section 2.4\n"
       "If the metadata OBUs are static for the entire set of samples associated with a\n"
       "given sample description entry, they SHOULD also be in the OBU array in the\n"
       "sample description entry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Romain
       } },
     { "Section 2.4\n"
       "If an AV1 Sample is signaled as a sync sample (in the SyncSampleBox or by\n"
@@ -932,23 +938,29 @@ const SpecDesc specAv1ISOBMFF = {
       "- Its first frame is a Key Frame that has show_frame flag set to 1,\n"
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Romain
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the ctts box and composition offsets in\n"
-      "movie fragments SHALL NOT be used. Similarly, the is_leading flag, if used,\n"
+      "movie fragments SHALL NOT be used.",
+      [](Box const & /*root*/, IReport * /*out*/) {
+        // TODO@Romain
+      } },
+    { "Section 2.4\n"
+      "In tracks using the AV1SampleEntry, the is_leading flag, if used,\n"
       "SHALL be set to 0 or 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Romain
       } },
     { "Section 2.8.4\n"
       "metadata_specific_parameters is only defined when metadata_type is set to\n"
       "METADATA_TYPE_ITUT_T35 in which case its value SHALL be set to the first 24 bits\n"
-      "of the metadata_itut_t35 structure. For other types of metadata, its[metadata_specific_parameters] value SHOULD "
-      "be set to 0.",
+      "of the metadata_itut_t35 structure. For other types of metadata,\n"
+      "its [metadata_specific_parameters] value SHOULD be set to 0.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO
+        // TODO@Romain
       } },
+#if 0 // CMAF: not covered for now
     { "Section 3\n"
       "CMAF AV1 Tracks SHALL use an AV1SampleEntry",
       [](Box const & /*root*/, IReport * /*out*/) {
@@ -966,6 +978,7 @@ const SpecDesc specAv1ISOBMFF = {
       [](Box const & /*root*/, IReport * /*out*/) {
         // TODO
       } },
+#endif
   },
   isIsobmff,
 };

@@ -89,7 +89,7 @@ const SpecDesc specAv1Hdr10plus = {
             if(sym.value != 0x0001)
               out->error("itu_t_t35_terminal_provider_oriented_code shall be set as 0x0001, found 0x%04X", sym.value);
 
-          // TODO: also check application_identifier and application_mode
+          // TODO@Romain: also check application_identifier and application_mode
         }
       } },
     { "Section 2.2.1\n"
@@ -426,7 +426,7 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        // TODO: implement me
+        // TODO@Romain
       } },
     { "Section 2.2.2\n"
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
@@ -435,7 +435,7 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        // TODO: implement me
+        // TODO@Romain
       } },
     { "Section 3.1\n"
       "For formats that use the AV1CodecConfigurationRecord when storing\n"
@@ -447,7 +447,7 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        // TODO: implement me
+        // TODO@Romain
       } },
     { "Section 3.2\n"
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",
@@ -456,7 +456,7 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        // TODO: sample groups not supported in ISOBMFF yet
+        // TODO@Romain: sample groups not supported in ISOBMFF yet
         // out->covered();
       } },
     { "Section 3.2\n"
