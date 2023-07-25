@@ -1,3 +1,4 @@
+; vim: syntax=nasm
 %define BE(a) ( ((((a)>>24)&0xFF) << 0) + ((((a)>>16)&0xFF) << 8) + ((((a)>>8)&0xFF) << 16)  + ((((a)>>0)&0xFF) << 24))
 %define fourcc(a) db a
 
@@ -48,8 +49,8 @@ tkhd_start:
     db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
     db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
     db 0x40, 0x00, 0x00, 0x00 ; matrix(32) 
-    db 0x10, 0x00, 0x00, 0x00 ; width(32) 
-    db 0x08, 0x70, 0x00, 0x00 ; height(32) 
+    db 0x10, 0x00, 0x04, 0xB4 ; width(32) 
+    db 0x08, 0x70, 0x03, 0x20 ; height(32) 
 tkhd_end:
 
 mdia_start:
@@ -211,13 +212,8 @@ av01_start:
         dd BE(btrt_end - btrt_start)
         dd "btrt"
     btrt_end:
-    pasp_start:
-      dd BE(pasp_end - pasp_start)
-      dd "pasp"
-      dd BE(1); Hspacing
-      dd BE(1);Vspacing
-    pasp_end:
 av01_end:
+
 
 
 
@@ -413,7 +409,7 @@ mdat_start:
     db 0xFF ; enable_filter_intra(1) enable_intra_edge_filter(1) enable_interintra_compound(1) enable_masked_compound(1) enable_warped_motion(1) enable_dual_filter(1) enable_order_hint(1) enable_jnt_comp(1) 
     db 0xF9 ; enable_ref_frame_mvs(1) seq_choose_screen_content_tools(1) seq_choose_integer_mv(1) order_hint_bits_minus_1(3) enable_superres(1) enable_cdef(1) 
     db 0xD0, 0x91, 0x00, 0x94 ; enable_restoration(1) high_bitdepth(1) mono_chrome(1) color_description_present_flag(1) color_primaries(8) transfer_characteristics(8) matrix_coefficients(8) color_range(1) chroma_sample_position(2) separate_uv_delta_q(1) 
-    db 0x40 ; film_grain_params_present(1) ('@') bits(7) ('@')  
+    db 0x40 ; film_grain_params_present(1) ('@') bits(7) ('@') 
      ; /seqhdr(0) 
      ; obu(0) 
     db 0x2A ; forbidden(1) ('*') obu_type(4) ('*') obu_extension_flag(1) ('*') obu_has_size_field(1) ('*') obu_reserved_1bit(1) ('*') 

@@ -19,44 +19,55 @@ struct ResolutionDetails {
 
 ResolutionDetails getOBUDetails(Box const &root, IReport *out)
 {
-  BoxReader br;
+  bool foundAv1 = false;
 
-  // Romain: we should add checks to get the offsets?
+  auto stbls = findBoxes(root, FOURCC("stbl"));
+  for(auto stbl : stbls) {
+    for(auto &stblChild : stbl->children)
+      if(stblChild.fourcc == FOURCC("stsd"))
+        for(auto &stsdChild : stblChild.children)
+          if(stsdChild.fourcc == FOURCC("av01"))
+            for(auto &sampleEntryChild : stsdChild.children)
+              if(sampleEntryChild.fourcc == FOURCC("av1C"))
+                foundAv1 = true;
 
-  auto mdats = findBoxes(root, FOURCC("mdat"));
-  if(mdats.size() != 1) {
-    out->error("%llu mdat found, expected 1", mdats.size());
-    return { false };
+    if(!foundAv1)
+      continue;
+
+    for(auto &stblChild : stbl->children)
+      if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64")) {
+        for(auto &sym : stblChild.syms)
+          if(!strcmp(sym.name, "chunk_offset")) {
+            BoxReader br;
+            auto const probeSize = 1024;
+            br.br = BitReader{ root.original + sym.value, probeSize };
+
+            auto obuType = 0;
+            Av1State stateUnused;
+            while(obuType != OBU_SEQUENCE_HEADER) {
+              obuType = parseAv1Obus(&br, stateUnused, false);
+            }
+
+            if(obuType != OBU_SEQUENCE_HEADER) {
+              out->error("No OBU Sequence header found");
+              return { false };
+            }
+
+            auto obuWidth = 0;
+            auto obuHeight = 0;
+
+            for(auto &sym : br.myBox.syms) {
+              if(std::string(sym.name) == "max_frame_width_minus_1")
+                obuWidth = sym.value + 1;
+              else if(std::string(sym.name) == "max_frame_height_minus_1")
+                obuHeight = sym.value + 1;
+            }
+            return { true, obuWidth, obuHeight };
+          }
+      }
   }
-  br.br = { mdats[0]->original + 8, (int)mdats[0]->size - 8 };
 
-  if(br.br.size < 2) {
-    return { false };
-  }
-
-  Av1State stateUnused;
-  auto obuType = 0;
-  while(obuType != OBU_SEQUENCE_HEADER) {
-    obuType = parseAv1Obus(&br, stateUnused, false);
-  }
-
-  if(obuType != OBU_SEQUENCE_HEADER) {
-    out->error("No OBU Sequence header found");
-    return { false };
-  }
-
-  auto obuWidth = 0;
-  auto obuHeight = 0;
-
-  for(auto &sym : br.myBox.syms) {
-    if(std::string(sym.name) == "max_frame_width_minus_1") {
-      obuWidth = sym.value + 1;
-    }
-    if(std::string(sym.name) == "max_frame_height_minus_1") {
-      obuHeight = sym.value + 1;
-    }
-  }
-  return { true, obuWidth, obuHeight };
+  return { false };
 }
 
 ResolutionDetails getAv01Details(Box const &root)
@@ -348,8 +359,7 @@ const SpecDesc specAv1ISOBMFF = {
       "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively\n"
       "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the\n"
       "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",
-      [](Box const & /*root*/, IReport * /*out*/) {
-#if 0 // Romain: we need to parse
+      [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
           return;
@@ -363,7 +373,7 @@ const SpecDesc specAv1ISOBMFF = {
           }
 
           bool expectPixelAspectRatio =
-            (obuDetails.width != obuDetails.width || obuDetails.height != obuDetails.height);
+            (obuDetails.width != av01Details.width || obuDetails.height != av01Details.height);
 
           if(!expectPixelAspectRatio) {
             continue;
@@ -390,18 +400,15 @@ const SpecDesc specAv1ISOBMFF = {
           }
 
           double paspRatio = (double)hSpacing / vSpacing;
-          double frameRatio = (double)(obuDetails.width * obuDetails.width) / (obuDetails.height * obuDetails.height);
+          double frameRatio = (double)(obuDetails.width) / (obuDetails.height);
 
           bool validPASP = (paspRatio == frameRatio);
 
           if(!validPASP) {
-            out->error(
-              "Invalid pasp: %u / %u != %u / %u", hSpacing, vSpacing, (obuDetails.width * obuDetails.width),
-              (obuDetails.height * obuDetails.height));
+            out->error("Invalid pasp: %u / %u != %u / %u", hSpacing, vSpacing, obuDetails.width, obuDetails.height);
             return;
           }
         }
-#endif
       } },
     { "Section 2.2.4\n"
       "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples\n"
