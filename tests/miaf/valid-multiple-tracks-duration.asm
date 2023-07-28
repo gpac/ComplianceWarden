@@ -166,6 +166,7 @@ minf_start:
         stsz_start:
             dd BE(stsz_end - stsz_start)
             dd "stsz"
+            db 0x00, 0x00, 0x00, 0x00
             db 0x00, 0x00, 0x00, 0x01
             db 0x00, 0x00, 0x00, 0x01
         stsz_end:
@@ -300,6 +301,7 @@ minf2_start:
         stsz2_start:
             dd BE(stsz2_end - stsz2_start)
             dd "stsz"
+            db 0x00, 0x00, 0x00, 0x00
             db 0x00, 0x00, 0x00, 0x01
             db 0x00, 0x00, 0x00, 0x01
         stsz2_end:

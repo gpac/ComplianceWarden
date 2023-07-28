@@ -82,6 +82,19 @@ void parseTkhd(IReader *br)
   br->sym("height", 32); // fixed 16.16
 }
 
+void parseStsz(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto sample_size = br->sym("sample_size", 32);
+  auto sample_count = br->sym("sample_count", 32);
+
+  if(sample_size == 0)
+    for(auto i = 1; i <= sample_count; i++)
+      br->sym("entry_size", 32);
+}
+
 void parseStco(IReader *br)
 {
   br->sym("version", 8);
@@ -855,6 +868,8 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseMdcv;
   case FOURCC("pitm"):
     return &parsePitm;
+  case FOURCC("stsz"):
+    return &parseStsz;
   }
 
   if(isVisualSampleEntry(fourcc))
