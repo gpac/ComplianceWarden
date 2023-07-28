@@ -404,9 +404,6 @@ mdat_start:
     dd BE(mdat_end - mdat_start)
     dd "mdat"
      ; obu(0) 
-    db 0x12 ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
-    db 0x00 ; leb128_byte(8) 
-     ; obu(0) 
     db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
     db 0x0F ; leb128_byte(8) 
      ; seqhdr(0) 

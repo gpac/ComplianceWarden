@@ -7,19 +7,15 @@ https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #19] Warning: [TrackId=2] The CleanApertureBox clap SHOULD not be present.
-[av1isobmff][Rule #25] Warning: Found 1 OBU_TEMPORAL_DELIMITER obu(s)
 
 ========================================
-[av1isobmff] 0 error(s), 2 warning(s).
+[av1isobmff] 0 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
 [av1isobmff][Rule #19] Section 2.3.4
 The CleanApertureBox clap SHOULD not be present.
-
-[av1isobmff][Rule #25] Section 2.4
-OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.
 
 +--------------------------------------+
 |          isobmff validation          |

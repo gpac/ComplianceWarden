@@ -2,14 +2,20 @@
 %define fourcc(a) db a
 
 ftyp_start:
-dd BE(ftyp_end - ftyp_start)
-db "ftyp"
-db "isom"
-dd BE(0x00)
-db "mif1", "miaf"
-db "av01"
-db "isom"
+    dd BE(ftyp_end - ftyp_start)
+    dd "ftyp"
+    db 0x69, 0x73, 0x6F, 0x6D ; major_brand(32) ('isom') 
+    db 0x00, 0x00, 0x02, 0x00 ; minor_version(32) 
+    db 0x69, 0x73, 0x6F, 0x6D ; compatible_brand(32) ('isom') 
+    db 0x61, 0x76, 0x30, 0x31 ; compatible_brand(32) ('av01') 
+    db 0x69, 0x73, 0x6F, 0x32 ; compatible_brand(32) ('iso2') 
+    db 0x6D, 0x70, 0x34, 0x31 ; compatible_brand(32) ('mp41') 
 ftyp_end:
+
+free_start:
+    dd BE(free_end - free_start)
+    dd "free"
+free_end:
 
 moov_start:
 dd BE(moov_end - moov_start)
@@ -135,8 +141,8 @@ av01_start:
     db 0x00, 0x00, 0x00, 0x00 ; "pre_defined1(32)" 
     db 0x00, 0x00, 0x00, 0x00 ; "pre_defined2(32)" 
     db 0x00, 0x00, 0x00, 0x00 ; "pre_defined3(32)" 
-    db 0x10, 0x80 ; "width(16)" 
-    db 0x08, 0x80 ; "height(16)" 
+    db 0x10, 0x00 ; "width(16)" 
+    db 0x08, 0x70 ; "height(16)" 
     db 0x00, 0x48, 0x00, 0x00 ; "horizresolution(32)" 
     db 0x00, 0x48, 0x00, 0x00 ; "vertresolution(32)" 
     db 0x00, 0x00, 0x00, 0x00 ; "reserved8(32)" 
@@ -193,7 +199,7 @@ av01_start:
         db 0xF9 ; enable_ref_frame_mvs(1) seq_choose_screen_content_tools(1) seq_choose_integer_mv(1) order_hint_bits_minus_1(3) enable_superres(1) enable_cdef(1) 
         db 0xD0, 0x91, 0x00, 0x94 ; enable_restoration(1) high_bitdepth(1) mono_chrome(1) color_description_present_flag(1) color_primaries(8) transfer_characteristics(8) matrix_coefficients(8) color_range(1) chroma_sample_position(2) separate_uv_delta_q(1) 
         db 0x40 ; film_grain_params_present(1) ('@') bits(7) ('@') 
-            ; /seqhdr(0)  
+            ; /seqhdr(0) 
     av1C3_end:
     ccst_start:
         dd BE(ccst_end - ccst_start)
@@ -211,8 +217,13 @@ av01_start:
         dd BE(btrt_end - btrt_start)
         dd "btrt"
     btrt_end:
+    pasp_start:
+      dd BE(pasp_end - pasp_start)
+      dd "pasp"
+      dd BE(90601) ; Hspacing
+      dd BE(40000) ; Vspacing
+    pasp_end:
 av01_end:
-
 
 
 
@@ -392,10 +403,12 @@ mdia2_end:
 trak2_end:
 
 moov_end:
-
 mdat_start:
     dd BE(mdat_end - mdat_start)
     dd "mdat"
+     ; obu(0) 
+    db 0x12 ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
+    db 0x00 ; leb128_byte(8) 
      ; obu(0) 
     db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
     db 0x0F ; leb128_byte(8) 
