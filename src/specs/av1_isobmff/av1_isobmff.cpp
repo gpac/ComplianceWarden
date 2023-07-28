@@ -521,16 +521,14 @@ const SpecDesc specAv1ISOBMFF = {
                                  root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.seq_profile != bsState.av1c.seq_profile)
                                 out->error(
-                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL "
-                                  "be\n"
+                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL be\n"
                                   "equal to the seq_profile value from the first Sequence Header OBU in the mdat "
                                   "(%lld)",
                                   trackId, av1cRef.seq_profile, bsState.av1c.seq_profile);
 
                               if(av1cRef.seq_profile != av1cState.av1c.seq_profile)
                                 out->error(
-                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL "
-                                  "be\n"
+                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL be\n"
                                   "equal to the seq_profile value from the first Sequence Header OBU in configOBUS "
                                   "(%lld)",
                                   trackId, av1cRef.seq_profile, av1cState.av1c.seq_profile);
@@ -565,8 +563,7 @@ const SpecDesc specAv1ISOBMFF = {
                                  root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.seq_level_idx_0 != bsState.av1c.seq_level_idx_0)
                                 out->error(
-                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_level_idx_0 field value (%lld) "
-                                  "SHALL "
+                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_level_idx_0 field value (%lld) SHALL "
                                   "be\n"
                                   "equal to the seq_level_idx_0 value from the first Sequence Header OBU in the mdat "
                                   "(%lld)",
@@ -574,11 +571,9 @@ const SpecDesc specAv1ISOBMFF = {
 
                               if(av1cRef.seq_level_idx_0 != av1cState.av1c.seq_level_idx_0)
                                 out->error(
-                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_level_idx_0 field value (%lld) "
-                                  "SHALL "
+                                  "[TrackId=%u] The AV1CodecConfigurationBox seq_level_idx_0 field value (%lld) SHALL "
                                   "be\n"
-                                  "equal to the seq_level_idx_0 value from the first Sequence Header OBU in "
-                                  "configOBUS "
+                                  "equal to the seq_level_idx_0 value from the first Sequence Header OBU in configOBUS "
                                   "(%lld)",
                                   trackId, av1cRef.seq_level_idx_0, av1cState.av1c.seq_level_idx_0);
                             }
@@ -613,8 +608,7 @@ const SpecDesc specAv1ISOBMFF = {
                               if(av1cRef.seq_tier_0 != bsState.av1c.seq_tier_0)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox seq_tier_0 field value (%lld) SHALL be\n"
-                                  "equal to the seq_tier_0 value from the first Sequence Header OBU in the mdat "
-                                  "(%lld)",
+                                  "equal to the seq_tier_0 value from the first Sequence Header OBU in the mdat (%lld)",
                                   trackId, av1cRef.seq_tier_0, bsState.av1c.seq_tier_0);
 
                               if(av1cRef.seq_tier_0 != av1cState.av1c.seq_tier_0)
@@ -698,8 +692,7 @@ const SpecDesc specAv1ISOBMFF = {
                               if(av1cRef.twelve_bit != bsState.av1c.twelve_bit)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox twelve_bit field value (%lld) SHALL be\n"
-                                  "equal to the twelve_bit value from the first Sequence Header OBU in the mdat "
-                                  "(%lld)",
+                                  "equal to the twelve_bit value from the first Sequence Header OBU in the mdat (%lld)",
                                   trackId, av1cRef.twelve_bit, bsState.av1c.twelve_bit);
 
                               if(av1cRef.twelve_bit != av1cState.av1c.twelve_bit)
@@ -802,8 +795,7 @@ const SpecDesc specAv1ISOBMFF = {
               }
       } },
     { "Section 2.3.4\n"
-      "The timing_info_present_flag in the Sequence Header OBU (in the configOBUs field or in the associated "
-      "samples) "
+      "The timing_info_present_flag in the Sequence Header OBU (in the configOBUs field or in the associated samples) "
       "SHOULD be set to 0.",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
