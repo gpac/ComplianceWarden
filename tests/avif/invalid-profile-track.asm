@@ -480,6 +480,9 @@ moov_start:
                     stsz_start:
                         dd BE(stsz_end - stsz_start)
                         dd "stsz"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x01
+                        db 0x00, 0x00, 0x00, 0x01
                     stsz_end:
                     stco_start:
                         dd BE(stco_end - stco_start)
