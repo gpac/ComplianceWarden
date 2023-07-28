@@ -16,7 +16,11 @@ enum {
   OBU_PADDING = 15
 };
 
-auto const AV1_KEY_FRAME = 0;
+enum {
+  AV1_KEY_FRAME = 0,
+  AV1_INTRA_ONLY_FRAME = 2,
+  AV1_SWITCH_FRAME = 2,
+};
 
 struct IReader;
 struct Box;

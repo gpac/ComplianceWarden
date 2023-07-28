@@ -770,6 +770,57 @@ void parsePitm(IReader *br)
     br->sym("item_ID", 32);
 }
 
+void parseSgpd(IReader *br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  int64_t default_length = 0;
+  int64_t grouping_type = br->sym("grouping_type", 32);
+  if(version >= 1) {
+    default_length = br->sym("default_length", 32);
+  }
+  if(version >= 2) {
+    br->sym("default_group_description_index", 32);
+  }
+
+  auto entry_count = br->sym("entry_count", 32);
+  for(int64_t i = 1; i <= entry_count; i++) {
+    int64_t description_length = 0;
+    if(version >= 1) {
+      if(default_length == 0) {
+        description_length = br->sym("description_length", 32);
+      }
+    }
+
+    if(grouping_type == FOURCC("av1M")) {
+      br->sym("metadata_type", 8);
+      br->sym("metadata_specific_parameters", 24);
+    } else {
+      auto size = description_length ? description_length : default_length;
+      while(size--)
+        br->sym("byte", 8);
+    }
+  }
+}
+
+void parseSbgp(IReader *br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("grouping_type", 32);
+  if(version == 1) {
+    br->sym("grouping_type_parameter", 32);
+  }
+
+  auto entry_count = br->sym("entry_count", 32);
+  for(auto i = 1; i <= entry_count; i++) {
+    br->sym("sample_count", 32);
+    br->sym("group_description_index", 32);
+  }
+}
+
 void parseChildren(IReader *br)
 {
   while(!br->empty())
@@ -885,6 +936,10 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseStsz;
   case FOURCC("stz2"):
     return &parseStz2;
+  case FOURCC("sgpd"):
+    return &parseSgpd;
+  case FOURCC("sbgp"):
+    return &parseSbgp;
   }
 
   if(isVisualSampleEntry(fourcc))

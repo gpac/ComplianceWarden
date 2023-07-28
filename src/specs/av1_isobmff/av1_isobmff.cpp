@@ -1014,7 +1014,36 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain AV1_INTRA_ONLY_FRAME in UNCOMPRESSED HEADER
+// TODO@Romain AV1_INTRA_ONLY_FRAME in UNCOMPRESSED HEADER
+#if 0
+        auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
+
+        for(auto itemId : av1ImageItemIDs) {
+          Av1State stateUnused;
+          BoxReader br;
+          probeAV1ImageItem(root, out, itemId, br, stateUnused);
+
+          bool showFrame = false, keyFrame = false;
+          assert(br.myBox.children.empty());
+
+          for(auto &sym : br.myBox.syms) {
+            if(!strcmp(sym.name, "show_frame") && (!sym.numBits || sym.value))
+              showFrame = true;
+
+            if(!strcmp(sym.name, "key_frame"))
+              keyFrame = true;
+
+            if(!strcmp(sym.name, "frame_type"))
+              if(sym.value == AV1_KEY_FRAME)
+                keyFrame = true;
+          }
+
+          if(!(showFrame && keyFrame))
+            out->error(
+              "[ItemId=%u] AV1 Sample shall be marked as sync (showFrame=%d, keyFrame=%d)", itemId, (int)showFrame,
+              (int)keyFrame);
+        }
+#endif
       } },
     { "Section 2.4\n"
       "Delayed Random Access Points SHOULD be signaled using sample groups and the\n"
@@ -1027,8 +1056,16 @@ const SpecDesc specAv1ISOBMFF = {
 • with show_frame equal to 0
 • that is contained in a temporal unit that also contains a sequence header OBU
         */
+      } },
+    { "Section 2.4\n"
+      "Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.",
+      [](Box const & /*root*/, IReport * /*out*/) {
+        // Question sent to know if testable. Answer:
+        // "I have not seen any content that uses Switch Frames."
+        // frame_type = 3 (see the AV1 video spec).
+        // TODO@Romain: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part
+        // of an alternate group, emit a warning?
         /*in stbl:
-
              <SampleGroupDescriptionBox Size="25" Type="sgpd" Version="1" Flags="0" Specification="p12" Container="stbl
            traf" grouping_type="sync" default_length="1"> <SyncSampleGroupEntry NAL_unit_type="20"/>
              </SampleGroupDescriptionBox>
@@ -1043,15 +1080,6 @@ const SpecDesc specAv1ISOBMFF = {
                <SampleGroupBoxEntry sample_count="5" group_description_index="0"/>
              </SampleGroupBox>
              */
-      } },
-    { "Section 2.4\n"
-      "Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.",
-      [](Box const & /*root*/, IReport * /*out*/) {
-        // Question sent to know if testable. Answer:
-        // "I have not seen any content that uses Switch Frames."
-        // frame_type = 3 (see the AV1 video spec).
-        // TODO@Romain: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part
-        // of an alternate group, emit a warning?
       } },
     { "Section 2.4\n"
       "If a file contains multiple tracks that are alternative representations of the\n"
@@ -1103,8 +1131,87 @@ const SpecDesc specAv1ISOBMFF = {
       "METADATA_TYPE_ITUT_T35 in which case its value SHALL be set to the first 24 bits\n"
       "of the metadata_itut_t35 structure. For other types of metadata,\n"
       "its [metadata_specific_parameters] value SHOULD be set to 0.",
-      [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain
+      [](Box const &root, IReport *out) {
+        for(auto &box : root.children)
+          if(box.fourcc == FOURCC("moov"))
+            for(auto &moovChild : box.children)
+              if(moovChild.fourcc == FOURCC("trak"))
+                for(auto &trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("mdia"))
+                    for(auto &mdiaChild : trakChild.children)
+                      if(mdiaChild.fourcc == FOURCC("minf"))
+                        for(auto &minfChild : mdiaChild.children)
+                          if(minfChild.fourcc == FOURCC("stbl")) {
+                            bool foundAv1 = false;
+
+                            for(auto &stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stsd"))
+                                for(auto &stsdChild : stblChild.children)
+                                  if(stsdChild.fourcc == FOURCC("av01"))
+                                    foundAv1 = true;
+
+                            if(!foundAv1)
+                              continue;
+
+                            uint32_t av1M_metadata_specific_parameters = 0;
+                            for(auto &stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("sbgp"))
+                                for(auto &sym : stblChild.syms) {
+                                  if(!strcmp(sym.name, "grouping_type_parameter")) {
+                                    if(av1M_metadata_specific_parameters != 0) {
+                                      out->error("Multiple av1M entries found: only considering the first one");
+                                      break;
+                                    }
+
+                                    if((sym.value >> 24) == FOURCC("av1M"))
+                                      av1M_metadata_specific_parameters = sym.value & 0x00FFFFFF;
+                                  }
+                                }
+
+                            if(!av1M_metadata_specific_parameters)
+                              continue;
+
+                            // Romain: call getData() when implemented
+                            for(auto &stblChild : minfChild.children)
+                              if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64")) {
+                                for(auto &sym : stblChild.syms)
+                                  if(!strcmp(sym.name, "chunk_offset")) {
+                                    auto mdats = findBoxes(root, FOURCC("mdat"));
+                                    if(mdats.empty())
+                                      return;
+
+                                    BoxReader br;
+                                    auto const probeSize = (int)mdats[0]->size; // FIXME: use the real size
+                                    br.br = BitReader{ root.original + sym.value, probeSize };
+
+                                    Av1State stateUnused;
+                                    while(!br.empty()) {
+                                      parseAv1Obus(&br, stateUnused, false);
+                                    }
+
+                                    uint32_t metadata_type = 0;
+                                    for(auto &sym : br.myBox.syms) {
+                                      if(!strcmp(sym.name, "itu_t_t35_country_code")) {
+                                        if(sym.value != 0xFF)
+                                          metadata_type = sym.value << 16;
+
+                                        out->covered();
+                                      } else if(!strcmp(sym.name, "itu_t_t35_country_code_extension_byte")) {
+                                        metadata_type = sym.value << 16;
+                                      } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code")) {
+                                        metadata_type += sym.value;
+                                        if(metadata_type != av1M_metadata_specific_parameters) {
+                                          out->error(
+                                            "metadata_specific_parameters value (%u) SHALL be set to the first 24 bits "
+                                            "of the metadata_itut_t35 structure (%u)",
+                                            av1M_metadata_specific_parameters, metadata_type);
+                                          metadata_type = 0;
+                                        }
+                                      }
+                                    }
+                                  }
+                              }
+                          }
       } },
 #if 0 // CMAF: not covered for now
     { "Section 3\n"
