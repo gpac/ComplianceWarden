@@ -956,8 +956,26 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TILE_LIST SHALL NOT be used.",
-      [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik
+      [](Box const &root, IReport *out) {
+        BoxReader br;
+        br.br = getData(root, out);
+
+        if(br.br.size < 2)
+          return;
+
+        Av1State stateUnused;
+        while(!br.empty()) {
+          auto obu_type = parseAv1Obus(&br, stateUnused, false);
+          if(!obu_type) {
+            out->error("Found an invalid obu in stream");
+            return;
+          }
+          if(obu_type == OBU_TILE_LIST) {
+            out->error("Tile list obu found in stream");
+            return;
+          }
+          out->covered();
+        }
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.",
