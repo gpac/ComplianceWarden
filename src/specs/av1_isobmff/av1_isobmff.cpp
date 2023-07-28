@@ -916,8 +916,38 @@ const SpecDesc specAv1ISOBMFF = {
       "syntax as specified in [AV1]. Each OBU SHALL have the obu_has_size_field set\n"
       "to 1 except for the last OBU in the sample, for which obu_has_size_field MAY be\n"
       "set to 0, in which case it is assumed to fill the remainder of the sample",
-      [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik
+      [](Box const &root, IReport *out) {
+        BoxReader br;
+        br.br = getData(root, out);
+
+        if(br.br.size < 2)
+          return;
+
+        Av1State stateUnused;
+        auto withoutSize = 0;
+        auto previousHasSize = true;
+        while(!br.empty()) {
+          auto obu_type = parseAv1Obus(&br, stateUnused, false);
+          if(!obu_type) {
+            out->error("Found an invalid obu in stream");
+            return;
+          }
+          for(auto &it : br.myBox.syms) {
+            if(std::string(it.name) == "obu_has_size_field") {
+              if(it.value == 0) {
+                withoutSize++;
+              }
+              previousHasSize = it.value;
+              break;
+            }
+          }
+          out->covered();
+        }
+        if(withoutSize > 1 || (withoutSize == 1 && previousHasSize)) {
+          out->error(
+            "Found %d obu's without size and the last does %shave a size", withoutSize,
+            (previousHasSize ? "" : "not "));
+        }
       } },
     { "Section 2.4\n"
       "OBU trailing bits SHOULD be limited to byte alignment and SHOULD not be used for padding",
