@@ -40,7 +40,7 @@ meta_start:
         db 0x00, 0x01 ; item_ID(16) 
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x03, 0x65 ; base_offset(32) 
+        db 0x00, 0x00, 0x03, 0x71 ; base_offset(32) 
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
         db 0x00, 0x00, 0x00, 0x0D ; extent_length(32) 
