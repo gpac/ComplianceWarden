@@ -95,6 +95,19 @@ void parseStsz(IReader *br)
       br->sym("entry_size", 32);
 }
 
+void parseStz2(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("reserved", 24);
+  auto field_size = br->sym("field_size", 8);
+  auto sample_count = br->sym("sample_count", 32);
+
+  for(auto i = 1; i <= sample_count; i++)
+    br->sym("entry_size", field_size);
+}
+
 void parseStco(IReader *br)
 {
   br->sym("version", 8);
@@ -870,6 +883,8 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parsePitm;
   case FOURCC("stsz"):
     return &parseStsz;
+  case FOURCC("stz2"):
+    return &parseStz2;
   }
 
   if(isVisualSampleEntry(fourcc))
