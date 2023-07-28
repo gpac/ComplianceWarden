@@ -49,9 +49,10 @@ the Sequence Header OBU in the AV1 Image Item Data:
 		chroma_subsampling_y=0
 		chroma_sample_position=0
 
+[av1isobmff][Rule #25] Warning: Found 1 OBU_TEMPORAL_DELIMITER obu(s)
 
 ========================================
-[av1isobmff] 11 error(s), 0 warning(s).
+[av1isobmff] 11 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -84,6 +85,9 @@ When a Sequence Header OBU is contained within the configOBUs of the
 AV1CodecConfigurationRecord, the values present in the Sequence Header OBU
 contained within configOBUs SHALL match the values of the
 AV1CodecConfigurationRecord.
+
+[av1isobmff][Rule #25] Section 2.4
+OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.
 
 +--------------------------------------+
 |          isobmff validation          |

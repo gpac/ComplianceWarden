@@ -8,9 +8,10 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #0] Error: No 'av01' found in compatibleBrands
 [av1isobmff][Rule #2] Error: No Av1SampleEntry found
+[av1isobmff][Rule #25] Warning: Found 1 OBU_TEMPORAL_DELIMITER obu(s)
 
 ========================================
-[av1isobmff] 2 error(s), 0 warning(s).
+[av1isobmff] 2 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -20,6 +21,9 @@ It SHALL have the 'av01' brand among the compatible brands array of the FileType
 
 [av1isobmff][Rule #2] Section 2.1
 It SHALL contain at least one track using an AV1SampleEntry
+
+[av1isobmff][Rule #25] Section 2.4
+OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.
 
 +--------------------------------------+
 |          isobmff validation          |
