@@ -882,7 +882,9 @@ const SpecDesc specAv1ISOBMFF = {
       "OBUs of type METADATA_TYPE_HDR_CLL and METADATA_TYPE_HDR_MDCV, if present (in\n"
       "the configOBUs or in the samples).",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO: how to define HDR content, see
+        // TODO: how to define HDR content, question sent by email. Answer:
+        // "the spec should have been written differently: the box MAY be present. It SHALL be present if the
+        // corresponding OBU is present and SHALL have the same values."
       } },
     { "Section 2.4\n"
       "The sample data SHALL be a sequence of OBUs forming a Temporal Unit",
@@ -1020,7 +1022,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik
+        // TODO@Romain AV1_INTRA_ONLY_FRAME in UNCOMPRESSED HEADER
       } },
     { "Section 2.4\n"
       "Delayed Random Access Points SHOULD be signaled using sample groups and the\n"
@@ -1033,11 +1035,31 @@ const SpecDesc specAv1ISOBMFF = {
 • with show_frame equal to 0
 • that is contained in a temporal unit that also contains a sequence header OBU
         */
+        /*in stbl:
+
+             <SampleGroupDescriptionBox Size="25" Type="sgpd" Version="1" Flags="0" Specification="p12" Container="stbl
+           traf" grouping_type="sync" default_length="1"> <SyncSampleGroupEntry NAL_unit_type="20"/>
+             </SampleGroupDescriptionBox>
+             <SampleGroupBox Size="84" Type="sbgp" Version="0" Flags="0" Specification="p12" Container="stbl traf"
+           grouping_type="sync"> <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="5" group_description_index="0"/>
+             </SampleGroupBox>
+             */
       } },
     { "Section 2.4\n"
       "Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO: question sent to know if testable
+        // Question sent to know if testable. Answer:
+        // "I have not seen any content that uses Switch Frames."
+        // frame_type = 3 (see the AV1 video spec).
+        // TODO@Romain: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part
+        // of an alternate group, emit a warning?
       } },
     { "Section 2.4\n"
       "If a file contains multiple tracks that are alternative representations of the\n"
@@ -1067,19 +1089,22 @@ const SpecDesc specAv1ISOBMFF = {
       "- Its first frame is a Key Frame that has show_frame flag set to 1,\n"
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain
+        // TODO@Romain => we have no fragmented sample: to be generated with GPAC
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the ctts box and composition offsets in\n"
       "movie fragments SHALL NOT be used.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain
+        // TODO@Erik: moof/traf/ctts
+        // CompositionOffsetBox ctts
+        // CompositionToDecodeBox cslg
+        // 'trun' flag 0x000800	sample-composition-time-offsets-present; each sample has a composition time offset.
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the is_leading flag, if used,\n"
       "SHALL be set to 0 or 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain
+        // TODO@Romain sdtp
       } },
     { "Section 2.8.4\n"
       "metadata_specific_parameters is only defined when metadata_type is set to\n"
