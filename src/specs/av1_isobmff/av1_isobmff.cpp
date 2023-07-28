@@ -979,8 +979,43 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.",
-      [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik
+      [](Box const &root, IReport *out) {
+        BoxReader br;
+        br.br = getData(root, out);
+
+        if(br.br.size < 2)
+          return;
+
+        auto obuTemporalDelimiter = 0;
+        auto obuPadding = 0;
+        auto obuRedundantFrameHeader = 0;
+        Av1State stateUnused;
+        while(!br.empty()) {
+          auto obu_type = parseAv1Obus(&br, stateUnused, false);
+          if(!obu_type) {
+            out->error("Found an invalid obu in stream");
+            return;
+          }
+          if(obu_type == OBU_TEMPORAL_DELIMITER) {
+            obuTemporalDelimiter++;
+          }
+          if(obu_type == OBU_PADDING) {
+            obuPadding++;
+          }
+          if(obu_type == OBU_REDUNDANT_FRAME_HEADER) {
+            obuRedundantFrameHeader++;
+          }
+          out->covered();
+        }
+        if(obuTemporalDelimiter) {
+          out->warning("Found %d OBU_TEMPORAL_DELIMITER obu(s)", obuTemporalDelimiter);
+        }
+        if(obuPadding) {
+          out->warning("Found %d OBU_PADDING obu(s)", obuPadding);
+        }
+        if(obuRedundantFrameHeader) {
+          out->warning("Found %d OBU_REDUNDANT_FRAME_HEADER obu(s)", obuRedundantFrameHeader);
+        }
       } },
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
