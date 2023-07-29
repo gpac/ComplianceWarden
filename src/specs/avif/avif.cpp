@@ -358,7 +358,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
     "the PixelInformationProperty or ColourInformationBox.",
     [](Box const &root, IReport *out) {
       (void)root;
-      (void)out; // TODO@Romain
+      (void)out; // TODO
     } },
   { "Section 2.2.1\n"
     "AV1 Item Configuration Property [...] shall be marked as essential.",

@@ -89,7 +89,7 @@ const SpecDesc specAv1Hdr10plus = {
             if(sym.value != 0x0001)
               out->error("itu_t_t35_terminal_provider_oriented_code shall be set as 0x0001, found 0x%04X", sym.value);
 
-          // TODO@Romain: also check application_identifier and application_mode
+          // TODO: also check application_identifier and application_mode
         }
       } },
     { "Section 2.2.1\n"
@@ -426,7 +426,7 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        // TODO@Romain
+        // TODO@Erik
       } },
     { "Section 2.2.2\n"
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
@@ -435,7 +435,9 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        // TODO@Romain
+        // TODO@Erik|Romain
+        // The layer with spatial_id and temporal_id values equal to 0.
+        //=> easy to reach as it is in the OBU header
       } },
     { "Section 3.1\n"
       "For formats that use the AV1CodecConfigurationRecord when storing\n"
@@ -443,11 +445,25 @@ const SpecDesc specAv1Hdr10plus = {
       "shall not be present in the configOBUs field of\n"
       "the AV1CodecConfigurationRecord",
       "assert-aa071f33",
-      [](Box const &root, IReport * /*out*/) {
+      [](Box const &root, IReport *out) {
         if(!isIsobmff(root))
           return;
 
-        // TODO@Romain
+        auto trakBoxes = findBoxes(root, FOURCC("trak"));
+        for(auto &trakBox : trakBoxes) {
+          auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
+          for(auto &av1CBox : av1CBoxes) {
+            bool isHdr10p = true;
+            for(auto &sym : av1CBox->syms)
+              if(!strcmp(sym.name, "itu_t_t35_country_code") && sym.value != 0xB5) {
+                isHdr10p = false;
+              } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code") && sym.value != 0x003C) {
+                isHdr10p = false;
+              } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_oriented_code"))
+                if(sym.value == 0x0001 && isHdr10p)
+                  out->error("HDR10+ Metadata OBU found in the av1C configOBUs");
+          }
+        }
       } },
     { "Section 3.2\n"
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",

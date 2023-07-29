@@ -228,10 +228,8 @@ const SpecDesc specIsobmff = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl"))
                             for(auto &stblChild : minfChild.children)
-                              if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64")) // TODO: also
-                                                                                                           // check the
-                                                                                                           // sizes and
-                                                                                                           // add tests
+                              // TODO: also check the sizes and add tests
+                              if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64"))
                                 for(auto &sym : stblChild.syms)
                                   if(!strcmp(sym.name, "chunk_offset"))
                                     check(trackId, sym.value);

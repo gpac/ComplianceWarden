@@ -1014,8 +1014,8 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-// TODO@Romain AV1_INTRA_ONLY_FRAME in UNCOMPRESSED HEADER
-#if 0
+// TODO@Erik AV1_INTRA_ONLY_FRAME in UNCOMPRESSED HEADER
+#if 0 // example with meta, to be translated with tracks
         auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
         for(auto itemId : av1ImageItemIDs) {
@@ -1063,8 +1063,6 @@ const SpecDesc specAv1ISOBMFF = {
         // Question sent to know if testable. Answer:
         // "I have not seen any content that uses Switch Frames."
         // frame_type = 3 (see the AV1 video spec).
-        // TODO@Romain: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part
-        // of an alternate group, emit a warning?
         /*in stbl:
              <SampleGroupDescriptionBox Size="25" Type="sgpd" Version="1" Flags="0" Specification="p12" Container="stbl
            traf" grouping_type="sync" default_length="1"> <SyncSampleGroupEntry NAL_unit_type="20"/>
@@ -1087,7 +1085,8 @@ const SpecDesc specAv1ISOBMFF = {
       "as belonging to the same alternate group and should use a track selection box\n"
       "with an appropriate attribute (e.g. bitr).",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO: question sent to know if testable
+        // TODO@Romain: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part
+        // of an alternate group, emit a warning?
       } },
     { "Section 2.4\n"
       "Metadata OBUs may be carried in sample data. In this case, the\n"
@@ -1100,7 +1099,17 @@ const SpecDesc specAv1ISOBMFF = {
       "given sample description entry, they SHOULD also be in the OBU array in the\n"
       "sample description entry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain
+        // TODO@Erik|Romain: see previous rule + sample_description_index (non frag) or
+        // TrackExtendsBox:default_sample_description_index (frag)
+        /*aligned(8) class SampleToChunkBox extends FullBox('stsc', version = 0, 0)
+        {
+                unsigned int(32) entry_count;
+                for (i=1; i <= entry_count; i++) {
+                        unsigned int(32) first_chunk;
+                        unsigned int(32) samples_per_chunk;
+                        unsigned int(32) sample_description_index;
+                }
+        }*/
       } },
     { "Section 2.4\n"
       "If an AV1 Sample is signaled as a sync sample (in the SyncSampleBox or by\n"
@@ -1109,7 +1118,7 @@ const SpecDesc specAv1ISOBMFF = {
       "- Its first frame is a Key Frame that has show_frame flag set to 1,\n"
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain => we have no fragmented sample: to be generated with GPAC
+        // TODO@Erik => we have no fragmented sample: to be generated with GPAC
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the ctts box and composition offsets in\n"
