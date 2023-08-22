@@ -1049,12 +1049,12 @@ const SpecDesc specAv1ISOBMFF = {
       "Delayed Random Access Points SHOULD be signaled using sample groups and the\n"
       "AV1ForwardKeyFrameSampleGroupEntry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain
+        // TODO@Romain once frame_type for track is implemented by Erik
         /*
          delayed random access point is defined as being a frame:
-• with frame_type equal to KEY_FRAME
-• with show_frame equal to 0
-• that is contained in a temporal unit that also contains a sequence header OBU
+        • with frame_type equal to KEY_FRAME
+        • with show_frame equal to 0
+        • that is contained in a temporal unit that also contains a sequence header OBU
         */
       } },
     { "Section 2.4\n"
@@ -1062,22 +1062,7 @@ const SpecDesc specAv1ISOBMFF = {
       [](Box const & /*root*/, IReport * /*out*/) {
         // Question sent to know if testable. Answer:
         // "I have not seen any content that uses Switch Frames."
-        // frame_type = 3 (see the AV1 video spec).
-        /*in stbl:
-             <SampleGroupDescriptionBox Size="25" Type="sgpd" Version="1" Flags="0" Specification="p12" Container="stbl
-           traf" grouping_type="sync" default_length="1"> <SyncSampleGroupEntry NAL_unit_type="20"/>
-             </SampleGroupDescriptionBox>
-             <SampleGroupBox Size="84" Type="sbgp" Version="0" Flags="0" Specification="p12" Container="stbl traf"
-           grouping_type="sync"> <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
-               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
-               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
-               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
-               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
-               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
-               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
-               <SampleGroupBoxEntry sample_count="5" group_description_index="0"/>
-             </SampleGroupBox>
-             */
+        // frame_type = 3 (see the AV1 video spec). TODO@Romain: once frame_type for track is implemented by Erik
       } },
     { "Section 2.4\n"
       "If a file contains multiple tracks that are alternative representations of the\n"
@@ -1087,19 +1072,54 @@ const SpecDesc specAv1ISOBMFF = {
       [](Box const & /*root*/, IReport * /*out*/) {
         // TODO@Romain: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part
         // of an alternate group, emit a warning?
+        // alternate group=tkhd
+        /*
+        auto trakBoxes = findBoxes(root, FOURCC("trak"));
+        for(auto &trakBox : trakBoxes) {
+          auto av01Details = getAv01Details(*trakBox);
+          if(!av01Details.valid) {
+            continue;
+          }
+
+          auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
+          for (auto tkhd : tkhdBoxes) {
+            for (auto &sym : tkhd->syms)
+              if (sym.name == std::string("alternate_group") && sym.value == 0) {
+                out->warning("Track %s is not part of an alternate group", av01Details.trackName.c_str());
+              }
+          }
+        }
+        */
       } },
     { "Section 2.4\n"
       "Metadata OBUs may be carried in sample data. In this case, the\n"
       "AV1MetadataSampleGroupEntry SHOULD be used.",
       [](Box const & /*root*/, IReport * /*out*/) {
         // TODO@Romain
+        /*in stbl:
+             <SampleGroupDescriptionBox Size="25" Type="sgpd" Version="1" Flags="0" Specification="p12" Container="stbl
+                 traf" grouping_type="sync" default_length="1">
+               <SyncSampleGroupEntry NAL_unit_type="20"/>
+             </SampleGroupDescriptionBox>
+             <SampleGroupBox Size="84" Type="sbgp" Version="0" Flags="0" Specification="p12" Container="stbl traf"
+                 grouping_type="sync">
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="29" group_description_index="0"/>
+               <SampleGroupBoxEntry sample_count="1" group_description_index="1"/>
+               <SampleGroupBoxEntry sample_count="5" group_description_index="0"/>
+             </SampleGroupBox>
+        */
       } },
     { "Section 2.4\n"
       "If the metadata OBUs are static for the entire set of samples associated with a\n"
       "given sample description entry, they SHOULD also be in the OBU array in the\n"
       "sample description entry.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik|Romain: see previous rule + sample_description_index (non frag) or
+        // TODO@Erik|Romain: see previous rule + getData() + sample_description_index (non frag) or
         // TrackExtendsBox:default_sample_description_index (frag)
         /*aligned(8) class SampleToChunkBox extends FullBox('stsc', version = 0, 0)
         {
@@ -1118,7 +1138,7 @@ const SpecDesc specAv1ISOBMFF = {
       "- Its first frame is a Key Frame that has show_frame flag set to 1,\n"
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik => we have no fragmented sample: to be generated with GPAC
+        // TODO@Erik => I think the AV1 part is already implemented (search for "show_frame")
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the ctts box and composition offsets in\n"
@@ -1133,7 +1153,7 @@ const SpecDesc specAv1ISOBMFF = {
       "In tracks using the AV1SampleEntry, the is_leading flag, if used,\n"
       "SHALL be set to 0 or 2.",
       [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Romain sdtp
+        // TODO@Erik see table-5 in ISOBMFF 8.8.1.1.
       } },
     { "Section 2.8.4\n"
       "metadata_specific_parameters is only defined when metadata_type is set to\n"
