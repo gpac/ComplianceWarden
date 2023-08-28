@@ -45,6 +45,7 @@ SRCS_CW+=\
   src/utils/isobmff_utils.cpp\
   src/utils/isobmff_derivations.cpp\
   src/utils/spec_utils.cpp\
+	src/utils/get_data.cpp\
 
 SRCS_CW+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
 SRCS_CW+=src/specs/av1_isobmff/av1_isobmff.cpp
