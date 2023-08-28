@@ -984,24 +984,31 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "OBUs of type OBU_TILE_LIST SHALL NOT be used.",
       [](Box const &root, IReport *out) {
-        BoxReader br;
-        br.br = getData(root, out);
+        auto av1Tracks = getAv1Tracks(root);
 
-        if(br.br.size < 2)
-          return;
+        for(auto &trackId : av1Tracks) {
+          auto samples = getData(root, out, trackId);
+          for(auto &sample : samples) {
+            BoxReader br;
+            br.br = sample.getSample();
 
-        Av1State stateUnused;
-        while(!br.empty()) {
-          auto obu_type = parseAv1Obus(&br, stateUnused, false);
-          if(!obu_type) {
-            out->error("Found an invalid obu in stream");
-            return;
+            if(br.br.size < 2)
+              return;
+
+            Av1State stateUnused;
+            while(!br.empty()) {
+              auto obu_type = parseAv1Obus(&br, stateUnused, false);
+              if(!obu_type) {
+                out->error("Found an invalid obu in stream");
+                return;
+              }
+              if(obu_type == OBU_TILE_LIST) {
+                out->error("Tile list obu found in stream");
+                return;
+              }
+              out->covered();
+            }
           }
-          if(obu_type == OBU_TILE_LIST) {
-            out->error("Tile list obu found in stream");
-            return;
-          }
-          out->covered();
         }
       } },
     { "Section 2.4\n"
