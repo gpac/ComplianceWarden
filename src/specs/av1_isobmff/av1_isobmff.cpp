@@ -968,8 +968,22 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "OBU trailing bits SHOULD be limited to byte alignment and SHOULD not be used for padding",
-      [](Box const & /*root*/, IReport * /*out*/) {
-        // TODO@Erik
+      [](Box const &root, IReport *out) {
+        auto av1Tracks = getAv1Tracks(root);
+
+        for(auto &trackId : av1Tracks) {
+          auto samples = getData(root, out, trackId);
+          size_t i = 0;
+          for(auto &sample : samples) {
+
+            if(sample.position[sample.size - 1] == 0x00) {
+              out->warning("[TrackId=%u] Sample %zu contains more extra trailing bits", trackId, i);
+            }
+
+            out->covered();
+            i++;
+          }
+        }
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TILE_LIST SHALL NOT be used.",
