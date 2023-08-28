@@ -908,28 +908,34 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "The sample data SHALL be a sequence of OBUs forming a Temporal Unit",
       [](Box const &root, IReport *out) {
-        BoxReader br;
-        br.br = getData(root, out);
+        auto av1Tracks = getAv1Tracks(root);
 
-        if(br.br.size < 2)
-          return;
-
-        Av1State stateUnused;
-        auto foundTemporal = 0;
-        while(!br.empty()) {
-          auto obu_type = parseAv1Obus(&br, stateUnused, false);
-          if(!obu_type) {
-            out->error("Found an invalid obu in stream");
-            return;
-          }
-          if(obu_type == OBU_TEMPORAL_DELIMITER) {
-            foundTemporal++;
-            if(foundTemporal > 1) {
-              out->error("Found more than 1 temporal delimiters in stream");
+        for(auto &trackId : av1Tracks) {
+          auto samples = getData(root, out, trackId);
+          for(auto &sample : samples) {
+            BoxReader br;
+            br.br = sample.getSample();
+            if(br.br.size < 2)
               return;
+
+            Av1State stateUnused;
+            auto foundTemporal = 0;
+            while(!br.empty()) {
+              auto obu_type = parseAv1Obus(&br, stateUnused, false);
+              if(!obu_type) {
+                out->error("Found an invalid obu in stream");
+                return;
+              }
+              if(obu_type == OBU_TEMPORAL_DELIMITER) {
+                foundTemporal++;
+                if(foundTemporal > 1) {
+                  out->error("Found more than 1 temporal delimiters in stream");
+                  return;
+                }
+              }
+              out->covered();
             }
           }
-          out->covered();
         }
       } },
     { "Section 2.4\n"
