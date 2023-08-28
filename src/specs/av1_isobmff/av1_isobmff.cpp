@@ -38,22 +38,6 @@ std::vector<uint32_t> getAv1Tracks(const Box &root)
 namespace
 {
 
-// FIXME: Copied over from av1_hdrplus for now, should we move it to utils?
-BitReader getData(Box const &root, IReport *out)
-{
-  if(!isIsobmff(root))
-    return { root.original, (int)root.size };
-
-  // FIXME: cw is not an ISOBMFF demuxer so we consider the 'mdat' box
-  auto mdats = findBoxes(root, FOURCC("mdat"));
-
-  if(mdats.size() == 1)
-    return { mdats[0]->original + 8, (int)mdats[0]->size - 8 };
-
-  out->error("%d mdat found, expected 1", mdats.size());
-  return { nullptr, 0 };
-}
-
 struct ResolutionDetails {
   bool valid{ false };
   int64_t width{ 0 };
@@ -944,36 +928,42 @@ const SpecDesc specAv1ISOBMFF = {
       "to 1 except for the last OBU in the sample, for which obu_has_size_field MAY be\n"
       "set to 0, in which case it is assumed to fill the remainder of the sample",
       [](Box const &root, IReport *out) {
-        BoxReader br;
-        br.br = getData(root, out);
+        auto av1Tracks = getAv1Tracks(root);
 
-        if(br.br.size < 2)
-          return;
+        for(auto &trackId : av1Tracks) {
+          auto samples = getData(root, out, trackId);
+          for(auto &sample : samples) {
+            BoxReader br;
+            br.br = sample.getSample();
+            if(br.br.size < 2)
+              return;
 
-        Av1State stateUnused;
-        auto withoutSize = 0;
-        auto previousHasSize = true;
-        while(!br.empty()) {
-          auto obu_type = parseAv1Obus(&br, stateUnused, false);
-          if(!obu_type) {
-            out->error("Found an invalid obu in stream");
-            return;
-          }
-          for(auto &it : br.myBox.syms) {
-            if(std::string(it.name) == "obu_has_size_field") {
-              if(it.value == 0) {
-                withoutSize++;
+            Av1State stateUnused;
+            auto withoutSize = 0;
+            auto previousHasSize = true;
+            while(!br.empty()) {
+              auto obu_type = parseAv1Obus(&br, stateUnused, false);
+              if(!obu_type) {
+                out->error("Found an invalid obu in stream");
+                return;
               }
-              previousHasSize = it.value;
-              break;
+              for(auto &it : br.myBox.syms) {
+                if(std::string(it.name) == "obu_has_size_field") {
+                  if(it.value == 0) {
+                    withoutSize++;
+                  }
+                  previousHasSize = it.value;
+                  break;
+                }
+              }
+              out->covered();
+            }
+            if(withoutSize > 1 || (withoutSize == 1 && previousHasSize)) {
+              out->error(
+                "Found %d obu's without size and the last does %shave a size", withoutSize,
+                (previousHasSize ? "" : "not "));
             }
           }
-          out->covered();
-        }
-        if(withoutSize > 1 || (withoutSize == 1 && previousHasSize)) {
-          out->error(
-            "Found %d obu's without size and the last does %shave a size", withoutSize,
-            (previousHasSize ? "" : "not "));
         }
       } },
     { "Section 2.4\n"
@@ -1014,41 +1004,48 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.",
       [](Box const &root, IReport *out) {
-        BoxReader br;
-        br.br = getData(root, out);
+        auto av1Tracks = getAv1Tracks(root);
 
-        if(br.br.size < 2)
-          return;
+        for(auto &trackId : av1Tracks) {
+          auto samples = getData(root, out, trackId);
+          for(auto &sample : samples) {
+            BoxReader br;
+            br.br = sample.getSample();
 
-        auto obuTemporalDelimiter = 0;
-        auto obuPadding = 0;
-        auto obuRedundantFrameHeader = 0;
-        Av1State stateUnused;
-        while(!br.empty()) {
-          auto obu_type = parseAv1Obus(&br, stateUnused, false);
-          if(!obu_type) {
-            out->error("Found an invalid obu in stream");
-            return;
+            if(br.br.size < 2)
+              return;
+
+            auto obuTemporalDelimiter = 0;
+            auto obuPadding = 0;
+            auto obuRedundantFrameHeader = 0;
+            Av1State stateUnused;
+            while(!br.empty()) {
+              auto obu_type = parseAv1Obus(&br, stateUnused, false);
+              if(!obu_type) {
+                out->error("Found an invalid obu in stream");
+                return;
+              }
+              if(obu_type == OBU_TEMPORAL_DELIMITER) {
+                obuTemporalDelimiter++;
+              }
+              if(obu_type == OBU_PADDING) {
+                obuPadding++;
+              }
+              if(obu_type == OBU_REDUNDANT_FRAME_HEADER) {
+                obuRedundantFrameHeader++;
+              }
+              out->covered();
+            }
+            if(obuTemporalDelimiter) {
+              out->warning("Found %d OBU_TEMPORAL_DELIMITER obu(s)", obuTemporalDelimiter);
+            }
+            if(obuPadding) {
+              out->warning("Found %d OBU_PADDING obu(s)", obuPadding);
+            }
+            if(obuRedundantFrameHeader) {
+              out->warning("Found %d OBU_REDUNDANT_FRAME_HEADER obu(s)", obuRedundantFrameHeader);
+            }
           }
-          if(obu_type == OBU_TEMPORAL_DELIMITER) {
-            obuTemporalDelimiter++;
-          }
-          if(obu_type == OBU_PADDING) {
-            obuPadding++;
-          }
-          if(obu_type == OBU_REDUNDANT_FRAME_HEADER) {
-            obuRedundantFrameHeader++;
-          }
-          out->covered();
-        }
-        if(obuTemporalDelimiter) {
-          out->warning("Found %d OBU_TEMPORAL_DELIMITER obu(s)", obuTemporalDelimiter);
-        }
-        if(obuPadding) {
-          out->warning("Found %d OBU_PADDING obu(s)", obuPadding);
-        }
-        if(obuRedundantFrameHeader) {
-          out->warning("Found %d OBU_REDUNDANT_FRAME_HEADER obu(s)", obuRedundantFrameHeader);
         }
       } },
     { "Section 2.4\n"
