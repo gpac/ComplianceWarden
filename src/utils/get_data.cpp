@@ -15,7 +15,7 @@ BitReader sampleValues::getSample() const
   if(position == nullptr) {
     return { nullptr, 0 };
   }
-  return { position, size };
+  return { position, (int)size };
 }
 
 std::vector<int> getOffsets(const Box *offsetBox)
@@ -34,13 +34,13 @@ std::vector<int> getOffsets(const Box *offsetBox)
   return res;
 }
 
-std::vector<int> getSizes(const Box *sizeBox)
+std::vector<uint64_t> getSizes(const Box *sizeBox)
 {
   if(!sizeBox) {
     return {};
   }
 
-  std::vector<int> res;
+  std::vector<uint64_t> res;
 
   int64_t sampleSize = 0;
   int64_t sampleCount = 0;
@@ -79,11 +79,12 @@ std::vector<sampleValues> getSampleValues(const Box &root, IReport *out, const B
 
   std::vector<sampleValues> res;
   for(size_t i = 0; i < sizes.size(); i++) {
-    if(i < offsets.size()) {
-      res.push_back({ offsets[i], sizes[i], root.original + offsets[i] });
-    } else {
-      res.push_back({ 0, sizes[i], nullptr });
+    if(offsets[i] + sizes[i] > root.size) {
+      out->error(
+        "Sample %zu of %zu bytes @ offset %zu exceeds root size of %zu bytes", i, sizes[i], offsets[i], root.size);
+      return {};
     }
+    res.push_back({ offsets[i], sizes[i], root.original + offsets[i] });
   }
 
   return res;

@@ -3,7 +3,7 @@
 
 struct sampleValues {
   int64_t offset;
-  int size;
+  uint64_t size;
   uint8_t *position;
   std::string pretty() const;
   BitReader getSample() const;
