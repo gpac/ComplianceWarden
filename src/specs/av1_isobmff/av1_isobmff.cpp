@@ -9,6 +9,32 @@
 bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
+std::vector<uint32_t> getAv1Tracks(const Box &root)
+{
+
+  std::vector<uint32_t> res;
+
+  auto trakBoxes = findBoxes(root, FOURCC("trak"));
+  for(auto &trakBox : trakBoxes) {
+
+    auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
+    if(tkhdBoxes.size() != 1) {
+      // SKIP TRACK
+      continue;
+    }
+
+    uint32_t thisTrackId = 0;
+    for(auto &sym : tkhdBoxes[0]->syms)
+      if(!strcmp(sym.name, "track_ID"))
+        thisTrackId = sym.value;
+
+    if(findBoxes(root, FOURCC("av01")).size() == 1) {
+      res.push_back(thisTrackId);
+    }
+  }
+  return res;
+}
+
 namespace
 {
 
