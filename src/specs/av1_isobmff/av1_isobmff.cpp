@@ -1,12 +1,87 @@
+#include "../../utils/av1_utils.h"
+#include "../../utils/box_reader_impl.h"
+
 #include <cstring> // strcmp
 #include <iostream>
+#include <sstream>
 #include <string>
-
-#include "av1_utils.h"
-#include "box_reader_impl.h"
 
 bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
+
+struct sampleValues {
+  int64_t offset;
+  int size;
+  uint8_t *position;
+  std::string pretty()
+  {
+    std::stringstream res;
+    res << size << " @ " << offset << " [" << (void *)position << "]";
+    return res.str();
+  }
+  BitReader getSample()
+  {
+    if(position == nullptr) {
+      return { nullptr, 0 };
+    }
+    return { position, size };
+  }
+};
+
+std::vector<int> decodeSizeBox(const Box *sizeBox)
+{
+  std::vector<int> res;
+
+  if(sizeBox) {
+    int64_t sampleSize = 0;
+    int64_t sampleCount = 0;
+    for(auto &sym : sizeBox->syms) {
+      std::cerr << sym.name << ": " << sym.value << std::endl;
+      if(!strcmp(sym.name, "sample_size")) {
+        sampleSize = sym.value;
+      }
+      if(!strcmp(sym.name, "sample_count")) {
+        sampleCount = sym.value;
+      }
+      if(!strcmp(sym.name, "entry_size")) {
+        res.push_back(sym.value);
+      }
+    }
+    if(res.empty()) {
+      for(auto i = 0; i < sampleCount; i++) {
+        res.push_back(sampleSize);
+      }
+    }
+  }
+
+  return res;
+}
+
+std::vector<sampleValues> getSampleValues(const Box *offsetBox, const Box *sizeBox, const Box &root)
+{
+  std::vector<sampleValues> res;
+
+  std::vector<int64_t> offsets;
+
+  if(offsetBox) {
+    std::cerr << "Position of offsetbox: " << offsetBox->position << std::endl;
+    for(auto &sym : offsetBox->syms) {
+      if(!strcmp(sym.name, "chunk_offset"))
+        offsets.push_back(sym.value);
+    }
+  }
+
+  auto sizes = decodeSizeBox(sizeBox);
+  for(size_t i = 0; i < sizes.size(); i++) {
+    if(i < offsets.size()) {
+      res.push_back({ offsets[i], sizes[i], root.original + offsets[i] });
+    } else {
+      res.push_back({ 0, sizes[i], nullptr });
+    }
+  }
+
+  return res;
+}
 
 namespace
 {
@@ -1241,6 +1316,44 @@ const SpecDesc specAv1ISOBMFF = {
                                   }
                               }
                           }
+      } },
+    { "VerboseDevelopment\n"
+      "GetSampleOffset",
+      [](Box const &root, IReport *out) {
+        auto obuDetails = getOBUDetails(root, out);
+        if(!obuDetails.valid) {
+          return;
+        }
+
+        auto trakBoxes = findBoxes(root, FOURCC("trak"));
+        for(auto &trakBox : trakBoxes) {
+
+          auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
+          if(tkhdBoxes.size() != 1) {
+            out->error("%llu 'tkhd' boxes found, when 1 is expected", tkhdBoxes.size());
+            return;
+          }
+
+          uint32_t trackId = 0;
+          for(auto &sym : tkhdBoxes[0]->syms)
+            if(!strcmp(sym.name, "track_ID"))
+              trackId = sym.value;
+
+          std::cerr << "Found trak with id " << trackId << std::endl;
+
+          auto stcoBoxes = findBoxes(*trakBox, FOURCC("stco"));
+          auto co64Boxes = findBoxes(*trakBox, FOURCC("co64"));
+
+          auto stszBoxes = findBoxes(*trakBox, FOURCC("stsz"));
+          auto stz2Boxes = findBoxes(*trakBox, FOURCC("stz2"));
+
+          auto v = getSampleValues(stcoBoxes[0], stszBoxes[0], root);
+          for(auto &sample : v) {
+            std::cerr << "  " << sample.pretty() << std::endl;
+          }
+        }
+
+        out->covered();
       } },
 #if 0 // CMAF: not covered for now
     { "Section 3\n"
