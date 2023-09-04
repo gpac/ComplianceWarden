@@ -742,7 +742,8 @@ void parseChildren(IReader *br)
 
 std::vector<uint32_t> visualSampleEntryFourccs = { FOURCC("avc1"), FOURCC("avc2"), FOURCC("avc3"),
                                                    FOURCC("avc4"), FOURCC("hev1"), FOURCC("hev2"),
-                                                   FOURCC("hvc1"), FOURCC("hvc2"), FOURCC("av01") };
+                                                   FOURCC("hvc1"), FOURCC("hvc2"), FOURCC("av01"),
+                                                   FOURCC("unci") };
 
 bool isVisualSampleEntry(uint32_t fourcc)
 {
