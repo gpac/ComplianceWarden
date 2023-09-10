@@ -249,8 +249,9 @@ stsz_start:
     dd BE(stsz_end - stsz_start)
     dd "stsz"
     db 0x00, 0x00, 0x00, 0x00
+    db 0x00, 0x00, 0x00, 0x00
     db 0x00, 0x00, 0x00, 0x01
-    db 0x00, 0x00, 0x00, 0x01
+    dd BE(mdat_end - mdat_start - 8) ; entry_size(32)
 stsz_end:
 stco_start:
     dd BE(stco_end - stco_start)
@@ -387,8 +388,9 @@ stsz2_start:
     dd BE(stsz2_end - stsz2_start)
     dd "stsz"
     db 0x00, 0x00, 0x00, 0x00
+    db 0x00, 0x00, 0x00, 0x00
     db 0x00, 0x00, 0x00, 0x01
-    db 0x00, 0x00, 0x00, 0x01
+    dd BE(mdat_end - mdat_start - 8) ; entry_size(32)
 stsz2_end:
 stco2_start:
     dd BE(stco2_end - stco2_start)
@@ -408,9 +410,6 @@ moov_end:
 mdat_start:
     dd BE(mdat_end - mdat_start)
     dd "mdat"
-     ; obu(0) 
-    db 0x12 ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
-    db 0x00 ; leb128_byte(8) 
      ; obu(0) 
     db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
     db 0x0F ; leb128_byte(8) 
