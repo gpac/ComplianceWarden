@@ -1215,15 +1215,24 @@ const SpecDesc specAv1ISOBMFF = {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
             for(auto &moovChild : box.children)
-              if(moovChild.fourcc == FOURCC("trak"))
+              if(moovChild.fourcc == FOURCC("trak")) {
+                uint32_t thisTrackId = 0;
+
+                for(auto &trakChild : moovChild.children)
+                  if(trakChild.fourcc == FOURCC("tkhd"))
+                    for(auto &sym : trakChild.syms)
+                      if(!strcmp(sym.name, "track_ID"))
+                        thisTrackId = sym.value;
+
+                bool foundAv1 = false;
+                uint32_t av1M_metadata_specific_parameters = 0;
+
                 for(auto &trakChild : moovChild.children)
                   if(trakChild.fourcc == FOURCC("mdia"))
                     for(auto &mdiaChild : trakChild.children)
                       if(mdiaChild.fourcc == FOURCC("minf"))
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
-                            bool foundAv1 = false;
-
                             for(auto &stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("stsd"))
                                 for(auto &stsdChild : stblChild.children)
@@ -1233,7 +1242,6 @@ const SpecDesc specAv1ISOBMFF = {
                             if(!foundAv1)
                               continue;
 
-                            uint32_t av1M_metadata_specific_parameters = 0;
                             for(auto &stblChild : minfChild.children)
                               if(stblChild.fourcc == FOURCC("sbgp"))
                                 for(auto &sym : stblChild.syms) {
@@ -1250,61 +1258,46 @@ const SpecDesc specAv1ISOBMFF = {
 
                             if(!av1M_metadata_specific_parameters)
                               continue;
-
-                            // Romain: call getData() when implemented
-                            for(auto &stblChild : minfChild.children)
-                              if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64")) {
-                                for(auto &sym : stblChild.syms)
-                                  if(!strcmp(sym.name, "chunk_offset")) {
-                                    auto mdats = findBoxes(root, FOURCC("mdat"));
-                                    if(mdats.empty())
-                                      return;
-
-                                    BoxReader br;
-                                    auto const probeSize = (int)mdats[0]->size; // FIXME: use the real size
-                                    br.br = BitReader{ root.original + sym.value, probeSize };
-
-                                    Av1State stateUnused;
-                                    while(!br.empty()) {
-                                      parseAv1Obus(&br, stateUnused, false);
-                                    }
-
-                                    uint32_t metadata_type = 0;
-                                    for(auto &sym : br.myBox.syms) {
-                                      if(!strcmp(sym.name, "itu_t_t35_country_code")) {
-                                        if(sym.value != 0xFF)
-                                          metadata_type = sym.value << 16;
-
-                                        out->covered();
-                                      } else if(!strcmp(sym.name, "itu_t_t35_country_code_extension_byte")) {
-                                        metadata_type = sym.value << 16;
-                                      } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code")) {
-                                        metadata_type += sym.value;
-                                        if(metadata_type != av1M_metadata_specific_parameters) {
-                                          out->error(
-                                            "metadata_specific_parameters value (%u) SHALL be set to the first 24 bits "
-                                            "of the metadata_itut_t35 structure (%u)",
-                                            av1M_metadata_specific_parameters, metadata_type);
-                                          metadata_type = 0;
-                                        }
-                                      }
-                                    }
-                                  }
-                              }
                           }
-      } },
-    { "VerboseDevelopment\n"
-      "GetSampleOffset",
-      [](Box const &root, IReport *out) {
-        auto obuDetails = getOBUDetails(root, out);
-        if(!obuDetails.valid) {
-          return;
-        }
 
-        auto samples1 = getData(root, out, 1);
-        auto samples2 = getData(root, out, 2);
+                if(!av1M_metadata_specific_parameters)
+                  continue;
 
-        out->covered();
+                auto const samples = getData(root, out, thisTrackId);
+                if(samples.empty()) {
+                  out->warning("No sample found for trackId=%u", thisTrackId);
+                  continue;
+                }
+
+                BoxReader br;
+                br.br = BitReader{ samples[0].position, (int)samples[0].size };
+
+                Av1State stateUnused;
+                while(!br.empty()) {
+                  parseAv1Obus(&br, stateUnused, false);
+                }
+
+                uint32_t metadata_type = 0;
+                for(auto &sym : br.myBox.syms) {
+                  if(!strcmp(sym.name, "itu_t_t35_country_code")) {
+                    if(sym.value != 0xFF)
+                      metadata_type = sym.value << 16;
+
+                    out->covered();
+                  } else if(!strcmp(sym.name, "itu_t_t35_country_code_extension_byte")) {
+                    metadata_type = sym.value << 16;
+                  } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code")) {
+                    metadata_type += sym.value;
+                    if(metadata_type != av1M_metadata_specific_parameters) {
+                      out->error(
+                        "metadata_specific_parameters value (%u) SHALL be set to the first 24 bits "
+                        "of the metadata_itut_t35 structure (%u)",
+                        av1M_metadata_specific_parameters, metadata_type);
+                      metadata_type = 0;
+                    }
+                  }
+                }
+              }
       } },
 #if 0 // CMAF: not covered for now
     { "Section 3\n"
