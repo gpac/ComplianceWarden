@@ -1,3 +1,5 @@
+#pragma once
+
 #include "av1_utils.h"
 #include "box_reader_impl.h"
 

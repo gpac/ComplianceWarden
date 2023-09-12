@@ -10,6 +10,7 @@ std::string sampleValues::pretty() const
   res << size << " @ " << offset << " [" << (void *)position << "]";
   return res.str();
 }
+
 BitReader sampleValues::getSample() const
 {
   if(position == nullptr) {
@@ -18,6 +19,8 @@ BitReader sampleValues::getSample() const
   return { position, (int)size };
 }
 
+namespace
+{
 std::vector<int> getOffsets(const Box *offsetBox)
 {
   if(!offsetBox) {
@@ -111,6 +114,7 @@ const Box *selectEither(const Box &root, IReport *out, uint32_t option1, uint32_
     return nullptr;
   }
   return boxList1.size() ? boxList1[0] : boxList2[0];
+}
 }
 
 std::vector<sampleValues> getData(const Box &root, IReport *out, uint64_t trackId)
