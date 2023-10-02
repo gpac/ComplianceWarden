@@ -828,7 +828,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                                                      "samples: brand avio "
                                                      "should be used");
 
-                                      out->warning("\"stts\" box can be omitted since all "
+                                      out->warning("\"stss\" box can be omitted since all "
                                                    "track samples are sync");
                                     }
                                   }
