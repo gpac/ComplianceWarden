@@ -25,6 +25,10 @@ SPECS = {
     "av1hdr10plus": {
         "spec_url": "https://aomediacodec.github.io/av1-hdr10plus/",
         "src_file": "../src/specs/av1_hdr10plus/av1_hdr10plus.cpp"
+    },
+    "av1isobmff": {
+        "spec_url": "https://aomediacodec.github.io/av1-isobmff/",
+        "src_file": "../src/specs/av1_isobmff/av1_isobmff.cpp"
     }
 }
 
@@ -33,8 +37,8 @@ parser = argparse.ArgumentParser(
         , or dump the C++ stub for the rules based on the specification URL.")
 
 parser.add_argument("--spec",
-                    help="Specifications: av1hdr10plus",
-                    default="av1hdr10plus")
+                    help="Specifications: av1hdr10plus, av1isobmff",
+                    required=True)
 parser.add_argument("-i", "--input",
                     help="Spec HTML file if you don't want to use URL).")
 parser.add_argument("--dump",
@@ -62,6 +66,21 @@ for assert_span in assert_spans:
     rules.append({"id": assert_span.get("id"),
                   "description": assert_span.text.replace('"', ''),
                   "implemented": assert_span.get("id") in src})
+
+duplicates = []
+for rule in rules:
+    dups = [r for r in rules if rule['id'] == r['id']]
+    if len(dups) > 1:
+        entry = dups[0]
+        entry['dup_cnt'] = len(dups)
+        if entry not in duplicates:
+            duplicates.append(entry)
+
+if duplicates:
+    print(f"WARNING: Found {len(duplicates)} duplicate assert IDs:")
+    for dup in duplicates:
+        print(dup)
+    print(10*'-----' + '\n')
 
 if args.dump:
     for rule in rules:
