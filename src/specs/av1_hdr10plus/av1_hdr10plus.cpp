@@ -448,7 +448,7 @@ const SpecDesc specAv1Hdr10plus = {
       "HDR10+ Metadata OBUs are not provided when show_frame = 0",
       "assert-a575dc54",
       [](Box const &root, IReport *out) {
-        if(!isIsobmff(root))
+        if(isIsobmff(root))
           return;
 
         AV1Stream av1Stream = getAv1Stream(root, out);
@@ -456,19 +456,19 @@ const SpecDesc specAv1Hdr10plus = {
           return;
 
         for(auto &tu : av1Stream) {
-          bool seenNoShowFrame = false;
+          bool seenShowFrame = false;
           bool seenHdr10p = false;
 
           for(auto &frame : tu) {
-            if(!frame.show_frame)
-              seenNoShowFrame = true;
+            if(frame.show_frame || frame.show_existing_frame)
+              seenShowFrame = true;
 
             for(auto &obu : frame)
               if(obu.isHdr10p)
                 seenHdr10p = true;
           }
 
-          if(seenNoShowFrame && seenHdr10p) {
+          if(!seenShowFrame && seenHdr10p) {
             out->error("HDR10+ Metadata OBUs are not provided when show_frame = 0");
             return;
           }
@@ -481,7 +481,7 @@ const SpecDesc specAv1Hdr10plus = {
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
       "assert-797eb19e",
       [](Box const &root, IReport *out) {
-        if(!isIsobmff(root))
+        if(isIsobmff(root))
           return;
 
         AV1Stream av1Stream = getAv1Stream(root, out);
@@ -495,8 +495,10 @@ const SpecDesc specAv1Hdr10plus = {
               if(obu.isHdr10p)
                 numHdr10p++;
 
-            if (!av1Stream.layered && numHdr10p > 1) {
-              out->error("For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit, found %d", numHdr10p);
+            if(!av1Stream.layered && numHdr10p > 1) {
+              out->error(
+                "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit, found %d",
+                numHdr10p);
               return;
             }
           }
@@ -540,10 +542,17 @@ const SpecDesc specAv1Hdr10plus = {
         if(!isIsobmff(root))
           return;
 
-        auto av1MBoxes = findBoxes(root, FOURCC("av1M"));
-        if(!av1MBoxes.empty()) {
-          out->error("%llu 'av1M' boxes found, when none is expected", av1MBoxes.size());
-          return;
+        auto trakBoxes = findBoxes(root, FOURCC("trak"));
+        for(auto &trakBox : trakBoxes) {
+          auto av01Boxes = findBoxes(*trakBox, FOURCC("av01"));
+          if(av01Boxes.empty())
+            continue;
+
+          auto av1MBoxes = findBoxes(*trakBox, FOURCC("av1M"));
+          if(!av1MBoxes.empty()) {
+            out->error("%llu 'av1M' boxes found, when none is expected", av1MBoxes.size());
+            return;
+          }
         }
 
         // -TODO@Romain: sample groups not supported in ISOBMFF yet
