@@ -19,7 +19,13 @@ enum {
 enum {
   AV1_KEY_FRAME = 0,
   AV1_INTRA_ONLY_FRAME = 2,
-  AV1_SWITCH_FRAME = 2,
+  AV1_SWITCH_FRAME = 3,
+};
+
+enum {
+  METADATA_TYPE_HDR_CLL = 1,
+  METADATA_TYPE_HDR_MDCV = 2,
+  METADATA_TYPE_ITUT_T35 = 4,
 };
 
 struct IReader;
@@ -56,6 +62,9 @@ struct Av1State {
   int64_t delta_frame_id_length_minus_2 = 0;
   int64_t additional_frame_id_length_minus_1 = 0;
   int64_t color_range = 0;
+  uint8_t temporalId = 0;
+  uint8_t spatialId = 0;
+  uint64_t metadata_type = 0;
   AV1CodecConfigurationRecord av1c{};
 };
 

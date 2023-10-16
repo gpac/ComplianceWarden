@@ -335,8 +335,6 @@ uint64_t leb128_read(IReader *br)
   return value;
 }
 
-enum { METADATA_TYPE_HDR_CLL = 1, METADATA_TYPE_HDR_MDCV = 2, METADATA_TYPE_ITUT_T35 = 4 };
-
 void parseMetadataItutT35(ReaderBits *br, Av1State & /*state*/)
 {
   auto const itu_t_t35_country_code = br->sym("itu_t_t35_country_code", 8);
@@ -373,6 +371,7 @@ int parseAv1MetadataObu(IReader *reader, Av1State &state)
   auto br = std::make_unique<ReaderBits>(reader);
 
   auto const metadata_type = leb128_read(br.get());
+  state.metadata_type = metadata_type;
 
   if(metadata_type == METADATA_TYPE_ITUT_T35)
     parseMetadataItutT35(br.get(), state);
