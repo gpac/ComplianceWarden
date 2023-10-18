@@ -191,6 +191,8 @@ You need ```lcov```.
 scripts/cov.sh
 ```
 
+> Note: On Darwin (MacOS) systems you may need to install GNU version of ```g++``` and ```gcov``` (e.g. ```brew install gcc```). Then change ```./scripts/darwin.sh``` to alias GNU versions instead of Clang versions. You may also need to update ```scripts/cov.sh``` and add ```--ignore-errors unused``` to second ```lcov``` command.
+
 ### Modifying test results
 
 The tests (launched with ```./check```) will stop running on first error.
