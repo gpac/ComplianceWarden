@@ -192,10 +192,12 @@ void parseSdtp(IReader *br)
   br->sym("version", 8);
   br->sym("flags", 24);
 
-  br->sym("is_leading", 2);
-  br->sym("sample_depends_on", 2);
-  br->sym("sample_is_depended_on", 2);
-  br->sym("sample_has_redundancy", 2);
+  while(!br->empty()) {
+    br->sym("is_leading", 2);
+    br->sym("sample_depends_on", 2);
+    br->sym("sample_is_depended_on", 2);
+    br->sym("sample_has_redundancy", 2);
+  }
 }
 
 void parseAvcC(IReader *br)
