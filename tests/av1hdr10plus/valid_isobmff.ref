@@ -6,9 +6,17 @@ Specification description: HDR10+ AV1 Metadata Handling Specification, 7 Decembe
 https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
 
+[av1hdr10plus][Rule #13] Error: AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.
+
 ========================================
-[av1hdr10plus] No errors.
+[av1hdr10plus] 1 error(s), 0 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[av1hdr10plus][Rule #13] id: assert-398f68cd
+Section 3.2
+AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.
 
 +--------------------------------------+
 |        av1isobmff validation         |
