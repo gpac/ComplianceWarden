@@ -770,12 +770,10 @@ void parseClli(IReader *br)
 
 void parseMdcv(IReader *br)
 {
-  br->sym("display_primaries_x_0", 16);
-  br->sym("display_primaries_y_0", 16);
-  br->sym("display_primaries_x_1", 16);
-  br->sym("display_primaries_y_1", 16);
-  br->sym("display_primaries_x_2", 16);
-  br->sym("display_primaries_y_2", 16);
+  for(int i = 0; i < 3; i++) {
+    br->sym("display_primaries_x", 16);
+    br->sym("display_primaries_y", 16);
+  }
   br->sym("white_point_x", 16);
   br->sym("white_point_y", 16);
   br->sym("max_display_mastering_luminance", 32);

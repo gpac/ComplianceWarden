@@ -2,6 +2,7 @@
 #include "../../utils/box_reader_impl.h"
 #include "../../utils/get_data.h"
 
+#include <algorithm>
 #include <cstring> // strcmp
 #include <iostream>
 #include <map>
@@ -1061,17 +1062,17 @@ const SpecDesc specAv1ISOBMFF = {
         // corresponding OBU is present and SHALL have the same values."
         struct MDCV {
           bool valid = false;
-          uint16_t primary_chromaticity_x[3];
-          uint16_t primary_chromaticity_y[3];
-          uint16_t white_point_chromaticity_x;
-          uint16_t white_point_chromaticity_y;
-          uint32_t luminance_max;
-          uint32_t luminance_min;
+          uint16_t primary_chromaticity_x[3]; // display_primaries_x
+          uint16_t primary_chromaticity_y[3]; // display_primaries_y
+          uint16_t white_point_chromaticity_x; // white_point_x
+          uint16_t white_point_chromaticity_y; // white_point_y
+          uint32_t luminance_max; // max_display_mastering_luminance
+          uint32_t luminance_min; // min_display_mastering_luminance
         };
         struct CLL {
           bool valid = false;
-          uint16_t max_cll;
-          uint16_t max_fallmax_fall;
+          uint16_t max_cll; // max_content_light_level
+          uint16_t max_fall; // max_pic_average_light_level
         };
 
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
@@ -1090,9 +1091,6 @@ const SpecDesc specAv1ISOBMFF = {
                 trackId = sym.value;
           }
 
-          // Get which samples belong to av1M
-          auto sampleToGroupMap = getSampleGroupMapping(root, out, trackId);
-
           // Get samples
           auto const samples = getData(root, out, trackId);
           if(samples.empty()) {
@@ -1100,13 +1098,12 @@ const SpecDesc specAv1ISOBMFF = {
             continue;
           }
 
+          // See if MDCV and CLL are present in this sample
+          MDCV in_sample_mdcv{};
+          CLL in_sample_cll{};
           for(auto sampleIndex = 0u; sampleIndex < samples.size(); sampleIndex++) {
             BoxReader br;
             br.br = BitReader{ samples[sampleIndex].position, (int)samples[sampleIndex].size };
-
-            // See if MDCV and CLL are present in this sample
-            MDCV in_sample_mdcv{};
-            CLL in_sample_cll{};
 
             Av1State state;
             while(!br.empty()) {
@@ -1119,17 +1116,17 @@ const SpecDesc specAv1ISOBMFF = {
 
               if(type == OBU_METADATA) {
                 if(state.metadata_type == METADATA_TYPE_HDR_CLL) {
-                  in_sample_cll.valid = true;
                   for(auto j = firstSymIdx; j <= lastSymIdx; j++) {
                     auto &sym = br.myBox.syms[j];
                     if(!strcmp(sym.name, "max_cll"))
                       in_sample_cll.max_cll = sym.value;
-                    if(!strcmp(sym.name, "max_fall"))
-                      in_sample_cll.max_fallmax_fall = sym.value;
+                    if(!strcmp(sym.name, "max_fall")) {
+                      in_sample_cll.max_fall = sym.value;
+                      in_sample_cll.valid = true;
+                    }
                   }
                 }
                 if(state.metadata_type == METADATA_TYPE_HDR_MDCV) {
-                  in_sample_mdcv.valid = true;
                   uint8_t xc = 0, yc = 0;
                   for(auto j = firstSymIdx; j <= lastSymIdx; j++) {
                     auto &sym = br.myBox.syms[j];
@@ -1143,8 +1140,10 @@ const SpecDesc specAv1ISOBMFF = {
                       in_sample_mdcv.white_point_chromaticity_y = sym.value;
                     if(!strcmp(sym.name, "luminance_max"))
                       in_sample_mdcv.luminance_max = sym.value;
-                    if(!strcmp(sym.name, "luminance_min"))
+                    if(!strcmp(sym.name, "luminance_min")) {
                       in_sample_mdcv.luminance_min = sym.value;
+                      in_sample_mdcv.valid = true;
+                    }
                   }
                 }
               }
@@ -1159,189 +1158,162 @@ const SpecDesc specAv1ISOBMFF = {
                 sampleIndex);
               return;
             }
+          }
 
-            // See if MDCV and CLL are present in the sample entry
-            if(sampleIndex >= sampleToGroupMap.size()) {
-              if(in_sample_cll.valid)
-                out->error(
-                  "[TrackId=%u] Sample %u is not present in the sample to group mapping", trackId, sampleIndex);
+          // See if MDCV and CLL are present in the sample entry
+          auto av01Boxes = findBoxes(*trakBox, FOURCC("av01"));
+          for(auto &av01Box : av01Boxes) {
+            // Parse av1C box in this samply entry
+            auto av1cBoxes = findBoxes(*av01Box, FOURCC("av1C"));
+            if(av1cBoxes.empty()) {
+              out->error("[TrackId=%u] Sample Entry does not contain an av1C box", trackId);
               return;
             }
-            auto sampleGroups = sampleToGroupMap[sampleIndex];
-            for(auto sampleGroup : sampleGroups) {
-              auto sampleDescriptionIndex = sampleGroup.sample_description_index;
-              auto stsdBoxes = findBoxes(*trakBox, FOURCC("stsd"));
-              for(auto stsd : stsdBoxes) {
-                uint32_t entryCount = 0;
-                for(auto &sym : stsd->syms) {
-                  if(!strcmp(sym.name, "entry_count"))
-                    entryCount = sym.value;
+
+            // Parse obu array in this av1C box
+            MDCV in_av1C_mdcv{};
+            CLL in_av1C_cll{};
+
+            for(auto &av1c : av1cBoxes) {
+              bool isMetadata = false;
+              uint8_t metadata_type = 0;
+
+              for(auto &sym : av1c->syms) {
+                if(!strcmp(sym.name, "metadata"))
+                  isMetadata = true;
+                if(!strcmp(sym.name, "/metadata")) {
+                  isMetadata = false;
+                  metadata_type = 0;
                 }
 
-                if(sampleDescriptionIndex > entryCount) {
-                  out->error(
-                    "[TrackId=%u] Sample description entry %u is not present in the sample description entry", trackId,
-                    sampleDescriptionIndex);
-                  return;
-                }
+                if(!isMetadata)
+                  continue;
 
-                // Get sample description entry
-                auto sampleEntry = stsd->children[sampleDescriptionIndex - 1];
-
-                // Parse av1C box in this samply entry
-                auto av1cBoxes = findBoxes(sampleEntry, FOURCC("av1C"));
-                if(av1cBoxes.empty()) {
-                  out->error(
-                    "[TrackId=%u] Sample description entry %u does not contain an av1C box", trackId,
-                    sampleDescriptionIndex);
-                  return;
-                }
-
-                // Parse obu array in this av1C box
-                MDCV in_av1C_mdcv{};
-                CLL in_av1C_cll{};
-
-                for(auto &av1c : av1cBoxes) {
-                  BoxReader br;
-                  br.br = BitReader{ root.original + av1c->position + 32, (int)av1c->size - 32 };
-
-                  Av1State state;
-                  while(!br.empty()) {
-                    auto firstSymIdx = br.myBox.syms.size();
-                    auto type = parseAv1Obus(&br, state, false);
-                    auto lastSymIdx = br.myBox.syms.size() - 1;
-
-                    if(type == 0)
-                      break;
-
-                    if(type == OBU_METADATA) {
-                      if(state.metadata_type == METADATA_TYPE_HDR_CLL) {
-                        in_av1C_cll.valid = true;
-                        for(auto j = firstSymIdx; j <= lastSymIdx; j++) {
-                          auto &sym = br.myBox.syms[j];
-                          if(!strcmp(sym.name, "max_cll"))
-                            in_av1C_cll.max_cll = sym.value;
-                          if(!strcmp(sym.name, "max_fall"))
-                            in_av1C_cll.max_fallmax_fall = sym.value;
-                        }
-                      }
-                      if(state.metadata_type == METADATA_TYPE_HDR_MDCV) {
-                        in_av1C_mdcv.valid = true;
-                        uint8_t xc = 0, yc = 0;
-                        for(auto j = firstSymIdx; j <= lastSymIdx; j++) {
-                          auto &sym = br.myBox.syms[j];
-                          if(!strcmp(sym.name, "primary_chromaticity_x"))
-                            in_av1C_mdcv.primary_chromaticity_x[xc++] = sym.value;
-                          if(!strcmp(sym.name, "primary_chromaticity_y"))
-                            in_av1C_mdcv.primary_chromaticity_y[yc++] = sym.value;
-                          if(!strcmp(sym.name, "white_point_chromaticity_x"))
-                            in_av1C_mdcv.white_point_chromaticity_x = sym.value;
-                          if(!strcmp(sym.name, "white_point_chromaticity_y"))
-                            in_av1C_mdcv.white_point_chromaticity_y = sym.value;
-                          if(!strcmp(sym.name, "luminance_max"))
-                            in_av1C_mdcv.luminance_max = sym.value;
-                          if(!strcmp(sym.name, "luminance_min"))
-                            in_av1C_mdcv.luminance_min = sym.value;
-                        }
-                      }
-                    }
-
-                    if(in_av1C_cll.valid && in_av1C_mdcv.valid)
-                      break;
-                  }
-
-                  if(in_av1C_cll.valid ^ in_av1C_mdcv.valid) {
-                    out->error(
-                      "[TrackId=%u] Sample Entry %u contains only one of METADATA_TYPE_HDR_CLL and "
-                      "METADATA_TYPE_HDR_MDCV",
-                      trackId, sampleDescriptionIndex);
-                    return;
-                  }
-                }
-
-                MDCV *mdcv = nullptr;
-                CLL *cll = nullptr;
-
-                // Select either the sample entry or the sample
-                if(in_sample_cll.valid) {
-                  mdcv = &in_sample_mdcv;
-                  cll = &in_sample_cll;
-                } else if(in_av1C_cll.valid) {
-                  mdcv = &in_av1C_mdcv;
-                  cll = &in_av1C_cll;
-                } else {
+                if(!strcmp(sym.name, "leb128_byte")) {
+                  metadata_type = sym.value;
                   continue;
                 }
 
-                // Get mdcv and clli boxes
-                auto mdcvBoxes = findBoxes(sampleEntry, FOURCC("mdcv"));
-                auto clliBoxes = findBoxes(sampleEntry, FOURCC("clli"));
-
-                // Check if they are present
-                if(mdcvBoxes.empty() || clliBoxes.empty()) {
-                  out->error(
-                    "[TrackId=%u] Sample Entry %u does not contain an mdcv or clli box", trackId,
-                    sampleDescriptionIndex);
-                  return;
+                if(metadata_type == METADATA_TYPE_HDR_CLL) {
+                  if(!strcmp(sym.name, "max_cll"))
+                    in_av1C_cll.max_cll = sym.value;
+                  if(!strcmp(sym.name, "max_fall")) {
+                    in_av1C_cll.max_fall = sym.value;
+                    in_av1C_cll.valid = true;
+                  }
                 }
-
-                // Check if they match
-                for(auto &mdcvBox : mdcvBoxes) {
+                if(metadata_type == METADATA_TYPE_HDR_MDCV) {
                   uint8_t xc = 0, yc = 0;
-                  for(auto &sym : mdcvBox->syms) {
-                    if(!strcmp(sym.name, "primary_chromaticity_x"))
-                      if(sym.value != mdcv->primary_chromaticity_x[xc++])
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u mdcv box primary_chromaticity_x does not match the "
-                          "METADATA_TYPE_HDR_MDCV",
-                          trackId, sampleDescriptionIndex);
-                    if(!strcmp(sym.name, "primary_chromaticity_y"))
-                      if(sym.value != mdcv->primary_chromaticity_y[yc++])
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u mdcv box primary_chromaticity_y does not match the "
-                          "METADATA_TYPE_HDR_MDCV",
-                          trackId, sampleDescriptionIndex);
-                    if(!strcmp(sym.name, "white_point_chromaticity_x"))
-                      if(sym.value != mdcv->white_point_chromaticity_x)
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u mdcv box white_point_chromaticity_x does not match the "
-                          "METADATA_TYPE_HDR_MDCV",
-                          trackId, sampleDescriptionIndex);
-                    if(!strcmp(sym.name, "white_point_chromaticity_y"))
-                      if(sym.value != mdcv->white_point_chromaticity_y)
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u mdcv box white_point_chromaticity_y does not match the "
-                          "METADATA_TYPE_HDR_MDCV",
-                          trackId, sampleDescriptionIndex);
-                    if(!strcmp(sym.name, "luminance_max"))
-                      if(sym.value != mdcv->luminance_max)
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u mdcv box luminance_max does not match the "
-                          "METADATA_TYPE_HDR_MDCV",
-                          trackId, sampleDescriptionIndex);
-                    if(!strcmp(sym.name, "luminance_min"))
-                      if(sym.value != mdcv->luminance_min)
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u mdcv box luminance_min does not match the "
-                          "METADATA_TYPE_HDR_MDCV",
-                          trackId, sampleDescriptionIndex);
+                  if(!strcmp(sym.name, "primary_chromaticity_x"))
+                    in_av1C_mdcv.primary_chromaticity_x[xc++] = sym.value;
+                  if(!strcmp(sym.name, "primary_chromaticity_y"))
+                    in_av1C_mdcv.primary_chromaticity_y[yc++] = sym.value;
+                  if(!strcmp(sym.name, "white_point_chromaticity_x"))
+                    in_av1C_mdcv.white_point_chromaticity_x = sym.value;
+                  if(!strcmp(sym.name, "white_point_chromaticity_y"))
+                    in_av1C_mdcv.white_point_chromaticity_y = sym.value;
+                  if(!strcmp(sym.name, "luminance_max"))
+                    in_av1C_mdcv.luminance_max = sym.value;
+                  if(!strcmp(sym.name, "luminance_min")) {
+                    in_av1C_mdcv.luminance_min = sym.value;
+                    in_av1C_mdcv.valid = true;
                   }
                 }
 
-                for(auto &clliBox : clliBoxes) {
-                  for(auto &sym : clliBox->syms) {
-                    if(!strcmp(sym.name, "max_cll"))
-                      if(sym.value != cll->max_cll)
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u clli box max_cll does not match the METADATA_TYPE_HDR_CLL",
-                          trackId, sampleDescriptionIndex);
-                    if(!strcmp(sym.name, "max_fall"))
-                      if(sym.value != cll->max_fallmax_fall)
-                        out->error(
-                          "[TrackId=%u] Sample Entry %u clli box max_fall does not match the METADATA_TYPE_HDR_CLL",
-                          trackId, sampleDescriptionIndex);
-                  }
-                }
+                if(in_av1C_cll.valid && in_av1C_mdcv.valid)
+                  break;
+              }
+
+              if(in_av1C_cll.valid ^ in_av1C_mdcv.valid) {
+                out->error(
+                  "[TrackId=%u] Sample Entry contains only one of METADATA_TYPE_HDR_CLL and "
+                  "METADATA_TYPE_HDR_MDCV",
+                  trackId);
+                return;
+              }
+            }
+
+            MDCV *mdcv = nullptr;
+            CLL *cll = nullptr;
+
+            // Select either the sample entry or the sample
+            if(in_sample_cll.valid) {
+              mdcv = &in_sample_mdcv;
+              cll = &in_sample_cll;
+            } else if(in_av1C_cll.valid) {
+              mdcv = &in_av1C_mdcv;
+              cll = &in_av1C_cll;
+            } else {
+              continue;
+            }
+
+            // Get mdcv and clli boxes
+            auto mdcvBoxes = findBoxes(*av01Box, FOURCC("mdcv"));
+            auto clliBoxes = findBoxes(*av01Box, FOURCC("clli"));
+
+            // Check if they are present
+            if(mdcvBoxes.empty() || clliBoxes.empty()) {
+              out->error("[TrackId=%u] Sample Entry does not contain an mdcv or clli box", trackId);
+              return;
+            }
+
+            // Check if they match
+            for(auto &mdcvBox : mdcvBoxes) {
+              uint8_t xc = 0, yc = 0;
+              for(auto &sym : mdcvBox->syms) {
+                if(!strcmp(sym.name, "display_primaries_x"))
+                  if(sym.value != mdcv->primary_chromaticity_x[xc++])
+                    out->error(
+                      "[TrackId=%u] Sample Entry mdcv box display_primaries_x does not match the "
+                      "METADATA_TYPE_HDR_MDCV",
+                      trackId);
+                if(!strcmp(sym.name, "display_primaries_y"))
+                  if(sym.value != mdcv->primary_chromaticity_y[yc++])
+                    out->error(
+                      "[TrackId=%u] Sample Entry mdcv box display_primaries_y does not match the "
+                      "METADATA_TYPE_HDR_MDCV",
+                      trackId);
+                if(!strcmp(sym.name, "white_point_x"))
+                  if(sym.value != mdcv->white_point_chromaticity_x)
+                    out->error(
+                      "[TrackId=%u] Sample Entry mdcv box white_point_x does not match the "
+                      "METADATA_TYPE_HDR_MDCV",
+                      trackId);
+                if(!strcmp(sym.name, "white_point_y"))
+                  if(sym.value != mdcv->white_point_chromaticity_y)
+                    out->error(
+                      "[TrackId=%u] Sample Entry mdcv box white_point_y does not match the "
+                      "METADATA_TYPE_HDR_MDCV",
+                      trackId);
+                if(!strcmp(sym.name, "max_display_mastering_luminance"))
+                  if(sym.value != mdcv->luminance_max)
+                    out->error(
+                      "[TrackId=%u] Sample Entry mdcv box max_display_mastering_luminance does not match the "
+                      "METADATA_TYPE_HDR_MDCV",
+                      trackId);
+                if(!strcmp(sym.name, "min_display_mastering_luminance"))
+                  if(sym.value != mdcv->luminance_min)
+                    out->error(
+                      "[TrackId=%u] Sample Entry mdcv box min_display_mastering_luminance does not match the "
+                      "METADATA_TYPE_HDR_MDCV",
+                      trackId);
+              }
+            }
+
+            for(auto &clliBox : clliBoxes) {
+              for(auto &sym : clliBox->syms) {
+                if(!strcmp(sym.name, "max_content_light_level"))
+                  if(sym.value != cll->max_cll)
+                    out->error(
+                      "[TrackId=%u] Sample Entry clli box max_content_light_level does not match the "
+                      "METADATA_TYPE_HDR_CLL",
+                      trackId);
+                if(!strcmp(sym.name, "max_pic_average_light_level"))
+                  if(sym.value != cll->max_fall)
+                    out->error(
+                      "[TrackId=%u] Sample Entry clli box max_pic_average_light_level does not match the "
+                      "METADATA_TYPE_HDR_CLL",
+                      trackId);
               }
             }
           }
@@ -1780,6 +1752,8 @@ const SpecDesc specAv1ISOBMFF = {
       [](Box const &root, IReport *out) {
         // -TODO @Deniz We need to check if the metadata OBU is present in the sample entry if so, av1M should be
         // present
+        // TODO: Clarification. If it's in sample entry then group index? if it's in sample data then almost all of the test files (including valid ones) will have warning
+        return;
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1802,18 +1776,10 @@ const SpecDesc specAv1ISOBMFF = {
           for(auto &stsd : stsdBoxes) {
             auto av1CBoxes = findBoxes(*stsd, FOURCC("av1C"));
             for(auto &av1CBox : av1CBoxes) {
-              BoxReader br;
-              br.br = BitReader{ root.original + av1CBox->position + 32, (int)av1CBox->size - 32 };
-
-              Av1State state;
               bool hasMetadata = false;
-              while(!br.empty()) {
-                auto type = parseAv1Obus(&br, state, false);
 
-                if(type == 0)
-                  break;
-
-                if(type == OBU_METADATA) {
+              for(auto &sym : av1CBox->syms) {
+                if(!strcmp(sym.name, "metadata")) {
                   hasMetadata = true;
                   break;
                 }
@@ -1821,15 +1787,23 @@ const SpecDesc specAv1ISOBMFF = {
 
               if(hasMetadata) {
                 auto sgpdBoxes = findBoxes(*trakBox, FOURCC("sgpd"));
+                bool hasAv1M = false;
                 for(auto &sgpd : sgpdBoxes) {
-                  auto av1MBoxes = findBoxes(*sgpd, FOURCC("av1M"));
-                  if(av1MBoxes.empty()) {
-                    out->warning(
-                      "[TrackId=%u] Sample Entry %u contains a metadata OBU, but no av1M box is present in the "
-                      "sample group",
-                      trackId, 1);
+                  uint32_t grouping_type = 0;
+                  for(auto &sym : sgpd->syms) {
+                    if(!strcmp(sym.name, "grouping_type"))
+                      grouping_type = sym.value;
+                  }
+                  if(grouping_type == FOURCC("av1M")) {
+                    hasAv1M = true;
+                    break;
                   }
                 }
+                if(!hasAv1M)
+                  out->warning(
+                    "[TrackId=%u] Sample Entry %u contains a metadata OBU, but no av1M box is present in the "
+                    "sample group",
+                    trackId, 1);
               }
             }
           }
@@ -1991,8 +1965,9 @@ const SpecDesc specAv1ISOBMFF = {
           std::vector<uint32_t> staticSampleDescriptionIndices;
           for(auto &it : sampleToObuMap) {
             auto &obus = it.second;
-            bool staticObus = true;
+            bool staticObus = false;
             if(obus.size() > 1) {
+              staticObus = true;
               auto &firstObu = obus[0];
               for(auto &obu : obus) {
                 if(obu.data != firstObu.data) {
@@ -2095,6 +2070,20 @@ const SpecDesc specAv1ISOBMFF = {
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
       [](Box const &root, IReport *out) {
         // -TODO@Erik => I think the AV1 part is already implemented (search for "show_frame")
+        // Check if mvex box is present
+        bool fragmented = false;
+        auto mvexBoxes = findBoxes(root, FOURCC("mvex"));
+        if(!mvexBoxes.empty()) {
+          fragmented = true;
+        }
+
+        // Check if moof box is present
+        auto moofBoxes = findBoxes(root, FOURCC("moof"));
+        if(!moofBoxes.empty() && !fragmented) {
+          fragmented = true;
+          out->warning("Fragmented file detected but no 'mvex' box is present to signal it");
+        }
+
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -2112,36 +2101,33 @@ const SpecDesc specAv1ISOBMFF = {
           }
 
           std::vector<uint32_t> syncSamples;
+          bool defaultSampleIsSyncSample = false;
 
-          // Get stss and look which samples are sync (non-frag)
-          auto stssBoxes = findBoxes(*trakBox, FOURCC("stss"));
-          for(auto &stss : stssBoxes) {
-            for(auto &sym : stss->syms) {
-              if(!strcmp(sym.name, "sample_number")) {
-                syncSamples.push_back(sym.value);
-              }
-            }
-          }
-
-          // Get sample_is_non_sync_sample from trun box (frag)
-          auto trafBoxes = findBoxes(root, FOURCC("traf"));
-          for(auto &traf : trafBoxes) {
-            // Get track_ID
-            uint32_t thisTrackId = 0;
-            auto tfhdBoxes = findBoxes(*traf, FOURCC("tfhd"));
-            for(auto &tfhd : tfhdBoxes) {
-              for(auto &sym : tfhd->syms)
+          if(fragmented) {
+            // Get sample_is_non_sync_sample from trex box (frag)
+            auto trexBoxes = findBoxes(root, FOURCC("trex"));
+            for(auto &trex : trexBoxes) {
+              // Get track_ID
+              uint32_t thisTrackId = 0;
+              for(auto &sym : trex->syms)
                 if(!strcmp(sym.name, "track_ID"))
                   thisTrackId = sym.value;
-            }
 
-            if(thisTrackId != trackId)
-              continue;
+              if(thisTrackId != trackId)
+                continue;
 
-            auto trunBoxes = findBoxes(*traf, FOURCC("trun"));
-            for(auto &trun : trunBoxes) {
-              for(auto &sym : trun->syms) {
+              for(auto &sym : trex->syms) {
                 if(!strcmp(sym.name, "sample_is_non_sync_sample")) {
+                  defaultSampleIsSyncSample = sym.value == 0;
+                }
+              }
+            }
+          } else {
+            // Get stss and look which samples are sync (non-frag)
+            auto stssBoxes = findBoxes(*trakBox, FOURCC("stss"));
+            for(auto &stss : stssBoxes) {
+              for(auto &sym : stss->syms) {
+                if(!strcmp(sym.name, "sample_number")) {
                   syncSamples.push_back(sym.value);
                 }
               }
@@ -2161,8 +2147,12 @@ const SpecDesc specAv1ISOBMFF = {
 
           for(auto i = 0u; i < samples.size(); i++) {
             // if not sync sample, continue
-            if(syncSamples.size() > i && syncSamples[i] == 0) {
-              continue;
+            if(fragmented) {
+              if(!defaultSampleIsSyncSample)
+                continue;
+            } else {
+              if(std::find(syncSamples.begin(), syncSamples.end(), i + 1) == syncSamples.end())
+                continue;
             }
 
             BoxReader br;
@@ -2180,14 +2170,15 @@ const SpecDesc specAv1ISOBMFF = {
                 foundSequenceHeader = true;
               }
 
-              if(type == OBU_FRAME_HEADER) {
-                if(!foundSequenceHeader) {
-                  out->error(
-                    "[TrackId=%u] Sample %u is a sync sample but its first frame does not contain a Sequence Header "
-                    "OBU",
-                    trackId, i);
-                }
+              if(type == OBU_FRAME_HEADER && !foundSequenceHeader) {
+                out->error(
+                  "[TrackId=%u] Sample %u is a sync sample but its first frame does not contain a Sequence Header "
+                  "OBU",
+                  trackId, i);
+                return;
+              }
 
+              if(type == OBU_FRAME_HEADER || type == OBU_FRAME) {
                 bool keyFrame = false, showFrame = false;
                 for(auto &it : br.myBox.syms) {
                   if(!strcmp(it.name, "frame_type") && it.value == AV1_KEY_FRAME) {

@@ -672,13 +672,26 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
 
         for(auto &field : mdcv.syms)
           if(
-            strcmp(field.name, "size") && strcmp(field.name, "fourcc") && strcmp(field.name, "display_primaries_x_0") &&
-            strcmp(field.name, "display_primaries_y_0") && strcmp(field.name, "display_primaries_x_1") &&
-            strcmp(field.name, "display_primaries_y_1") && strcmp(field.name, "display_primaries_x_2") &&
-            strcmp(field.name, "display_primaries_y_2") && strcmp(field.name, "white_point_x") &&
+            strcmp(field.name, "size") && strcmp(field.name, "fourcc") && strcmp(field.name, "display_primaries_x") &&
+            strcmp(field.name, "display_primaries_y") && strcmp(field.name, "white_point_x") &&
             strcmp(field.name, "white_point_y") && strcmp(field.name, "max_display_mastering_luminance") &&
             strcmp(field.name, "min_display_mastering_luminance"))
             out->error("Invalid 'mdcv' field \"%s\" (value=%lld)", field.name, field.value);
+
+        uint8_t dpx = 0, dpy = 0;
+        for (auto &field : mdcv.syms)
+        {
+          if (!strcmp(field.name, "display_primaries_x"))
+            dpx++;
+          else if (!strcmp(field.name, "display_primaries_y"))
+            dpy++;
+        }
+
+        if (dpx != 3)
+          out->error("Invalid 'mdcv' field display_primaries_x (found %d, expected 3)", dpx);
+
+        if (dpy != 3)
+          out->error("Invalid 'mdcv' field display_primaries_y (found %d, expected 3)", dpy);
       };
 
       // Look for valid 'mdcv' boxes
