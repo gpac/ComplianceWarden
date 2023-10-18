@@ -272,6 +272,17 @@ sgpd_start:
     db 0x00, 0x00, 0x00 ; metadata_specific_parameters(24)
 sgpd_end:
 
+sbgp_start:
+    dd BE(sbgp_end - sbgp_start)
+    dd "sbgp"
+    db 0x00 ; version(8) 
+    db 0x00, 0x00, 0x00 ; flags(24) 
+    db 0x61, 0x76, 0x31, 0x4D ; grouping_type(32) ('av1M')
+    db 0x00, 0x00, 0x00, 0x01 ; entry_count(32)
+    db 0x00, 0x00, 0x00, 0x01 ; sample_count(32)
+    db 0x00, 0x00, 0x00, 0x01 ; group_description_index(32)
+sbgp_end:
+
 stbl_end:
 minf_end:
 mdia_end:
