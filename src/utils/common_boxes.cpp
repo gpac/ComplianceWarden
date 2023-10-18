@@ -169,6 +169,24 @@ void parseStsd(IReader *br)
     br->box();
 }
 
+void parseStsc(IReader *br)
+{
+  // Workaround for some old test files
+  if(br->empty())
+    return;
+
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entryCount = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entryCount; i++) {
+    br->sym("first_chunk", 32);
+    br->sym("samples_per_chunk", 32);
+    br->sym("sample_description_index", 32);
+  }
+}
+
 void parseSdtp(IReader *br)
 {
   br->sym("version", 8);
@@ -950,6 +968,8 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseElst;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("stsc"):
+    return &parseStsc;
   case FOURCC("sdtp"):
     return &parseSdtp;
   case FOURCC("avcC"):

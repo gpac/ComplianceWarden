@@ -5,9 +5,9 @@
 Specification description: ISO Base Media File Format
 MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 
-[isobmff][Rule #12] Error: MovieBox (position=0) placed before FileTypeBox (position=358) in file
-[isobmff][Rule #12] Error: MediaDataBox (position=349) placed before FileTypeBox (position=358) in file
-[isobmff][Rule #12] Error: FreeSpaceBox (position=341) placed before FileTypeBox (position=358) in file
+[isobmff][Rule #12] Error: MovieBox (position=0) placed before FileTypeBox (position=354) in file
+[isobmff][Rule #12] Error: MediaDataBox (position=345) placed before FileTypeBox (position=354) in file
+[isobmff][Rule #12] Error: FreeSpaceBox (position=337) placed before FileTypeBox (position=354) in file
 
 ========================================
 [isobmff] 3 error(s), 0 warning(s).
