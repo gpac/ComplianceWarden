@@ -544,14 +544,16 @@ const SpecDesc specAv1Hdr10plus = {
 
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
-          auto av01Boxes = findBoxes(*trakBox, FOURCC("av01"));
-          if(av01Boxes.empty())
+          auto sgpdBoxes = findBoxes(*trakBox, FOURCC("sgpd"));
+          if(sgpdBoxes.empty())
             continue;
 
-          auto av1MBoxes = findBoxes(*trakBox, FOURCC("av1M"));
-          if(!av1MBoxes.empty()) {
-            out->error("%llu 'av1M' boxes found, when none is expected", av1MBoxes.size());
-            return;
+          for(auto &sgpdBox : sgpdBoxes) {
+            for(auto &sym : sgpdBox->syms)
+              if(!strcmp(sym.name, "grouping_type") && sym.value == FOURCC("av1M")) {
+                out->error("AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.");
+                return;
+              }
           }
         }
 

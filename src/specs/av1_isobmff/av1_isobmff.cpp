@@ -1556,14 +1556,17 @@ const SpecDesc specAv1ISOBMFF = {
 
             Av1State stateUnused;
             while(!br.empty()) {
+              auto firstSymIdx = br.myBox.syms.size();
               auto type = parseAv1Obus(&br, stateUnused, false);
+              auto lastSymIdx = br.myBox.syms.size() - 1;
 
               if(type == 0)
                 break;
 
               if(type == OBU_FRAME_HEADER) {
                 bool intraFrame = false;
-                for(auto &it : br.myBox.syms) {
+                for(auto j = firstSymIdx; j <= lastSymIdx; j++) {
+                  auto &it = br.myBox.syms[j];
                   if(!strcmp(it.name, "frame_type") && it.value == AV1_INTRA_ONLY_FRAME) {
                     intraFrame = true;
                   }
@@ -1775,7 +1778,8 @@ const SpecDesc specAv1ISOBMFF = {
       "Metadata OBUs may be carried in sample data. In this case, the\n"
       "AV1MetadataSampleGroupEntry SHOULD be used.",
       [](Box const &root, IReport *out) {
-        // -TODO @Deniz We need to check if the metadata OBU is present in the sample entry if so, av1M should be present
+        // -TODO @Deniz We need to check if the metadata OBU is present in the sample entry if so, av1M should be
+        // present
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1967,14 +1971,14 @@ const SpecDesc specAv1ISOBMFF = {
               obu.type = parseAv1Obus(&br, stateUnused, false);
               auto lastSymIdx = br.myBox.syms.size() - 1;
 
-
               if(obu.type == 0)
                 break;
 
               // Look at metadata OBUs and store their data
               if(obu.type == OBU_METADATA) {
                 for(auto j = firstSymIdx; j <= lastSymIdx; j++) {
-                  if (!strcmp(br.myBox.syms[j].name, "obu")) continue;
+                  if(!strcmp(br.myBox.syms[j].name, "obu"))
+                    continue;
                   obu.data.push_back(br.myBox.syms[j].value);
                 }
 
@@ -2143,6 +2147,10 @@ const SpecDesc specAv1ISOBMFF = {
               }
             }
           }
+
+          // If no sync sample, continue
+          if(syncSamples.empty())
+            continue;
 
           // Get samples
           auto const samples = getData(root, out, trackId);
