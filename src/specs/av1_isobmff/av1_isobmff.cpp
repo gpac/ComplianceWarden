@@ -1752,8 +1752,6 @@ const SpecDesc specAv1ISOBMFF = {
       [](Box const &root, IReport *out) {
         // -TODO @Deniz We need to check if the metadata OBU is present in the sample entry if so, av1M should be
         // present
-        // TODO: Clarification. If it's in sample entry then group index? if it's in sample data then almost all of the test files (including valid ones) will have warning
-        return;
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1764,46 +1762,48 @@ const SpecDesc specAv1ISOBMFF = {
           // Get the track ID
           uint32_t trackId = 0;
           auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
-          for(auto &tkhd : tkhdBoxes) {
+          for(auto tkhd : tkhdBoxes) {
             for(auto &sym : tkhd->syms)
               if(!strcmp(sym.name, "track_ID"))
                 trackId = sym.value;
           }
 
-          // if a sample entry in stsd and under avc1 contains a metadata OBU
-          // then a sgpd should contain av1M
-          auto stsdBoxes = findBoxes(*trakBox, FOURCC("stsd"));
-          for(auto &stsd : stsdBoxes) {
-            auto av1CBoxes = findBoxes(*stsd, FOURCC("av1C"));
-            for(auto &av1CBox : av1CBoxes) {
-              bool hasMetadata = false;
+          // Get which samples belong to av1M
+          auto sampleToGroupMap = getSampleGroupMapping(root, out, trackId);
 
-              for(auto &sym : av1CBox->syms) {
-                if(!strcmp(sym.name, "metadata")) {
-                  hasMetadata = true;
-                  break;
-                }
+          // Get samples
+          auto const samples = getData(root, out, trackId);
+          if(samples.empty()) {
+            out->warning("No sample found for trackId=%u", trackId);
+            continue;
+          }
+
+          for(auto sampleIndex = 0u; sampleIndex < samples.size(); sampleIndex++) {
+            BoxReader br;
+            br.br = BitReader{ samples[sampleIndex].position, (int)samples[sampleIndex].size };
+
+            Av1State stateUnused;
+            bool foundMetadata = false;
+            while(!br.empty()) {
+              auto type = parseAv1Obus(&br, stateUnused, false);
+
+              if(type == 0)
+                break;
+
+              if(type == OBU_METADATA) {
+                foundMetadata = true;
+                break;
               }
+            }
 
-              if(hasMetadata) {
-                auto sgpdBoxes = findBoxes(*trakBox, FOURCC("sgpd"));
-                bool hasAv1M = false;
-                for(auto &sgpd : sgpdBoxes) {
-                  uint32_t grouping_type = 0;
-                  for(auto &sym : sgpd->syms) {
-                    if(!strcmp(sym.name, "grouping_type"))
-                      grouping_type = sym.value;
-                  }
-                  if(grouping_type == FOURCC("av1M")) {
-                    hasAv1M = true;
-                    break;
-                  }
-                }
-                if(!hasAv1M)
-                  out->warning(
-                    "[TrackId=%u] Sample Entry %u contains a metadata OBU, but no av1M box is present in the "
-                    "sample group",
-                    trackId, 1);
+            if(foundMetadata) {
+              // Check if this sample is part of av1M
+              if(!sampleHasGroup(sampleToGroupMap, sampleIndex, FOURCC("av1M"))) {
+                out->warning(
+                  "[TrackId=%u] Sample %u contains a Metadata OBU, but is not part of an av1M sample "
+                  "group",
+                  trackId, sampleIndex);
+                break;
               }
             }
           }
