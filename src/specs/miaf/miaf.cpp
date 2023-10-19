@@ -679,18 +679,17 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
             out->error("Invalid 'mdcv' field \"%s\" (value=%lld)", field.name, field.value);
 
         uint8_t dpx = 0, dpy = 0;
-        for (auto &field : mdcv.syms)
-        {
-          if (!strcmp(field.name, "display_primaries_x"))
+        for(auto &field : mdcv.syms) {
+          if(!strcmp(field.name, "display_primaries_x"))
             dpx++;
-          else if (!strcmp(field.name, "display_primaries_y"))
+          else if(!strcmp(field.name, "display_primaries_y"))
             dpy++;
         }
 
-        if (dpx != 3)
+        if(dpx != 3)
           out->error("Invalid 'mdcv' field display_primaries_x (found %d, expected 3)", dpx);
 
-        if (dpy != 3)
+        if(dpy != 3)
           out->error("Invalid 'mdcv' field display_primaries_y (found %d, expected 3)", dpy);
       };
 

@@ -127,7 +127,7 @@ getSampleValues(const Box &root, IReport *out, const Box *offsetBox, const Box *
     }
     sampleValues sv = { offsets[i], sizes[i], root.original + offsets[i] };
 
-    if (flags.size() > 0) {
+    if(flags.size() > 0) {
       sv.flags = flags[i];
     }
 
