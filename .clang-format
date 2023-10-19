@@ -1,6 +1,6 @@
 BasedOnStyle: WebKit
 UseTab: Never
-ColumnLimit: 130
+ColumnLimit: 120
 Language: Cpp
 DisableFormat: false
 IndentWidth: 2
@@ -16,10 +16,9 @@ BraceWrapping:
   AfterControlStatement: true
   BeforeLambdaBody: false
   SplitEmptyFunction: false
-ColumnLimit: 120
 CompactNamespaces: true
 ContinuationIndentWidth: 2
-SpaceBeforeCpp11BracedList: true
+SpaceBeforeCpp11BracedList: false
 DerivePointerAlignment: false
 FixNamespaceComments: false
 IncludeBlocks: Regroup
@@ -31,7 +30,6 @@ NamespaceIndentation: None
 PointerAlignment: Right
 SortIncludes: true
 SpaceAfterTemplateKeyword: false
-SpaceBeforeCpp11BracedList: false
 SpaceBeforeParens: false
 SpaceInEmptyBlock: false
 IncludeCategories:
