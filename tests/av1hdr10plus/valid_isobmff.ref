@@ -6,17 +6,9 @@ Specification description: HDR10+ AV1 Metadata Handling Specification, 7 Decembe
 https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
 
-[av1hdr10plus][Rule #13] Error: AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.
-
 ========================================
-[av1hdr10plus] 1 error(s), 0 warning(s).
+[av1hdr10plus] No errors.
 ========================================
-
-===== Involved rules descriptions:
-
-[av1hdr10plus][Rule #13] id: assert-398f68cd
-Section 3.2
-AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.
 
 +--------------------------------------+
 |        av1isobmff validation         |
@@ -26,9 +18,17 @@ Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 De
 https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
 https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
+[av1isobmff][Rule #30] Warning: [TrackId=2] Sample 0 contains a Metadata OBU, but is not part of an av1M sample group
+
 ========================================
-[av1isobmff] No errors.
+[av1isobmff] 0 error(s), 1 warning(s).
 ========================================
+
+===== Involved rules descriptions:
+
+[av1isobmff][Rule #30] Section 2.4
+Metadata OBUs may be carried in sample data. In this case, the
+AV1MetadataSampleGroupEntry SHOULD be used.
 
 +--------------------------------------+
 |          isobmff validation          |
