@@ -8,7 +8,7 @@ std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace
 {
-//TODO: replace with newer version of getData()
+// TODO: replace with newer version of getData()
 BitReader getData(Box const &root, IReport *out)
 {
   if(!isIsobmff(root))

@@ -435,6 +435,8 @@ moov_start:
                     stsc_start:
                         dd BE(stsc_end - stsc_start)
                         dd "stsc"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
                     stsc_end:
                     stsz_start:
                         dd BE(stsz_end - stsz_start)
@@ -711,6 +713,8 @@ moov_start:
                     stsc2_start:
                         dd BE(stsc2_end - stsc2_start)
                         dd "stsc"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
                     stsc2_end:
                     stsz2_start:
                         dd BE(stsz2_end - stsz2_start)

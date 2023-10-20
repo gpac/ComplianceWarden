@@ -171,10 +171,6 @@ void parseStsd(IReader *br)
 
 void parseStsc(IReader *br)
 {
-  // Workaround for some old test files
-  if(br->empty())
-    return;
-
   br->sym("version", 8);
   br->sym("flags", 24);
 
