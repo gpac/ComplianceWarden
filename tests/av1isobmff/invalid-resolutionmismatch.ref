@@ -1,0 +1,32 @@
++--------------------------------------+
+|        av1isobmff validation         |
++--------------------------------------+
+
+Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019
+https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
+https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
+
+[av1isobmff][Rule #3] Error: Width and height of the VisualSampleEntry (4224x2176) don't match with the Sequence Header OBU (4096x2160)
+
+========================================
+[av1isobmff] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[av1isobmff][Rule #3] Section 2.2.4
+The width and height fields of the VisualSampleEntry SHALL equal the values of
+max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header
+OBU applying to the samples associated with this sample entry.
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

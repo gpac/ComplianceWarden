@@ -8,12 +8,25 @@ enum {
   OBU_SEQUENCE_HEADER = 1,
   OBU_TEMPORAL_DELIMITER = 2,
   OBU_FRAME_HEADER = 3,
+  OBU_TILE_GROUP = 4,
   OBU_METADATA = 5,
   OBU_FRAME = 6,
   OBU_REDUNDANT_FRAME_HEADER = 7,
+  OBU_TILE_LIST = 8,
+  OBU_PADDING = 15
 };
 
-auto const AV1_KEY_FRAME = 0;
+enum {
+  AV1_KEY_FRAME = 0,
+  AV1_INTRA_ONLY_FRAME = 2,
+  AV1_SWITCH_FRAME = 3,
+};
+
+enum {
+  METADATA_TYPE_HDR_CLL = 1,
+  METADATA_TYPE_HDR_MDCV = 2,
+  METADATA_TYPE_ITUT_T35 = 4,
+};
 
 struct IReader;
 struct Box;
@@ -49,6 +62,9 @@ struct Av1State {
   int64_t delta_frame_id_length_minus_2 = 0;
   int64_t additional_frame_id_length_minus_1 = 0;
   int64_t color_range = 0;
+  uint8_t temporalId = 0;
+  uint8_t spatialId = 0;
+  uint64_t metadata_type = 0;
   AV1CodecConfigurationRecord av1c{};
 };
 

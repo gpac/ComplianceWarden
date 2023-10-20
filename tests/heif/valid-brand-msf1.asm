@@ -146,7 +146,7 @@ meta_start:
             av1C_start:
                 dd BE(av1C_end - av1C_start)
                 dd "av1C"
-                db 0x00, 0x00, 0x00, 0x00
+                db 0x81, 0x00, 0x00, 0x00
             av1C_end:
             auxC_start:
                 dd BE(auxC_end - auxC_start)
@@ -205,7 +205,7 @@ meta_start:
             av1C2_start:
                 dd BE(av1C2_end - av1C2_start)
                 dd "av1C"
-                db 0x00, 0x00, 0x00, 0x00
+                db 0x81, 0x00, 0x00, 0x00
             av1C2_end:
             pixi2_start:
                 dd BE(pixi2_end - pixi2_start)
@@ -395,7 +395,7 @@ moov_start:
                             av1C3_start:
                                 dd BE(av1C3_end - av1C3_start)
                                 dd "av1C"
-                                db 0x00, 0x00, 0x00, 0x00
+                                db 0x81, 0x00, 0x00, 0x00
                             av1C3_end:
                             ccst_start:
                                 dd BE(ccst_end - ccst_start)
@@ -435,10 +435,16 @@ moov_start:
                     stsc_start:
                         dd BE(stsc_end - stsc_start)
                         dd "stsc"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
                     stsc_end:
                     stsz_start:
                         dd BE(stsz_end - stsz_start)
                         dd "stsz"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x01
+                        dd BE(mdat_end - mdat_start - 8) ; entry_size(32)
                     stsz_end:
                     stco_start:
                         dd BE(stco_end - stco_start)
@@ -617,7 +623,7 @@ moov_start:
                             av1C4_start:
                                 dd BE(av1C4_end - av1C4_start)
                                 dd "av1C"
-                                db 0x00, 0x00, 0x00, 0x00
+                                db 0x81, 0x00, 0x00, 0x00
                             av1C4_end:
                             ccst2_start:
                                 dd BE(ccst2_end - ccst2_start)
@@ -707,10 +713,16 @@ moov_start:
                     stsc2_start:
                         dd BE(stsc2_end - stsc2_start)
                         dd "stsc"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
                     stsc2_end:
                     stsz2_start:
                         dd BE(stsz2_end - stsz2_start)
                         dd "stsz"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x01
+                        dd BE(mdat_end - mdat_start - 8) ; entry_size(32)
                     stsz2_end:
                     stco2_start:
                         dd BE(stco2_end - stco2_start)

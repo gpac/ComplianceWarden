@@ -1,0 +1,35 @@
++--------------------------------------+
+|        av1isobmff validation         |
++--------------------------------------+
+
+Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019
+https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
+https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
+
+[av1isobmff][Rule #32] Error: [TrackId=2] Sample 0 is a sync sample but its first frame is not a key frame
+[av1isobmff][Rule #32] Error: [TrackId=2] Sample 0 is a sync sample but its first frame has its show_frame flag not set
+
+========================================
+[av1isobmff] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[av1isobmff][Rule #32] Section 2.4
+If an AV1 Sample is signaled as a sync sample (in the SyncSampleBox or by
+setting sample_is_non_sync_sample to 0), it SHALL be a Random Access Point
+as defined in [AV1], i.e. satisfy the following constraints:
+- Its first frame is a Key Frame that has show_frame flag set to 1,
+- It contains a Sequence Header OBU before the first Frame Header OBU.
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

@@ -1,0 +1,51 @@
++--------------------------------------+
+|       av1hdr10plus validation        |
++--------------------------------------+
+
+Specification description: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
+https://aomediacodec.github.io/av1-hdr10plus/
+
+[av1hdr10plus][Rule #12] Error: HDR10+ Metadata OBU found in the av1C configOBUs
+[av1hdr10plus][Rule #13] Error: AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.
+
+========================================
+[av1hdr10plus] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[av1hdr10plus][Rule #12] id: assert-aa071f33
+Section 3.1
+For formats that use the AV1CodecConfigurationRecord when storing
+[AV1] bitstreams (e.g. ISOBMFF and MPEG-2 TS), HDR10+ Metadata OBUs
+shall not be present in the configOBUs field of
+the AV1CodecConfigurationRecord
+
+[av1hdr10plus][Rule #13] id: assert-398f68cd
+Section 3.2
+AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.
+
++--------------------------------------+
+|        av1isobmff validation         |
++--------------------------------------+
+
+Specification description: AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019
+https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
+https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
+
+========================================
+[av1isobmff] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

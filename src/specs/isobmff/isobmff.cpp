@@ -111,7 +111,7 @@ const SpecDesc specIsobmff = {
         auto expected = std::vector<uint32_t>({ FOURCC("clap"), FOURCC("pasp") });
 
         for(size_t i = 0; i < FourCCs.size(); ++i) {
-          if(FourCCs[i] != expected[i]) {
+          if(FourCCs[i] != expected[0] && FourCCs[i] != expected[1]) {
             out->error("Expecting: 'clap', 'pasp', got:");
 
             for(auto f : FourCCs)
@@ -228,8 +228,8 @@ const SpecDesc specIsobmff = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl"))
                             for(auto &stblChild : minfChild.children)
-                              if(stblChild.fourcc == FOURCC("stco")) // TODO: also check the
-                                                                     // sizes
+                              // TODO: also check the sizes and add tests
+                              if(stblChild.fourcc == FOURCC("stco") || stblChild.fourcc == FOURCC("co64"))
                                 for(auto &sym : stblChild.syms)
                                   if(!strcmp(sym.name, "chunk_offset"))
                                     check(trackId, sym.value);
@@ -520,8 +520,8 @@ const SpecDesc specIsobmff = {
         boxCheck(root, out, { FOURCC("frma") }, { FOURCC("sinf") }, { 1, 1 });
         boxCheck(
           root, out, { FOURCC("schm") }, { FOURCC("frma") },
-          { 0, 1 }); // Zero or one in 'sinf', depending on the protection structure; Exactly one in
-                     // 'rinf' and 'srpp'
+          { 0, 1 }); // Zero or one in 'sinf', depending on the protection
+                     // structure; Exactly one in 'rinf' and 'srpp'
         boxCheck(root, out, { FOURCC("schi") }, { FOURCC("frma") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("iinf") }, { FOURCC("meta") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("xml ") }, { FOURCC("meta") }, { 0, 1 });

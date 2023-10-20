@@ -82,6 +82,32 @@ void parseTkhd(IReader *br)
   br->sym("height", 32); // fixed 16.16
 }
 
+void parseStsz(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto sample_size = br->sym("sample_size", 32);
+  auto sample_count = br->sym("sample_count", 32);
+
+  if(sample_size == 0)
+    for(auto i = 1; i <= sample_count; i++)
+      br->sym("entry_size", 32);
+}
+
+void parseStz2(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("reserved", 24);
+  auto field_size = br->sym("field_size", 8);
+  auto sample_count = br->sym("sample_count", 32);
+
+  for(auto i = 1; i <= sample_count; i++)
+    br->sym("entry_size", field_size);
+}
+
 void parseStco(IReader *br)
 {
   br->sym("version", 8);
@@ -91,6 +117,17 @@ void parseStco(IReader *br)
 
   for(auto i = 1; i <= entry_count; i++)
     br->sym("chunk_offset", 32);
+}
+
+void parseCo64(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entry_count = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entry_count; i++)
+    br->sym("chunk_offset", 64);
 }
 
 void parseReferenceTypeChildren(IReader *br)
@@ -130,6 +167,33 @@ void parseStsd(IReader *br)
 
   for(auto i = 1; i <= entryCount; i++)
     br->box();
+}
+
+void parseStsc(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  auto entryCount = br->sym("entry_count", 32);
+
+  for(auto i = 1; i <= entryCount; i++) {
+    br->sym("first_chunk", 32);
+    br->sym("samples_per_chunk", 32);
+    br->sym("sample_description_index", 32);
+  }
+}
+
+void parseSdtp(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  while(!br->empty()) {
+    br->sym("is_leading", 2);
+    br->sym("sample_depends_on", 2);
+    br->sym("sample_is_depended_on", 2);
+    br->sym("sample_has_redundancy", 2);
+  }
 }
 
 void parseAvcC(IReader *br)
@@ -702,6 +766,18 @@ void parseClap(IReader *br)
   br->sym("vertOffD", 32);
 }
 
+void parseTrex(IReader *br)
+{
+  br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("track_ID", 32);
+  br->sym("default_sample_description_index", 32);
+  br->sym("default_sample_duration", 32);
+  br->sym("default_sample_size", 32);
+  br->sym("default_sample_flags", 32);
+}
+
 void parseClli(IReader *br)
 {
   br->sym("max_content_light_level", 16);
@@ -710,12 +786,10 @@ void parseClli(IReader *br)
 
 void parseMdcv(IReader *br)
 {
-  br->sym("display_primaries_x_0", 16);
-  br->sym("display_primaries_y_0", 16);
-  br->sym("display_primaries_x_1", 16);
-  br->sym("display_primaries_y_1", 16);
-  br->sym("display_primaries_x_2", 16);
-  br->sym("display_primaries_y_2", 16);
+  for(int i = 0; i < 3; i++) {
+    br->sym("display_primaries_x", 16);
+    br->sym("display_primaries_y", 16);
+  }
   br->sym("white_point_x", 16);
   br->sym("white_point_y", 16);
   br->sym("max_display_mastering_luminance", 32);
@@ -731,6 +805,112 @@ void parsePitm(IReader *br)
     br->sym("item_ID", 16);
   else
     br->sym("item_ID", 32);
+}
+
+void parseSgpd(IReader *br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  int64_t default_length = 0;
+  int64_t grouping_type = br->sym("grouping_type", 32);
+  if(version >= 1) {
+    default_length = br->sym("default_length", 32);
+  }
+  if(version >= 2) {
+    br->sym("default_group_description_index", 32);
+  }
+
+  auto entry_count = br->sym("entry_count", 32);
+  for(int64_t i = 1; i <= entry_count; i++) {
+    int64_t description_length = 0;
+    if(version >= 1) {
+      if(default_length == 0) {
+        description_length = br->sym("description_length", 32);
+      }
+    }
+
+    if(grouping_type == FOURCC("av1M")) {
+      br->sym("metadata_type", 8);
+      br->sym("metadata_specific_parameters", 24);
+    } else {
+      auto size = description_length ? description_length : default_length;
+      while(size--)
+        br->sym("byte", 8);
+    }
+  }
+}
+
+void parseTfhd(IReader *br)
+{
+  br->sym("version", 8);
+  auto flags = br->sym("flags", 24);
+  br->sym("track_ID", 32);
+
+  if(flags & 0x000001)
+    br->sym("base_data_offset", 64);
+
+  if(flags & 0x000002)
+    br->sym("sample_description_index", 32);
+
+  if(flags & 0x000008)
+    br->sym("default_sample_duration", 32);
+
+  if(flags & 0x000010)
+    br->sym("default_sample_size", 32);
+
+  // default_sample_flags
+  if(flags & 0x000020)
+    br->sym("default_sample_flags", 32);
+}
+
+void parseSbgp(IReader *br)
+{
+  auto version = br->sym("version", 8);
+  br->sym("flags", 24);
+
+  br->sym("grouping_type", 32);
+  if(version == 1) {
+    br->sym("grouping_type_parameter", 32);
+  }
+
+  auto entry_count = br->sym("entry_count", 32);
+  for(auto i = 1; i <= entry_count; i++) {
+    br->sym("sample_count", 32);
+    br->sym("group_description_index", 32);
+  }
+}
+
+void parseTrun(IReader *br)
+{
+  auto version = br->sym("version", 8);
+  auto flags = br->sym("flags", 24);
+
+  auto sample_count = br->sym("sample_count", 32);
+
+  if(flags & 0x000001)
+    br->sym("data_offset", 32);
+
+  if(flags & 0x000004)
+    br->sym("first_sample_flags", 32);
+
+  for(auto i = 1; i <= sample_count; i++) {
+    if(flags & 0x000100)
+      br->sym("sample_duration", 32);
+
+    if(flags & 0x000200)
+      br->sym("sample_size", 32);
+
+    if(flags & 0x000400)
+      br->sym("sample_flags", 32);
+
+    if(flags & 0x000800) {
+      if(version == 0)
+        br->sym("sample_composition_time_offset", 32);
+      else
+        br->sym("sample_composition_time_offset", 32);
+    }
+  }
 }
 
 void parseChildren(IReader *br)
@@ -781,10 +961,16 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseTkhd;
   case FOURCC("stco"):
     return &parseStco;
+  case FOURCC("co64"):
+    return &parseCo64;
   case FOURCC("elst"):
     return &parseElst;
   case FOURCC("stsd"):
     return &parseStsd;
+  case FOURCC("stsc"):
+    return &parseStsc;
+  case FOURCC("sdtp"):
+    return &parseSdtp;
   case FOURCC("avcC"):
     return &parseAvcC;
   case FOURCC("hvcC"):
@@ -808,6 +994,8 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parsePasp;
   case FOURCC("meta"):
     return &parseMeta;
+  case FOURCC("tfhd"):
+    return &parseTfhd;
   case FOURCC("auxC"):
     return &parseAuxc;
   case FOURCC("auxi"):
@@ -843,6 +1031,18 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseMdcv;
   case FOURCC("pitm"):
     return &parsePitm;
+  case FOURCC("stsz"):
+    return &parseStsz;
+  case FOURCC("stz2"):
+    return &parseStz2;
+  case FOURCC("sgpd"):
+    return &parseSgpd;
+  case FOURCC("sbgp"):
+    return &parseSbgp;
+  case FOURCC("trex"):
+    return &parseTrex;
+  case FOURCC("trun"):
+    return &parseTrun;
   }
 
   if(isVisualSampleEntry(fourcc))

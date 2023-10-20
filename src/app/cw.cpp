@@ -104,7 +104,7 @@ void printUsageAndExit(const char *progName)
 
 #ifndef CW_WASM
 
-// TODO: remove: introduce in July 2023 for v32
+// TODO: remove: legacy parsing introduced in July 2023 for v32
 int mainLegacy(int argc, const char *argv[])
 {
   if(argc < 2 || argc > 4)
@@ -180,7 +180,9 @@ int main(int argc, const char *argv[])
 
   if(specName.empty() || urls.size() != 1) {
     if(!testMode) {
-      fprintf(stderr, "/!\\ Failed argument parsing. Switching to legacy mode. /!\\\n\n");
+      fprintf(stderr, "+------------------------------------------------------------+\n");
+      fprintf(stderr, "| /!\\ Failed argument parsing. Switching to legacy mode. /!\\ |\n");
+      fprintf(stderr, "+------------------------------------------------------------+\n");
       opt.printHelp(stderr);
     } else {
       for(int i = 1, j = 1; i < argc; ++i, ++j) {

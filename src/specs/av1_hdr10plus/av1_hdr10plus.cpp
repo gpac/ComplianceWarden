@@ -8,6 +8,7 @@ std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace
 {
+// TODO: replace with newer version of getData()
 BitReader getData(Box const &root, IReport *out)
 {
   if(!isIsobmff(root))
@@ -23,12 +24,116 @@ BitReader getData(Box const &root, IReport *out)
   return { nullptr, 0 };
 }
 
+struct OBU {
+  int64_t type = 0;
+  bool isHdr10p = false;
+  size_t firstSymIdx = 0, lastSymIdx = 0;
+};
+struct Frame : std::vector<OBU> {
+  bool show_frame = false;
+  bool show_existing_frame = false;
+};
+struct TemporalUnit : std::vector<Frame> {
+};
+struct AV1Stream : std::vector<TemporalUnit> {
+  bool layered = true;
+};
+
+AV1Stream getAv1Stream(Box const &root, IReport *out)
+{
+  BoxReader br;
+  AV1Stream av1Stream;
+
+  br.br = getData(root, out);
+  if(br.br.size < 2)
+    return av1Stream;
+
+  Av1State stateUnused;
+  while(!br.empty()) {
+    OBU obu;
+    obu.firstSymIdx = br.myBox.syms.size();
+    obu.type = parseAv1Obus(&br, stateUnused, false);
+    obu.lastSymIdx = br.myBox.syms.size() - 1;
+
+    for(size_t i = obu.firstSymIdx; i < obu.lastSymIdx; ++i) {
+      auto &sym = br.myBox.syms[i];
+
+      if(!strcmp(sym.name, "temporal_id"))
+        stateUnused.temporalId = sym.value;
+
+      if(!strcmp(sym.name, "spatial_id"))
+        stateUnused.spatialId = sym.value;
+    }
+
+    if(stateUnused.spatialId == 0 && stateUnused.temporalId == 0)
+      av1Stream.layered = false;
+
+    if(obu.type == 0)
+      break;
+
+    if(obu.type == OBU_TEMPORAL_DELIMITER) {
+      av1Stream.push_back(TemporalUnit{});
+      av1Stream.back().push_back(Frame{});
+    }
+
+    if(av1Stream.empty()) {
+      if(obu.type != OBU_TEMPORAL_DELIMITER) {
+        out->error("The first OBU shall be a temporal delimiter. Aborting.");
+        break;
+      }
+
+      av1Stream.push_back(TemporalUnit{});
+      av1Stream.back().push_back(Frame{});
+    }
+
+    av1Stream.back().back().push_back(obu);
+
+    if(obu.type == OBU_FRAME)
+      av1Stream.back().push_back(Frame{});
+  }
+
+  for(auto &tu : av1Stream)
+    for(auto &frame : tu) {
+
+      for(auto &obu : frame) {
+        // look for show_frame/show_existing_frame and the HDR10+ metadata OBUs
+        for(size_t i = obu.firstSymIdx; i < obu.lastSymIdx; ++i) {
+          auto &sym = br.myBox.syms[i];
+
+          if(!strcmp(sym.name, "show_frame"))
+            frame.show_frame = sym.value;
+
+          if(!strcmp(sym.name, "show_existing_frame"))
+            frame.show_existing_frame = sym.value;
+
+          if(!strcmp(sym.name, "itu_t_t35_country_code"))
+            if(sym.value == 0xB5)
+              while(++i <= obu.lastSymIdx) {
+                sym = br.myBox.syms[i];
+
+                if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code"))
+                  if(sym.value == 0x003C)
+                    if(++i <= obu.lastSymIdx) {
+                      sym = br.myBox.syms[i];
+
+                      if(!strcmp(sym.name, "itu_t_t35_terminal_provider_oriented_code"))
+                        if(sym.value == 0x0001)
+                          obu.isHdr10p = true;
+                    }
+              }
+        }
+      }
+    }
+
+  return av1Stream;
+}
+
 const SpecDesc specAv1Hdr10plus = {
   "av1hdr10plus",
   "HDR10+ AV1 Metadata Handling Specification, 7 December 2022\n"
   "https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf\n"
   "https://aomediacodec.github.io/av1-hdr10plus/",
-  { "isobmff" },
+  { "av1isobmff" },
   {
     { // This rule does not exist in the AV1 HDR10+ spec. Should it be in some dependency?
       "Section 2.1\n"
@@ -261,88 +366,9 @@ const SpecDesc specAv1Hdr10plus = {
         if(isIsobmff(root))
           return;
 
-        BoxReader br;
-        br.br = getData(root, out);
-
-        if(br.br.size < 2)
-          return;
-
-        struct OBU {
-          int64_t type = 0;
-          bool isHdr10p = false;
-          size_t firstSymIdx = 0, lastSymIdx = 0;
-        };
-        struct Frame : std::vector<OBU> {
-          bool show = false;
-        };
-        struct TemporalUnit : std::vector<Frame> {
-        };
-        struct AV1Stream : std::vector<TemporalUnit> {
-        };
-        AV1Stream av1Stream;
-        Av1State stateUnused;
-
-        while(!br.empty()) {
-          OBU obu;
-          obu.firstSymIdx = br.myBox.syms.size();
-          obu.type = parseAv1Obus(&br, stateUnused, false);
-          obu.lastSymIdx = br.myBox.syms.size() - 1;
-
-          if(obu.type == 0)
-            break;
-
-          if(obu.type == OBU_TEMPORAL_DELIMITER) {
-            av1Stream.push_back(TemporalUnit{});
-            av1Stream.back().push_back(Frame{});
-          }
-
-          if(av1Stream.empty()) {
-            if(obu.type != OBU_TEMPORAL_DELIMITER) {
-              out->error("The first OBU shall be a temporal unit. Aborting.");
-              break;
-            }
-
-            av1Stream.push_back(TemporalUnit{});
-            av1Stream.back().push_back(Frame{});
-          }
-
-          av1Stream.back().back().push_back(obu);
-
-          if(obu.type == OBU_FRAME)
-            av1Stream.back().push_back(Frame{});
-        }
-
-        for(auto &tu : av1Stream)
-          for(auto &frame : tu)
-            for(auto &obu : frame) {
-              // look for show_frame/show_existing_frame and the HDR10+ metadata OBUs
-              for(size_t i = obu.firstSymIdx; i < obu.lastSymIdx; ++i) {
-                auto &sym = br.myBox.syms[i];
-
-                if(!strcmp(sym.name, "show_frame") || !strcmp(sym.name, "show_existing_frame"))
-                  frame.show = !!sym.value;
-
-                if(!strcmp(sym.name, "itu_t_t35_country_code"))
-                  if(sym.value == 0xB5)
-                    while(++i <= obu.lastSymIdx) {
-                      sym = br.myBox.syms[i];
-
-                      if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code"))
-                        if(sym.value == 0x003C)
-                          if(++i <= obu.lastSymIdx) {
-                            sym = br.myBox.syms[i];
-
-                            if(!strcmp(sym.name, "itu_t_t35_terminal_provider_oriented_code"))
-                              if(sym.value == 0x0001)
-                                obu.isHdr10p = true;
-                          }
-                    }
-              }
-            }
-
+        AV1Stream av1Stream = getAv1Stream(root, out);
         if(av1Stream.empty())
           return;
-
         out->covered();
 
         // re-aggregate the last tu&frame&obu into the last frame when there is no OBU_FRAME
@@ -366,7 +392,7 @@ const SpecDesc specAv1Hdr10plus = {
 
         for(int tu = 0; tu < (int)av1Stream.size(); ++tu)
           for(int frame = 0; frame < (int)av1Stream[tu].size(); ++frame) {
-            if(!av1Stream[tu][frame].show)
+            if(!av1Stream[tu][frame].show_frame && !av1Stream[tu][frame].show_existing_frame)
               continue;
 
             int numHdr10p = 0;
@@ -382,15 +408,6 @@ const SpecDesc specAv1Hdr10plus = {
                 numHdr10p, tu, frame);
               continue;
             }
-
-#if 0 // this makes no sense
-
-            if(av1Stream[tu][frame].size() >= 2)
-              if(av1Stream[tu][frame][0].type == OBU_TEMPORAL_DELIMITER && av1Stream[tu][frame][1].isHdr10p)
-                // right after the Temporal Unit Delimiter
-                continue;
-
-#endif
 
             bool seenFrameHeader = false, seenFrame = false, seenSeqHdr = false, hasSeqHdr = false;
 
@@ -431,20 +448,63 @@ const SpecDesc specAv1Hdr10plus = {
     { "Section 2.2.2\n"
       "HDR10+ Metadata OBUs are not provided when show_frame = 0",
       "assert-a575dc54",
-      [](Box const &root, IReport * /*out*/) {
-        if(!isIsobmff(root))
+      [](Box const &root, IReport *out) {
+        if(isIsobmff(root))
           return;
 
-        // TODO: implement me
+        AV1Stream av1Stream = getAv1Stream(root, out);
+        if(av1Stream.empty())
+          return;
+
+        for(auto &tu : av1Stream) {
+          bool seenShowFrame = false;
+          bool seenHdr10p = false;
+
+          for(auto &frame : tu) {
+            if(frame.show_frame || frame.show_existing_frame)
+              seenShowFrame = true;
+
+            for(auto &obu : frame)
+              if(obu.isHdr10p) {
+                seenHdr10p = true;
+                out->covered();
+              }
+          }
+
+          if(!seenShowFrame && seenHdr10p) {
+            out->error("HDR10+ Metadata OBUs are not provided when show_frame = 0");
+            return;
+          }
+        }
       } },
     { "Section 2.2.2\n"
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
       "assert-797eb19e",
-      [](Box const &root, IReport * /*out*/) {
-        if(!isIsobmff(root))
+      [](Box const &root, IReport *out) {
+        if(isIsobmff(root))
           return;
 
-        // TODO: implement me
+        AV1Stream av1Stream = getAv1Stream(root, out);
+        if(av1Stream.empty())
+          return;
+
+        for(auto &tu : av1Stream) {
+          for(auto &frame : tu) {
+            int numHdr10p = 0;
+            for(auto &obu : frame)
+              if(obu.isHdr10p) {
+                numHdr10p++;
+                out->covered();
+              }
+
+            if(!av1Stream.layered && numHdr10p > 1) {
+              out->error(
+                "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit, found %d",
+                numHdr10p);
+              return;
+            }
+          }
+        }
       } },
     { "Section 3.1\n"
       "For formats that use the AV1CodecConfigurationRecord when storing\n"
@@ -452,21 +512,49 @@ const SpecDesc specAv1Hdr10plus = {
       "shall not be present in the configOBUs field of\n"
       "the AV1CodecConfigurationRecord",
       "assert-aa071f33",
-      [](Box const &root, IReport * /*out*/) {
+      [](Box const &root, IReport *out) {
         if(!isIsobmff(root))
           return;
 
-        // TODO: implement me
+        auto trakBoxes = findBoxes(root, FOURCC("trak"));
+        for(auto &trakBox : trakBoxes) {
+          auto av1CBoxes = findBoxes(*trakBox, FOURCC("av1C"));
+          for(auto &av1CBox : av1CBoxes) {
+            bool isHdr10p = true;
+            for(auto &sym : av1CBox->syms)
+              if(!strcmp(sym.name, "itu_t_t35_country_code") && sym.value != 0xB5) {
+                isHdr10p = false;
+              } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_code") && sym.value != 0x003C) {
+                isHdr10p = false;
+              } else if(!strcmp(sym.name, "itu_t_t35_terminal_provider_oriented_code"))
+                if(sym.value == 0x0001 && isHdr10p)
+                  out->error("HDR10+ Metadata OBU found in the av1C configOBUs");
+          }
+        }
       } },
     { "Section 3.2\n"
       "AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.",
       "assert-398f68cd",
-      [](Box const &root, IReport * /*out*/) {
+      [](Box const &root, IReport *out) {
         if(!isIsobmff(root))
           return;
 
-        // TODO: sample groups not supported in ISOBMFF yet
-        // out->covered();
+        auto trakBoxes = findBoxes(root, FOURCC("trak"));
+        for(auto &trakBox : trakBoxes) {
+          auto sgpdBoxes = findBoxes(*trakBox, FOURCC("sgpd"));
+          if(sgpdBoxes.empty())
+            continue;
+
+          for(auto &sgpdBox : sgpdBoxes) {
+            for(auto &sym : sgpdBox->syms)
+              if(!strcmp(sym.name, "grouping_type") && sym.value == FOURCC("av1M")) {
+                out->error("AV1 Metadata sample group defined in [AV1-ISOBMFF] shall not be used.");
+                return;
+              }
+          }
+
+          out->covered();
+        }
       } },
     { "Section 3.2\n"
       "HDR10 Static Metadata and HDR10+ Metadata OBUs are unprotected",

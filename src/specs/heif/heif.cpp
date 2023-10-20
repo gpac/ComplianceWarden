@@ -1173,8 +1173,8 @@ static const SpecDesc specHeif = {
           { 0, INT32_MAX }); // mandatory, if the item has a 'tbas' item reference to another image item
         boxCheck(
           root, out, { FOURCC("auxC") }, { FOURCC("ipco") },
-          { 0, INT32_MAX }); // TODO: one per image item // mandatory, for an image item containing an
-                             // auxiliary image
+          { 0, INT32_MAX }); // TODO: one per image item // mandatory, for an
+                             // image item containing an auxiliary image
         boxCheck(root, out, { FOURCC("clap") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item
         boxCheck(root, out, { FOURCC("irot") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item
         boxCheck(root, out, { FOURCC("lsel") }, { FOURCC("ipco") }, { 0, INT32_MAX }); // TODO: one per image item

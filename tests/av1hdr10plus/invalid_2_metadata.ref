@@ -7,9 +7,10 @@ https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03
 https://aomediacodec.github.io/av1-hdr10plus/
 
 [av1hdr10plus][Rule #9] Error: There shall be one and only one HDR10+ metadata OBU. Found 2 in Temporal Unit #0 (Frame #0)
+[av1hdr10plus][Rule #11] Error: For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit, found 2
 
 ========================================
-[av1hdr10plus] 1 error(s), 0 warning(s).
+[av1hdr10plus] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -20,4 +21,8 @@ for each frame with show_frame = 1 or show_existing_frame = 1, there shall be on
 and only one HDR10+ metadata OBU preceding the Frame Header OBU for this frame and
 located after the last OBU of the previous frame (if any) or after the
 Sequence Header OBU (if any) or after the start of the temporal unit
+
+[av1hdr10plus][Rule #11] id: assert-797eb19e
+Section 2.2.2
+For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit
 

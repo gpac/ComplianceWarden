@@ -40,7 +40,7 @@ meta_start:
         db 0x00, 0x01 ; item_ID(16) 
         db 0x00, 0x00 ; "reserved2(12)" "construction_method(4)" 
         db 0x00, 0x00 ; data_reference_index(16) 
-        db 0x00, 0x00, 0x03, 0x65 ; base_offset(32) 
+        db 0x00, 0x00, 0x03, 0x7D ; base_offset(32)
         db 0x00, 0x01 ; extent_count(16) 
          ; extent_offset(0) 
         db 0x00, 0x00, 0x00, 0x0D ; extent_length(32) 
@@ -262,8 +262,8 @@ moov_start:
             db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
             db 0x00, 0x00, 0x00, 0x00 ; matrix(32) 
             db 0x40, 0x00, 0x00, 0x00 ; matrix(32) 
-            db 0x01, 0xE0, 0x00, 0x00 ; width(32) 
-            db 0x01, 0x0E, 0x00, 0x00 ; height(32) 
+            db 0x10, 0x00, 0x00, 0x00 ; width(32) 
+            db 0x08, 0x70, 0x00, 0x00 ; height(32) 
         tkhd_end:
         mdia_start:
             dd BE(mdia_end - mdia_start)
@@ -476,10 +476,16 @@ moov_start:
                     stsc_start:
                         dd BE(stsc_end - stsc_start)
                         dd "stsc"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
                     stsc_end:
                     stsz_start:
                         dd BE(stsz_end - stsz_start)
                         dd "stsz"
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x00
+                        db 0x00, 0x00, 0x00, 0x01
+                        dd BE(mdat_end - mdat_start - 8) ; entry_size(32)
                     stsz_end:
                     stco_start:
                         dd BE(stco_end - stco_start)

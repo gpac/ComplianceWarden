@@ -172,13 +172,14 @@ minf_start:
             dd "stsc"
             db 0x00, 0x00, 0x00, 0x00
             db 0x00, 0x00, 0x00, 0x00
-            db 0x00, 0x00, 0x00, 0x00
         stsc_end:
         stsz_start:
             dd BE(stsz_end - stsz_start)
             dd "stsz"
+            db 0x00, 0x00, 0x00, 0x00
+            db 0x00, 0x00, 0x00, 0x00
             db 0x00, 0x00, 0x00, 0x01
-            db 0x00, 0x00, 0x00, 0x01
+            dd BE(mdat_end - mdat_start - 8) ; entry_size(32)
         stsz_end:
         stco_start:
             dd BE(stco_end - stco_start)
