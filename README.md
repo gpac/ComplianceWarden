@@ -1,5 +1,5 @@
 # Compliance Warden
-# A pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+)
+# A pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+, AV1-ISOBMFF)
 
 ## Introduction
 
@@ -21,6 +21,8 @@ An online version is available [here for HEIF/MIAF](https://gpac.github.io/Compl
 
 ### Usage
 
+[New option parser](https://github.com/gpac/ComplianceWarden/issues/48) (introduced in July 2023):
+
 ```
 $ bin/cw.exe -h
 Compliance Warden, version v32-master-rev14-g363d8d3
@@ -34,9 +36,8 @@ Usage:
     -t, --test                              Don't print warnings when switching to legacy mode.
 ```
 
-[We need an option parser](https://github.com/gpac/ComplianceWarden/issues/48):
 
-The old usage is deprecated and will be removed soon:
+The old usage is deprecated and will be removed in v34:
 
 ```
 $ bin/cw.exe
@@ -59,11 +60,20 @@ The master branch only references official specifications. Draft versions or upd
 However, once a specification is validated, we accept to add new rules progressively.
 
 ```
-$ bin/cw.exe list
+$ bin/cw.exe --list
 ================================================================================
 Specification name: av1hdr10plus
-            detail: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+            detail: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
+        depends on: "av1isobmff" specifications.
+================================================================================
+
+================================================================================
+Specification name: av1isobmff
+            detail: AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019
+https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
+https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
         depends on: "isobmff" specifications.
 ================================================================================
 
@@ -191,7 +201,7 @@ You need ```lcov```.
 scripts/cov.sh
 ```
 
-> Note: On Darwin (MacOS) systems you may need to install GNU version of ```g++``` and ```gcov``` (e.g. ```brew install gcc```). Then change ```./scripts/darwin.sh``` to alias GNU versions instead of Clang versions. You may also need to update ```scripts/cov.sh``` and add ```--ignore-errors unused``` to second ```lcov``` command.
+> Note: On Darwin (MacOS) systems you may need to install GNU version of ```g++``` and ```gcov``` (e.g. ```brew install gcc```). Then change ```./scripts/darwin.sh``` to alias GNU versions instead of Clang versions.
 
 ### Modifying test results
 
@@ -293,5 +303,4 @@ Some aspects are not activated:
 
 This work was initiated as part of the MPEG MIAF conformance software.
 
-The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF.
-
+The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF, AV1-ISOBMFF, and AV1 HDR10+.
