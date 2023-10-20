@@ -146,6 +146,7 @@ bool checkComplianceJsonSpec(Box const &file, SpecDesc const *spec, Json::Array 
   bool fail = false;
   auto root = std::make_unique<Json::Object>();
   root->content.push_back(std::make_unique<Json::Data>("specification", spec->name));
+  root->content.push_back(std::make_unique<Json::Data>("version", spec->caption));
   auto successArray = std::make_unique<Json::Array>("successful_checks");
   auto uncheckedArray = std::make_unique<Json::Array>("unchecked");
   auto errorArray = std::make_unique<Json::Array>("errors");
