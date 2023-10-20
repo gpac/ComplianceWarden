@@ -363,9 +363,6 @@ const SpecDesc specAv1Hdr10plus = {
       "Sequence Header OBU (if any) or after the start of the temporal unit",
       "assert-45af0987",
       [](Box const &root, IReport *out) {
-        if(isIsobmff(root))
-          return;
-
         AV1Stream av1Stream = getAv1Stream(root, out);
         if(av1Stream.empty())
           return;
@@ -449,9 +446,6 @@ const SpecDesc specAv1Hdr10plus = {
       "HDR10+ Metadata OBUs are not provided when show_frame = 0",
       "assert-a575dc54",
       [](Box const &root, IReport *out) {
-        if(isIsobmff(root))
-          return;
-
         AV1Stream av1Stream = getAv1Stream(root, out);
         if(av1Stream.empty())
           return;
@@ -481,9 +475,6 @@ const SpecDesc specAv1Hdr10plus = {
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
       "assert-797eb19e",
       [](Box const &root, IReport *out) {
-        if(isIsobmff(root))
-          return;
-
         AV1Stream av1Stream = getAv1Stream(root, out);
         if(av1Stream.empty())
           return;
