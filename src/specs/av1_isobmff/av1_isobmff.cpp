@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cstring> // strcmp
-#include <iostream>
 #include <map>
 #include <string>
 

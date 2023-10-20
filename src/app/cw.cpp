@@ -231,7 +231,7 @@ SpecDesc const *specFindC(const char *name)
 
 void specListRulesC(const SpecDesc *spec)
 {
-  specListRules(spec);
+  specListRulesStd(spec);
 }
 
 void specCheckC(const SpecDesc *spec, const char *filename, uint8_t *data, size_t size)

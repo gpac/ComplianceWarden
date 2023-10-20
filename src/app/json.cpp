@@ -1,6 +1,7 @@
 #include "json.h"
 
 #include <iomanip> // setw, setfill
+#include <sstream>
 
 namespace Json
 {
