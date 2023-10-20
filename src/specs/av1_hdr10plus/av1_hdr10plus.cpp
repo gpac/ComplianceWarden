@@ -8,6 +8,7 @@ std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace
 {
+//TODO: replace with newer version of getData()
 BitReader getData(Box const &root, IReport *out)
 {
   if(!isIsobmff(root))
@@ -464,8 +465,10 @@ const SpecDesc specAv1Hdr10plus = {
               seenShowFrame = true;
 
             for(auto &obu : frame)
-              if(obu.isHdr10p)
+              if(obu.isHdr10p) {
                 seenHdr10p = true;
+                out->covered();
+              }
           }
 
           if(!seenShowFrame && seenHdr10p) {
@@ -473,9 +476,6 @@ const SpecDesc specAv1Hdr10plus = {
             return;
           }
         }
-        out->covered();
-
-        // -TODO@Erik
       } },
     { "Section 2.2.2\n"
       "For non-layered streams, there is only one HDR10+ Metadata OBU per temporal unit",
@@ -492,8 +492,10 @@ const SpecDesc specAv1Hdr10plus = {
           for(auto &frame : tu) {
             int numHdr10p = 0;
             for(auto &obu : frame)
-              if(obu.isHdr10p)
+              if(obu.isHdr10p) {
                 numHdr10p++;
+                out->covered();
+              }
 
             if(!av1Stream.layered && numHdr10p > 1) {
               out->error(
@@ -503,11 +505,6 @@ const SpecDesc specAv1Hdr10plus = {
             }
           }
         }
-        out->covered();
-
-        // -TODO@Erik|Romain
-        // The layer with spatial_id and temporal_id values equal to 0.
-        //=> easy to reach as it is in the OBU header
       } },
     { "Section 3.1\n"
       "For formats that use the AV1CodecConfigurationRecord when storing\n"
@@ -555,10 +552,9 @@ const SpecDesc specAv1Hdr10plus = {
                 return;
               }
           }
-        }
 
-        // -TODO@Romain: sample groups not supported in ISOBMFF yet
-        out->covered();
+          out->covered();
+        }
       } },
     { "Section 3.2\n"
       "HDR10 Static Metadata and HDR10+ Metadata OBUs are unprotected",

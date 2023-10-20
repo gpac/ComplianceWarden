@@ -1057,9 +1057,6 @@ const SpecDesc specAv1ISOBMFF = {
       "OBUs of type METADATA_TYPE_HDR_CLL and METADATA_TYPE_HDR_MDCV, if present (in\n"
       "the configOBUs or in the samples).",
       [](Box const &root, IReport *out) {
-        // -TODO @Deniz how to define HDR content, question sent by email. Answer:
-        // "the spec should have been written differently: the box MAY be present. It SHALL be present if the
-        // corresponding OBU is present and SHALL have the same values."
         struct MDCV {
           bool valid = false;
           uint16_t primary_chromaticity_x[3]; // display_primaries_x
@@ -1147,6 +1144,9 @@ const SpecDesc specAv1ISOBMFF = {
                   }
                 }
               }
+
+              if(in_sample_cll.valid || in_sample_mdcv.valid)
+                out->covered();
 
               if(in_sample_cll.valid && in_sample_mdcv.valid)
                 break;
@@ -1316,9 +1316,10 @@ const SpecDesc specAv1ISOBMFF = {
                       trackId);
               }
             }
+
+            out->covered();
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "The sample data SHALL be a sequence of OBUs forming a Temporal Unit",
@@ -1496,7 +1497,6 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
       [](Box const &root, IReport *out) {
-        // -TODO@Erik AV1_INTRA_ONLY_FRAME in UNCOMPRESSED HEADER
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1541,6 +1541,7 @@ const SpecDesc specAv1ISOBMFF = {
                   auto &it = br.myBox.syms[j];
                   if(!strcmp(it.name, "frame_type") && it.value == AV1_INTRA_ONLY_FRAME) {
                     intraFrame = true;
+                    out->covered();
                   }
                 }
 
@@ -1554,19 +1555,11 @@ const SpecDesc specAv1ISOBMFF = {
             }
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "Delayed Random Access Points SHOULD be signaled using sample groups and the\n"
       "AV1ForwardKeyFrameSampleGroupEntry.",
       [](Box const &root, IReport *out) {
-        // -TODO@Romain once frame_type for track is implemented by Erik
-        /*
-         delayed random access point is defined as being a frame:
-        • with frame_type equal to KEY_FRAME
-        • with show_frame equal to 0
-        • that is contained in a temporal unit that also contains a sequence header OBU
-        */
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1641,18 +1634,15 @@ const SpecDesc specAv1ISOBMFF = {
                   trackId, sampleIndex);
                 break;
               }
+
+              out->covered();
             }
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.",
       [](Box const &root, IReport *out) {
-        // Question sent to know if testable. Answer:
-        // "I have not seen any content that uses Switch Frames."
-        // frame_type = 3 (see the AV1 video spec).
-        // -TODO@Romain: once frame_type for track is implemented by Erik
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1695,6 +1685,7 @@ const SpecDesc specAv1ISOBMFF = {
                 for(auto &it : br.myBox.syms) {
                   if(!strcmp(it.name, "frame_type") && it.value == AV1_SWITCH_FRAME) {
                     foundSwitchFrame = true;
+                    out->covered();
                     break;
                   }
                 }
@@ -1716,7 +1707,6 @@ const SpecDesc specAv1ISOBMFF = {
             }
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "If a file contains multiple tracks that are alternative representations of the\n"
@@ -1750,8 +1740,6 @@ const SpecDesc specAv1ISOBMFF = {
       "Metadata OBUs may be carried in sample data. In this case, the\n"
       "AV1MetadataSampleGroupEntry SHOULD be used.",
       [](Box const &root, IReport *out) {
-        // -TODO @Deniz We need to check if the metadata OBU is present in the sample entry if so, av1M should be
-        // present
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -1805,48 +1793,17 @@ const SpecDesc specAv1ISOBMFF = {
                   trackId, sampleIndex);
                 break;
               }
+
+              out->covered();
             }
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "If the metadata OBUs are static for the entire set of samples associated with a\n"
       "given sample description entry, they SHOULD also be in the OBU array in the\n"
       "sample description entry.",
       [](Box const &root, IReport *out) {
-        // -TODO@Erik|Romain: see previous rule + getData() + sample_description_index (non frag) or
-        // TrackExtendsBox:default_sample_description_index (frag)
-        // sample description entry. = WARNING
-        /*
-        aligned(8) class SampleDescriptionBox() extends FullBox('stsd', version, 0)
-        {
-          int i;
-          unsigned int(32) entry_count;
-          for (i = 1 ; i <= entry_count ; i++){
-            SampleEntry();	// an instance of a class derived from SampleEntry
-          }
-        }
-
-        aligned(8) class SampleToChunkBox extends FullBox('stsc', version = 0, 0)
-        {
-          unsigned int(32) entry_count;
-          for (i=1; i <= entry_count; i++) {
-            unsigned int(32) first_chunk;
-            unsigned int(32) samples_per_chunk;
-            unsigned int(32) sample_description_index;
-          }
-        }
-
-        aligned(8) class TrackExtendsBox extends FullBox('trex', 0, 0){
-          unsigned int(32)	track_ID;
-          unsigned int(32)	default_sample_description_index;
-          unsigned int(32)	default_sample_duration;
-          unsigned int(32)	default_sample_size;
-          unsigned int(32)	default_sample_flags;
-        }
-      */
-
         // Determine if frag or non-frag
         // Check if mvex box is present
         bool fragmented = false;
@@ -1957,6 +1914,8 @@ const SpecDesc specAv1ISOBMFF = {
                 }
 
                 sampleToObuMap[sample_description_index].push_back(obu);
+
+                out->covered();
               }
             }
           }
@@ -2060,7 +2019,6 @@ const SpecDesc specAv1ISOBMFF = {
             }
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "If an AV1 Sample is signaled as a sync sample (in the SyncSampleBox or by\n"
@@ -2069,7 +2027,6 @@ const SpecDesc specAv1ISOBMFF = {
       "- Its first frame is a Key Frame that has show_frame flag set to 1,\n"
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
       [](Box const &root, IReport *out) {
-        // -TODO@Erik => I think the AV1 part is already implemented (search for "show_frame")
         // Check if mvex box is present
         bool fragmented = false;
         auto mvexBoxes = findBoxes(root, FOURCC("mvex"));
@@ -2137,6 +2094,8 @@ const SpecDesc specAv1ISOBMFF = {
           // If no sync sample, continue
           if(syncSamples.empty())
             continue;
+
+          out->covered();
 
           // Get samples
           auto const samples = getData(root, out, trackId);
@@ -2207,18 +2166,11 @@ const SpecDesc specAv1ISOBMFF = {
             }
           }
         }
-        out->covered();
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the ctts box and composition offsets in\n"
       "movie fragments SHALL NOT be used.",
       [](Box const &root, IReport *out) {
-        // -TODO@Erik: moof/traf/ctts
-        // CompositionOffsetBox ctts
-        // CompositionToDecodeBox cslg
-        // 'trun' flag 0x000800	sample-composition-time-offsets-present; each sample has a composition time offset.
-        bool nonCompliant = false;
-
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -2238,13 +2190,11 @@ const SpecDesc specAv1ISOBMFF = {
           auto cttsBoxes = findBoxes(*trakBox, FOURCC("ctts"));
           if(!cttsBoxes.empty()) {
             out->error("Track %d uses ctts box", trackId);
-            nonCompliant = true;
           }
 
           auto cslgBoxes = findBoxes(*trakBox, FOURCC("cslg"));
           if(!cslgBoxes.empty()) {
             out->error("Track %d uses cslg box", trackId);
-            nonCompliant = true;
           }
 
           // Check trun flags
@@ -2267,22 +2217,19 @@ const SpecDesc specAv1ISOBMFF = {
               for(auto &sym : trun->syms) {
                 if(!strcmp(sym.name, "flags") && (sym.value & 0x000800)) {
                   out->error("trun box with sample-composition-time-offsets-present flag");
-                  nonCompliant = true;
                   break;
                 }
               }
             }
           }
-        }
 
-        if(!nonCompliant)
           out->covered();
+        }
       } },
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the is_leading flag, if used,\n"
       "SHALL be set to 0 or 2.",
       [](Box const &root, IReport *out) {
-        // -TODO@Erik see table-5 in ISOBMFF 8.8.1.1.
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
           auto av01Details = getAv01Details(*trakBox);
@@ -2308,8 +2255,9 @@ const SpecDesc specAv1ISOBMFF = {
               }
             }
           }
+
+          out->covered();
         }
-        out->covered();
       } },
     { "Section 2.8.4\n"
       "metadata_specific_parameters is only defined when metadata_type is set to\n"
