@@ -13,8 +13,10 @@ void probeIsobmff(uint8_t *data, size_t size);
 bool checkComplianceStd(Box const &file, SpecDesc const *spec);
 bool checkComplianceJson(Box const &file, SpecDesc const *spec);
 SpecDesc const *specFind(const char *name);
-void printSpecDescription(const SpecDesc *spec);
-void specListRules(const SpecDesc *spec);
+void printSpecDescriptionStd(const SpecDesc *spec);
+void printSpecDescriptionJson(std::vector<SpecDesc const *> &specs);
+void specListRulesStd(const SpecDesc *spec);
+void specListRulesJson(const SpecDesc *spec);
 
 namespace
 {
@@ -112,7 +114,7 @@ int mainLegacy(int argc, const char *argv[])
 
   if(!strcmp(argv[1], "list")) {
     for(auto &spec : g_allSpecs())
-      printSpecDescription(spec);
+      printSpecDescriptionStd(spec);
 
     return 0;
   } else if(!strcmp(argv[1], "version")) {
@@ -124,7 +126,7 @@ int mainLegacy(int argc, const char *argv[])
   auto spec = specFind(argv[1]);
 
   if(!strcmp(argv[2], "list")) {
-    specListRules(spec);
+    specListRulesStd(spec);
     return 0;
   }
 
@@ -162,20 +164,26 @@ int main(int argc, const char *argv[])
     return 0;
   }
 
-  if(list) {
-    if(specName.empty()) {
-      for(auto &spec : g_allSpecs())
-        printSpecDescription(spec);
-    } else {
-      auto spec = specFind(specName.c_str());
-      specListRules(spec);
-    }
-    return 0;
-  }
-
   if(format != "text" && format != "json") {
     fprintf(stderr, "invalid format, only \"text\" or \"json\" are supported");
     return 1;
+  }
+
+  if(list) {
+    if(specName.empty()) {
+      if(format == "text")
+        for(auto &spec : g_allSpecs())
+          printSpecDescriptionStd(spec);
+      else /*json*/
+        printSpecDescriptionJson(g_allSpecs());
+    } else {
+      auto spec = specFind(specName.c_str());
+      if(format == "text")
+        specListRulesStd(spec);
+      else /*json*/
+        specListRulesJson(spec);
+    }
+    return 0;
   }
 
   if(specName.empty() || urls.size() != 1) {

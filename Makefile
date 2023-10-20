@@ -37,6 +37,9 @@ $(BIN)/cw_version.cpp: version
 SRCS_CW+=\
   src/app/cw.cpp\
   src/app/options.cpp\
+  src/app/json.cpp\
+  src/app/list_std.cpp\
+  src/app/list_json.cpp\
   src/app/report_std.cpp\
   src/app/report_json.cpp\
   src/utils/common_boxes.cpp\
