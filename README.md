@@ -17,7 +17,7 @@ The Compliance Warden is distributed under the [BSD-3 permissive license](https:
 
 ### Online version
 
-An online version is available [here for HEIF/MIAF](https://gpac.github.io/ComplianceWarden-wasm/) and [here for AVIF](https://gpac.github.io/ComplianceWarden-wasm/avif.html). Note that the software is executed in your browser and doesn't upload any data outside your computer.
+An online version is available [here](https://gpac.github.io/ComplianceWarden-wasm/). Note that the software is executed in your browser and doesn't upload any data outside your computer.
 
 ### Usage
 
