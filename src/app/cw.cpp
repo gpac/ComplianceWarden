@@ -91,55 +91,13 @@ void fprintVersion(FILE *const stream)
   fprintf(stream, "%s, version %s\n", g_appName, g_version);
   fflush(stream);
 }
-
-void printUsageAndExit(const char *progName)
-{
-  fprintVersion(stderr);
-  fprintf(stderr, "\nUsage:\n");
-  fprintf(stderr, "- Run conformance:          %s <spec> input.mp4 [json]\n", progName);
-  fprintf(stderr, "- List specifications:      %s list\n", progName);
-  fprintf(stderr, "- List specification rules: %s <spec> list\n", progName);
-  fprintf(stderr, "- Print version:            %s version\n", progName);
-  exit(1);
-}
 }
 
 #ifndef CW_WASM
 
-// TODO: remove: legacy parsing introduced in July 2023 for v32
-int mainLegacy(int argc, const char *argv[])
-{
-  if(argc < 2 || argc > 4)
-    printUsageAndExit(argv[0]);
-
-  if(!strcmp(argv[1], "list")) {
-    for(auto &spec : g_allSpecs())
-      printSpecDescriptionStd(spec);
-
-    return 0;
-  } else if(!strcmp(argv[1], "version")) {
-    fprintVersion(stdout);
-    return 0;
-  } else if(argc < 3)
-    printUsageAndExit(argv[0]);
-
-  auto spec = specFind(argv[1]);
-
-  if(!strcmp(argv[2], "list")) {
-    specListRulesStd(spec);
-    return 0;
-  }
-
-  auto const outputJson = (argc < 4) ? false : !strcmp(argv[3], "json");
-
-  auto buf = loadFile(argv[2]);
-
-  return specCheck(spec, argv[2], buf.data(), (int)buf.size(), outputJson);
-}
-
 int main(int argc, const char *argv[])
 {
-  bool help = false, list = false, version = false, testMode = false;
+  bool help = false, list = false, version = false;
   std::string specName, format = "text";
 
   OptionHandler opt;
@@ -148,8 +106,6 @@ int main(int argc, const char *argv[])
   opt.addFlag("l", "list", &list, "List available specifications or available rules.");
   opt.addFlag("v", "version", &version, "Print version and exit.");
   opt.addFlag("h", "help", &help, "Print usage and exit.");
-  // TODO: remove (used to support deprecated legacy mode)
-  opt.addFlag("t", "test", &testMode, "Don't print warnings when switching to legacy mode.");
 
   auto urls = opt.parse(argc, argv);
 
@@ -187,24 +143,8 @@ int main(int argc, const char *argv[])
   }
 
   if(specName.empty() || urls.size() != 1) {
-    if(!testMode) {
-      fprintf(stderr, "+------------------------------------------------------------+\n");
-      fprintf(stderr, "| /!\\ Failed argument parsing. Switching to legacy mode. /!\\ |\n");
-      fprintf(stderr, "+------------------------------------------------------------+\n");
-      opt.printHelp(stderr);
-    } else {
-      for(int i = 1, j = 1; i < argc; ++i, ++j) {
-        if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--test")) {
-          j--;
-          continue;
-        }
-        argv[j] = argv[i];
-      }
-      argc--;
-    }
-    return mainLegacy(argc, argv);
-    // fprintf(stderr, "expected one input file, got %" urls.size());
-    // return 1;
+    fprintf(stderr, "expected one input file, got %zu\n", urls.size());
+    return 1;
   }
 
   auto spec = specFind(specName.c_str());
