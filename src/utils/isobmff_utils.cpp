@@ -227,7 +227,7 @@ std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc
 {
   std::vector<uint32_t> imageItemIDs;
 
-  // Find AV1 Image Items
+  // Find Image Items
   for(auto &box : root.children)
     if(box.fourcc == FOURCC("meta"))
       for(auto &metaChild : box.children)
