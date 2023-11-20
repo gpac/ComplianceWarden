@@ -9,7 +9,7 @@ It is meant to be extended to check MP4, CMAF, and many other file formats.
 
 CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
 
-CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
+CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [why](#Test-vectors-edition) or [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
 
 The Compliance Warden is distributed under the [BSD-3 permissive license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
@@ -244,6 +244,28 @@ The datastructures are generic. This allows to easily serialize them. This is us
 ### Tests
 
 A test is a pair of a file format description in the [NASM syntax](https://en.wikipedia.org/wiki/Netwide_Assembler) ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.asm)) and a reference result ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.ref)).
+
+### Test vectors edition
+
+Test vectors are represented using some x86 assembly, in a textual human-editable form. In practice only labels and two instructions (```db``` to write 8 bits and ```dd``` to write 32 bits) are used. See this example of a ```mdat``` box containing some AV1 OBU:
+
+```
+mdat_start:
+    dd BE(mdat_end - mdat_start)
+    dd "mdat"
+     ; obu(0) 
+    db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
+    db 0x0F ; leb128_byte(8) 
+mdat_end:
+```
+
+At the time of creating the project, we couldn't find any way to create both valid and invalid editable test vectors. Annotated assembly (with symbols' names, num_bits, and values) looked like a sensible choice.
+
+The easiest way is to create a new test vector is to derive an existing one.
+
+When this is not possible, one needs to disassemble an existing binary file. Contact romain.bouqueau@motionspell.com if you need some help. The assembly file needs to be stripped from its data (generally shortining radically the ```mdat``` box) and metadata (removing unused boxes and strings).
+
+The key point is to understand that these test vectors are not intended to be valid media files. We may want to add valid samples to the tests though (e.g. retrieving files and testing them) ; in this case other tools (e.g. ```MP4Box -diso``` or ```gpac -i FILE inspect:deep:analyze=bs```) already provides some deep view of what's in the file.
 
 ### Adding a test
 
