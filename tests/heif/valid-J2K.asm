@@ -25,6 +25,13 @@ meta_start:
         db 0x00, 0x00, 0x00, 0x00 ; reserved3(32)
         db 0x00 ; name(8)
     hdlr_end:
+    pitm_start:
+        dd BE(pitm_end - pitm_start)
+        dd "pitm"
+        db 0x00 ; version(8) 
+        db 0x00, 0x00, 0x00 ; flags(24) 
+        db 0x00, 0x01 ; item_ID(16) 
+    pitm_end:
     iinf_start:
         dd BE(iinf_end - iinf_start)
         dd "iinf"
