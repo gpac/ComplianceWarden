@@ -3,11 +3,11 @@
 
 ## Introduction
 
-The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbrevated as "CW" or "cw" or "the warden", is compliance checker.
+The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbreviated as "CW" or "cw" or "the warden", is a compliance checker.
 CW has been developed as a reference software for MPEG MIAF, AOM AVIF, and AOM AV1 HDR10+.
 It is meant to be extended to check MP4, CMAF, and many other file formats.
 
-CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
+CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibility.
 
 CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [why](#Test-vectors-edition) or [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
 
@@ -229,7 +229,7 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ### Principles
 
 The Compliance Warden is made of three parts:
- - a file parser ```common_boxes.cpp``` that can be extended (or superseeded) by each specification,
+ - a file parser ```common_boxes.cpp``` that can be extended (or superseded) by each specification,
  - some array of rules stored in ```specs/```,
  - an application stored in ```src/app/cw.cpp``` that probes the files, launches the tests, and produces a human-readable report.
 
@@ -271,7 +271,7 @@ The key point is to understand that these test vectors are not intended to be va
 
 A test is a function:
 - Input is both a box tree (from the parsing phase) and a link to the report.
-- Output is written to the report: warning, errors, and ```covered()``` to assess that the rule was exercized by the input sample.
+- Output is written to the report: warning, errors, and ```covered()``` to assess that the rule was exercised by the input sample.
 
 ```
 struct RuleDesc
