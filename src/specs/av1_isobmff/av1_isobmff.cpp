@@ -1,6 +1,6 @@
-#include "../../utils/av1_utils.h"
-#include "../../utils/box_reader_impl.h"
-#include "../../utils/get_data.h"
+#include "core/box_reader_impl.h"
+#include "utils/av1_utils.h"
+#include "utils/isobmff_get_data.h"
 
 #include <algorithm>
 #include <cstring> // strcmp

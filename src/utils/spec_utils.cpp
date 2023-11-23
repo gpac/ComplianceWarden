@@ -1,9 +1,9 @@
+#include "core/spec.h"
+
 #include <cstdarg>
 #include <cstring> // strcmp
 #include <sstream>
 #include <stdexcept>
-
-#include "spec.h"
 
 void ENSURE(bool cond, const char *format, ...);
 

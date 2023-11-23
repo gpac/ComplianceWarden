@@ -1,8 +1,9 @@
+#include "core/spec.h"
+
 #include <cstdarg>
 #include <cstring> // strcmp
 
 #include "json.h"
-#include "spec.h"
 
 extern const char *g_version;
 

@@ -1,10 +1,10 @@
+#include "core/bit_reader.h"
+#include "core/fourcc.h"
+#include "core/spec.h"
+#include "utils/isobmff_derivations.h"
+
 #include <algorithm> // std::find
 #include <cstring>
-
-#include "bit_reader.h"
-#include "fourcc.h"
-#include "isobmff_derivations.h"
-#include "spec.h"
 
 extern std::vector<uint32_t> visualSampleEntryFourccs;
 bool isVisualSampleEntry(uint32_t fourcc);

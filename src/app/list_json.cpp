@@ -1,5 +1,6 @@
+#include "core/spec.h"
+
 #include "json.h"
-#include "spec.h"
 
 SpecDesc const *specFind(const char *name);
 

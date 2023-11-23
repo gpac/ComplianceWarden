@@ -1,8 +1,8 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <cstring> // strcmp
 #include <map>
-
-#include "fourcc.h"
-#include "spec.h"
 
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 

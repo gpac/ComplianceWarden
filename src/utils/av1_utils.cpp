@@ -1,9 +1,9 @@
-#include "av1_utils.h"
+#include "utils/av1_utils.h"
+
+#include "core/box_reader_impl.h" // BoxReader
 
 #include <memory> // make_unique
 #include <stdexcept>
-
-#include "box_reader_impl.h" // BoxReader
 
 namespace
 {

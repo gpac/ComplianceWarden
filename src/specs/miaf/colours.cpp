@@ -1,9 +1,9 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+#include "utils/isobmff_derivations.h"
+
 #include <algorithm> // find
 #include <cstring> // strcmp
-
-#include "fourcc.h"
-#include "isobmff_derivations.h"
-#include "spec.h"
 
 std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc);
 std::vector<const Box *> findBoxesWithProperty(Box const &root, uint32_t itemId, uint32_t fourcc);

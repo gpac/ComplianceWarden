@@ -1,4 +1,4 @@
-#include "spec.h"
+#include "core/spec.h"
 
 SpecDesc const *specFind(const char *name);
 

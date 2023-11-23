@@ -1,7 +1,7 @@
-#include <cstring> // strcmp
+#include "core/box_reader_impl.h"
+#include "utils/av1_utils.h"
 
-#include "av1_utils.h"
-#include "box_reader_impl.h"
+#include <cstring> // strcmp
 
 bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);

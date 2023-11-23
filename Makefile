@@ -17,7 +17,7 @@ else
   CXXFLAGS+=-O3
 endif
 
-CXXFLAGS+=-Isrc/utils -I$(BIN)
+CXXFLAGS+=-Isrc/ -I$(BIN)
 
 all: everything
 
@@ -42,13 +42,13 @@ SRCS_CW+=\
   src/app/list_json.cpp\
   src/app/report_std.cpp\
   src/app/report_json.cpp\
-  src/utils/common_boxes.cpp\
+  src/core/common_boxes.cpp\
   src/utils/tools.cpp\
   src/utils/av1_utils.cpp\
+	src/utils/isobmff_get_data.cpp\
   src/utils/isobmff_utils.cpp\
   src/utils/isobmff_derivations.cpp\
   src/utils/spec_utils.cpp\
-	src/utils/get_data.cpp\
 
 SRCS_CW+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
 SRCS_CW+=src/specs/av1_isobmff/av1_isobmff.cpp

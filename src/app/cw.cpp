@@ -1,6 +1,7 @@
+#include "core/box_reader_impl.h"
+
 #include <cstring> // strcmp
 
-#include "box_reader_impl.h"
 #include "options.h"
 
 extern const char *g_version;

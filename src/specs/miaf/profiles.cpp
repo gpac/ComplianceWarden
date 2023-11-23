@@ -1,10 +1,10 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <algorithm> // find
 #include <cstring>
 #include <map>
 #include <vector>
-
-#include "fourcc.h"
-#include "spec.h"
 
 bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);

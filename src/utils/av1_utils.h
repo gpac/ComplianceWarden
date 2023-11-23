@@ -1,8 +1,8 @@
 #pragma once
 
-#include <string>
+#include "core/box_reader.h"
 
-#include "box_reader.h"
+#include <string>
 
 enum {
   OBU_SEQUENCE_HEADER = 1,

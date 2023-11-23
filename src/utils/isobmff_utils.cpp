@@ -1,10 +1,10 @@
+#include "core/box.h"
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <cstring> // strcmp
 #include <map>
 #include <vector>
-
-#include "box.h"
-#include "fourcc.h"
-#include "spec.h"
 
 bool isIsobmff(Box const &root)
 {

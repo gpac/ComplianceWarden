@@ -1,9 +1,9 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+#include "utils/isobmff_derivations.h"
+
 #include <cstring>
 #include <vector>
-
-#include "fourcc.h"
-#include "isobmff_derivations.h"
-#include "spec.h"
 
 namespace
 {
