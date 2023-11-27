@@ -520,8 +520,8 @@ const SpecDesc specIsobmff = {
         boxCheck(root, out, { FOURCC("frma") }, { FOURCC("sinf") }, { 1, 1 });
         boxCheck(
           root, out, { FOURCC("schm") }, { FOURCC("frma") },
-          { 0, 1 }); // Zero or one in 'sinf', depending on the protection structure; Exactly one in
-                     // 'rinf' and 'srpp'
+          { 0, 1 }); // Zero or one in 'sinf', depending on the protection
+                     // structure; Exactly one in 'rinf' and 'srpp'
         boxCheck(root, out, { FOURCC("schi") }, { FOURCC("frma") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("iinf") }, { FOURCC("meta") }, { 0, 1 });
         boxCheck(root, out, { FOURCC("xml ") }, { FOURCC("meta") }, { 0, 1 });
