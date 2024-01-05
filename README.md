@@ -1,15 +1,15 @@
 # Compliance Warden
-# A pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+)
+# A pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+, AV1-ISOBMFF)
 
 ## Introduction
 
-The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbrevated as "CW" or "cw" or "the warden", is compliance checker.
+The [Compliance Warden](https://github.com/gpac/ComplianceWarden), often abbreviated as "CW" or "cw" or "the warden", is a compliance checker.
 CW has been developed as a reference software for MPEG MIAF, AOM AVIF, and AOM AV1 HDR10+.
 It is meant to be extended to check MP4, CMAF, and many other file formats.
 
-CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibiility.
+CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibility.
 
-CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
+CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [why](#Test-vectors-edition) or [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
 
 The Compliance Warden is distributed under the [BSD-3 permissive license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
@@ -17,9 +17,11 @@ The Compliance Warden is distributed under the [BSD-3 permissive license](https:
 
 ### Online version
 
-An online version is available [here for HEIF/MIAF](https://gpac.github.io/ComplianceWarden-wasm/) and [here for AVIF](https://gpac.github.io/ComplianceWarden-wasm/avif.html). Note that the software is executed in your browser and doesn't upload any data outside your computer.
+An online version is available [here](https://gpac.github.io/ComplianceWarden-wasm/). Note that the software is executed in your browser and doesn't upload any data outside your computer.
 
 ### Usage
+
+[New option parser](https://github.com/gpac/ComplianceWarden/issues/48) (introduced in July 2023):
 
 ```
 $ bin/cw.exe -h
@@ -34,9 +36,8 @@ Usage:
     -t, --test                              Don't print warnings when switching to legacy mode.
 ```
 
-[We need an option parser](https://github.com/gpac/ComplianceWarden/issues/48):
 
-The old usage is deprecated and will be removed soon:
+The old usage is deprecated and will be removed in v34:
 
 ```
 $ bin/cw.exe
@@ -59,11 +60,20 @@ The master branch only references official specifications. Draft versions or upd
 However, once a specification is validated, we accept to add new rules progressively.
 
 ```
-$ bin/cw.exe list
+$ bin/cw.exe --list
 ================================================================================
 Specification name: av1hdr10plus
-            detail: HDR10+ AV1 Metadata Handling Specification, 8 December 2021
+            detail: HDR10+ AV1 Metadata Handling Specification, 7 December 2022
+https://github.com/AOMediaCodec/av1-hdr10plus/commit/63bacd21bc5f75ea6094fc11a03f0e743366fbdf
 https://aomediacodec.github.io/av1-hdr10plus/
+        depends on: "av1isobmff" specifications.
+================================================================================
+
+================================================================================
+Specification name: av1isobmff
+            detail: AV1 Codec ISO Media File Format Binding v1.2.0, 12 December 2019
+https://github.com/AOMediaCodec/av1-isobmff/commit/ee2f1f0d2c342478206767fb4b79a39870c0827e
+https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
         depends on: "isobmff" specifications.
 ================================================================================
 
@@ -191,7 +201,7 @@ You need ```lcov```.
 scripts/cov.sh
 ```
 
-> Note: On Darwin (MacOS) systems you may need to install GNU version of ```g++``` and ```gcov``` (e.g. ```brew install gcc```). Then change ```./scripts/darwin.sh``` to alias GNU versions instead of Clang versions. You may also need to update ```scripts/cov.sh``` and add ```--ignore-errors unused``` to second ```lcov``` command.
+> Note: On Darwin (MacOS) systems you may need to install GNU version of ```g++``` and ```gcov``` (e.g. ```brew install gcc```). Then change ```./scripts/darwin.sh``` to alias GNU versions instead of Clang versions.
 
 ### Modifying test results
 
@@ -219,7 +229,7 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ### Principles
 
 The Compliance Warden is made of three parts:
- - a file parser ```common_boxes.cpp``` that can be extended (or superseeded) by each specification,
+ - a file parser ```common_boxes.cpp``` that can be extended (or superseded) by each specification,
  - some array of rules stored in ```specs/```,
  - an application stored in ```src/app/cw.cpp``` that probes the files, launches the tests, and produces a human-readable report.
 
@@ -235,11 +245,33 @@ The datastructures are generic. This allows to easily serialize them. This is us
 
 A test is a pair of a file format description in the [NASM syntax](https://en.wikipedia.org/wiki/Netwide_Assembler) ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.asm)) and a reference result ([example](https://raw.githubusercontent.com/gpac/ComplianceWarden/9ebfd86c392221714f42a625673536e43835938c/tests/isobmff/invalid-track-identifiers.ref)).
 
+### Test vectors edition
+
+Test vectors are represented using some x86 assembly, in a textual human-editable form. In practice only labels and two instructions (```db``` to write 8 bits and ```dd``` to write 32 bits) are used. See this example of a ```mdat``` box containing some AV1 OBU:
+
+```
+mdat_start:
+    dd BE(mdat_end - mdat_start)
+    dd "mdat"
+     ; obu(0) 
+    db 0x0A ; forbidden(1) obu_type(4) obu_extension_flag(1) obu_has_size_field(1) obu_reserved_1bit(1) 
+    db 0x0F ; leb128_byte(8) 
+mdat_end:
+```
+
+At the time of creating the project, we couldn't find any way to create both valid and invalid editable test vectors. Annotated assembly (with symbols' names, num_bits, and values) looked like a sensible choice.
+
+The easiest way is to create a new test vector is to derive an existing one.
+
+When this is not possible, one needs to disassemble an existing binary file. Contact romain.bouqueau@motionspell.com if you need some help. The assembly file needs to be stripped from its data (generally shortining radically the ```mdat``` box) and metadata (removing unused boxes and strings).
+
+The key point is to understand that these test vectors are not intended to be valid media files. We may want to add valid samples to the tests though (e.g. retrieving files and testing them) ; in this case other tools (e.g. ```MP4Box -diso``` or ```gpac -i FILE inspect:deep:analyze=bs```) already provides some deep view of what's in the file.
+
 ### Adding a test
 
 A test is a function:
 - Input is both a box tree (from the parsing phase) and a link to the report.
-- Output is written to the report: warning, errors, and ```covered()``` to assess that the rule was exercized by the input sample.
+- Output is written to the report: warning, errors, and ```covered()``` to assess that the rule was exercised by the input sample.
 
 ```
 struct RuleDesc
@@ -293,5 +325,4 @@ Some aspects are not activated:
 
 This work was initiated as part of the MPEG MIAF conformance software.
 
-The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF.
-
+The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF, AV1-ISOBMFF, and AV1 HDR10+.

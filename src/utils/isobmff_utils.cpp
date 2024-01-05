@@ -1,10 +1,10 @@
+#include "core/box.h"
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <cstring> // strcmp
 #include <map>
 #include <vector>
-
-#include "box.h"
-#include "fourcc.h"
-#include "spec.h"
 
 bool isIsobmff(Box const &root)
 {
@@ -227,7 +227,7 @@ std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc
 {
   std::vector<uint32_t> imageItemIDs;
 
-  // Find AV1 Image Items
+  // Find Image Items
   for(auto &box : root.children)
     if(box.fourcc == FOURCC("meta"))
       for(auto &metaChild : box.children)

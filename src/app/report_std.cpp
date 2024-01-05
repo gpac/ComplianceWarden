@@ -1,9 +1,9 @@
+#include "core/spec.h"
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstring> // strlen
 #include <string>
-
-#include "spec.h"
 
 SpecDesc const *specFind(const char *name);
 

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "core/box.h"
+#include "core/fourcc.h"
+
 #include <functional>
 #include <list>
 #include <map>
 #include <string>
-
-#include "box.h"
-#include "fourcc.h"
 
 struct DerivationGraph {
   // returns false on cyclic

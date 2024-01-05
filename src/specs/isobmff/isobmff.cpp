@@ -1,10 +1,10 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <algorithm>
 #include <cstring>
 #include <functional>
 #include <vector>
-
-#include "fourcc.h"
-#include "spec.h"
 
 bool isVisualSampleEntry(uint32_t fourcc);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);

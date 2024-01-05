@@ -1,9 +1,9 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <algorithm> // std::find
 #include <cstring>
 #include <map>
-
-#include "fourcc.h"
-#include "spec.h"
 
 bool isVisualSampleEntry(uint32_t fourcc);
 bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root);

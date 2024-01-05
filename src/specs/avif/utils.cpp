@@ -1,8 +1,8 @@
-#include <cstring> // strcmp
+#include "core/fourcc.h"
+#include "core/spec.h" // IReport
+#include "utils/av1_utils.h"
 
-#include "av1_utils.h"
-#include "fourcc.h"
-#include "spec.h" // IReport
+#include <cstring> // strcmp
 
 std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc);
 std::vector<const Box *> findBoxesWithProperty(Box const &root, uint32_t itemId, uint32_t fourcc);

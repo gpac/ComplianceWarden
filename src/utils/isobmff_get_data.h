@@ -1,7 +1,7 @@
 #pragma once
 
-#include "av1_utils.h"
-#include "box_reader_impl.h"
+#include "core/box_reader_impl.h"
+#include "utils/av1_utils.h"
 
 struct sampleFlags {
   uint32_t reserved : 4;

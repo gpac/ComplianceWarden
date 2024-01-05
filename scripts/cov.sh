@@ -18,6 +18,7 @@ $scriptDir/../tests/run $BIN
 find $BIN -path "*/unittests/*.gcda" -delete
 lcov --capture -d $BIN -o $BIN/profile-full.txt
 lcov --remove $BIN/profile-full.txt \
+  --ignore-errors unused \
   '/usr/include/*' \
   '/usr/lib/*' \
   '*/extra/*' \

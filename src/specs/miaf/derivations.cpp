@@ -1,7 +1,7 @@
-#include <algorithm>
+#include "core/spec.h"
+#include "utils/isobmff_derivations.h"
 
-#include "isobmff_derivations.h"
-#include "spec.h"
+#include <algorithm>
 
 bool isVisualSampleEntry(uint32_t fourcc);
 

@@ -1,10 +1,10 @@
 // Box-parsers for MP4 and MPEG-DASH
 #include "common_boxes.h"
 
+#include "core/fourcc.h"
+
 #include <cassert>
 #include <vector>
-
-#include "fourcc.h"
 
 void parseAv1C(IReader *br);
 
@@ -920,9 +920,11 @@ void parseChildren(IReader *br)
 }
 }
 
-std::vector<uint32_t> visualSampleEntryFourccs = { FOURCC("avc1"), FOURCC("avc2"), FOURCC("avc3"),
-                                                   FOURCC("avc4"), FOURCC("hev1"), FOURCC("hev2"),
-                                                   FOURCC("hvc1"), FOURCC("hvc2"), FOURCC("av01") };
+/*sample entries and item types*/
+std::vector<uint32_t> visualSampleEntryFourccs = {
+  FOURCC("avc1"), FOURCC("avc2"), FOURCC("avc3"), FOURCC("avc4"), FOURCC("hev1"), FOURCC("hev2"),
+  FOURCC("hvc1"), FOURCC("hvc2"), FOURCC("av01"), FOURCC("unci"), FOURCC("uncv"), FOURCC("j2k1"),
+};
 
 bool isVisualSampleEntry(uint32_t fourcc)
 {

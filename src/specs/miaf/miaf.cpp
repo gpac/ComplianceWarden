@@ -1,11 +1,11 @@
+#include "core/fourcc.h"
+#include "core/spec.h"
+
 #include <algorithm> // std::find
 #include <cassert>
 #include <cstring>
 #include <functional>
 #include <map>
-
-#include "fourcc.h"
-#include "spec.h"
 
 bool isVisualSampleEntry(uint32_t fourcc);
 void checkEssential(Box const &root, IReport *out, uint32_t fourcc);

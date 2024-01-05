@@ -1,13 +1,14 @@
+#include "core/bit_reader.h"
+#include "core/fourcc.h"
+#include "core/spec.h"
+#include "utils/isobmff_derivations.h"
+
 #include <algorithm> // std::find
 #include <cstring>
 
-#include "bit_reader.h"
-#include "fourcc.h"
-#include "isobmff_derivations.h"
-#include "spec.h"
-
 extern std::vector<uint32_t> visualSampleEntryFourccs;
 bool isVisualSampleEntry(uint32_t fourcc);
+std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc);
 std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 void checkEssential(Box const &root, IReport *out, uint32_t fourcc);
 std::vector<std::pair<int64_t /*offset*/, int64_t /*length*/>>
@@ -732,6 +733,12 @@ static const SpecDesc specHeif = {
             return false;
         };
 
+        std::vector<uint32_t /*ItemIDs*/> imageItems;
+        for(auto se : visualSampleEntryFourccs) {
+          auto const ii = findImageItems(root, se);
+          imageItems.insert(imageItems.end(), ii.begin(), ii.end());
+        }
+
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("meta"))
             for(auto &metaChild : box.children)
@@ -748,8 +755,16 @@ static const SpecDesc specHeif = {
                     for(auto &sym : iprpChild.syms)
                       if(!strcmp(sym.name, "item_ID")) {
                         checkIspe();
-                        foundIspe = false;
-                        localItemId = sym.value;
+
+                        if(std::find(imageItems.begin(), imageItems.end(), sym.value) != imageItems.end()) {
+                          foundIspe = false;
+                          localItemId = sym.value;
+                        } else {
+                          // discard
+                          foundIspe = true;
+                          localItemId = 0;
+                        }
+                      } else if(localItemId == 0) {
                       } else if(!strcmp(sym.name, "property_index")) {
                         if(sym.value /*1-based*/ > (int)properties.size()) {
                           out->error("Invalid property_index=%lld", sym.value);

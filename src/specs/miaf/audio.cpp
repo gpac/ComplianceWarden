@@ -1,7 +1,7 @@
-#include <cstring>
+#include "core/fourcc.h"
+#include "core/spec.h"
 
-#include "fourcc.h"
-#include "spec.h"
+#include <cstring>
 
 bool isMpegAudio(uint8_t oti);
 

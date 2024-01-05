@@ -29,10 +29,31 @@ db 0x00 ; name(8)
 hdlr_end:
 
 iinf_start:
-dd BE(iinf_end - iinf_start)
-db "iinf"
-dd BE(0)
-db 0x00, 0x00
+    dd BE(iinf_end - iinf_start)
+    dd "iinf"
+    db 0x00 ; version(8) 
+    db 0x00, 0x00, 0x00 ; flags(24) 
+    db 0x00, 0x02 ; entry_count(16) 
+    infe_start:
+        dd BE(infe_end - infe_start)
+        dd "infe"
+        db 0x02 ; version(8) 
+        db 0x00, 0x00, 0x00 ; flags(24) 
+        db 0x00, 0x01 ; item_ID(16) 
+        db 0x00, 0x00 ; item_protection_index(16) 
+        db 0x61, 0x76, 0x30, 0x31 ; item_type(32) ('av01') 
+        db 0x00 ; item_name(8) 
+    infe_end:
+    infe2_start:
+        dd BE(infe2_end - infe2_start)
+        dd "infe"
+        db 0x02 ; version(8) 
+        db 0x00, 0x00, 0x00 ; flags(24) 
+        db 0x00, 0x02 ; item_ID(16) 
+        db 0x00, 0x00 ; item_protection_index(16) 
+        db 0x61, 0x76, 0x30, 0x31 ; item_type(32) ('av01') 
+        db 0x00 ; item_name(8) 
+    infe2_end:
 iinf_end:
 
 iprp_start:

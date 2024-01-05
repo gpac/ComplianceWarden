@@ -1,139 +1,13 @@
+#include "core/spec.h"
+
 #include <cstdarg>
 #include <cstring> // strcmp
-#include <iomanip> // setw, setfill
-#include <iostream>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <vector>
 
-#include "spec.h"
+#include "json.h"
 
 extern const char *g_version;
 
 SpecDesc const *specFind(const char *name);
-
-namespace Json
-{
-void insertSpace(int indent)
-{
-  static auto const space = "  ";
-
-  for(int i = 0; i < indent; ++i)
-    std::cout << space;
-}
-
-std::string escape(const std::string &s)
-{
-  std::ostringstream o;
-
-  for(auto c = s.cbegin(); c != s.cend(); ++c) {
-    if(*c == '"' || *c == '\\' || ('\x00' <= *c && *c <= '\x1f'))
-      o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(*c);
-    else
-      o << *c;
-  }
-
-  return o.str();
-}
-
-struct ISerialize {
-  virtual ~ISerialize() = default;
-  virtual void serialize(int indent) const = 0;
-};
-
-struct Data : ISerialize {
-  Data(std::string name, std::string value)
-      : name(name)
-      , value(value)
-  {
-  }
-
-  std::string const name, value;
-  void serialize(int indent) const final
-  {
-    insertSpace(indent);
-    std::cout << "\"" << escape(name) << "\": \"" << escape(value) << "\"";
-  }
-
-  bool operator!=(const Data &other) const { return !(this->name == other.name && this->value == other.value); }
-};
-
-struct Object : ISerialize {
-  std::vector<std::unique_ptr<ISerialize>> content; // either Data, Object or Array
-  void serialize(int indent) const final
-  {
-    insertSpace(indent);
-    std::cout << "{" << std::endl;
-
-    for(auto &c : content) {
-      c->serialize(indent + 1);
-
-      if(c != content.back())
-        std::cout << ",";
-
-      std::cout << std::endl;
-    }
-
-    insertSpace(indent);
-    std::cout << "}";
-  }
-};
-
-struct Array : ISerialize {
-  struct Int : ISerialize {
-    int val;
-    Int(int val)
-        : val(val)
-    {
-    }
-
-    void serialize(int indent) const final
-    {
-      insertSpace(indent);
-      std::cout << val;
-    }
-  };
-  struct String : ISerialize {
-    std::string val;
-    String(std::string val)
-        : val(val)
-    {
-    }
-
-    void serialize(int indent) const final
-    {
-      insertSpace(indent);
-      std::cout << "\"" << escape(val) << "\"";
-    }
-  };
-
-  Array(std::string name)
-      : name(name)
-  {
-  }
-
-  const std::string name;
-  std::vector<std::unique_ptr<ISerialize>> content;
-  void serialize(int indent) const final
-  {
-    insertSpace(indent);
-    std::cout << "\"" << escape(name) << "\": [" << std::endl;
-
-    for(auto &c : content) {
-      c->serialize(indent + 1);
-
-      if(c != content.back())
-        std::cout << ",";
-
-      std::cout << std::endl;
-    }
-
-    insertSpace(indent);
-    std::cout << "]";
-  }
-};
-}
 
 namespace
 {
@@ -146,6 +20,7 @@ bool checkComplianceJsonSpec(Box const &file, SpecDesc const *spec, Json::Array 
   bool fail = false;
   auto root = std::make_unique<Json::Object>();
   root->content.push_back(std::make_unique<Json::Data>("specification", spec->name));
+  root->content.push_back(std::make_unique<Json::Data>("version", spec->caption));
   auto successArray = std::make_unique<Json::Array>("successful_checks");
   auto uncheckedArray = std::make_unique<Json::Array>("unchecked");
   auto errorArray = std::make_unique<Json::Array>("errors");

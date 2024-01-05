@@ -1,6 +1,7 @@
+#include "core/box_reader_impl.h"
+
 #include <cstring> // strcmp
 
-#include "box_reader_impl.h"
 #include "options.h"
 
 extern const char *g_version;
@@ -13,8 +14,10 @@ void probeIsobmff(uint8_t *data, size_t size);
 bool checkComplianceStd(Box const &file, SpecDesc const *spec);
 bool checkComplianceJson(Box const &file, SpecDesc const *spec);
 SpecDesc const *specFind(const char *name);
-void printSpecDescription(const SpecDesc *spec);
-void specListRules(const SpecDesc *spec);
+void printSpecDescriptionStd(const SpecDesc *spec);
+void printSpecDescriptionJson(std::vector<SpecDesc const *> &specs);
+void specListRulesStd(const SpecDesc *spec);
+void specListRulesJson(const SpecDesc *spec);
 
 namespace
 {
@@ -89,55 +92,13 @@ void fprintVersion(FILE *const stream)
   fprintf(stream, "%s, version %s\n", g_appName, g_version);
   fflush(stream);
 }
-
-void printUsageAndExit(const char *progName)
-{
-  fprintVersion(stderr);
-  fprintf(stderr, "\nUsage:\n");
-  fprintf(stderr, "- Run conformance:          %s <spec> input.mp4 [json]\n", progName);
-  fprintf(stderr, "- List specifications:      %s list\n", progName);
-  fprintf(stderr, "- List specification rules: %s <spec> list\n", progName);
-  fprintf(stderr, "- Print version:            %s version\n", progName);
-  exit(1);
-}
 }
 
 #ifndef CW_WASM
 
-// TODO: remove: legacy parsing introduced in July 2023 for v32
-int mainLegacy(int argc, const char *argv[])
-{
-  if(argc < 2 || argc > 4)
-    printUsageAndExit(argv[0]);
-
-  if(!strcmp(argv[1], "list")) {
-    for(auto &spec : g_allSpecs())
-      printSpecDescription(spec);
-
-    return 0;
-  } else if(!strcmp(argv[1], "version")) {
-    fprintVersion(stdout);
-    return 0;
-  } else if(argc < 3)
-    printUsageAndExit(argv[0]);
-
-  auto spec = specFind(argv[1]);
-
-  if(!strcmp(argv[2], "list")) {
-    specListRules(spec);
-    return 0;
-  }
-
-  auto const outputJson = (argc < 4) ? false : !strcmp(argv[3], "json");
-
-  auto buf = loadFile(argv[2]);
-
-  return specCheck(spec, argv[2], buf.data(), (int)buf.size(), outputJson);
-}
-
 int main(int argc, const char *argv[])
 {
-  bool help = false, list = false, version = false, testMode = false;
+  bool help = false, list = false, version = false;
   std::string specName, format = "text";
 
   OptionHandler opt;
@@ -146,8 +107,6 @@ int main(int argc, const char *argv[])
   opt.addFlag("l", "list", &list, "List available specifications or available rules.");
   opt.addFlag("v", "version", &version, "Print version and exit.");
   opt.addFlag("h", "help", &help, "Print usage and exit.");
-  // TODO: remove (used to support deprecated legacy mode)
-  opt.addFlag("t", "test", &testMode, "Don't print warnings when switching to legacy mode.");
 
   auto urls = opt.parse(argc, argv);
 
@@ -162,41 +121,31 @@ int main(int argc, const char *argv[])
     return 0;
   }
 
-  if(list) {
-    if(specName.empty()) {
-      for(auto &spec : g_allSpecs())
-        printSpecDescription(spec);
-    } else {
-      auto spec = specFind(specName.c_str());
-      specListRules(spec);
-    }
-    return 0;
-  }
-
   if(format != "text" && format != "json") {
     fprintf(stderr, "invalid format, only \"text\" or \"json\" are supported");
     return 1;
   }
 
-  if(specName.empty() || urls.size() != 1) {
-    if(!testMode) {
-      fprintf(stderr, "+------------------------------------------------------------+\n");
-      fprintf(stderr, "| /!\\ Failed argument parsing. Switching to legacy mode. /!\\ |\n");
-      fprintf(stderr, "+------------------------------------------------------------+\n");
-      opt.printHelp(stderr);
+  if(list) {
+    if(specName.empty()) {
+      if(format == "text")
+        for(auto &spec : g_allSpecs())
+          printSpecDescriptionStd(spec);
+      else /*json*/
+        printSpecDescriptionJson(g_allSpecs());
     } else {
-      for(int i = 1, j = 1; i < argc; ++i, ++j) {
-        if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--test")) {
-          j--;
-          continue;
-        }
-        argv[j] = argv[i];
-      }
-      argc--;
+      auto spec = specFind(specName.c_str());
+      if(format == "text")
+        specListRulesStd(spec);
+      else /*json*/
+        specListRulesJson(spec);
     }
-    return mainLegacy(argc, argv);
-    // fprintf(stderr, "expected one input file, got %" urls.size());
-    // return 1;
+    return 0;
+  }
+
+  if(specName.empty() || urls.size() != 1) {
+    fprintf(stderr, "expected one input file, got %zu\n", urls.size());
+    return 1;
   }
 
   auto spec = specFind(specName.c_str());
@@ -223,7 +172,7 @@ SpecDesc const *specFindC(const char *name)
 
 void specListRulesC(const SpecDesc *spec)
 {
-  specListRules(spec);
+  specListRulesStd(spec);
 }
 
 void specCheckC(const SpecDesc *spec, const char *filename, uint8_t *data, size_t size)

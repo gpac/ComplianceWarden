@@ -10,7 +10,7 @@ typedef std::queue<std::string> ArgQueue;
 static inline std::string safePop(ArgQueue &args)
 {
   if(args.empty()) {
-    fprintf(stderr, "unexpected end of command line\n");
+    fprintf(stderr, "Unexpected end of command line while parsing argument\n");
     exit(1);
   }
 

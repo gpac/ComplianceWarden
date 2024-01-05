@@ -1,12 +1,12 @@
+#include "core/box_reader_impl.h"
+#include "core/spec.h"
+#include "utils/av1_utils.h"
+#include "utils/isobmff_derivations.h"
+
 #include <algorithm> // std::find
 #include <cassert>
 #include <cstring> // strcmp
 #include <map>
-
-#include "av1_utils.h"
-#include "box_reader_impl.h"
-#include "isobmff_derivations.h"
-#include "spec.h"
 
 void checkEssential(Box const &root, IReport *out, uint32_t fourcc);
 std::vector<uint32_t /*itemId*/> findImageItems(Box const &root, uint32_t fourcc);
@@ -828,7 +828,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                                                      "samples: brand avio "
                                                      "should be used");
 
-                                      out->warning("\"stts\" box can be omitted since all "
+                                      out->warning("\"stss\" box can be omitted since all "
                                                    "track samples are sync");
                                     }
                                   }
