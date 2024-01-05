@@ -29,6 +29,10 @@ SPECS = {
     "av1isobmff": {
         "spec_url": "https://aomediacodec.github.io/av1-isobmff/",
         "src_file": "../src/specs/av1_isobmff/av1_isobmff.cpp"
+    },
+    "avif": {
+        "spec_url": "https://aomediacodec.github.io/av1-avif/",
+        "src_file": "../src/specs/avif/avif.cpp"
     }
 }
 
