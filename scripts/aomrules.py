@@ -69,13 +69,8 @@ parser.add_argument("--dump",
                     action="store_true")
 args = parser.parse_args()
 
-print(f"AOM specification: '{args.spec}'\n")
-
-with open(SPECS[args.spec]["src_file"], "r", encoding="utf-8") as src_f:
-    src = src_f.read()
-
 if args.input is not None and args.spec is not None:
-    print(f"NOTE: -i option overrides the --spec option. Run analysis on {args.input}")
+    print(f"NOTE: -i option overrides the defualt URL from the --spec option. Run analysis on {args.input}\n")
 
 input_source = args.input if args.input is not None else SPECS[args.spec]["spec_url"]
 content = read_input(input_source)
@@ -84,6 +79,19 @@ if content is not None:
 else:
     print("Failed to read input content.")
     sys.exit(1)
+
+# Find the <h2> element with the specified id and get text if found
+subtitle_element = soup.find('h2', {'id': 'subtitle'})
+if subtitle_element:
+    subtitle_text = subtitle_element.get_text(strip=True)
+    print(f"AOM specification: {input_source} ({subtitle_text})")
+else:
+    print(f"AOM specification: {input_source} (no version found)")
+
+print(f"Check srouce file: {SPECS[args.spec]['src_file']}\n")
+
+with open(SPECS[args.spec]["src_file"], "r", encoding="utf-8") as src_f:
+    src = src_f.read()
 
 assert_spans = soup.find_all("span",
                              {"id": lambda L: L and L.startswith("assert-")})
