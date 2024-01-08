@@ -18,8 +18,27 @@ python aomrules.py --dump
 """
 import argparse
 import urllib.request
+import sys
 
 from bs4 import BeautifulSoup
+
+
+def is_url(input_string):
+    return input_string.startswith('http://') or input_string.startswith('https://')
+
+
+def read_input(input_source):
+    try:
+        if is_url(input_source):
+            with urllib.request.urlopen(input_source) as response:
+                return response.read()
+        else:
+            with open(input_source, "r", encoding="utf-8") as file:
+                return file.read()
+    except Exception as e:
+        print(f"Error reading input: {e}")
+        return None
+
 
 SPECS = {
     "av1hdr10plus": {
@@ -41,10 +60,10 @@ parser = argparse.ArgumentParser(
         , or dump the C++ stub for the rules based on the specification URL.")
 
 parser.add_argument("--spec",
-                    help="Specifications: av1hdr10plus, av1isobmff",
+                    help="Specifications: av1hdr10plus, av1isobmff, avif",
                     required=True)
 parser.add_argument("-i", "--input",
-                    help="Spec HTML file if you don't want to use URL).")
+                    help="Path to the HTML file (can be a URL or a file path).")
 parser.add_argument("--dump",
                     help="Dump code snippet based on asserts in HTML.",
                     action="store_true")
@@ -55,12 +74,16 @@ print(f"AOM specification: '{args.spec}'\n")
 with open(SPECS[args.spec]["src_file"], "r", encoding="utf-8") as src_f:
     src = src_f.read()
 
-if args.input is not None:
-    with open(args.input, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f, features="lxml")
+if args.input is not None and args.spec is not None:
+    print(f"NOTE: -i option overrides the --spec option. Run analysis on {args.input}")
+
+input_source = args.input if args.input is not None else SPECS[args.spec]["spec_url"]
+content = read_input(input_source)
+if content is not None:
+    soup = BeautifulSoup(content, features="lxml")
 else:
-    html_string = urllib.request.urlopen(SPECS[args.spec]["spec_url"]).read()
-    soup = BeautifulSoup(html_string, features="lxml")
+    print("Failed to read input content.")
+    sys.exit(1)
 
 assert_spans = soup.find_all("span",
                              {"id": lambda L: L and L.startswith("assert-")})
