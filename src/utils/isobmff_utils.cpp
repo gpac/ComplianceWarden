@@ -184,24 +184,23 @@ void boxCheck(
   }
 
   for(auto &parent : parents) {
-    unsigned arityFromParent = 0, arityFromBoxes = 0;
+    unsigned arityFromParent = 0;
 
     for(auto fourcc : oneOf4CCs) {
       unsigned localArity = 0;
 
-      if(parent->fourcc == fourcc)
+      if(parent->fourcc == fourcc) {
         localArity++;
+      } else {
+        for(auto &child : parent->children)
+          if(child.fourcc == fourcc)
+            localArity++;
+      }
 
-      for(auto &child : parent->children)
-        if(child.fourcc == fourcc)
-          localArity++;
-
-      auto boxes = findBoxes(*parent, fourcc);
-      arityFromBoxes += boxes.size();
       arityFromParent += localArity;
     }
 
-    {
+    if(arityFromParent < expectedAritySpan.first || arityFromParent > expectedAritySpan.second) {
       std::string oneOf4CCsStr, parent4CCsStr;
 
       for(auto fourcc : oneOf4CCs)
@@ -210,15 +209,9 @@ void boxCheck(
       for(auto fourcc : parent4CCs)
         parent4CCsStr += toString(fourcc) + " ";
 
-      if(arityFromBoxes != arityFromParent)
-        out->error(
-          "Found %u boxes { %s} but expected %u with parents { %s}. Check your box structure.", arityFromBoxes,
-          oneOf4CCsStr.c_str(), arityFromParent, parent4CCsStr.c_str());
-
-      if(arityFromParent < expectedAritySpan.first || arityFromParent > expectedAritySpan.second)
-        out->error(
-          "Wrong arity for boxes { %s} in parents { %s}: expected in range [%u-%u], found %u", oneOf4CCsStr.c_str(),
-          parent4CCsStr.c_str(), expectedAritySpan.first, expectedAritySpan.second, arityFromParent);
+      out->error(
+        "Wrong arity for boxes { %s} in parents { %s}: expected in range [%u-%u], found %u", oneOf4CCsStr.c_str(),
+        parent4CCsStr.c_str(), expectedAritySpan.first, expectedAritySpan.second, arityFromParent);
     }
   }
 }
