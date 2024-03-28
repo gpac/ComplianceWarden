@@ -4,3 +4,6 @@
 /cov-html
 /tags
 *.swp
+.DS_Store
+**/venv/
+.vscode/
