@@ -11,14 +11,16 @@ USAGE:
 make sure to run the script from the scripts directory
 
 CHECK:
-python aomrules.py
+python aomrules.py --spec [specname]
 
 DUMP:
-python aomrules.py --dump
+python aomrules.py --spec [specname] --dump
 """
 import argparse
 import urllib.request
 import sys
+import re
+import json
 
 from bs4 import BeautifulSoup
 
@@ -38,6 +40,13 @@ def read_input(input_source):
     except Exception as e:
         print(f"Error reading input: {e}")
         return None
+
+
+def extract_assert_ids(src):
+    # 'assert-' followed by exactly 8 alphanumeric characters
+    pattern = r'assert-[a-zA-Z0-9]{8}'
+    matches = re.findall(pattern, src)
+    return matches
 
 
 SPECS = {
@@ -96,36 +105,58 @@ with open(SPECS[args.spec]["src_file"], "r", encoding="utf-8") as src_f:
 assert_spans = soup.find_all("span",
                              {"id": lambda L: L and L.startswith("assert-")})
 
-rules = []
+implemented_assert_ids = extract_assert_ids(src)
+
+spec_rules = []
 for assert_span in assert_spans:
-    rules.append({"id": assert_span.get("id"),
+    spec_rules.append({"id": assert_span.get("id"),
                   "description": assert_span.text.replace('"', ''),
                   "implemented": assert_span.get("id") in src})
 
+# Get duplicate rules from the spec so we can report them.
+# This should be a part of AOM spec publication automation but it does not harm to verify just in case.
 duplicates = []
-for rule in rules:
-    dups = [r for r in rules if rule['id'] == r['id']]
+for rule in spec_rules:
+    dups = [r for r in spec_rules if rule['id'] == r['id']]
     if len(dups) > 1:
         entry = dups[0]
         entry['dup_cnt'] = len(dups)
         if entry not in duplicates:
             duplicates.append(entry)
 
-if duplicates:
-    print(f"WARNING: Found {len(duplicates)} duplicate assert IDs:")
-    for dup in duplicates:
-        print(dup)
-    print(10*'-----' + '\n')
+# Get rules that are in the source file but not in the spec
+implemented_but_not_in_spec = []
+for rule_src in implemented_assert_ids:
+    found_rule = next((rule for rule in spec_rules if rule["id"] == rule_src), None)
+    if found_rule is None:
+        implemented_but_not_in_spec.append(rule_src)
 
 if args.dump:
-    for rule in rules:
+    for rule in spec_rules:
         print(f'{{\n  "{rule["description"]}",\n  "{rule["id"]}",\n  \
               [](Box const & root, IReport * out)\n  {{\n  }}\n}},')
 else:
-    impl = [r for r in rules if r["implemented"]]
-    nimpl = [r for r in rules if not r["implemented"]]
+    impl = [r for r in spec_rules if r["implemented"]]
+    nimpl = [r for r in spec_rules if not r["implemented"]]
 
-    print(f"{len(impl)} from {len(rules)} rules implemented.")
-    print("List of rules to be implemented:")
-    for rule in nimpl:
-        print(f'\t"{rule["id"]}": "{rule["description"]}"')
+    # provide an overvew at the end
+    print(10*'-----')
+    print(" SUMMARY")
+    print(10*'-----')
+    print(f"{len(impl)} from {len(spec_rules)} rules implemented.")
+    if len(nimpl) > 0:
+        todo_json_file = args.spec + '_todos.json'
+
+        out_file = open(todo_json_file, "w")
+        json.dump(nimpl, out_file, indent=4)
+        print(f"{len(nimpl)} rules are not implemented yet. Take a look at {todo_json_file}")
+    if duplicates:
+        print(f"WARNING: Found {len(duplicates)} duplicate assert IDs:")
+        for rule in duplicates:
+            print(f' - {rule}')
+        print(10*'-----' + '\n')
+    if implemented_but_not_in_spec:
+        print(f"WARNING: Found {len(implemented_but_not_in_spec)} assert IDs in the source file that could not be mapped to the spec.:")
+        for rule in implemented_but_not_in_spec:
+            print(f' - {rule}')
+        print(10*'-----' + '\n')
