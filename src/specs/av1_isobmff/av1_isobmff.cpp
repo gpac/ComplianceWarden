@@ -409,7 +409,8 @@ const SpecDesc specAv1ISOBMFF = {
   { "isobmff" },
   {
     { "Section 2.1\n"
-      "It SHALL have the 'av01' brand among the compatible brands array of the FileTypeBox",
+      "It SHALL have the av01 brand among the compatible brands array of the FileTypeBox",
+      "assert-03258f22",
       [](Box const &root, IReport *out) {
         auto ftyps = findBoxes(root, FOURCC("ftyp"));
 
@@ -431,8 +432,8 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.1\n"
-      "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of\n"
-      "the FileTypeBox",
+      "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of the FileTypeBox, such as iso6",
+      "assert-5e63f779",
       [](Box const &root, IReport *out) {
         auto ftyps = findBoxes(root, FOURCC("ftyp"));
 
@@ -465,6 +466,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.1\n"
       "It SHALL contain at least one track using an AV1SampleEntry",
+      "assert-0f24a9ee",
       [](Box const &root, IReport *out) {
         bool av01Found = false;
         auto stsdBoxes = findBoxes(root, FOURCC("stsd"));
@@ -485,9 +487,8 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.2.4\n"
-      "The width and height fields of the VisualSampleEntry SHALL equal the values of\n"
-      "max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header\n"
-      "OBU applying to the samples associated with this sample entry.",
+      "The width and height fields of the VisualSampleEntry SHALL equal the values of max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header OBU applying to the samples associated with this sample entry.",
+      "assert-4708372f",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -510,9 +511,8 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.2.4\n"
-      "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum\n"
-      "RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called\n"
-      "MaxRenderHeight, of all the frames associated with this sample entry",
+      "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called MaxRenderHeight, of all the frames associated with this sample entry.",
+      "assert-1624cff2",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -554,9 +554,8 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.2.4\n"
-      "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively\n"
-      "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the\n"
-      "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",
+      "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry and set such that",
+      "assert-54ae6192",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -613,8 +612,8 @@ const SpecDesc specAv1ISOBMFF = {
         }
       } },
     { "Section 2.2.4\n"
-      "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples\n"
-      "associated with this sample entry.",
+      "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples associated with this sample entry.",
+      "assert-8d3f8e0c",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -636,7 +635,8 @@ const SpecDesc specAv1ISOBMFF = {
         }
       } },
     { "Section 2.3.4\n"
-      "The AV1CodecConfigurationRecord marker field SHALL be set to 1",
+      "The marker field SHALL be set to 1.",
+      "assert-52768b11",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
