@@ -14,7 +14,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #31] Section 2.4
+[av1isobmff][Rule #31] id: assert-f0ce5ae3
+Section 2.4
 If the metadata OBUs are static for the entire set of samples associated with a
 given sample description entry, they SHOULD also be in the OBU array in the
 sample description entry.

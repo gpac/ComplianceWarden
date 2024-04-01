@@ -56,30 +56,36 @@ the Sequence Header OBU in the AV1 Image Item Data:
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #9] Section 2.3.4
+[av1isobmff][Rule #9] id: assert-96a6c200
+Section 2.3.4
 The seq_profile field indicates the AV1 profile and SHALL be equal to
 the seq_profile value from the Sequence Header OBU.
 
-[av1isobmff][Rule #10] Section 2.3.4
+[av1isobmff][Rule #10] id: assert-4f91ed20
+Section 2.3.4
 The seq_level_idx_0 field indicates the value of seq_level_idx[0] found in the
 Sequence Header OBU and SHALL be equal to the value of seq_level_idx[0] in the
 Sequence Header OBU.
 
-[av1isobmff][Rule #11] Section 2.3.4
+[av1isobmff][Rule #11] id: assert-c5e10274
+Section 2.3.4
 The seq_tier_0 field indicates the value of seq_tier[0] found in the
 Sequence Header OBU and SHALL be equal to the value of seq_tier[0] in the
 Sequence Header OBU.
 
-[av1isobmff][Rule #12] Section 2.3.4
+[av1isobmff][Rule #12] id: assert-821f7437
+Section 2.3.4
 The high_bitdepth field indicates the value of the high_bitdepth flag from the
 Sequence Header OBU.
 
-[av1isobmff][Rule #13] Section 2.3.4
+[av1isobmff][Rule #13] id: assert-0027b3b1
+Section 2.3.4
 The twelve_bit field indicates the value of the twelve_bit flag from the
 Sequence Header OBU. When twelve_bit is not present in the Sequence Header
 OBU the AV1CodecConfigurationRecord twelve_bit value SHALL be 0.
 
-[av1isobmff][Rule #16] Section 2.3.4
+[av1isobmff][Rule #16] id: assert-745b4db3
+Section 2.3.4
 When a Sequence Header OBU is contained within the configOBUs of the
 AV1CodecConfigurationRecord, the values present in the Sequence Header OBU
 contained within configOBUs SHALL match the values of the

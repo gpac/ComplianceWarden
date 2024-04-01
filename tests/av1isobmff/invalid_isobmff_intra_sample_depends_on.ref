@@ -14,7 +14,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #26] Section 2.4
+[av1isobmff][Rule #26] id: assert-0c895956
+Section 2.4
 Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.
 
 +--------------------------------------+

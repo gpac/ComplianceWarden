@@ -15,11 +15,13 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #27] Section 2.4
+[av1isobmff][Rule #27] id: assert-4f779503
+Section 2.4
 Delayed Random Access Points SHOULD be signaled using sample groups and the
 AV1ForwardKeyFrameSampleGroupEntry.
 
-[av1isobmff][Rule #28] Section 2.4
+[av1isobmff][Rule #28] id: assert-d10ee363
+Section 2.4
 Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.
 
 +--------------------------------------+

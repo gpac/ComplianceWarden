@@ -15,7 +15,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #32] Section 2.4
+[av1isobmff][Rule #32] id: assert-bee456d5
+Section 2.4
 If an AV1 Sample is signaled as a sync sample (in the SyncSampleBox or by
 setting sample_is_non_sync_sample to 0), it SHALL be a Random Access Point
 as defined in [AV1], i.e. satisfy the following constraints:

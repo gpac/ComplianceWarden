@@ -25,7 +25,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #20] Section 2.3.4
+[av1isobmff][Rule #20] id: assert-3e46dfaf
+Section 2.3.4
 For sample entries corresponding to HDR content, the
 MasteringDisplayColourVolumeBox mdcv and ContentLightLevelBox clli SHOULD be
 present, and their values SHALL match the values of contained in the Metadata

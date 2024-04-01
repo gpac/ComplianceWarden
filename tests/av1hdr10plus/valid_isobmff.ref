@@ -28,10 +28,12 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #25] Section 2.4
+[av1isobmff][Rule #25] id: assert-2487540d
+Section 2.4
 OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.
 
-[av1isobmff][Rule #30] Section 2.4
+[av1isobmff][Rule #30] id: assert-d41e5e3f
+Section 2.4
 Metadata OBUs may be carried in sample data. In this case, the
 AV1MetadataSampleGroupEntry SHOULD be used.
 

@@ -35,7 +35,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #25] Section 2.4
+[av1isobmff][Rule #25] id: assert-2487540d
+Section 2.4
 OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.
 
 +--------------------------------------+

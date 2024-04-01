@@ -432,7 +432,8 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.1\n"
-      "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of the FileTypeBox, such as iso6",
+      "It SHOULD indicate a structural ISOBMFF brand among the compatible brands array of the FileTypeBox, such as "
+      "iso6",
       "assert-5e63f779",
       [](Box const &root, IReport *out) {
         auto ftyps = findBoxes(root, FOURCC("ftyp"));
@@ -466,7 +467,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.1\n"
       "It SHALL contain at least one track using an AV1SampleEntry",
-      "assert-0f24a9ee",
+      "assert-bd1c6212",
       [](Box const &root, IReport *out) {
         bool av01Found = false;
         auto stsdBoxes = findBoxes(root, FOURCC("stsd"));
@@ -487,7 +488,9 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.2.4\n"
-      "The width and height fields of the VisualSampleEntry SHALL equal the values of max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 of the Sequence Header OBU applying to the samples associated with this sample entry.",
+      "The width and height fields of the VisualSampleEntry SHALL equal the values of max_frame_width_minus_1 + 1 and "
+      "max_frame_height_minus_1 + 1 of the Sequence Header OBU applying to the samples associated with this sample "
+      "entry.",
       "assert-4708372f",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
@@ -511,8 +514,10 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.2.4\n"
-      "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum RenderWidth, called MaxRenderWidth, and the maximum RenderHeight, called MaxRenderHeight, of all the frames associated with this sample entry.",
-      "assert-1624cff2",
+      "The width and height in the TrackHeaderBox SHOULD equal, respectively, the maximum RenderWidth, called "
+      "MaxRenderWidth, and the maximum RenderHeight, called MaxRenderHeight, of all the frames associated with this "
+      "sample entry.",
+      "assert-b8425a84",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -554,7 +559,9 @@ const SpecDesc specAv1ISOBMFF = {
         out->covered();
       } },
     { "Section 2.2.4\n"
-      "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry and set such that",
+      "Additionally, if MaxRenderWidth and MaxRenderHeight values do not equal respectively\n"
+      "the max_frame_width_minus_1 + 1 and max_frame_height_minus_1 + 1 values of the\n"
+      "Sequence Header OBU, a PixelAspectRatioBox box SHALL be present in the sample entry",
       "assert-54ae6192",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
@@ -612,8 +619,9 @@ const SpecDesc specAv1ISOBMFF = {
         }
       } },
     { "Section 2.2.4\n"
-      "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples associated with this sample entry.",
-      "assert-8d3f8e0c",
+      "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples associated with this "
+      "sample entry.",
+      "assert-f875c695",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -658,6 +666,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.3.4\n"
       "The AV1CodecConfigurationRecord version field SHALL be set to 1",
+      "assert-49a325d3",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -680,6 +689,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.3.4\n"
       "The seq_profile field indicates the AV1 profile and SHALL be equal to\n"
       "the seq_profile value from the Sequence Header OBU.",
+      "assert-96a6c200",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -722,6 +732,7 @@ const SpecDesc specAv1ISOBMFF = {
       "The seq_level_idx_0 field indicates the value of seq_level_idx[0] found in the\n"
       "Sequence Header OBU and SHALL be equal to the value of seq_level_idx[0] in the\n"
       "Sequence Header OBU.",
+      "assert-4f91ed20",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -766,6 +777,7 @@ const SpecDesc specAv1ISOBMFF = {
       "The seq_tier_0 field indicates the value of seq_tier[0] found in the\n"
       "Sequence Header OBU and SHALL be equal to the value of seq_tier[0] in the\n"
       "Sequence Header OBU.",
+      "assert-c5e10274",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -806,6 +818,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.3.4\n"
       "The high_bitdepth field indicates the value of the high_bitdepth flag from the\n"
       "Sequence Header OBU.",
+      "assert-821f7437",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -850,6 +863,7 @@ const SpecDesc specAv1ISOBMFF = {
       "The twelve_bit field indicates the value of the twelve_bit flag from the\n"
       "Sequence Header OBU. When twelve_bit is not present in the Sequence Header\n"
       "OBU the AV1CodecConfigurationRecord twelve_bit value SHALL be 0.",
+      "assert-0027b3b1", // TODO: unmerge with "assert-71c21ca1"
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -889,6 +903,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.3.4\n"
       "The configOBUs field SHALL contain at most one Sequence Header OBU and if present, it SHALL be the first OBU.",
+      "assert-755c9133", // TODO: unmerge with assert-b90b2cfc
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -915,6 +930,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.3.4\n"
       "ConfigOBUs: the flag obu_has_size_field SHALL be set to 1.",
+      "assert-cf9ef74c",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -944,6 +960,7 @@ const SpecDesc specAv1ISOBMFF = {
       "AV1CodecConfigurationRecord, the values present in the Sequence Header OBU\n"
       "contained within configOBUs SHALL match the values of the\n"
       "AV1CodecConfigurationRecord.",
+      "assert-745b4db3",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -979,6 +996,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.3.4\n"
       "The timing_info_present_flag in the Sequence Header OBU (in the configOBUs field or in the associated samples) "
       "SHOULD be set to 0.",
+      "assert-551498bd",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -1012,9 +1030,10 @@ const SpecDesc specAv1ISOBMFF = {
       "the colr box shall match the color_range flag in the Sequence Header OBU. When\n"
       "configOBUs does not contain a Sequence Header OBU, this box with colour_type set\n"
       "to nclx SHALL be present.",
+      "assert-6056f4f8", // TODO: merged with assert-6056f4f8 (and possible other new rules from v)
       [](Box const & /*root*/, IReport * /*out*/) {} },
     { "Section 2.3.4\n"
-      "The CleanApertureBox clap SHOULD not be present.",
+      "The CleanApertureBox clap SHOULD not be present.", // TODO: removed in AV1-ISOBMFF 1.3.0
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))
@@ -1055,6 +1074,7 @@ const SpecDesc specAv1ISOBMFF = {
       "present, and their values SHALL match the values of contained in the Metadata\n"
       "OBUs of type METADATA_TYPE_HDR_CLL and METADATA_TYPE_HDR_MDCV, if present (in\n"
       "the configOBUs or in the samples).",
+      "assert-3e46dfaf", // TODO: merged with assert-0707714d and assert-2c71f659 and assert-349bbb63
       [](Box const &root, IReport *out) {
         struct MDCV {
           bool valid = false;
@@ -1322,6 +1342,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "The sample data SHALL be a sequence of OBUs forming a Temporal Unit",
+      "assert-9ba1392f",
       [](Box const &root, IReport *out) {
         auto av1Tracks = getAv1Tracks(root);
 
@@ -1358,6 +1379,7 @@ const SpecDesc specAv1ISOBMFF = {
       "syntax as specified in [AV1]. Each OBU SHALL have the obu_has_size_field set\n"
       "to 1 except for the last OBU in the sample, for which obu_has_size_field MAY be\n"
       "set to 0, in which case it is assumed to fill the remainder of the sample",
+      "assert-f204884a", // TODO: unmerge with assert-f8d5b9b7 and assert-d277b0cf
       [](Box const &root, IReport *out) {
         auto av1Tracks = getAv1Tracks(root);
 
@@ -1399,6 +1421,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "OBU trailing bits SHOULD be limited to byte alignment and SHOULD not be used for padding",
+      "assert-c2e52ab3",
       [](Box const &root, IReport *out) {
         auto av1Tracks = getAv1Tracks(root);
 
@@ -1418,6 +1441,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TILE_LIST SHALL NOT be used.",
+      "assert-c7a31be1",
       [](Box const &root, IReport *out) {
         auto av1Tracks = getAv1Tracks(root);
 
@@ -1448,6 +1472,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "OBUs of type OBU_TEMPORAL_DELIMITER, OBU_PADDING, or OBU_REDUNDANT_FRAME_HEADER SHOULD NOT be used.",
+      "assert-2487540d",
       [](Box const &root, IReport *out) {
         auto av1Tracks = getAv1Tracks(root);
 
@@ -1495,6 +1520,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "Intra-only frames SHOULD be signaled using the sample_depends_on flag set to 2.",
+      "assert-0c895956",
       [](Box const &root, IReport *out) {
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
@@ -1558,6 +1584,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "Delayed Random Access Points SHOULD be signaled using sample groups and the\n"
       "AV1ForwardKeyFrameSampleGroupEntry.",
+      "assert-4f779503",
       [](Box const &root, IReport *out) {
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
@@ -1641,6 +1668,7 @@ const SpecDesc specAv1ISOBMFF = {
       } },
     { "Section 2.4\n"
       "Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.",
+      "assert-d10ee363",
       [](Box const &root, IReport *out) {
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
@@ -1712,6 +1740,7 @@ const SpecDesc specAv1ISOBMFF = {
       "same content, in particular using Switch Frames, those tracks SHOULD be marked\n"
       "as belonging to the same alternate group and should use a track selection box\n"
       "with an appropriate attribute (e.g. bitr).",
+      "assert-ccbd7555", // TODO: unmerge with assert-7591fd9c
       [](Box const & /*root*/, IReport * /*out*/) {
         // TODO: if the elementary stream contains Switch Frames and the corresponding ISOBMFF track is not part of an
         // alternate group, emit a warning? alternate group=tkhd
@@ -1738,6 +1767,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "Metadata OBUs may be carried in sample data. In this case, the\n"
       "AV1MetadataSampleGroupEntry SHOULD be used.",
+      "assert-d41e5e3f",
       [](Box const &root, IReport *out) {
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
@@ -1802,6 +1832,7 @@ const SpecDesc specAv1ISOBMFF = {
       "If the metadata OBUs are static for the entire set of samples associated with a\n"
       "given sample description entry, they SHOULD also be in the OBU array in the\n"
       "sample description entry.",
+      "assert-f0ce5ae3",
       [](Box const &root, IReport *out) {
         // Determine if frag or non-frag
         // Check if mvex box is present
@@ -2025,6 +2056,7 @@ const SpecDesc specAv1ISOBMFF = {
       "as defined in [AV1], i.e. satisfy the following constraints:\n"
       "- Its first frame is a Key Frame that has show_frame flag set to 1,\n"
       "- It contains a Sequence Header OBU before the first Frame Header OBU.",
+      "assert-bee456d5",
       [](Box const &root, IReport *out) {
         // Check if mvex box is present
         bool fragmented = false;
@@ -2169,6 +2201,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the ctts box and composition offsets in\n"
       "movie fragments SHALL NOT be used.",
+      "assert-0f174d22",
       [](Box const &root, IReport *out) {
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
@@ -2228,6 +2261,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.4\n"
       "In tracks using the AV1SampleEntry, the is_leading flag, if used,\n"
       "SHALL be set to 0 or 2.",
+      "assert-cb746c39",
       [](Box const &root, IReport *out) {
         auto trakBoxes = findBoxes(root, FOURCC("trak"));
         for(auto &trakBox : trakBoxes) {
@@ -2263,6 +2297,7 @@ const SpecDesc specAv1ISOBMFF = {
       "METADATA_TYPE_ITUT_T35 in which case its value SHALL be set to the first 24 bits\n"
       "of the metadata_itut_t35 structure. For other types of metadata,\n"
       "its [metadata_specific_parameters] value SHOULD be set to 0.",
+      "assert-7d13a03d", // TODO: unmerge with assert-973cddc9
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
           if(box.fourcc == FOURCC("moov"))

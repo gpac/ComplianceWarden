@@ -14,7 +14,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #15] Section 2.3.4
+[av1isobmff][Rule #15] id: assert-cf9ef74c
+Section 2.3.4
 ConfigOBUs: the flag obu_has_size_field SHALL be set to 1.
 
 +--------------------------------------+

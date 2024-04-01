@@ -15,10 +15,12 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #0] Section 2.1
-It SHALL have the 'av01' brand among the compatible brands array of the FileTypeBox
+[av1isobmff][Rule #0] id: assert-03258f22
+Section 2.1
+It SHALL have the av01 brand among the compatible brands array of the FileTypeBox
 
-[av1isobmff][Rule #2] Section 2.1
+[av1isobmff][Rule #2] id: assert-bd1c6212
+Section 2.1
 It SHALL contain at least one track using an AV1SampleEntry
 
 +--------------------------------------+

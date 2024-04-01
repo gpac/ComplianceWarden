@@ -14,7 +14,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #14] Section 2.3.4
+[av1isobmff][Rule #14] id: assert-755c9133
+Section 2.3.4
 The configOBUs field SHALL contain at most one Sequence Header OBU and if present, it SHALL be the first OBU.
 
 +--------------------------------------+

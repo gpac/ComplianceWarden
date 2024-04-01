@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+ 
 """
 Python script to check if all spec rules (assert-ids) are implemented,
 or to dump assert-ids when a new specification checker is created.
@@ -16,6 +18,7 @@ python aomrules.py --spec [specname]
 DUMP:
 python aomrules.py --spec [specname] --dump
 """
+
 import argparse
 import urllib.request
 import sys
@@ -97,7 +100,7 @@ if subtitle_element:
 else:
     print(f"AOM specification: {input_source} (no version found)")
 
-print(f"Check srouce file: {SPECS[args.spec]['src_file']}\n")
+print(f"Check source file: {SPECS[args.spec]['src_file']}\n")
 
 with open(SPECS[args.spec]["src_file"], "r", encoding="utf-8") as src_f:
     src = src_f.read()

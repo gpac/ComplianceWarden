@@ -14,7 +14,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ===== Involved rules descriptions:
 
-[av1isobmff][Rule #34] Section 2.4
+[av1isobmff][Rule #34] id: assert-cb746c39
+Section 2.4
 In tracks using the AV1SampleEntry, the is_leading flag, if used,
 SHALL be set to 0 or 2.
 
