@@ -26,6 +26,7 @@ import re
 import json
 
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 
 def is_url(input_string):
@@ -112,9 +113,14 @@ implemented_assert_ids = extract_assert_ids(src)
 
 spec_rules = []
 for assert_span in assert_spans:
-    spec_rules.append({"id": assert_span.get("id"),
-                  "description": assert_span.text.replace('"', ''),
-                  "implemented": assert_span.get("id") in src})
+    url = None
+    assert_id = assert_span.get("id")
+    if is_url(input_source):
+        url = urljoin(input_source, "#"+assert_id)
+    spec_rules.append({"id": assert_id,
+                       "url": url,
+                       "description": assert_span.text.replace('"', ''),
+                       "implemented": assert_span.get("id") in src})
 
 # Get duplicate rules from the spec so we can report them.
 # This should be a part of AOM spec publication automation but it does not harm to verify just in case.
