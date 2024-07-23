@@ -574,7 +574,8 @@ void parseIloc(IReader *br)
     if((version == 1) || (version == 2)) {
       br->sym("reserved2", 12);
       br->sym("construction_method", 4);
-    }
+    } else
+      br->sym("construction_method", 0);
 
     br->sym("data_reference_index", 16);
     br->sym("base_offset", base_offset_size * 8);
