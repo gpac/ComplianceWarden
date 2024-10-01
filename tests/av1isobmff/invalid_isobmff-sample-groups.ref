@@ -8,9 +8,10 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 [av1isobmff][Rule #27] Warning: [TrackId=2] Sample 0 contains a delayed random access point, but is not part of an av1f sample group
 [av1isobmff][Rule #28] Warning: [TrackId=2] Sample 1 contains a Switch Frame, but is not part of an av1s sample group
+[av1isobmff][Rule #31] Warning: [TrackId=2] Metadata OBUs for sample description entry 1 are static for the entire set of samples but are not present in the OBU array in the sample description entry
 
 ========================================
-[av1isobmff] 0 error(s), 2 warning(s).
+[av1isobmff] 0 error(s), 3 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -23,6 +24,12 @@ AV1ForwardKeyFrameSampleGroupEntry.
 [av1isobmff][Rule #28] id: assert-d10ee363
 Section 2.4
 Switch Frames SHOULD be signaled using sample groups and the AV1SwitchFrameSampleGroupEntry.
+
+[av1isobmff][Rule #31] id: assert-f0ce5ae3
+Section 2.4
+If the metadata OBUs are static for the entire set of samples associated with a
+given sample description entry, they SHOULD also be in the OBU array in the
+sample description entry.
 
 +--------------------------------------+
 |          isobmff validation          |

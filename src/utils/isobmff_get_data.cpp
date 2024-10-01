@@ -21,17 +21,42 @@ BitReader sampleValues::getSample() const
 
 namespace
 {
-std::vector<int> getOffsets(const Box *offsetBox)
+std::vector<int> getOffsets(const Box *offsetBox, const Box *chunkToSampleBox)
 {
-  if(!offsetBox) {
+  if(!offsetBox || !chunkToSampleBox) {
     return {};
   }
 
-  std::vector<int> res;
+  int64_t firstChunk = 0;
+  std::vector<std::pair<int, int>> chunkEntries;
+  for(auto &sym : chunkToSampleBox->syms) {
+    if(!strcmp(sym.name, "first_chunk")) {
+      firstChunk = sym.value;
+      if(chunkEntries.empty() && firstChunk != 1) {
+        return {}; // 14496-12: "the index of the first chunk in a track has the value 1"
+      }
+    } else if(!strcmp(sym.name, "samples_per_chunk")) {
+      chunkEntries.push_back({ firstChunk, sym.value });
+    }
+  }
 
+  if(chunkEntries.empty())
+    chunkEntries.push_back({ 1, 1 });
+
+  std::vector<int> res;
+  int chunkIdx = 1; // 1-based
+  size_t j = 0;
   for(auto &sym : offsetBox->syms) {
-    if(!strcmp(sym.name, "chunk_offset"))
-      res.push_back(sym.value);
+    if(!strcmp(sym.name, "chunk_offset")) {
+      for(auto i = 0; i < chunkEntries[j].second; ++i)
+        res.push_back(sym.value);
+
+      chunkIdx++;
+
+      if(j < chunkEntries.size() && chunkIdx >= chunkEntries[j + 1].first) {
+        j++; // move to next chunk
+      }
+    }
   }
 
   return res;
@@ -96,11 +121,11 @@ std::vector<sampleFlags> getFlags(const Box *flagsBox)
   return res;
 }
 
-std::vector<sampleValues>
-getSampleValues(const Box &root, IReport *out, const Box *offsetBox, const Box *sizeBox, const Box *flagsBox)
+std::vector<sampleValues> getSampleValues(
+  const Box &root, IReport *out, const Box *offsetBox, const Box *chunkToSampleBox, const Box *sizeBox,
+  const Box *flagsBox)
 {
-
-  auto offsets = getOffsets(offsetBox);
+  auto offsets = getOffsets(offsetBox, chunkToSampleBox);
   auto sizes = getSizes(sizeBox);
   auto flags = getFlags(flagsBox);
 
@@ -329,6 +354,12 @@ std::vector<sampleValues> getNonFragmentedData(const Box &root, IReport *out, ui
     }
 
     auto offsetBox = selectEither(*trakBox, out, FOURCC("stco"), FOURCC("co64"));
+    auto chunkToSampleBoxes = findBoxes(*trakBox, FOURCC("stsc"));
+    if(chunkToSampleBoxes.size() != 1) {
+      out->error("%llu 'tkhd' boxes found, when 1 is expected", tkhdBoxes.size());
+      return {};
+    }
+    auto chunkToSampleBox = chunkToSampleBoxes[0];
     auto sizeBox = selectEither(*trakBox, out, FOURCC("stsz"), FOURCC("stz2"));
 
     const Box *sdtpBox = nullptr;
@@ -341,7 +372,7 @@ std::vector<sampleValues> getNonFragmentedData(const Box &root, IReport *out, ui
       return {};
     }
 
-    return getSampleValues(root, out, offsetBox, sizeBox, sdtpBox);
+    return getSampleValues(root, out, offsetBox, chunkToSampleBox, sizeBox, sdtpBox);
   }
   return {};
 }
