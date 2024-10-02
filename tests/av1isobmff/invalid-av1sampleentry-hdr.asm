@@ -180,7 +180,7 @@ av01_start:
         dd "av1C"
         db 0x81 ; marker(1) version(7) 
         db 0x0D ; seq_profile(3) seq_level_idx_0(5) 
-        db 0x42 ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
+        db 0x4E ; seq_tier_0(1) high_bitdepth(1) twelve_bit(1) monochrome(1) chroma_subsampling_x(1) chroma_subsampling_y(1) chroma_sample_position(2) 
         db 0x00 ; reserved(3) initial_presentation_delay_present(1) reserved(4) 
             ; configOBUs(0) 
             ; obu(0) 

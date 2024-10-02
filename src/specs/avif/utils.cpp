@@ -30,7 +30,7 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(B
     auto av1C = av1Cs[0];
 
     for(auto &sym : av1C->syms) {
-      if(!strcmp(sym.name, "monochrome"))
+      if(!strcmp(sym.name, "mono_chrome"))
         av1cRef.mono_chrome = sym.value;
 
       if(!strcmp(sym.name, "chroma_subsampling_x"))

@@ -327,7 +327,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           if(!strcmp(sym.name, "twelve_bit"))
             av1cRef.twelve_bit = sym.value;
 
-          if(!strcmp(sym.name, "monochrome"))
+          if(!strcmp(sym.name, "mono_chrome"))
             av1cRef.mono_chrome = sym.value;
 
           if(!strcmp(sym.name, "chroma_subsampling_x"))

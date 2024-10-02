@@ -11,7 +11,7 @@
 struct BoxReader : IReader {
   bool empty() override { return br.empty(); }
 
-  int64_t sym(const char *name, int bits) override
+  int64_t &sym(const char *name, int bits) override
   {
     auto val = br.u(bits);
 
@@ -28,7 +28,7 @@ struct BoxReader : IReader {
       myBox.syms.push_back({ name, val, bits });
     }
 
-    return val;
+    return myBox.syms.back().value;
   }
 
   void box() override

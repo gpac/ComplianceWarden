@@ -24,7 +24,7 @@ struct ReaderBits : IReader {
 
   bool empty() { return delegate->empty(); }
 
-  int64_t sym(const char *name, int bits)
+  int64_t &sym(const char *name, int bits)
   {
     count += bits;
     return delegate->sym(name, bits);
@@ -70,8 +70,8 @@ void parseAv1ColorConfig(ReaderBits *br, int64_t seq_profile, AV1CodecConfigurat
 
   if(av1c.mono_chrome) {
     color_range = br->sym("color_range", 1);
-    av1c.chroma_subsampling_x = 1;
-    av1c.chroma_subsampling_y = 1;
+    av1c.chroma_subsampling_x = br->sym("chroma_subsampling_x", 0) = 1;
+    av1c.chroma_subsampling_y = br->sym("chroma_subsampling_y", 0) = 1;
     av1c.chroma_sample_position = 0; // CSP_UNKNOWN;
     br->sym("separate_uv_delta_q", 0); // = 0;
     return;
@@ -85,8 +85,8 @@ void parseAv1ColorConfig(ReaderBits *br, int64_t seq_profile, AV1CodecConfigurat
     color_range = br->sym("color_range", 1);
 
     if(seq_profile == 0) {
-      av1c.chroma_subsampling_x = 1;
-      av1c.chroma_subsampling_y = 1;
+      av1c.chroma_subsampling_x = br->sym("chroma_subsampling_x", 0) = 1;
+      av1c.chroma_subsampling_y = br->sym("chroma_subsampling_y", 0) = 1;
     } else if(seq_profile == 1) {
       av1c.chroma_subsampling_x = 0;
       av1c.chroma_subsampling_y = 0;
@@ -99,7 +99,7 @@ void parseAv1ColorConfig(ReaderBits *br, int64_t seq_profile, AV1CodecConfigurat
         else
           av1c.chroma_subsampling_y = 0;
       } else {
-        av1c.chroma_subsampling_x = 1;
+        av1c.chroma_subsampling_x = br->sym("chroma_subsampling_x", 0) = 1;
         av1c.chroma_subsampling_y = 0;
       }
     }
@@ -452,7 +452,7 @@ void parseAv1C(IReader *br)
   br->sym("seq_tier_0", 1);
   br->sym("high_bitdepth", 1);
   br->sym("twelve_bit", 1);
-  br->sym("monochrome", 1);
+  br->sym("mono_chrome", 1);
   br->sym("chroma_subsampling_x", 1);
   br->sym("chroma_subsampling_y", 1);
   br->sym("chroma_sample_position", 2);
