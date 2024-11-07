@@ -80,6 +80,9 @@ parser.add_argument("-i", "--input",
 parser.add_argument("--dump",
                     help="Dump code snippet based on asserts in HTML.",
                     action="store_true")
+parser.add_argument("--dump-new",
+                    help="Dump new code snippet based on asserts in HTML.",
+                    action="store_true")
 args = parser.parse_args()
 
 if args.input is not None and args.spec is not None:
@@ -140,8 +143,10 @@ for rule_src in implemented_assert_ids:
     if found_rule is None:
         implemented_but_not_in_spec.append(rule_src)
 
-if args.dump:
+if args.dump or args.dump_new:
     for rule in spec_rules:
+        if args.dump_new and rule["implemented"]:
+            continue
         print(f'{{\n  "{rule["description"]}",\n  "{rule["id"]}",\n  \
               [](Box const & root, IReport * out)\n  {{\n  }}\n}},')
 else:
