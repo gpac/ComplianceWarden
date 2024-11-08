@@ -621,7 +621,7 @@ const SpecDesc specAv1ISOBMFF = {
     { "Section 2.2.4\n"
       "The config field SHALL contain an AV1CodecConfigurationBox that applies to the samples associated with this "
       "sample entry.",
-      "assert-f875c695",
+      "assert-8d3f8e0c",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
         if(!obuDetails.valid) {
@@ -665,7 +665,7 @@ const SpecDesc specAv1ISOBMFF = {
         }
       } },
     { "Section 2.3.4\n"
-      "The AV1CodecConfigurationRecord version field SHALL be set to 1",
+      "The value SHALL be set to 1 for AV1CodecConfigurationRecord.",
       "assert-49a325d3",
       [](Box const &root, IReport *out) {
         auto obuDetails = getOBUDetails(root, out);
@@ -729,9 +729,8 @@ const SpecDesc specAv1ISOBMFF = {
               }
       } },
     { "Section 2.3.4\n"
-      "The seq_level_idx_0 field indicates the value of seq_level_idx[0] found in the\n"
-      "Sequence Header OBU and SHALL be equal to the value of seq_level_idx[0] in the\n"
-      "Sequence Header OBU.",
+      "The seq_level_idx_0 field SHALL be equal to the value of seq_level_idx[0] from\n"
+      "the Sequence Header OBU.",
       "assert-4f91ed20",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
@@ -774,9 +773,7 @@ const SpecDesc specAv1ISOBMFF = {
               }
       } },
     { "Section 2.3.4\n"
-      "The seq_tier_0 field indicates the value of seq_tier[0] found in the\n"
-      "Sequence Header OBU and SHALL be equal to the value of seq_tier[0] in the\n"
-      "Sequence Header OBU.",
+      "The seq_tier_0 field SHALL be equal to the value of seq_tier[0] from the Sequence Header OBU.",
       "assert-c5e10274",
       [](Box const &root, IReport *out) {
         for(auto &box : root.children)
