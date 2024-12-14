@@ -1093,19 +1093,19 @@ static const SpecDesc specHeif = {
                 if(!strcmp(sym.name, "compatible_brand"))
                   switch(sym.value) {
                   case FOURCC("avci"):
-                    return { "avci" };
+                    return { "avci", "hif", "heif" };
                   case FOURCC("avcs"):
                     return { "avcs" };
                   case FOURCC("heic"):
                   case FOURCC("heix"):
                   case FOURCC("heim"):
                   case FOURCC("heis"):
-                    return { "heic", "hif" };
+                    return { "heic", "hif", "heif" };
                   case FOURCC("hevc"):
                   case FOURCC("hevx"):
                   case FOURCC("hevm"):
                   case FOURCC("hevs"):
-                    return { "heics", "hif" };
+                    return { "heics", "hif", "heif" };
                   }
 
           auto isSequence = [](Box const &root) -> bool {

@@ -63,15 +63,12 @@ the seq_profile value from the Sequence Header OBU.
 
 [av1isobmff][Rule #10] id: assert-4f91ed20
 Section 2.3.4
-The seq_level_idx_0 field indicates the value of seq_level_idx[0] found in the
-Sequence Header OBU and SHALL be equal to the value of seq_level_idx[0] in the
-Sequence Header OBU.
+The seq_level_idx_0 field SHALL be equal to the value of seq_level_idx[0] from
+the Sequence Header OBU.
 
 [av1isobmff][Rule #11] id: assert-c5e10274
 Section 2.3.4
-The seq_tier_0 field indicates the value of seq_tier[0] found in the
-Sequence Header OBU and SHALL be equal to the value of seq_tier[0] in the
-Sequence Header OBU.
+The seq_tier_0 field SHALL be equal to the value of seq_tier[0] from the Sequence Header OBU.
 
 [av1isobmff][Rule #12] id: assert-821f7437
 Section 2.3.4
