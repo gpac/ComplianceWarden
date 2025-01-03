@@ -144,7 +144,9 @@ int main(int argc, const char *argv[])
   }
 
   if(specName.empty() || urls.size() != 1) {
-    fprintf(stderr, "expected one input file, got %zu\n", urls.size());
+    fprintVersion(stderr);
+    opt.printHelp(stdout);
+    fprintf(stderr, ">>> Expected 1 input file, got %zu. See usage above.<<<\n\n", urls.size());
     return 1;
   }
 
