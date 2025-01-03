@@ -8,9 +8,10 @@ MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 [isobmff][Rule #5] Error: Each ItemPropertyAssociationBox shall be ordered by increasing item_ID (1, last=2)
 [isobmff][Rule #5] Error: Each ItemPropertyAssociationBox shall be ordered by increasing item_ID (1, last=1)
 [isobmff][Rule #5] Error: There shall be at most one occurrence of a given item_ID but item_ID=1 found several times
+[isobmff][Rule #17] Error: 'iinf box' entry: previous item_ID(2) shall be less than current(1)
 
 ========================================
-[isobmff] 3 error(s), 0 warning(s).
+[isobmff] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -19,4 +20,8 @@ MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
 Each ItemPropertyAssociationBox shall be ordered by increasing item_ID,
 and there shall be at most one occurrence of a given item_ID, in the set of
 ItemPropertyAssociationBox boxes
+
+[isobmff][Rule #17] Section 8.11.6.1
+'iinf box': contains an array of entries, and each entry is formatted as a box. This array
+ is sorted by increasing item_ID in the entry records.
 

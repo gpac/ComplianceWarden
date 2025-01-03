@@ -654,6 +654,33 @@ const SpecDesc specIsobmff = {
         for(auto box : boxes)
           check(box);
       } },
+    { "Section 8.11.6.1\n"
+      "'iinf box': contains an array of entries, and each entry is formatted as a box. This array\n"
+      " is sorted by increasing item_ID in the entry records.",
+      [](Box const &root, IReport *out) {
+        uint32_t lastItemId = 0;
+
+        auto check = [&](const Box *box) {
+          for(auto &iinfChild : box->children)
+            if(iinfChild.fourcc == FOURCC("infe")) {
+              for(auto &sym : iinfChild.syms) {
+                if(!strcmp(sym.name, "item_ID")) {
+                  if(sym.value <= lastItemId)
+                    out->error(
+                      "'iinf box' entry: previous item_ID(%u) shall be less than current(%u)", lastItemId,
+                      (uint32_t)sym.value);
+                  else
+                    lastItemId = sym.value;
+                }
+              }
+            }
+        };
+
+        auto boxes = findBoxes(root, FOURCC("iinf"));
+
+        for(auto box : boxes)
+          check(box);
+      } },
   },
   isIsobmff,
 };
