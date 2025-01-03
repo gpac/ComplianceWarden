@@ -1,8 +1,8 @@
 // This is how the app sees concrete specifications.
 #pragma once
 
-#include "core/box.h"
-#include "core/box_reader.h" // ParseBoxFunc
+#include "box.h"
+#include "box_reader.h" // ParseBoxFunc
 
 #include <string>
 #include <vector>

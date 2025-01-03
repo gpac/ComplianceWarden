@@ -1,7 +1,7 @@
 // Box-parsers for MP4 and MPEG-DASH
 #include "common_boxes.h"
 
-#include "core/fourcc.h"
+#include "fourcc.h"
 
 #include <cassert>
 #include <vector>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/bit_reader.h"
-#include "core/fourcc.h"
-#include "core/spec.h"
+#include "bit_reader.h"
+#include "fourcc.h"
+#include "spec.h"
 
 #include <cstring> // strcmp
 

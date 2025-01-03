@@ -1,4 +1,4 @@
-#include "utils/av1_utils.h"
+#include "av1_utils.h"
 
 #include "core/box_reader_impl.h" // BoxReader
 
