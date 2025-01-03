@@ -102,11 +102,12 @@ int main(int argc, const char *argv[])
   std::string specName, format = "text";
 
   OptionHandler opt;
-  opt.add("s", "spec", &specName, "Specification name.");
-  opt.add("f", "format", &format, "Output format: \"raw\" (default), or \"json\"");
-  opt.addFlag("l", "list", &list, "List available specifications or available rules.");
-  opt.addFlag("v", "version", &version, "Print version and exit.");
-  opt.addFlag("h", "help", &help, "Print usage and exit.");
+  opt.add("s", "spec", &specName, "Specification name");
+  opt.add("f", "format", &format, "Output formats: \"raw\" (default), or \"json\"");
+  opt.addFlag(
+    "l", "list", &list, "List available specifications, or available rules for a given specification (see \"-s\")");
+  opt.addFlag("v", "version", &version, "Print version and exit");
+  opt.addFlag("h", "help", &help, "Print usage and exit");
 
   auto urls = opt.parse(argc, argv);
 
@@ -122,7 +123,9 @@ int main(int argc, const char *argv[])
   }
 
   if(format != "text" && format != "json") {
-    fprintf(stderr, "invalid format, only \"text\" or \"json\" are supported");
+    fprintVersion(stderr);
+    opt.printHelp(stderr);
+    fprintf(stderr, ">>>>> Invalid format, only \"text\" or \"json\" are supported. <<<<<\n\n");
     return 1;
   }
 
@@ -145,8 +148,8 @@ int main(int argc, const char *argv[])
 
   if(specName.empty() || urls.size() != 1) {
     fprintVersion(stderr);
-    opt.printHelp(stdout);
-    fprintf(stderr, ">>> Expected 1 input file, got %zu. See usage above.<<<\n\n", urls.size());
+    opt.printHelp(stderr);
+    fprintf(stderr, ">>>>> Expected 1 input file, got %zu. See usage above. <<<<<\n\n", urls.size());
     return 1;
   }
 
