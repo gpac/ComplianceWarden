@@ -1,10 +1,10 @@
 // Box-parsers for MP4 and MPEG-DASH
 #include "common_boxes.h"
 
-#include "fourcc.h"
-
 #include <cassert>
 #include <vector>
+
+#include "fourcc.h"
 
 void parseAv1C(IReader *br);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/box_reader_impl.h"
+
 #include "av1_utils.h"
 
 struct sampleFlags {

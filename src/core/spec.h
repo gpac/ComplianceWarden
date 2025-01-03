@@ -1,11 +1,11 @@
 // This is how the app sees concrete specifications.
 #pragma once
 
-#include "box.h"
-#include "box_reader.h" // ParseBoxFunc
-
 #include <string>
 #include <vector>
+
+#include "box.h"
+#include "box_reader.h" // ParseBoxFunc
 
 struct IReport {
   // add a human-readable error or warning to the report.

@@ -157,7 +157,7 @@ $ BIN=bin_32 CXX=i686-linux-gnu-g++-12 ./check
 ### Emscripten (WASM)
 
 ```
-em++ -std=c++14 -DCW_WASM bin/cw_version.cpp `find src -name '*.cpp'` -Isrc -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS="['_specFindC', '_specCheckC', '_specListRulesC', '_printVersion', '_free']" -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 --pre-js scripts/wasm-fs-pre.js
+em++ -std=c++14 -DCW_WASM bin/cw_version.cpp `find src -name '*.cpp'` -Isrc -o ComplianceWarden.js -O3 -s WASM=1 -s EXPORTED_FUNCTIONS=specFindC,_specCheckC,_specListRulesC,_printVersion,_malloc,_free -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_RUNTIME_METHODS=stringToUTF8 --pre-js scripts/wasm-fs-pre.js
 ```
 
 See https://gpac.github.io/ComplianceWarden-wasm/ for a demo.

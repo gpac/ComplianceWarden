@@ -1,12 +1,11 @@
 #pragma once
 
-#include "bit_reader.h"
-#include "fourcc.h"
-#include "spec.h"
-
 #include <cstring> // strcmp
 
+#include "bit_reader.h"
 #include "common_boxes.h"
+#include "fourcc.h"
+#include "spec.h"
 
 struct BoxReader : IReader {
   bool empty() override { return br.empty(); }
