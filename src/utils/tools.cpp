@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib> // exit
+#include <stdexcept>
 #include <vector>
 
 void ENSURE(bool cond, const char *format, ...)
@@ -14,7 +15,7 @@ void ENSURE(bool cond, const char *format, ...)
     fprintf(stderr, "\n");
     fflush(stderr);
     va_end(args);
-    exit(1);
+    throw std::runtime_error("ENSURE failed");
   }
 }
 

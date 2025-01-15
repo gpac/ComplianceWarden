@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring> // strcmp
+#include <stdexcept>
 
 #include "bit_reader.h"
 #include "common_boxes.h"
@@ -63,7 +64,13 @@ struct BoxReader : IReader {
     subReader.br.m_pos += boxHeaderSize * 8;
     br.m_pos -= boxHeaderSize * 8;
     auto parseFunc = getParseFunction(subReader.myBox.fourcc);
-    parseFunc(&subReader);
+    try {
+      parseFunc(&subReader);
+    } catch(const std::runtime_error &e) {
+      fprintf(stderr, "Failed to parse box: '%s'\n", toString(subReader.myBox.fourcc).c_str());
+      fprintf(stderr, "Error: %s\n", e.what());
+      exit(1);
+    }
     myBox.children.push_back(std::move(subReader.myBox));
 
     ENSURE(
