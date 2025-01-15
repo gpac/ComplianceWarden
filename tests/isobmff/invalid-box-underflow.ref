@@ -1,1 +1,2 @@
-Box 'stsd': read 128 bits instead of 160 bits
+Error: Box 'stsd': read 128 bits instead of 160 bits
+Failed to parse box: 'stsd'

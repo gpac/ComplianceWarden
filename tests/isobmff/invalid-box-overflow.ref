@@ -1,1 +1,2 @@
-BitReader::bit() overflow
+Error: BitReader::bit() overflow
+Failed to parse box: ''
