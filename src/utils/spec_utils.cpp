@@ -62,9 +62,13 @@ bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root
       struct Report : IReport {
         void error(const char *, ...) override { ++errorCount; }
 
-        void warning(const char *, ...) override { /*ignored*/ }
+        void warning(const char *, ...) override
+        { /*ignored*/
+        }
 
-        void covered() override { /*ignored*/ }
+        void covered() override
+        { /*ignored*/
+        }
 
         int errorCount = 0;
       };
