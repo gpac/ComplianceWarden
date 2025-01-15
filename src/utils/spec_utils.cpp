@@ -5,8 +5,6 @@
 #include <sstream>
 #include <stdexcept>
 
-void ENSURE(bool cond, const char *format, ...);
-
 std::vector<SpecDesc const *> &g_allSpecs()
 {
   static std::vector<SpecDesc const *> allSpecs;

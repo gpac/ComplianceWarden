@@ -11,11 +11,11 @@ void ENSURE(bool cond, const char *format, ...)
   if(!cond) {
     va_list args;
     va_start(args, format);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    fflush(stderr);
+    std::vector<char> error_message(1024); // Allocate a reasonably large buffer
+    vsnprintf(error_message.data(), error_message.size(), format, args);
     va_end(args);
-    throw std::runtime_error("ENSURE failed");
+    fprintf(stderr, "Error: %s\n", error_message.data());
+    throw std::runtime_error(std::string(error_message.data()));
   }
 }
 
