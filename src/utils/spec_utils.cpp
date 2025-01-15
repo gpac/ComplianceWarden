@@ -3,7 +3,6 @@
 #include <cstdarg>
 #include <cstring> // strcmp
 #include <sstream>
-#include <stdexcept>
 
 std::vector<SpecDesc const *> &g_allSpecs()
 {
