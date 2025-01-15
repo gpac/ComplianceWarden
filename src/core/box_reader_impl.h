@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstring> // strcmp
-// #include <stdexcept>
 
 #include "bit_reader.h"
 #include "common_boxes.h"
