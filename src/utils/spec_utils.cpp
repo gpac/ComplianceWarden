@@ -3,9 +3,6 @@
 #include <cstdarg>
 #include <cstring> // strcmp
 #include <sstream>
-#include <stdexcept>
-
-void ENSURE(bool cond, const char *format, ...);
 
 std::vector<SpecDesc const *> &g_allSpecs()
 {
@@ -64,9 +61,13 @@ bool checkRuleSection(const SpecDesc &spec, const char *section, Box const &root
       struct Report : IReport {
         void error(const char *, ...) override { ++errorCount; }
 
-        void warning(const char *, ...) override { /*ignored*/ }
+        void warning(const char *, ...) override
+        { /*ignored*/
+        }
 
-        void covered() override { /*ignored*/ }
+        void covered() override
+        { /*ignored*/
+        }
 
         int errorCount = 0;
       };

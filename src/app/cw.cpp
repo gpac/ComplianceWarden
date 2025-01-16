@@ -72,7 +72,12 @@ bool specCheck(const SpecDesc *spec, const char *filename, uint8_t *data, size_t
   if(
     extPos == std::string::npos ||
     (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b")) {
-    probeIsobmff(data, size);
+    try {
+      probeIsobmff(data, size);
+    } catch(...) {
+      fprintf(stderr, "Failed to probe ISOBMFF\n");
+      exit(1);
+    }
 
     auto parseFunc = getParseFunction(topReader.myBox.fourcc);
     parseFunc(&topReader);
@@ -154,8 +159,13 @@ int main(int argc, const char *argv[])
   }
 
   auto spec = specFind(specName.c_str());
-  auto buf = loadFile(urls[0].c_str());
-  return specCheck(spec, urls[0].c_str(), buf.data(), (int)buf.size(), format == "json");
+  try {
+    auto buf = loadFile(urls[0].c_str());
+    return specCheck(spec, urls[0].c_str(), buf.data(), (int)buf.size(), format == "json");
+  } catch(...) {
+    fprintf(stderr, "Failed to load file: '%s'\n", urls[0].c_str());
+    exit(1);
+  }
 }
 
 #else
