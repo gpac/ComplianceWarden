@@ -5,7 +5,7 @@
 
 static const SpecDesc specGimi = {
   "gimi",
-  "GEOINT Imagery Media for ISR - NGA.STND.0076_1.0_GIMI",
+  "GEOINT Imagery Media for ISR - NGA.STND.0076",
   { "isobmff" },
   {
     { "Requirement NGA.STND.0076_1.0-02\n"
