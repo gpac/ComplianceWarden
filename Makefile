@@ -55,6 +55,7 @@ SRCS_CW+=src/specs/av1_isobmff/av1_isobmff.cpp
 SRCS_CW+=src/specs/avif/avif.cpp src/specs/avif/profiles.cpp src/specs/avif/utils.cpp
 SRCS_CW+=src/specs/isobmff/isobmff.cpp
 SRCS_CW+=src/specs/heif/heif.cpp
+SRCS_CW+=src/specs/gimi/gimi.cpp
 SRCS_CW+=src/specs/miaf/miaf.cpp src/specs/miaf/audio.cpp src/specs/miaf/brands.cpp\
   src/specs/miaf/derivations.cpp src/specs/miaf/colours.cpp src/specs/miaf/num_pixels.cpp\
   src/specs/miaf/profiles.cpp
