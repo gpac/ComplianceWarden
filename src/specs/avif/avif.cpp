@@ -125,8 +125,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
       std::map<uint32_t /*itemId*/, bool> av1ImageItemIDsAssociated;
 
-      for(auto itemId : av1ImageItemIDs)
+      for(auto itemId : av1ImageItemIDs) {
+        out->covered();
         av1ImageItemIDsAssociated.insert({ itemId, false });
+      }
 
       for(auto &box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -161,6 +163,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
+        out->covered();
 
         bool showFrame = false, keyFrame = false;
         assert(br.myBox.children.empty());
@@ -193,6 +196,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
+        out->covered();
 
         assert(br.myBox.children.empty());
 
@@ -214,10 +218,12 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         if(box.fourcc == FOURCC("meta")) {
           auto av1Cs = findBoxes(box, FOURCC("av1C"));
 
-          for(auto &av1C : av1Cs)
+          for(auto &av1C : av1Cs) {
+            out->covered();
             for(auto &sym : av1C->syms)
               if(!strcmp(sym.name, "seqhdr"))
                 out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox");
+          }
         }
       }
     } },
@@ -230,6 +236,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
       for(auto itemId : av1ImageItemIDs) {
         auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
+        out->covered();
 
         if(av1Cs.empty()) {
           out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
@@ -271,6 +278,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
       for(auto itemId : av1ImageItemIDs) {
         AV1CodecConfigurationRecord av1cRef{};
+        out->covered();
 
         auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
 
@@ -396,6 +404,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           report = &IReport::warning;
 
         if(hasOneTrackPict ^ hasPrimaryItemImage) {
+          out->covered();
           if(hasOneTrackPict)
             (out->*report)("Track with 'pict' handler found, but no primary item that is an AV1 image item found.");
           else if(hasAvisBrand)
@@ -448,6 +457,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         Av1State state;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, state);
+        out->covered();
 
         assert(br.myBox.children.empty());
 
@@ -489,8 +499,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                   auxItemId = (uint32_t)field.value;
                 }
 
-                if(!strcmp(field.name, "to_item_ID"))
+                if(!strcmp(field.name, "to_item_ID")) {
+                  out->covered();
                   auxImages.push_back({ (uint32_t)field.value, auxItemId });
+                }
               }
             }
 
@@ -518,8 +530,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                         if(!strcmp(sym.name, "aux_type")) {
                           auxType.push_back((char)sym.value);
 
-                          if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                          if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha") {
+                            out->covered();
                             alphaPropertyIndexes.push_back(propertyIdx);
+                          }
                         }
                     }
 
@@ -638,6 +652,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
       for(auto &offset : av1AlphaTrackFirstOffset) {
         auto &box = getBoxFromOffset(root, offset.second);
+        out->covered();
 
         if(box.fourcc != FOURCC("mdat")) {
           out->error(
@@ -717,6 +732,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
               case FOURCC("avis"):
               case FOURCC("avio"):
                 brandMajor = toString(sym.value);
+                out->covered();
                 break;
               default:
                 break;
@@ -771,8 +787,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         if(box.fourcc == FOURCC("ftyp"))
           for(auto &sym : box.syms)
             if(!strcmp(sym.name, "compatible_brand"))
-              if(sym.value == FOURCC("avio"))
+              if(sym.value == FOURCC("avio")) {
                 has_avio = true;
+                out->covered();
+              }
 
       bool has_img_seq_with_sync = false;
 
@@ -844,8 +862,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                   int index = 1;
 
                   for(auto &ipcoChild : iprpChild.children) {
-                    if(isTransformative(ipcoChild.fourcc))
+                    if(isTransformative(ipcoChild.fourcc)) {
                       transformationIndices[index] = ipcoChild.fourcc;
+                      out->covered();
+                    }
 
                     index++;
                   }
@@ -900,6 +920,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       for(auto &c : graph.connections) {
         std::list<uint32_t> visited;
 
+        out->covered();
         if(!graph.visit(c.src, visited, onError, check))
           out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
       }
