@@ -750,8 +750,9 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           brandMajor.c_str(), ext.c_str());
     } },
   { "Section 5.3\n"
-    "If the image sequences are made only of AV1 Samples marked as sync, then\n"
-    "the brand avio should be used",
+    "Additionally, if a file contains AV1 image sequences and the brand avio is used in the FileTypeBox, \n"
+    "the item constraints for this brand shall be met and at least one of the AV1 image sequences shall be made only of AV1 Samples marked as 'sync'",
+    "assert-254a98fe,assert-bc61e83a",
     [](Box const &root, IReport *out) {
       std::vector<uint32_t> av1AlphaTrackIds;
 
@@ -764,6 +765,16 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
         return false;
       };
+
+      bool has_avio = false;
+      for(auto &box : root.children)
+        if(box.fourcc == FOURCC("ftyp"))
+          for(auto &sym : box.syms)
+            if(!strcmp(sym.name, "compatible_brand"))
+              if(sym.value == FOURCC("avio"))
+                has_avio = true;
+
+      bool has_img_seq_with_sync = false;
 
       for(auto &box : root.children)
         if(box.fourcc == FOURCC("moov"))
@@ -796,24 +807,16 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                                     auto const sampleNum = getSampleNum();
 
                                     if(sym1.value == sampleNum) {
-                                      bool found = false;
-
-                                      for(auto &box : root.children)
-                                        if(box.fourcc == FOURCC("ftyp"))
-                                          for(auto &sym : box.syms)
-                                            if(!strcmp(sym.name, "compatible_brand"))
-                                              if(sym.value == FOURCC("avio"))
-                                                found = true;
-
-                                      if(!found)
-                                        out->warning("image sequence made only of AV1 sync "
-                                                     "samples: brand avio "
-                                                     "should be used");
-
+                                      has_img_seq_with_sync = true;
                                       out->warning("\"stss\" box can be omitted since all "
                                                    "track samples are sync");
                                     }
                                   }
+
+      if (has_avio && !has_img_seq_with_sync)
+        out->error(
+          "File with brand avio shall contain at least one AV1 image sequence made only of AV1 "
+          "Samples marked as 'sync'");
     } },
   { "Section 6\n"
     "If transformative properties are used in derivation chains, they shall only be\n"
