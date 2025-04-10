@@ -819,8 +819,9 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           "Samples marked as 'sync'");
     } },
   { "Section 6\n"
-    "If transformative properties are used in derivation chains, they shall only be\n"
-    "associated with items that are not referenced by another derived item.",
+    "Transformative properties shall not be associated with items in a derivation chain (as defined in [MIAF]) \n"
+    "that serves as an input to a grid derived image item.",
+    "assert-c4bb0e7d",
     [](Box const &root, IReport *out) {
       auto isTransformative = [](uint32_t fourcc) {
         if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
