@@ -78,7 +78,7 @@ void checkEssential(Box const &root, IReport *out, uint32_t fourcc)
                       out->error(
                         "Property \"%s\" shall be marked as essential (item_ID=%u)",
                         toString(properties[sym.value]).c_str(), itemId);
-                    }
+                  }
                 }
               }
             }

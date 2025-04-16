@@ -154,7 +154,8 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           out->error("AV1 Image Item (ID=%u) shall be associated with an AV1 Item Configuration Property", item.first);
     } },
   { "Section 2.1\n"
-    "The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as 'sync', as defined in [AV1-ISOBMFF].",
+    "The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as 'sync', as defined in "
+    "[AV1-ISOBMFF].",
     "assert-8ef3bad2",
     [](Box const &root, IReport *out) {
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
@@ -345,8 +346,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
     } },
   { "Section 2.2.1\n"
     "AV1 Item Configuration Property [...] shall be marked as essential.",
-    "assert-ebb95262",
-    [](Box const &root, IReport *out) { checkEssential(root, out, FOURCC("av1C")); } },
+    "assert-ebb95262", [](Box const &root, IReport *out) { checkEssential(root, out, FOURCC("av1C")); } },
   { "Section 3\n"
     "The track handler for an AV1 Image Sequence shall be 'pict'.",
     "assert-f42bd67a",
@@ -767,7 +767,8 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
     } },
   { "Section 5.3\n"
     "Additionally, if a file contains AV1 image sequences and the brand avio is used in the FileTypeBox, \n"
-    "the item constraints for this brand shall be met and at least one of the AV1 image sequences shall be made only of AV1 Samples marked as 'sync'",
+    "the item constraints for this brand shall be met and at least one of the AV1 image sequences shall be made only "
+    "of AV1 Samples marked as 'sync'",
     "assert-254a98fe,assert-bc61e83a",
     [](Box const &root, IReport *out) {
       std::vector<uint32_t> av1AlphaTrackIds;
@@ -826,12 +827,13 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
                                     if(sym1.value == sampleNum) {
                                       has_img_seq_with_sync = true;
-                                      out->warning("\"stss\" box can be omitted since all "
-                                                   "track samples are sync");
+                                      out->warning(
+                                        "\"stss\" box can be omitted since all "
+                                        "track samples are sync");
                                     }
                                   }
 
-      if (has_avio && !has_img_seq_with_sync)
+      if(has_avio && !has_img_seq_with_sync)
         out->error(
           "File with brand avio shall contain at least one AV1 image sequence made only of AV1 "
           "Samples marked as 'sync'");

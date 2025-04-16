@@ -77,9 +77,10 @@ const std::initializer_list<RuleDesc> getRulesMiafAudio()
                                 if(stblChild.fourcc == FOURCC("stsd"))
                                   for(auto &stsdChild : stblChild.children) {
                                     if(stsdChild.fourcc != FOURCC("twos") && !isMiafAac(stsdChild, out))
-                                      out->error("Audio shall be a variant of AAC as "
-                                                 "defined in Section 7.4.5 "
-                                                 "or as uncompressed two’s-complement");
+                                      out->error(
+                                        "Audio shall be a variant of AAC as "
+                                        "defined in Section 7.4.5 "
+                                        "or as uncompressed two’s-complement");
                                   }
                     }
                   }
@@ -129,9 +130,10 @@ const std::initializer_list<RuleDesc> getRulesMiafAudio()
                                 for(auto &stsdChild : stblChild.children)
                                   if(stsdChild.fourcc == FOURCC("mp4a"))
                                     if(!isMiafAac(stsdChild, out))
-                                      out->error("Audio shall be MPEG-4 AAC-LC, "
-                                                 "HE-AAC Level 2, or HE-AACv2 "
-                                                 "Level 2");
+                                      out->error(
+                                        "Audio shall be MPEG-4 AAC-LC, "
+                                        "HE-AAC Level 2, or HE-AACv2 "
+                                        "Level 2");
       } },
     { "Section 7.4.5\n"
       "If AAC is chosen, then when using HE-AAC and HE-AACv2 bitstreams, explicit\n"
