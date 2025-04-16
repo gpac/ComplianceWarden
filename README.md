@@ -79,8 +79,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ================================================================================
 Specification name: avif
-            detail: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+            detail: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
         depends on: "miaf" specifications.
 ================================================================================
 

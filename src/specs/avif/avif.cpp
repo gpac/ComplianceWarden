@@ -934,8 +934,8 @@ std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initial
 
 static const SpecDesc specAvif = {
   "avif",
-  "AVIF v1.0.0, 19 February 2019\n"
-  "https://aomediacodec.github.io/av1-avif/",
+  "AVIF v1.2.0, 8 January 2025\n"
+  "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
   { "miaf" },
   concatRules({ rulesAvifGeneral, getRulesAvifProfiles(specAvif) }),
   isIsobmff,
