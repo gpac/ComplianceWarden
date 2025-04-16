@@ -2,19 +2,12 @@
 |           avif validation            |
 +--------------------------------------+
 
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
-
-[avif][Rule #3] Warning: [ItemId=1] still_picture flag set to 0
+Specification description: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
 
 ========================================
-[avif] 0 error(s), 1 warning(s).
+[avif] No errors.
 ========================================
-
-===== Involved rules descriptions:
-
-[avif][Rule #3] Section 2.1
-The AV1 Image Item Data should have its still_picture flag set to 1.
 
 +--------------------------------------+
 |           miaf validation            |
