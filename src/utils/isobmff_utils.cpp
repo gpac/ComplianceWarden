@@ -72,11 +72,13 @@ void checkEssential(Box const &root, IReport *out, uint32_t fourcc)
                     break;
                   }
 
-                  if(properties[sym.value] == fourcc)
+                  if(properties[sym.value] == fourcc) {
+                    out->covered();
                     if(!essential)
                       out->error(
                         "Property \"%s\" shall be marked as essential (item_ID=%u)",
                         toString(properties[sym.value]).c_str(), itemId);
+                  }
                 }
               }
             }

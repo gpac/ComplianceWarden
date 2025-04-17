@@ -2,10 +2,10 @@
 |           avif validation            |
 +--------------------------------------+
 
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+Specification description: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
 
-[avif][Rule #7] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
+[avif][Rule #5] Error: [ItemId=1] The values of the AV1CodecConfigurationBox shall match
 the Sequence Header OBU in the AV1 Image Item Data:
 	AV1CodecConfigurationBox:
 		seq_profile=0
@@ -35,8 +35,9 @@ the Sequence Header OBU in the AV1 Image Item Data:
 
 ===== Involved rules descriptions:
 
-[avif][Rule #7] Section 2.2.1
-The values of the fields in the AV1CodecConfigurationBox shall match those of the
+[avif][Rule #5] id: assert-4f2a2770
+Section 2.2.1
+The values of the fields in the AV1ItemConfigurationProperty shall match those of the
 Sequence Header OBU in the AV1 Image Item Data.
 
 +--------------------------------------+

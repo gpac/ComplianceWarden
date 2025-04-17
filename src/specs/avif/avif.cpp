@@ -105,7 +105,8 @@ void probeAV1ImageItem(Box const &root, IReport *out, uint32_t itemId, BoxReader
 
 std::initializer_list<RuleDesc> rulesAvifGeneral = {
   { "Section 2.1 AV1 Image Item\n"
-    "The AV1 Image Item shall be associated with an AV1 Item Configuration Property.",
+    "The AV1 Image Item shall be associated with an AV1ItemConfigurationProperty.",
+    "assert-dd521ae6",
     [](Box const &root, IReport *out) {
       auto av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
@@ -124,8 +125,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
       std::map<uint32_t /*itemId*/, bool> av1ImageItemIDsAssociated;
 
-      for(auto itemId : av1ImageItemIDs)
+      for(auto itemId : av1ImageItemIDs) {
+        out->covered();
         av1ImageItemIDsAssociated.insert({ itemId, false });
+      }
 
       for(auto &box : root.children)
         if(box.fourcc == FOURCC("meta"))
@@ -151,7 +154,9 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           out->error("AV1 Image Item (ID=%u) shall be associated with an AV1 Item Configuration Property", item.first);
     } },
   { "Section 2.1\n"
-    "The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as sync",
+    "The AV1 Image Item Data shall be identical to the content of an AV1 Sample marked as 'sync', as defined in "
+    "[AV1-ISOBMFF].",
+    "assert-8ef3bad2",
     [](Box const &root, IReport *out) {
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
@@ -159,6 +164,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
+        out->covered();
 
         bool showFrame = false, keyFrame = false;
         assert(br.myBox.children.empty());
@@ -183,6 +189,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
     } },
   { "Section 2.1\n"
     "The AV1 Image Item Data shall have exactly one Sequence Header OBU.",
+    "assert-809b9acc",
     [](Box const &root, IReport *out) {
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
@@ -190,6 +197,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         Av1State stateUnused;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, stateUnused);
+        out->covered();
 
         assert(br.myBox.children.empty());
 
@@ -204,59 +212,32 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       }
     } },
   { "Section 2.1\n"
-    "The AV1 Image Item Data should have its still_picture flag set to 1.",
-    [](Box const &root, IReport *out) {
-      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
-
-      for(auto itemId : av1ImageItemIDs) {
-        Av1State stateUnused;
-        BoxReader br;
-        probeAV1ImageItem(root, out, itemId, br, stateUnused);
-
-        assert(br.myBox.children.empty());
-
-        for(auto &sym : br.myBox.syms)
-          if(!strcmp(sym.name, "still_picture"))
-            if(sym.value == 0)
-              out->warning("[ItemId=%u] still_picture flag set to 0", itemId);
-      }
-    } },
-  { "Section 2.1\n"
-    "The AV1 Image Item Data should have its reduced_still_picture_header flag set to 1.",
-    [](Box const &root, IReport *out) {
-      auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
-
-      for(auto itemId : av1ImageItemIDs) {
-        Av1State state;
-        BoxReader br;
-        probeAV1ImageItem(root, out, itemId, br, state);
-
-        if(!state.reduced_still_picture_header)
-          out->warning("[ItemId=%u] reduced_still_picture_header flag set to 0", itemId);
-      }
-    } },
-  { "Section 2.1\n"
-    "Sequence Header OBUs should not be present in the AV1CodecConfigurationBox.",
+    "Sequence Header OBUs should not be present in the AV1ItemConfigurationProperty.",
+    "assert-9c37f45a",
     [](Box const &root, IReport *out) {
       for(auto &box : root.children) {
         if(box.fourcc == FOURCC("meta")) {
           auto av1Cs = findBoxes(box, FOURCC("av1C"));
 
-          for(auto &av1C : av1Cs)
+          for(auto &av1C : av1Cs) {
+            out->covered();
             for(auto &sym : av1C->syms)
               if(!strcmp(sym.name, "seqhdr"))
                 out->warning("Sequence Header OBUs should not be present in the AV1CodecConfigurationBox");
+          }
         }
       }
     } },
   { "Section 2.2.1\n"
-    "If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the\n"
+    "If a Sequence Header OBU is present in the AV1ItemConfigurationProperty, it shall match the\n"
     "Sequence Header OBU in the AV1 Image Item Data.",
+    "assert-a0fd4b2f",
     [](Box const &root, IReport *out) {
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs) {
         auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
+        out->covered();
 
         if(av1Cs.empty()) {
           out->error("[ItemId=%u] No av1C configuration found (expected 1)", itemId);
@@ -290,13 +271,15 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       }
     } },
   { "Section 2.2.1\n"
-    "The values of the fields in the AV1CodecConfigurationBox shall match those of the\n"
+    "The values of the fields in the AV1ItemConfigurationProperty shall match those of the\n"
     "Sequence Header OBU in the AV1 Image Item Data.",
+    "assert-4f2a2770",
     [](Box const &root, IReport *out) {
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
       for(auto itemId : av1ImageItemIDs) {
         AV1CodecConfigurationRecord av1cRef{};
+        out->covered();
 
         auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
 
@@ -354,17 +337,19 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       }
     } },
   { "Section 2.2.1\n"
-    "Metadata OBUs, if present, shall match the values given in other item properties, such as\n"
-    "the PixelInformationProperty or ColourInformationBox.",
+    "Metadata OBUs, if present, shall match the values given in other item properties, such as the\n"
+    "MasteringDisplayColourVolumeBox ('mdcv') or ContentLightLevelBox ('clli').",
+    "assert-071d427d",
     [](Box const &root, IReport *out) {
       (void)root;
       (void)out; // TODO
     } },
   { "Section 2.2.1\n"
     "AV1 Item Configuration Property [...] shall be marked as essential.",
-    [](Box const &root, IReport *out) { checkEssential(root, out, FOURCC("av1C")); } },
+    "assert-ebb95262", [](Box const &root, IReport *out) { checkEssential(root, out, FOURCC("av1C")); } },
   { "Section 3\n"
     "The track handler for an AV1 Image Sequence shall be 'pict'.",
+    "assert-f42bd67a",
     [](Box const &root, IReport *out) {
       // This rule doesn't make sense as HEIF defines an Image Sequence as a track with
       // handler_type 'pict'. Let's test:
@@ -419,6 +404,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           report = &IReport::warning;
 
         if(hasOneTrackPict ^ hasPrimaryItemImage) {
+          out->covered();
           if(hasOneTrackPict)
             (out->*report)("Track with 'pict' handler found, but no primary item that is an AV1 image item found.");
           else if(hasAvisBrand)
@@ -429,6 +415,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
   { "Section 4. Auxiliary Image Items\n"
     "The mono_chrome field in the Sequence Header OBU shall be set to 1.\n"
     "The color_range field in the Sequence Header OBU shall be set to 1.",
+    "assert-1243aeeb,assert-12507edd",
     [](Box const &root, IReport *out) {
       // contains both image items and meta primary image item of the sequence
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
@@ -470,6 +457,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
         Av1State state;
         BoxReader br;
         probeAV1ImageItem(root, out, itemId, br, state);
+        out->covered();
 
         assert(br.myBox.children.empty());
 
@@ -484,6 +472,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
     "An AV1 Alpha Image Item (respectively an AV1 Alpha Image Sequence) shall be\n"
     "encoded with the same bit depth as the associated master AV1 Image Item\n"
     "(respectively AV1 Image Sequence).",
+    "assert-37945cd1",
     [](Box const &root, IReport *out) {
       // contains both image items and meta primary image item of the sequence
       auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
@@ -510,8 +499,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                   auxItemId = (uint32_t)field.value;
                 }
 
-                if(!strcmp(field.name, "to_item_ID"))
+                if(!strcmp(field.name, "to_item_ID")) {
+                  out->covered();
                   auxImages.push_back({ (uint32_t)field.value, auxItemId });
+                }
               }
             }
 
@@ -539,8 +530,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                         if(!strcmp(sym.name, "aux_type")) {
                           auxType.push_back((char)sym.value);
 
-                          if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha")
+                          if(auxType == "urn:mpeg:mpegB:cicp:systems:auxiliary:alpha") {
+                            out->covered();
                             alphaPropertyIndexes.push_back(propertyIdx);
+                          }
                         }
                     }
 
@@ -603,6 +596,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
   { "Section 4. Auxiliary Image Sequences\n"
     "The mono_chrome field in the Sequence Header OBU shall be set to 1.\n"
     "The color_range field in the Sequence Header OBU shall be set to 1.",
+    "assert-1243aeeb,assert-12507edd",
     [](Box const &root, IReport *out) {
       std::vector<uint32_t> av1AlphaTrackIds;
       std::map<uint32_t /*trackId*/, int64_t> av1AlphaTrackFirstOffset;
@@ -658,6 +652,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
       for(auto &offset : av1AlphaTrackFirstOffset) {
         auto &box = getBoxFromOffset(root, offset.second);
+        out->covered();
 
         if(box.fourcc != FOURCC("mdat")) {
           out->error(
@@ -720,9 +715,11 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       }
     } },
   { "Section 5.1\n"
-    "If any of the brands defined in this document (e.g. avif or avis) is specified\n"
-    "in the major_brand field of the FileTypeBox, the file extension and Internet\n"
-    "Media Type should respectively be \".avif\" and \"image/avif\"",
+    "If any of the brands defined in this document is specified in the major_brand field of the FileTypeBox,\n"
+    " the file extension and Internet Media Type should respectively \n"
+    "be .avif and image/avif as defined in \n"
+    "\u00a7\u202f10 AVIF Media Type Registration.",
+    "assert-bd18acea",
     [](Box const &root, IReport *out) {
       std::string brandMajor;
 
@@ -735,6 +732,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
               case FOURCC("avis"):
               case FOURCC("avio"):
                 brandMajor = toString(sym.value);
+                out->covered();
                 break;
               default:
                 break;
@@ -768,8 +766,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
           brandMajor.c_str(), ext.c_str());
     } },
   { "Section 5.3\n"
-    "If the image sequences are made only of AV1 Samples marked as sync, then\n"
-    "the brand avio should be used",
+    "Additionally, if a file contains AV1 image sequences and the brand avio is used in the FileTypeBox, \n"
+    "the item constraints for this brand shall be met and at least one of the AV1 image sequences shall be made only "
+    "of AV1 Samples marked as 'sync'",
+    "assert-254a98fe,assert-bc61e83a",
     [](Box const &root, IReport *out) {
       std::vector<uint32_t> av1AlphaTrackIds;
 
@@ -782,6 +782,18 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
 
         return false;
       };
+
+      bool has_avio = false;
+      for(auto &box : root.children)
+        if(box.fourcc == FOURCC("ftyp"))
+          for(auto &sym : box.syms)
+            if(!strcmp(sym.name, "compatible_brand"))
+              if(sym.value == FOURCC("avio")) {
+                has_avio = true;
+                out->covered();
+              }
+
+      bool has_img_seq_with_sync = false;
 
       for(auto &box : root.children)
         if(box.fourcc == FOURCC("moov"))
@@ -814,28 +826,22 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                                     auto const sampleNum = getSampleNum();
 
                                     if(sym1.value == sampleNum) {
-                                      bool found = false;
-
-                                      for(auto &box : root.children)
-                                        if(box.fourcc == FOURCC("ftyp"))
-                                          for(auto &sym : box.syms)
-                                            if(!strcmp(sym.name, "compatible_brand"))
-                                              if(sym.value == FOURCC("avio"))
-                                                found = true;
-
-                                      if(!found)
-                                        out->warning("image sequence made only of AV1 sync "
-                                                     "samples: brand avio "
-                                                     "should be used");
-
-                                      out->warning("\"stss\" box can be omitted since all "
-                                                   "track samples are sync");
+                                      has_img_seq_with_sync = true;
+                                      out->warning(
+                                        "\"stss\" box can be omitted since all "
+                                        "track samples are sync");
                                     }
                                   }
+
+      if(has_avio && !has_img_seq_with_sync)
+        out->error(
+          "File with brand avio shall contain at least one AV1 image sequence made only of AV1 "
+          "Samples marked as 'sync'");
     } },
   { "Section 6\n"
-    "If transformative properties are used in derivation chains, they shall only be\n"
-    "associated with items that are not referenced by another derived item.",
+    "Transformative properties shall not be associated with items in a derivation chain (as defined in [MIAF]) \n"
+    "that serves as an input to a grid derived image item.",
+    "assert-c4bb0e7d",
     [](Box const &root, IReport *out) {
       auto isTransformative = [](uint32_t fourcc) {
         if(fourcc == FOURCC("clap") || fourcc == FOURCC("irot") || fourcc == FOURCC("imir"))
@@ -858,8 +864,10 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                   int index = 1;
 
                   for(auto &ipcoChild : iprpChild.children) {
-                    if(isTransformative(ipcoChild.fourcc))
+                    if(isTransformative(ipcoChild.fourcc)) {
                       transformationIndices[index] = ipcoChild.fourcc;
+                      out->covered();
+                    }
 
                     index++;
                   }
@@ -914,6 +922,7 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       for(auto &c : graph.connections) {
         std::list<uint32_t> visited;
 
+        out->covered();
         if(!graph.visit(c.src, visited, onError, check))
           out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
       }
@@ -925,8 +934,8 @@ std::vector<RuleDesc> concatRules(const std::initializer_list<const std::initial
 
 static const SpecDesc specAvif = {
   "avif",
-  "AVIF v1.0.0, 19 February 2019\n"
-  "https://aomediacodec.github.io/av1-avif/",
+  "AVIF v1.2.0, 8 January 2025\n"
+  "https://aomediacodec.github.io/av1-avif/v1.2.0.html",
   { "miaf" },
   concatRules({ rulesAvifGeneral, getRulesAvifProfiles(specAvif) }),
   isIsobmff,
