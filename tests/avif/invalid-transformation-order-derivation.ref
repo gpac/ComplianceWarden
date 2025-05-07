@@ -226,11 +226,9 @@ the Sequence Header OBU in the AV1 Image Item Data:
 [avif][Rule #14] Error: Transformative properties used in derivation chains shall only be associated with items that are not referenced by another derived item. However {item_ID=18, type=irot} was preceeded by {item_ID=15, type=irot}.
 [avif][Rule #14] Error: Transformative properties used in derivation chains shall only be associated with items that are not referenced by another derived item. However {item_ID=16, type=irot} was preceeded by {item_ID=18, type=irot}.
 [avif][Rule #14] Error: Transformative properties used in derivation chains shall only be associated with items that are not referenced by another derived item. However {item_ID=18, type=irot} was preceeded by {item_ID=16, type=irot}.
-[avif][Rule #14] Error: Transformative properties used in derivation chains shall only be associated with items that are not referenced by another derived item. However {item_ID=18, type=irot} was preceeded by {item_ID=15, type=irot}.
-[avif][Rule #14] Error: Transformative properties used in derivation chains shall only be associated with items that are not referenced by another derived item. However {item_ID=18, type=irot} was preceeded by {item_ID=16, type=irot}.
 
 ========================================
-[avif] 47 error(s), 0 warning(s).
+[avif] 45 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
