@@ -890,12 +890,47 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
                   }
                 }
 
+      // Find grid items
+      std::vector<uint32_t> gridItems;
+      for(auto &box : root.children)
+        if(box.fourcc == FOURCC("meta"))
+          for(auto &metaChild : box.children)
+            if(metaChild.fourcc == FOURCC("iinf"))
+              for(auto &iinfChild : metaChild.children)
+                if(iinfChild.fourcc == FOURCC("infe")) {
+                  std::string item_type;
+                  uint32_t item_ID = 0;
+
+                  for(auto &sym : iinfChild.syms) {
+                    if(!strcmp(sym.name, "item_type"))
+                      item_type = toString(sym.value);
+                    else if(!strcmp(sym.name, "item_ID"))
+                      item_ID = sym.value;
+                  }
+
+                  if(item_type == "grid")
+                    gridItems.push_back(item_ID);
+                }
+
       // check if they are in derivation chains
       auto graph = buildDerivationGraph(root);
 
       auto check = [&](const std::list<uint32_t> &visited) {
         bool foundTransformation = false;
         uint32_t lastTransformation = 0, lastTransformationItemId = 0;
+
+        // Check if this chain leads to a grid item
+        bool leadsToGrid = false;
+        for(auto it = visited.begin(); it != visited.end(); ++it) {
+          if(std::find(gridItems.begin(), gridItems.end(), *it) != gridItems.end()) {
+            leadsToGrid = true;
+            break;
+          }
+        }
+
+        if(!leadsToGrid)
+          return; // Skip validation if not a grid input chain
+        out->covered();
 
         for(auto v : visited) {
           if(transformationItemIDs.find(v) != transformationItemIDs.end()) {
@@ -922,7 +957,6 @@ std::initializer_list<RuleDesc> rulesAvifGeneral = {
       for(auto &c : graph.connections) {
         std::list<uint32_t> visited;
 
-        out->covered();
         if(!graph.visit(c.src, visited, onError, check))
           out->error("Detected cycle in derivations: %s", graph.display(visited).c_str());
       }
