@@ -1,0 +1,35 @@
++--------------------------------------+
+|           gimi validation            |
++--------------------------------------+
+
+Specification description: GEOINT Imagery Media for ISR - NGA.STND.0076
+
+[gimi][Rule #0] Error: 'geo1' brand not found in 'ftyp' box
+[gimi][Rule #1] Error: 'unif' brand not found in 'ftyp' box
+
+========================================
+[gimi] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[gimi][Rule #0] Requirement NGA.STND.0076_1.0-02
+An NGA.STND.0076_1.0 file shall include the 'geo1' brand in the
+compatible brands list.
+
+
+[gimi][Rule #1] Requirement NGA.STND.0076_1.0-03
+An NGA.STND.0076_1.0 file shall include the 'unif' brand in the compatible brands list.
+
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

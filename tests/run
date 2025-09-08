@@ -18,6 +18,7 @@ function main
   run_test check_rules_folder heif mp4 ""
   run_test check_rules_folder miaf hif ""
   run_test check_rules_folder avif avif ""
+  run_test check_rules_folder gimi gimi ""
   run_test check_rules_folder av1hdr10plus obu "| grep -v isobmff"
   run_test check_rules_folder av1hdr10plus mp4 "| grep isobmff"
   run_test check_rules_folder av1isobmff mp4 ""

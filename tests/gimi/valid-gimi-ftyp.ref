@@ -1,0 +1,21 @@
++--------------------------------------+
+|           gimi validation            |
++--------------------------------------+
+
+Specification description: GEOINT Imagery Media for ISR - NGA.STND.0076
+
+========================================
+[gimi] No errors.
+========================================
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+
