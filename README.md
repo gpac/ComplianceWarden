@@ -21,33 +21,15 @@ An online version is available [here](https://gpac.github.io/ComplianceWarden-wa
 
 ### Usage
 
-[New option parser](https://github.com/gpac/ComplianceWarden/issues/48) (introduced in July 2023):
-
 ```
-$ bin/cw.exe -h
-Compliance Warden, version v32-master-rev14-g363d8d3
+Compliance Warden, version v35-master-rev24-g203f95e
 
 Usage:
-    -s, --spec                              Specification name.
-    -f, --format                            Output format: "raw" (default), or "json"
-    -l, --list                              List available specifications or available rules.
-    -v, --version                           Print version and exit.
-    -h, --help                              Print usage and exit.
-    -t, --test                              Don't print warnings when switching to legacy mode.
-```
-
-
-The old usage is deprecated and will be removed in v34:
-
-```
-$ bin/cw.exe
-Compliance Warden, version v32-master-rev14-g363d8d3
-
-Usage:
-- Run conformance:          bin/cw.exe <spec> input.mp4 [json]
-- List specifications:      bin/cw.exe list
-- List specification rules: bin/cw.exe <spec> list
-- Print version:            bin/cw.exe version
+    -s, --spec                              Specification name
+    -f, --format                            Output formats: "raw" (default), or "json"
+    -l, --list                              List available specifications, or available rules for a given specification (see "-s")
+    -v, --version                           Print version and exit
+    -h, --help                              Print usage and exit
 ```
 
 ### Specifications
