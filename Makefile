@@ -45,6 +45,7 @@ SRCS_CW+=\
   src/core/common_boxes.cpp\
   src/utils/tools.cpp\
   src/utils/av1_utils.cpp\
+  src/utils/iamf_utils.cpp\
 	src/utils/isobmff_get_data.cpp\
   src/utils/isobmff_utils.cpp\
   src/utils/isobmff_derivations.cpp\
@@ -58,6 +59,7 @@ SRCS_CW+=src/specs/heif/heif.cpp
 SRCS_CW+=src/specs/miaf/miaf.cpp src/specs/miaf/audio.cpp src/specs/miaf/brands.cpp\
   src/specs/miaf/derivations.cpp src/specs/miaf/colours.cpp src/specs/miaf/num_pixels.cpp\
   src/specs/miaf/profiles.cpp
+SRCS_CW+=src/specs/iamf/iamf.cpp
 
 SRCS_CW+=$(BIN)/cw_version.cpp
 

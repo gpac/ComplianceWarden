@@ -1,7 +1,9 @@
 // Box-parsers for MP4 and MPEG-DASH
 #include "common_boxes.h"
+#include "utils/iamf_utils.h"
 
 #include <cassert>
+#include <cstdio>
 #include <vector>
 
 #include "fourcc.h"
@@ -194,6 +196,31 @@ void parseSdtp(IReader *br)
     br->sym("sample_is_depended_on", 2);
     br->sym("sample_has_redundancy", 2);
   }
+}
+
+uint64_t leb128_read(IReader *br)
+{
+  uint64_t value = 0;
+
+  for(int i = 0; i < 8; i++) {
+    uint8_t leb128_byte = br->sym("leb128_byte", 8);
+    value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
+
+    if(!(leb128_byte & 0x80))
+      break;
+  }
+
+  return value;
+}
+
+void parseIacb(IReader *br)
+{
+  br->sym("configurationVersion", 8);
+  auto configOBUs_size = leb128_read(br);
+  parseIamfObus(br, configOBUs_size);
+
+  while(!br->empty())
+    br->sym("ignored_padding", 8);
 }
 
 void parseAvcC(IReader *br)
@@ -983,9 +1010,12 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
   case FOURCC("thmb"):
   case FOURCC("auxl"):
     return &parseReferenceTypeChildren;
+  case FOURCC("iamf"):
   case FOURCC("mp4a"):
   case FOURCC("twos"):
     return &parseAudioSampleEntry;
+  case FOURCC("iacb"):
+    return &parseIacb;
   case FOURCC("esds"):
     return &parseEsds;
   case FOURCC("stts"):
