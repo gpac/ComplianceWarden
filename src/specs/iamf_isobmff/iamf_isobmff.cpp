@@ -1,6 +1,6 @@
 #include "core/box_reader_impl.h"
-#include "core/spec.h"
 #include "core/fourcc.h"
+#include "core/spec.h"
 #include "utils/iamf_utils.h"
 #include "utils/isobmff_get_data.h"
 
@@ -10,7 +10,6 @@ std::vector<const Box *> findBoxes(const Box &root, uint32_t fourcc);
 
 namespace
 {
-
 
 std::initializer_list<RuleDesc> rulesIamfIsobmff = {
   { "Section 6.2.3\n"
@@ -60,13 +59,8 @@ std::initializer_list<RuleDesc> rulesIamfIsobmff = {
     } },
 };
 
-
 static const SpecDesc specIamfIsobmff = {
-  "iamf_isobmff",
-  "IAMF in ISOBMFF",
-  { "isobmff" },
-  rulesIamfIsobmff,
-  nullptr,
+  "iamf_isobmff", "IAMF in ISOBMFF", { "isobmff" }, rulesIamfIsobmff, nullptr,
 };
 
 static auto const registered = registerSpec(&specIamfIsobmff);

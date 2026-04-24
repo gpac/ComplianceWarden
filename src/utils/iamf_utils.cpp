@@ -5,6 +5,7 @@
 #include "core/spec.h"
 
 #include <memory>
+#include <set>
 
 #include "bit_reader_utils.h"
 
@@ -50,7 +51,26 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     parseIASequenceHeaderOBU(brBits.get(), state);
     br->sym("/seqhdr", 0);
     state.seenSequenceHeader = true;
+    if(state.obuCount == 0) {
+      state.firstObuIsSeqHdr = true;
+    }
+    if(state.seq_hdr_obu_trimming_status_flag == -1) {
+      state.seq_hdr_obu_trimming_status_flag = state.obu_trimming_status_flag;
+    }
     break;
+
+  case OBU_IA_Codec_Config: {
+    br->sym("codec_config", 0);
+    uint64_t codec_config_id = leb128_read(brBits.get());
+    uint32_t codec_id = brBits->sym("codec_id", 32);
+    uint64_t num_samples_per_frame = leb128_read(brBits.get());
+    int16_t audio_roll_distance = brBits->sym("audio_roll_distance", 16);
+
+    state.codecConfigs.push_back({ codec_config_id, codec_id, num_samples_per_frame, audio_roll_distance });
+
+    br->sym("/codec_config", 0);
+    break;
+  }
 
   default:
     break;
@@ -99,6 +119,55 @@ void validateFirstObuIsSeqHdr(const IamfState &state, IReport *out)
 {
   if(!state.seenSequenceHeader) {
     out->error("[Section 3.4] The first OBU in an IA Sequence SHALL have obu_type = OBU_IA_Sequence_Header");
+  }
+}
+
+void validateCodecConfig(const IamfState &state, IReport *out)
+{
+  std::set<uint64_t> unique_ids;
+  for(auto const &config : state.codecConfigs) {
+    if(!unique_ids.insert(config.codec_config_id).second) {
+      out->error(
+        "[Section 3.5] There SHALL be exactly one Codec Config OBU with a given identifier in a set of Descriptors.");
+    }
+
+    if(
+      config.codec_id != FOURCC("Opus") && config.codec_id != FOURCC("mp4a") && config.codec_id != FOURCC("fLaC") &&
+      config.codec_id != FOURCC("ipcm")) {
+      out->error("[Section 3.5] codec_id identifies an unsupported codec. Supported values: Opus, mp4a, fLaC, ipcm.");
+    }
+
+    if(config.num_samples_per_frame == 0) {
+      out->error("[Section 3.5] num_samples_per_frame SHALL NOT be set to zero.");
+    }
+
+    if(config.audio_roll_distance > 0) {
+      out->error(
+        "[Section 3.5] audio_roll_distance SHALL always be a negative value or zero, found %d",
+        config.audio_roll_distance);
+    }
+
+    if(config.codec_id == FOURCC("Opus")) {
+      int16_t expected_roll = -((3840 + config.num_samples_per_frame - 1) / config.num_samples_per_frame);
+      if(config.audio_roll_distance != expected_roll) {
+        out->error(
+          "[Section 3.5] audio_roll_distance SHALL be %d for Opus with num_samples_per_frame = %lu, found %d",
+          expected_roll, config.num_samples_per_frame, config.audio_roll_distance);
+      }
+    }
+
+    if(config.codec_id == FOURCC("mp4a")) {
+      if(config.audio_roll_distance != -1) {
+        out->error("[Section 3.5] audio_roll_distance SHALL be -1 for mp4a, found %d", config.audio_roll_distance);
+      }
+    }
+
+    if(config.codec_id == FOURCC("fLaC") || config.codec_id == FOURCC("ipcm")) {
+      if(config.audio_roll_distance != 0) {
+        out->error(
+          "[Section 3.5] audio_roll_distance SHALL be 0 for fLaC or ipcm, found %d", config.audio_roll_distance);
+      }
+    }
   }
 }
 

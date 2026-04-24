@@ -4,6 +4,7 @@
 #include "utils/iamf_utils.h"
 
 #include <cstring>
+#include <set>
 
 namespace
 {
@@ -53,6 +54,32 @@ std::initializer_list<RuleDesc> rulesIamf = {
         return;
       out->covered();
       validateSequenceHeaderIaCode(state, out);
+    } },
+  { "Section 3.5\n"
+    "Codec Config OBU checks:\n"
+    "- There SHALL be exactly one Codec Config OBU with a given identifier in a set of Descriptors.\n"
+    "- codec_id indicates a ‘four-character code’ (4CC) to identify the codec. Supported values: Opus, mp4a, fLaC, "
+    "ipcm.\n"
+    "- num_samples_per_frame SHALL NOT be set to zero.\n"
+    "- audio_roll_distance SHALL always be a negative value or zero.\n"
+    "- audio_roll_distance SHALL be set to -R when codec_id is set to Opus, where R = ceil(3840 / "
+    "num_samples_per_frame).\n"
+    "- audio_roll_distance SHALL be set to -1 when codec_id is set to mp4a.\n"
+    "- audio_roll_distance SHALL be set to 0 when codec_id is set to fLaC or ipcm.",
+    "assert-codec-config-obu",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateCodecConfig(state, out);
     } },
 };
 
