@@ -101,3 +101,13 @@ void validateFirstObuIsSeqHdr(const IamfState &state, IReport *out)
     out->error("[Section 3.4] The first OBU in an IA Sequence SHALL have obu_type = OBU_IA_Sequence_Header");
   }
 }
+
+void parseIacb(IReader *br)
+{
+  br->sym("configurationVersion", 8);
+  leb128_read(br); // configOBUs_size
+
+  IamfState state;
+  while(!br->empty())
+    parseIamfObus(br, state);
+}

@@ -28,3 +28,4 @@ int64_t parseIamfObus(IReader *br, IamfState &state);
 void validateFirstObuIsSeqHdr(const IamfState &state, IReport *out);
 void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
+void parseIacb(IReader *br);

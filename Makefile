@@ -60,6 +60,7 @@ SRCS_CW+=src/specs/miaf/miaf.cpp src/specs/miaf/audio.cpp src/specs/miaf/brands.
   src/specs/miaf/derivations.cpp src/specs/miaf/colours.cpp src/specs/miaf/num_pixels.cpp\
   src/specs/miaf/profiles.cpp
 SRCS_CW+=src/specs/iamf/iamf.cpp
+SRCS_CW+=src/specs/iamf_isobmff/iamf_isobmff.cpp
 
 SRCS_CW+=$(BIN)/cw_version.cpp
 

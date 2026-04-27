@@ -1,0 +1,30 @@
++--------------------------------------+
+|       iamf_isobmff validation        |
++--------------------------------------+
+
+Specification description: IAMF in ISOBMFF
+
+[iamf_isobmff][Rule #1] Error: Sample entry 'iamf' channelcount is 2, SHALL be 0
+[iamf_isobmff][Rule #1] Error: Sample entry 'iamf' samplerate is 44100, SHALL be 0
+
+========================================
+[iamf_isobmff] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf_isobmff][Rule #1] id: assert-iamf-audio-sample-entry-fields-zero
+Section 6.2.3
+The channelcount field of AudioSampleEntry SHALL be set to 0. The samplerate field of AudioSampleEntry SHALL be set to 0. There SHALL be no SamplingRateBox.
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+
