@@ -71,7 +71,8 @@ bool specCheck(const SpecDesc *spec, const char *filename, uint8_t *data, size_t
 
   if(
     extPos == std::string::npos ||
-    (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b")) {
+    (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b" &&
+     fnStr.substr(extPos) != ".iamf")) {
     try {
       probeIsobmff(data, size);
     } catch(...) {

@@ -1,40 +1,13 @@
 #include "av1_utils.h"
 
 #include "core/box_reader_impl.h" // BoxReader
+#include "bit_reader_utils.h"
 
 #include <memory> // make_unique
 #include <stdexcept>
 
 namespace
 {
-#define READ_UNTIL_NEXT_BYTE(readBits)                                                                                 \
-  if(readBits % 8) {                                                                                                   \
-    auto remainderBits = 8 - (readBits % 8);                                                                           \
-    br->sym("bits", remainderBits);                                                                                    \
-    readBits += remainderBits;                                                                                         \
-  }
-
-struct ReaderBits : IReader {
-  ReaderBits(IReader *delegate)
-      : delegate(delegate)
-  {
-  }
-
-  virtual ~ReaderBits() {}
-
-  bool empty() { return delegate->empty(); }
-
-  int64_t &sym(const char *name, int bits)
-  {
-    count += bits;
-    return delegate->sym(name, bits);
-  }
-
-  void box() { delegate->box(); }
-
-  IReader *delegate = nullptr;
-  int64_t count = 0;
-};
 
 void parseAv1ColorConfig(ReaderBits *br, int64_t seq_profile, AV1CodecConfigurationRecord &av1c, int64_t &color_range)
 {
@@ -320,20 +293,7 @@ int parseAv1UncompressedHeader(IReader *reader, Av1State const &state)
   }
 }
 
-uint64_t leb128_read(IReader *br)
-{
-  uint64_t value = 0;
 
-  for(int i = 0; i < 8; i++) {
-    uint8_t leb128_byte = br->sym("leb128_byte", 8);
-    value |= (((uint64_t)(leb128_byte & 0x7f)) << (i * 7));
-
-    if(!(leb128_byte & 0x80))
-      break;
-  }
-
-  return value;
-}
 
 void parseMetadataItutT35(ReaderBits *br, Av1State & /*state*/)
 {

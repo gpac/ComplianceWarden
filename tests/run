@@ -22,6 +22,7 @@ function main
   run_test check_rules_folder av1hdr10plus mp4 "| grep isobmff"
   run_test check_rules_folder av1isobmff mp4 ""
   run_test miaf_file_extension
+  run_test check_rules_folder iamf iamf ""
 
   echo "OK"
 }
