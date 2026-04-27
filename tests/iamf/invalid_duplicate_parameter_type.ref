@@ -1,0 +1,28 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #4] Error: [Section 3.6] The parameter type SHALL NOT be duplicated in one Audio Element OBU.
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #4] id: assert-audio-element-obu
+Section 3.6
+Audio Element OBU checks:
+- audio_element_id SHALL be unique within an IA Sequence.
+- num_substreams SHALL NOT be set to 0.
+- When audio_element_type = 0 (CHANNEL_BASED), num_parameters SHALL be set to 0, 1, or 2.
+- When audio_element_type = 1 (SCENE_BASED), num_parameters SHALL be set to 0.
+- The type PARAMETER_DEFINITION_MIX_GAIN SHALL NOT be present in Audio Element OBU.
+- The parameter type SHALL NOT be duplicated in one Audio Element OBU.
+- When codec_id = fLaC or ipcm, the type PARAMETER_DEFINITION_RECON_GAIN SHALL NOT be present.
+- When num_layers > 1, the type PARAMETER_DEFINITION_RECON_GAIN SHALL be present.
+- When highest loudspeaker_layout does not correspond to Mono, Stereo, or 3.1.2 and num_layers > 1, both PARAMETER_DEFINITION_DEMIXING and PARAMETER_DEFINITION_RECON_GAIN SHALL be present.
+

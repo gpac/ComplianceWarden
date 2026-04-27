@@ -19,6 +19,140 @@ void parseIASequenceHeaderOBU(ReaderBits *br, IamfState &state)
   br->sym("additional_profile", 8);
 }
 
+void parseParamDefinition(ReaderBits *br)
+{
+  leb128_read(br); // parameter_id
+  leb128_read(br); // parameter_rate
+  auto param_definition_mode = br->sym("param_definition_mode", 1);
+  br->sym("reserved", 7);
+  if(param_definition_mode == 0) {
+    leb128_read(br); // duration
+    auto constant_subblock_duration = leb128_read(br);
+    if(constant_subblock_duration == 0) {
+      auto num_subblocks = leb128_read(br);
+      for(uint64_t i = 0; i < num_subblocks; i++) {
+        leb128_read(br); // subblock_duration
+      }
+    }
+  }
+}
+
+void parseAudioElementParams(ReaderBits *br, AudioElementInfo &info)
+{
+  info.num_parameters = leb128_read(br);
+  for(uint64_t i = 0; i < info.num_parameters; i++) {
+    auto param_definition_type = leb128_read(br);
+    info.param_definition_types.push_back(param_definition_type);
+
+    // Parse standard fields only for known parameter types (types <= 2)
+    if(param_definition_type <= 2) {
+      parseParamDefinition(br);
+    }
+
+    if(param_definition_type == PARAMETER_DEFINITION_DEMIXING) {
+      br->sym("dmixp_mode", 3);
+      br->sym("reserved", 5);
+      br->sym("default_w", 4);
+      br->sym("reserved", 4);
+    } else if(param_definition_type == PARAMETER_DEFINITION_RECON_GAIN) {
+      // No additional fields
+    } else if(param_definition_type > 2) {
+      auto param_definition_size = leb128_read(br);
+      for(uint64_t j = 0; j < param_definition_size; j++) {
+        br->sym("param_definition_byte", 8);
+      }
+    }
+  }
+}
+
+void parseScalableChannelLayoutConfig(ReaderBits *br, AudioElementInfo &info)
+{
+  info.scalable_channel_layout_config.num_layers = br->sym("num_layers", 3);
+  br->sym("reserved", 5);
+  for(int i = 1; i <= info.scalable_channel_layout_config.num_layers; i++) {
+    ChannelAudioLayerConfig layer;
+    layer.loudspeaker_layout = br->sym("loudspeaker_layout", 4);
+
+    if(layer.loudspeaker_layout > 9 && layer.loudspeaker_layout != 15) {
+      fprintf(stderr, "Warning: Unknown loudspeaker_layout %d. Skipping remaining layers.\n", layer.loudspeaker_layout);
+      break;
+    }
+
+    layer.output_gain_is_present_flag = br->sym("output_gain_is_present_flag", 1);
+    layer.recon_gain_is_present_flag = br->sym("recon_gain_is_present_flag", 1);
+    br->sym("reserved", 2);
+    layer.substream_count = br->sym("substream_count", 8);
+    layer.coupled_substream_count = br->sym("coupled_substream_count", 8);
+    if(layer.output_gain_is_present_flag == 1) {
+      layer.output_gain_flags = br->sym("output_gain_flags", 6);
+      br->sym("reserved", 2);
+      layer.output_gain = br->sym("output_gain", 16);
+    }
+    if(i == 1 && layer.loudspeaker_layout == 15) {
+      layer.expanded_loudspeaker_layout = br->sym("expanded_loudspeaker_layout", 8);
+    }
+    info.scalable_channel_layout_config.channel_audio_layer_config.push_back(layer);
+  }
+}
+
+void parseAmbisonicsConfig(ReaderBits *br, AudioElementInfo &info)
+{
+  auto &ambisonics_config = info.ambisonics_config;
+  ambisonics_config.ambisonics_mode = leb128_read(br);
+  if(ambisonics_config.ambisonics_mode == 0) { // MONO
+    auto &mono_config = ambisonics_config.mono_config;
+    mono_config.output_channel_count = br->sym("output_channel_count", 8);
+    mono_config.substream_count = br->sym("substream_count", 8);
+    for(int j = 0; j < mono_config.output_channel_count; j++) {
+      mono_config.channel_mapping.push_back(br->sym("channel_mapping", 8));
+    }
+  } else if(ambisonics_config.ambisonics_mode == 1) { // PROJECTION
+    auto &projection_config = ambisonics_config.projection_config;
+    projection_config.output_channel_count = br->sym("output_channel_count", 8);
+    projection_config.substream_count = br->sym("substream_count", 8);
+    projection_config.coupled_substream_count = br->sym("coupled_substream_count", 8);
+    int rows = projection_config.substream_count + projection_config.coupled_substream_count;
+    int cols = projection_config.output_channel_count;
+    projection_config.demixing_matrix.resize(rows, std::vector<int16_t>(cols));
+    for(int r = 0; r < rows; r++) {
+      for(int c = 0; c < cols; c++) {
+        projection_config.demixing_matrix[r][c] = br->sym("demixing_matrix_element", 16);
+      }
+    }
+  }
+}
+
+void parseAudioElementOBU(ReaderBits *br, AudioElementInfo &info)
+{
+  info.audio_element_id = leb128_read(br);
+  info.audio_element_type = br->sym("audio_element_type", 3);
+  br->sym("reserved", 5);
+
+  if(info.audio_element_type > 1) {
+    fprintf(stderr, "Warning: Unknown audio_element_type %d. Ignoring Audio Element OBU.\n", info.audio_element_type);
+    info.ignored = true;
+    return;
+  }
+
+  info.codec_config_id = leb128_read(br);
+  info.num_substreams = leb128_read(br);
+  for(uint64_t i = 0; i < info.num_substreams; i++) {
+    info.audio_substream_ids.push_back(leb128_read(br));
+  }
+
+  parseAudioElementParams(br, info);
+
+  if(info.audio_element_type == AUDIO_ELEMENT_CHANNEL_BASED) {
+    parseScalableChannelLayoutConfig(br, info);
+  } else if(info.audio_element_type == AUDIO_ELEMENT_SCENE_BASED) {
+    parseAmbisonicsConfig(br, info);
+  } else {
+    auto audio_element_config_size = leb128_read(br);
+    for(uint64_t j = 0; j < audio_element_config_size; j++) {
+      br->sym("audio_element_config_byte", 8);
+    }
+  }
+}
 } // namespace
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
@@ -30,7 +164,6 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
   auto obu_extension_flag = br->sym("obu_extension_flag", 1);
 
   uint64_t obuSize = leb128_read(br);
-
   auto brBits = std::make_unique<ReaderBits>(br);
 
   if(state.obu_trimming_status_flag) {
@@ -72,24 +205,27 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     break;
   }
 
+  case OBU_IA_Audio_Element: {
+    br->sym("audio_element", 0);
+    AudioElementInfo info;
+    parseAudioElementOBU(brBits.get(), info);
+    state.audioElements.push_back(info);
+    br->sym("/audio_element", 0);
+    break;
+  }
+
   default:
     break;
   }
 
   state.obuCount++;
 
-  int payloadBytesRead = brBits->count / 8;
-  int remainingBytes = obuSize - payloadBytesRead;
-
-  while(remainingBytes-- > 0) {
-    if(br->empty()) {
-      fprintf(stderr, "Incomplete OBU (remaining to read=%d)\n", remainingBytes + 1);
-      return obu_type;
-    }
-    auto boxReader = dynamic_cast<BoxReader *>(br);
-    if(boxReader) {
-      boxReader->br.m_pos += 8;
-    }
+  int64_t remainingBits = (obuSize * 8) - brBits->count;
+  ENSURE(remainingBits >= 0, "Read %lld bits more than reported OBU size", (long long)(-remainingBits));
+  auto boxReader = dynamic_cast<BoxReader *>(br);
+  if(boxReader) {
+    ENSURE(boxReader->br.m_pos + remainingBits <= boxReader->br.size * 8, "OBU size exceeds box size");
+    boxReader->br.m_pos += remainingBits;
   }
 
   return obu_type;
@@ -171,12 +307,123 @@ void validateCodecConfig(const IamfState &state, IReport *out)
   }
 }
 
+void validateAudioElement(const IamfState &state, IReport *out)
+{
+  std::set<uint64_t> unique_ids;
+  for(auto const &elem : state.audioElements) {
+    if(!unique_ids.insert(elem.audio_element_id).second) {
+      out->error("[Section 3.6] audio_element_id SHALL be unique within an IA Sequence.");
+    }
+
+    if(elem.ignored)
+      continue;
+
+    if(elem.num_substreams == 0) {
+      out->error("[Section 3.6] num_substreams SHALL NOT be set to 0.");
+    }
+
+    if(elem.audio_element_type == AUDIO_ELEMENT_CHANNEL_BASED) {
+      if(elem.num_parameters > 2) {
+        out->error(
+          "[Section 3.6] When audio_element_type = 0, num_parameters SHALL be set to 0, 1, or 2. Found %lu",
+          elem.num_parameters);
+      }
+    } else if(elem.audio_element_type == AUDIO_ELEMENT_SCENE_BASED) {
+      if(elem.num_parameters != 0) {
+        out->error(
+          "[Section 3.6] When audio_element_type = 1, num_parameters SHALL be set to 0. Found %lu",
+          elem.num_parameters);
+      }
+    }
+
+    std::set<uint64_t> param_types;
+    bool has_mix_gain = false;
+    bool has_demixing = false;
+    bool has_recon_gain = false;
+
+    for(auto type : elem.param_definition_types) {
+      if(type == PARAMETER_DEFINITION_MIX_GAIN)
+        has_mix_gain = true;
+      if(type == PARAMETER_DEFINITION_DEMIXING)
+        has_demixing = true;
+      if(type == PARAMETER_DEFINITION_RECON_GAIN)
+        has_recon_gain = true;
+
+      if(!param_types.insert(type).second) {
+        out->error("[Section 3.6] The parameter type SHALL NOT be duplicated in one Audio Element OBU.");
+      }
+    }
+
+    if(has_mix_gain) {
+      out->error("[Section 3.6] The type PARAMETER_DEFINITION_MIX_GAIN SHALL NOT be present in Audio Element OBU.");
+    }
+
+    uint32_t codec_id = 0;
+    for(auto const &config : state.codecConfigs) {
+      if(config.codec_config_id == elem.codec_config_id) {
+        codec_id = config.codec_id;
+        break;
+      }
+    }
+
+    if(codec_id == FOURCC("fLaC") || codec_id == FOURCC("ipcm")) {
+      if(has_recon_gain) {
+        out->error(
+          "[Section 3.6] When codec_id = fLaC or ipcm, the type PARAMETER_DEFINITION_RECON_GAIN SHALL NOT be present.");
+      }
+    }
+
+    if(elem.audio_element_type == AUDIO_ELEMENT_CHANNEL_BASED) {
+      if(elem.scalable_channel_layout_config.num_layers > 1) {
+        if(codec_id != FOURCC("fLaC") && codec_id != FOURCC("ipcm")) {
+          if(!has_recon_gain) {
+            out->error("[Section 3.6] When num_layers > 1, the type PARAMETER_DEFINITION_RECON_GAIN SHALL be present.");
+          }
+        }
+      }
+
+      uint8_t highest_layout = 0;
+      if(!elem.scalable_channel_layout_config.channel_audio_layer_config.empty()) {
+        highest_layout = elem.scalable_channel_layout_config.channel_audio_layer_config.back().loudspeaker_layout;
+      }
+
+      if(elem.scalable_channel_layout_config.num_layers > 1) {
+        if(highest_layout != 0 && highest_layout != 1 && highest_layout != 8) {
+          if(!has_demixing) {
+            out->error(
+              "[Section 3.6] When the highest loudspeaker_layout of the scalable channel audio (i.e., num_layers > 1) "
+              "is greater than 3.1.2ch, PARAMETER_DEFINITION_DEMIXING SHALL be present.");
+          }
+          if(codec_id != FOURCC("fLaC") && codec_id != FOURCC("ipcm")) {
+            if(!has_recon_gain) {
+              out->error(
+                "[Section 3.6] When the highest loudspeaker_layout of the scalable channel audio (i.e., num_layers > "
+                "1) is greater than 3.1.2ch, PARAMETER_DEFINITION_RECON_GAIN SHALL be present.");
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void parseIacb(IReader *br)
 {
   br->sym("configurationVersion", 8);
   leb128_read(br); // configOBUs_size
 
   IamfState state;
-  while(!br->empty())
-    parseIamfObus(br, state);
+  try {
+    while(!br->empty()) {
+      if(parseIamfObus(br, state) == -1) {
+        break;
+      }
+    }
+  } catch(const std::exception &e) {
+    fprintf(stderr, "Exception caught during IAMF OBU parsing: %s. Skipping remaining data.\n", e.what());
+    auto boxReader = dynamic_cast<BoxReader *>(br);
+    if(boxReader) {
+      boxReader->br.m_pos = boxReader->br.size * 8;
+    }
+  }
 }

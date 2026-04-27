@@ -81,6 +81,32 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateCodecConfig(state, out);
     } },
+  { "Section 3.6\n"
+    "Audio Element OBU checks:\n"
+    "- audio_element_id SHALL be unique within an IA Sequence.\n"
+    "- num_substreams SHALL NOT be set to 0.\n"
+    "- When audio_element_type = 0 (CHANNEL_BASED), num_parameters SHALL be set to 0, 1, or 2.\n"
+    "- When audio_element_type = 1 (SCENE_BASED), num_parameters SHALL be set to 0.\n"
+    "- The type PARAMETER_DEFINITION_MIX_GAIN SHALL NOT be present in Audio Element OBU.\n"
+    "- The parameter type SHALL NOT be duplicated in one Audio Element OBU.\n"
+    "- When codec_id = fLaC or ipcm, the type PARAMETER_DEFINITION_RECON_GAIN SHALL NOT be present.\n"
+    "- When num_layers > 1, the type PARAMETER_DEFINITION_RECON_GAIN SHALL be present.\n"
+    "- When highest loudspeaker_layout does not correspond to Mono, Stereo, or 3.1.2 and num_layers > 1, both "
+    "PARAMETER_DEFINITION_DEMIXING and PARAMETER_DEFINITION_RECON_GAIN SHALL be present.",
+    "assert-audio-element-obu",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+      validateAudioElement(state, out);
+    } },
 };
 
 static const SpecDesc specIamf = {
