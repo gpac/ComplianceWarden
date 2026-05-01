@@ -22,6 +22,16 @@ enum { AUDIO_ELEMENT_CHANNEL_BASED = 0, AUDIO_ELEMENT_SCENE_BASED = 1 };
 
 enum { PARAMETER_DEFINITION_MIX_GAIN = 0, PARAMETER_DEFINITION_DEMIXING = 1, PARAMETER_DEFINITION_RECON_GAIN = 2 };
 
+struct ParamDefinition {
+  uint64_t parameter_id;
+  uint64_t parameter_rate;
+  uint8_t param_definition_mode;
+  uint64_t duration = 0;
+  uint64_t constant_subblock_duration = 0;
+  uint64_t num_subblocks = 0;
+  std::vector<uint64_t> subblock_durations;
+};
+
 struct CodecConfigInfo {
   uint64_t codec_config_id;
   uint32_t codec_id;
@@ -75,6 +85,7 @@ struct AudioElementInfo {
   std::vector<uint64_t> audio_substream_ids;
   uint64_t num_parameters;
   std::vector<uint64_t> param_definition_types;
+  std::vector<ParamDefinition> param_definitions;
   // For CHANNEL_BASED
   ScalableChannelLayoutConfig scalable_channel_layout_config;
   // For SCENE_BASED
@@ -105,4 +116,5 @@ void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
 void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);
+void validateParameterDefinitions(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

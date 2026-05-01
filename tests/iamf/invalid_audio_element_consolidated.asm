@@ -33,12 +33,12 @@ db 0         ; dmixp_mode = 0, reserved = 0
 db 0         ; default_w = 0, reserved = 0
 ; Parameter 2 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
-db 0         ; parameter_id = 0
+db 1         ; parameter_id = 1
 db 0         ; parameter_rate = 0
 db 10000000b ; param_definition_mode = 1, reserved = 0
 ; Parameter 3 (Type 3)
 db 3         ; param_definition_type = 3
-db 0         ; parameter_id = 0
+db 2         ; parameter_id = 2
 db 0         ; parameter_rate = 0
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 1         ; param_definition_size = 1
@@ -56,7 +56,7 @@ db 1         ; audio_substream_id = 1
 db 1         ; num_parameters = 1 -> INVALID!
 ; Parameter 1 (Demixing)
 db 1         ; param_definition_type = 1 (Demixing)
-db 0         ; parameter_id = 0
+db 3         ; parameter_id = 3
 db 0         ; parameter_rate = 0
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; dmixp_mode = 0, reserved = 0
@@ -76,7 +76,7 @@ db 1         ; num_substreams = 1
 db 1         ; audio_substream_id = 1
 db 1         ; num_parameters = 1
 db 0         ; param_definition_type = 0 (Mix Gain) -> INVALID!
-db 0         ; parameter_id = 0
+db 5         ; parameter_id = 5
 db 0         ; parameter_rate = 0
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; num_layers = 0
@@ -113,7 +113,7 @@ db 2         ; audio_substream_id = 2
 db 1         ; num_parameters = 1 -> INVALID (missing DEMIXING)
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
-db 0         ; parameter_id = 0
+db 6         ; parameter_id = 6
 db 0         ; parameter_rate = 0
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 01000000b ; num_layers = 2, reserved = 0

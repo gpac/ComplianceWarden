@@ -19,22 +19,24 @@ void parseIASequenceHeaderOBU(ReaderBits *br, IamfState &state)
   br->sym("additional_profile", 8);
 }
 
-void parseParamDefinition(ReaderBits *br)
+ParamDefinition parseParamDefinition(ReaderBits *br)
 {
-  leb128_read(br); // parameter_id
-  leb128_read(br); // parameter_rate
-  auto param_definition_mode = br->sym("param_definition_mode", 1);
+  ParamDefinition def;
+  def.parameter_id = leb128_read(br);
+  def.parameter_rate = leb128_read(br);
+  def.param_definition_mode = br->sym("param_definition_mode", 1);
   br->sym("reserved", 7);
-  if(param_definition_mode == 0) {
-    leb128_read(br); // duration
-    auto constant_subblock_duration = leb128_read(br);
-    if(constant_subblock_duration == 0) {
-      auto num_subblocks = leb128_read(br);
-      for(uint64_t i = 0; i < num_subblocks; i++) {
-        leb128_read(br); // subblock_duration
+  if(def.param_definition_mode == 0) {
+    def.duration = leb128_read(br);
+    def.constant_subblock_duration = leb128_read(br);
+    if(def.constant_subblock_duration == 0) {
+      def.num_subblocks = leb128_read(br);
+      for(uint64_t i = 0; i < def.num_subblocks; i++) {
+        def.subblock_durations.push_back(leb128_read(br));
       }
     }
   }
+  return def;
 }
 
 void parseAudioElementParams(ReaderBits *br, AudioElementInfo &info)
@@ -46,7 +48,7 @@ void parseAudioElementParams(ReaderBits *br, AudioElementInfo &info)
 
     // Parse standard fields only for known parameter types (types <= 2)
     if(param_definition_type <= 2) {
-      parseParamDefinition(br);
+      info.param_definitions.push_back(parseParamDefinition(br));
     }
 
     if(param_definition_type == PARAMETER_DEFINITION_DEMIXING) {
@@ -400,6 +402,44 @@ void validateAudioElement(const IamfState &state, IReport *out)
                 "[Section 3.6] When the highest loudspeaker_layout of the scalable channel audio (i.e., num_layers > "
                 "1) is greater than 3.1.2ch, PARAMETER_DEFINITION_RECON_GAIN SHALL be present.");
             }
+          }
+        }
+      }
+    }
+  }
+}
+
+void validateParameterDefinitions(const IamfState &state, IReport *out)
+{
+  std::set<uint64_t> unique_parameter_ids;
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+
+    for(auto const &param : elem.param_definitions) {
+      if(!unique_parameter_ids.insert(param.parameter_id).second) {
+        out->error(
+          "[Section 3.6.1] There SHALL be one unique parameter_id per Parameter Substream. Duplicate id %lu",
+          param.parameter_id);
+      }
+
+      if(param.param_definition_mode == 0) {
+        if(param.duration == 0) {
+          out->error("[Section 3.6.1] duration SHALL NOT be set to 0 when param_definition_mode is 0.");
+        }
+
+        if(param.constant_subblock_duration == 0) {
+          uint64_t sum_durations = 0;
+          for(auto dur : param.subblock_durations) {
+            if(dur == 0) {
+              out->error("[Section 3.6.1] subblock_duration SHALL NOT be set to 0.");
+            }
+            sum_durations += dur;
+          }
+          if(sum_durations != param.duration) {
+            out->error(
+              "[Section 3.6.1] The summation of all subblock_duration (%lu) SHALL be equal to duration (%lu).",
+              sum_durations, param.duration);
           }
         }
       }

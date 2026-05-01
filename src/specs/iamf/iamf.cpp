@@ -107,6 +107,28 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
       validateAudioElement(state, out);
     } },
+  { "Section 3.6.1\n"
+    "Parameter Definition Syntax and Semantics checks:\n"
+    "- There SHALL be one unique parameter_id per Parameter Substream.\n"
+    "- duration SHALL NOT be set to 0.\n"
+    "- When constant_subblock_duration is equal to 0, the summation of all subblock_duration in this parameter block "
+    "SHALL be equal to duration.\n"
+    "- subblock_duration SHALL NOT be set to 0.",
+    "assert-parameter-definition",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateParameterDefinitions(state, out);
+    } },
 };
 
 static const SpecDesc specIamf = {
