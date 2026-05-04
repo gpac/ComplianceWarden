@@ -24,9 +24,24 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 [iamf][Rule #6] Error: [Section 3.6.2] substream_count SHALL NOT be set to 0 for any layer.
 [iamf][Rule #6] Error: [Section 3.6.2] The sum of substream_count across all layers (0) SHALL be equal to num_substreams of the Audio Element (1).
 [iamf][Rule #6] Error: [Section 3.6.2] substream_count (1) SHALL be greater than or equal to coupled_substream_count (2) for all layers.
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 2 has same counts as previous (1,0,0)
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 3 has same counts as previous (1,0,0)
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 4 has same counts as previous (1,0,0)
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 5 has same counts as previous (1,0,0)
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 6 has same counts as previous (1,0,0)
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 7 has same counts as previous (1,0,0)
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 2 (layout 1) has coupled_substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 2 (layout 0) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 3 (layout 0) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 4 (layout 0) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 5 (layout 0) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 6 (layout 0) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 7 (layout 0) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 0, expected 1
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has coupled_substream_count 2, expected 0
 
 ========================================
-[iamf] 19 error(s), 0 warning(s).
+[iamf] 34 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -54,4 +69,15 @@ Scalable Channel Layout Config checks:
 - substream_count SHALL be greater than or equal to coupled_substream_count for all layers.
 - substream_count SHALL NOT be set to 0 for any layer.
 - The sum of substream_count across all layers SHALL be equal to num_substreams of the Audio Element.
+
+[iamf][Rule #7] id: assert-scalable-channel-layout-generation
+Section 3.6.3
+Channel Layout Generation Rule checks:
+- For scalable channel audio, channel layouts SHALL follow non-decreasing order of surround, LFE and height channels.
+- Duplicate layers are NOT allowed.
+
+[iamf][Rule #8] id: assert-scalable-channel-group-format
+Section 3.6.3
+Channel Group Format checks:
+- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
 

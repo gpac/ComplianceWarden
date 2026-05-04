@@ -118,4 +118,6 @@ void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);
 void validateParameterDefinitions(const IamfState &state, IReport *out);
 void validateScalableChannelLayoutConfig(const IamfState &state, IReport *out);
+void validateScalableChannelLayoutGeneration(const IamfState &state, IReport *out);
+void validateScalableChannelGroupFormat(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

@@ -160,6 +160,156 @@ void parseAudioElementOBU(ReaderBits *br, AudioElementInfo &info)
     }
   }
 }
+bool getXYZChannelCounts(uint8_t loudspeaker_layout, int &x, int &y, int &z)
+{
+  switch(loudspeaker_layout) {
+  case 0:
+    x = 1;
+    y = 0;
+    z = 0;
+    return true; // Mono
+  case 1:
+    x = 2;
+    y = 0;
+    z = 0;
+    return true; // Stereo
+  case 2:
+    x = 5;
+    y = 1;
+    z = 0;
+    return true; // 5.1
+  case 3:
+    x = 5;
+    y = 1;
+    z = 2;
+    return true; // 5.1.2
+  case 4:
+    x = 5;
+    y = 1;
+    z = 4;
+    return true; // 5.1.4
+  case 5:
+    x = 7;
+    y = 1;
+    z = 0;
+    return true; // 7.1
+  case 6:
+    x = 7;
+    y = 1;
+    z = 2;
+    return true; // 7.1.2
+  case 7:
+    x = 7;
+    y = 1;
+    z = 4;
+    return true; // 7.1.4
+  case 8:
+    x = 3;
+    y = 1;
+    z = 2;
+    return true; // 3.1.2
+  default:
+    return false;
+  }
+}
+
+bool getExpectedSubstreamCountsForScalableLayer(int layout_prev, int layout_curr, int &num_subs, int &num_coupled)
+{
+  num_subs = 0; // number of substreams
+  num_coupled = 0; // number of coupled substreams
+
+  if(layout_prev == -1) {
+    switch(layout_curr) {
+    case 0:
+      num_subs = 1;
+      num_coupled = 0;
+      return true; // Mono
+    case 1:
+      num_subs = 1;
+      num_coupled = 1;
+      return true; // Stereo
+    case 2:
+      num_subs = 4;
+      num_coupled = 2;
+      return true; // 5.1
+    case 3:
+      num_subs = 5;
+      num_coupled = 3;
+      return true; // 5.1.2
+    case 4:
+      num_subs = 6;
+      num_coupled = 4;
+      return true; // 5.1.4
+    case 5:
+      num_subs = 5;
+      num_coupled = 3;
+      return true; // 7.1
+    case 6:
+      num_subs = 6;
+      num_coupled = 4;
+      return true; // 7.1.2
+    case 7:
+      num_subs = 7;
+      num_coupled = 5;
+      return true; // 7.1.4
+    case 8:
+      num_subs = 4;
+      num_coupled = 2;
+      return true; // 3.1.2
+    default:
+      return false;
+    }
+  }
+
+  int x_prev, y_prev, z_prev;
+  int x_curr, y_curr, z_curr;
+  if(!getXYZChannelCounts(layout_prev, x_prev, y_prev, z_prev))
+    return false;
+  if(!getXYZChannelCounts(layout_curr, x_curr, y_curr, z_curr))
+    return false;
+
+  int dx = x_curr - x_prev;
+  int dy = y_curr - y_prev;
+  int dz = z_curr - z_prev;
+
+  if(dx > 0) {
+    if(x_prev == 2 && x_curr == 5) {
+      num_subs += 2;
+      num_coupled += 1;
+    } else if(x_prev == 5 && x_curr == 7) {
+      num_subs += 1;
+      num_coupled += 1;
+    } else if(x_prev == 1 && x_curr == 2) {
+      num_subs += 1;
+      num_coupled += 0;
+    } else if(x_prev == 3 && x_curr == 5) {
+      num_subs += 1;
+      num_coupled += 1;
+    } else {
+      return false;
+    }
+  }
+
+  if(dy > 0) {
+    num_subs += 1;
+    num_coupled += 0;
+  }
+
+  if(dz > 0) {
+    if(dz == 2) {
+      num_subs += 1;
+      num_coupled += 1;
+    } else if(dz == 4) {
+      num_subs += 2;
+      num_coupled += 2;
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 } // namespace
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
@@ -506,6 +656,79 @@ void validateScalableChannelLayoutConfig(const IamfState &state, IReport *out)
         "[Section 3.6.2] The sum of substream_count across all layers (%lu) SHALL be equal to num_substreams of the "
         "Audio Element (%lu).",
         total_substream_count, elem.num_substreams);
+    }
+  }
+}
+
+void validateScalableChannelLayoutGeneration(const IamfState &state, IReport *out)
+{
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+    if(elem.audio_element_type != AUDIO_ELEMENT_CHANNEL_BASED)
+      continue;
+
+    auto const &config = elem.scalable_channel_layout_config;
+    if(config.num_layers <= 1)
+      continue;
+
+    // x: surround channel count, y: LFE channel count, z: height channel count
+    int prev_x = -1, prev_y = -1, prev_z = -1;
+    for(size_t i = 0; i < config.channel_audio_layer_config.size(); ++i) {
+      auto const &layer = config.channel_audio_layer_config[i];
+      int x = 0, y = 0, z = 0;
+      if(!getXYZChannelCounts(layer.loudspeaker_layout, x, y, z)) {
+        continue;
+      }
+
+      if(i > 0) {
+        if(x < prev_x || y < prev_y || z < prev_z) {
+          out->error(
+            "[Section 3.6.3] Channel layouts SHALL follow non-decreasing order. Layer %zu has (%d,%d,%d), previous "
+            "had (%d,%d,%d)",
+            i + 1, x, y, z, prev_x, prev_y, prev_z);
+        }
+        if(x == prev_x && y == prev_y && z == prev_z) {
+          out->error(
+            "[Section 3.6.3] Duplicate layers are NOT allowed. Layer %zu has same counts as previous (%d,%d,%d)", i + 1,
+            x, y, z);
+        }
+      }
+      prev_x = x;
+      prev_y = y;
+      prev_z = z;
+    }
+  }
+}
+
+void validateScalableChannelGroupFormat(const IamfState &state, IReport *out)
+{
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+    if(elem.audio_element_type != AUDIO_ELEMENT_CHANNEL_BASED)
+      continue;
+
+    auto const &config = elem.scalable_channel_layout_config;
+
+    int prev_layout = -1;
+    for(size_t i = 0; i < config.channel_audio_layer_config.size(); ++i) {
+      auto const &layer = config.channel_audio_layer_config[i];
+
+      int num_subs = 0, num_coupled = 0;
+      if(getExpectedSubstreamCountsForScalableLayer(prev_layout, layer.loudspeaker_layout, num_subs, num_coupled)) {
+        if(layer.substream_count != num_subs) {
+          out->error(
+            "[Section 3.6.3] Layer %zu (layout %u) has substream_count %u, expected %d", i + 1,
+            layer.loudspeaker_layout, layer.substream_count, num_subs);
+        }
+        if(layer.coupled_substream_count != num_coupled) {
+          out->error(
+            "[Section 3.6.3] Layer %zu (layout %u) has coupled_substream_count %u, expected %d", i + 1,
+            layer.loudspeaker_layout, layer.coupled_substream_count, num_coupled);
+        }
+      }
+      prev_layout = layer.loudspeaker_layout;
     }
   }
 }

@@ -20,7 +20,6 @@ bool probeIamf(Box const &root, BoxReader &br, IamfState &state, IReport *out)
   parseIamfObus(&br, state);
   return true;
 }
-
 std::initializer_list<RuleDesc> rulesIamf = {
   { "Section 3.2\n"
     "obu_trimming_status_flag is set to 0 for an IA Sequence Header OBU.",
@@ -152,6 +151,45 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateScalableChannelLayoutConfig(state, out);
+    } },
+  { "Section 3.6.3\n"
+    "Channel Layout Generation Rule checks:\n"
+    "- For scalable channel audio, channel layouts SHALL follow non-decreasing order of surround, LFE and height "
+    "channels.\n"
+    "- Duplicate layers are NOT allowed.",
+    "assert-scalable-channel-layout-generation",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateScalableChannelLayoutGeneration(state, out);
+    } },
+  { "Section 3.6.3\n"
+    "Channel Group Format checks:\n"
+    "- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived "
+    "from layout transitions.",
+    "assert-scalable-channel-group-format",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateScalableChannelGroupFormat(state, out);
     } },
 };
 
