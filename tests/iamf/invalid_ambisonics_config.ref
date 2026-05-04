@@ -1,0 +1,26 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #9] Error: [Section 3.6.4] ambisonics_mode SHALL be 0 or 1. Found 2
+[iamf][Rule #9] Error: [Section 3.6.4] output_channel_count (2) SHALL be (1 + n)^2 for n = 0, 1, 2, ..., 14.
+[iamf][Rule #9] Error: [Section 3.6.4] substream_count (1) SHALL be the same as num_substreams (2) in this OBU.
+[iamf][Rule #9] Error: [Section 3.6.4] coupled_substream_count (2) SHALL be less than or equal to substream_count (1).
+
+========================================
+[iamf] 4 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #9] id: assert-ambisonics-config
+Section 3.6.4
+Ambisonics Config checks:
+- ambisonics_mode SHALL be 0 (MONO) or 1 (PROJECTION).
+- output_channel_count SHALL be (1 + n)^2 for n = 0, 1, 2, ..., 14.
+- substream_count SHALL be the same as num_substreams in this OBU.
+- For PROJECTION mode, coupled_substream_count SHALL be less than or equal to substream_count.
+

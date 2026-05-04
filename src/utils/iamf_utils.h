@@ -120,4 +120,5 @@ void validateParameterDefinitions(const IamfState &state, IReport *out);
 void validateScalableChannelLayoutConfig(const IamfState &state, IReport *out);
 void validateScalableChannelLayoutGeneration(const IamfState &state, IReport *out);
 void validateScalableChannelGroupFormat(const IamfState &state, IReport *out);
+void validateAmbisonicsConfig(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

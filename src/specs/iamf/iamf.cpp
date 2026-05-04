@@ -191,6 +191,27 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateScalableChannelGroupFormat(state, out);
     } },
+  { "Section 3.6.4\n"
+    "Ambisonics Config checks:\n"
+    "- ambisonics_mode SHALL be 0 (MONO) or 1 (PROJECTION).\n"
+    "- output_channel_count SHALL be (1 + n)^2 for n = 0, 1, 2, ..., 14.\n"
+    "- substream_count SHALL be the same as num_substreams in this OBU.\n"
+    "- For PROJECTION mode, coupled_substream_count SHALL be less than or equal to substream_count.",
+    "assert-ambisonics-config",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateAmbisonicsConfig(state, out);
+    } }
 };
 
 static const SpecDesc specIamf = {

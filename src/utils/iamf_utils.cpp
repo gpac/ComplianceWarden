@@ -733,6 +733,61 @@ void validateScalableChannelGroupFormat(const IamfState &state, IReport *out)
   }
 }
 
+void validateAmbisonicsConfig(const IamfState &state, IReport *out)
+{
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+    if(elem.audio_element_type != AUDIO_ELEMENT_SCENE_BASED)
+      continue;
+
+    auto const &config = elem.ambisonics_config;
+
+    if(config.ambisonics_mode != 0 && config.ambisonics_mode != 1) {
+      out->error("[Section 3.6.4] ambisonics_mode SHALL be 0 or 1. Found %lu", config.ambisonics_mode);
+      continue;
+    }
+
+    uint8_t output_channel_count = 0;
+    uint8_t substream_count = 0;
+    uint8_t coupled_substream_count = 0;
+
+    if(config.ambisonics_mode == 0) {
+      output_channel_count = config.mono_config.output_channel_count;
+      substream_count = config.mono_config.substream_count;
+    } else if(config.ambisonics_mode == 1) {
+      output_channel_count = config.projection_config.output_channel_count;
+      substream_count = config.projection_config.substream_count;
+      coupled_substream_count = config.projection_config.coupled_substream_count;
+
+      if(coupled_substream_count > substream_count) {
+        out->error(
+          "[Section 3.6.4] coupled_substream_count (%u) SHALL be less than or equal to substream_count (%u).",
+          coupled_substream_count, substream_count);
+      }
+    }
+
+    // Check output_channel_count = (1 + n)^2
+    bool valid_channels = false;
+    for(int n = 0; n <= 14; ++n) {
+      if(output_channel_count == (1 + n) * (1 + n)) {
+        valid_channels = true;
+        break;
+      }
+    }
+    if(!valid_channels) {
+      out->error(
+        "[Section 3.6.4] output_channel_count (%u) SHALL be (1 + n)^2 for n = 0, 1, 2, ..., 14.", output_channel_count);
+    }
+
+    if(substream_count != elem.num_substreams) {
+      out->error(
+        "[Section 3.6.4] substream_count (%u) SHALL be the same as num_substreams (%lu) in this OBU.", substream_count,
+        elem.num_substreams);
+    }
+  }
+}
+
 void parseIacb(IReader *br)
 {
   br->sym("configurationVersion", 8);
