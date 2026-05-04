@@ -125,3 +125,99 @@ db 0         ; coupled_substream_count = 0
 db 00100000b ; loudspeaker_layout = 2 (5.1ch), flags = 0
 db 4         ; substream_count = 4
 db 3         ; coupled_substream_count = 2
+
+; OBU 8: Tests "num_layers maximum value SHALL be 6."
+obu_8_start:
+db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
+db obu_8_end - obu_8_start - 2 ; obu_size
+db 8         ; audio_element_id = 8
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
+db 7         ; num_substreams = 7
+db 1, 2, 3, 4, 5, 6, 7 ; audio_substream_id list
+db 0         ; num_parameters = 0
+db 11100000b ; num_layers = 7, reserved = 0
+; Layer 1
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 2
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 3
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 4
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 5
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 6
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 7
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+obu_8_end:
+
+; OBU 9: Tests "If loudspeaker_layout is set to Binaural, num_layers SHALL be set to 1."
+obu_9_start:
+db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
+db obu_9_end - obu_9_start - 2 ; obu_size
+db 9         ; audio_element_id = 9
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
+db 2         ; num_substreams = 2
+db 1, 2      ; audio_substream_id list
+db 0         ; num_parameters = 0
+db 01000000b ; num_layers = 2, reserved = 0
+; Layer 1
+db 10010000b ; loudspeaker_layout = 9 (Binaural), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+; Layer 2
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+obu_9_end:
+
+; OBU 10: Tests "substream_count SHALL NOT be set to 0 for any layer."
+obu_10_start:
+db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
+db obu_10_end - obu_10_start - 2 ; obu_size
+db 10        ; audio_element_id = 10
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
+db 1         ; num_substreams = 1
+db 1         ; audio_substream_id = 1
+db 0         ; num_parameters = 0
+db 00100000b ; num_layers = 1, reserved = 0
+; Layer 1
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 0         ; substream_count = 0
+db 0         ; coupled_substream_count = 0
+obu_10_end:
+
+; OBU 11: Tests "substream_count SHALL be greater than or equal to coupled_substream_count for all layers."
+obu_11_start:
+db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
+db obu_11_end - obu_11_start - 2 ; obu_size
+db 11        ; audio_element_id = 11
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
+db 1         ; num_substreams = 1
+db 1         ; audio_substream_id = 1
+db 0         ; num_parameters = 0
+db 00100000b ; num_layers = 1, reserved = 0
+; Layer 1
+db 0         ; loudspeaker_layout = 0 (Mono), flags = 0
+db 1         ; substream_count = 1
+db 2         ; coupled_substream_count = 2
+obu_11_end:

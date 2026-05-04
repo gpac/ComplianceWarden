@@ -129,6 +129,30 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateParameterDefinitions(state, out);
     } },
+  { "Section 3.6.2\n"
+    "Scalable Channel Layout Config checks:\n"
+    "- num_layers SHALL NOT be set to 0.\n"
+    "- num_layers maximum value SHALL be 6.\n"
+    "- For an expanded channel layout defined in expanded_loudspeaker_layout, num_layers SHALL be set to 1.\n"
+    "- If loudspeaker_layout is set to Binaural (9), num_layers SHALL be set to 1.\n"
+    "- substream_count SHALL be greater than or equal to coupled_substream_count for all layers.\n"
+    "- substream_count SHALL NOT be set to 0 for any layer.\n"
+    "- The sum of substream_count across all layers SHALL be equal to num_substreams of the Audio Element.",
+    "assert-scalable-channel-layout-config",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateScalableChannelLayoutConfig(state, out);
+    } },
 };
 
 static const SpecDesc specIamf = {

@@ -80,6 +80,11 @@ void parseScalableChannelLayoutConfig(ReaderBits *br, AudioElementInfo &info)
       break;
     }
 
+    if(i > 1 && layer.loudspeaker_layout == 15) {
+      fprintf(stderr, "Warning: loudspeaker_layout 15 found in layer %d. Skipping remaining layers.\n", i);
+      break;
+    }
+
     layer.output_gain_is_present_flag = br->sym("output_gain_is_present_flag", 1);
     layer.recon_gain_is_present_flag = br->sym("recon_gain_is_present_flag", 1);
     br->sym("reserved", 2);
@@ -443,6 +448,64 @@ void validateParameterDefinitions(const IamfState &state, IReport *out)
           }
         }
       }
+    }
+  }
+}
+
+void validateScalableChannelLayoutConfig(const IamfState &state, IReport *out)
+{
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+    if(elem.audio_element_type != AUDIO_ELEMENT_CHANNEL_BASED)
+      continue;
+
+    auto const &config = elem.scalable_channel_layout_config;
+    if(config.num_layers == 0) {
+      out->error("[Section 3.6.2] num_layers SHALL NOT be set to 0.");
+    }
+    if(config.num_layers > 6) {
+      out->error("[Section 3.6.2] num_layers maximum value SHALL be 6. Found %u", config.num_layers);
+    }
+
+    uint64_t total_substream_count = 0;
+    bool has_layout_15 = false;
+    bool has_layout_9 = false;
+    for(auto const &layer : config.channel_audio_layer_config) {
+      if(layer.loudspeaker_layout == 15) {
+        has_layout_15 = true;
+      }
+      if(layer.loudspeaker_layout == 9) {
+        has_layout_9 = true;
+      }
+
+      if(layer.substream_count == 0) {
+        out->error("[Section 3.6.2] substream_count SHALL NOT be set to 0 for any layer.");
+      }
+
+      if(layer.substream_count < layer.coupled_substream_count) {
+        out->error(
+          "[Section 3.6.2] substream_count (%u) SHALL be greater than or equal to coupled_substream_count (%u) for "
+          "all layers.",
+          layer.substream_count, layer.coupled_substream_count);
+      }
+
+      total_substream_count += layer.substream_count;
+    }
+    if(has_layout_15 && config.num_layers != 1) {
+      out->error(
+        "[Section 3.6.2] For an expanded channel layout defined in expanded_loudspeaker_layout, num_layers SHALL be "
+        "set to 1.");
+    }
+    if(has_layout_9 && config.num_layers != 1) {
+      out->error("[Section 3.6.2] If loudspeaker_layout is set to Binaural, num_layers SHALL be set to 1.");
+    }
+
+    if(total_substream_count != elem.num_substreams) {
+      out->error(
+        "[Section 3.6.2] The sum of substream_count across all layers (%lu) SHALL be equal to num_substreams of the "
+        "Audio Element (%lu).",
+        total_substream_count, elem.num_substreams);
     }
   }
 }

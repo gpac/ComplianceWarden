@@ -9,9 +9,17 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 [iamf][Rule #5] Error: [Section 3.6.1] duration SHALL NOT be set to 0 when param_definition_mode is 0.
 [iamf][Rule #5] Error: [Section 3.6.1] subblock_duration SHALL NOT be set to 0.
 [iamf][Rule #5] Error: [Section 3.6.1] The summation of all subblock_duration (8) SHALL be equal to duration (10).
+[iamf][Rule #6] Error: [Section 3.6.2] num_layers SHALL NOT be set to 0.
+[iamf][Rule #6] Error: [Section 3.6.2] The sum of substream_count across all layers (0) SHALL be equal to num_substreams of the Audio Element (1).
+[iamf][Rule #6] Error: [Section 3.6.2] num_layers SHALL NOT be set to 0.
+[iamf][Rule #6] Error: [Section 3.6.2] The sum of substream_count across all layers (0) SHALL be equal to num_substreams of the Audio Element (1).
+[iamf][Rule #6] Error: [Section 3.6.2] num_layers SHALL NOT be set to 0.
+[iamf][Rule #6] Error: [Section 3.6.2] The sum of substream_count across all layers (0) SHALL be equal to num_substreams of the Audio Element (1).
+[iamf][Rule #6] Error: [Section 3.6.2] num_layers SHALL NOT be set to 0.
+[iamf][Rule #6] Error: [Section 3.6.2] The sum of substream_count across all layers (0) SHALL be equal to num_substreams of the Audio Element (1).
 
 ========================================
-[iamf] 4 error(s), 0 warning(s).
+[iamf] 12 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -23,4 +31,15 @@ Parameter Definition Syntax and Semantics checks:
 - duration SHALL NOT be set to 0.
 - When constant_subblock_duration is equal to 0, the summation of all subblock_duration in this parameter block SHALL be equal to duration.
 - subblock_duration SHALL NOT be set to 0.
+
+[iamf][Rule #6] id: assert-scalable-channel-layout-config
+Section 3.6.2
+Scalable Channel Layout Config checks:
+- num_layers SHALL NOT be set to 0.
+- num_layers maximum value SHALL be 6.
+- For an expanded channel layout defined in expanded_loudspeaker_layout, num_layers SHALL be set to 1.
+- If loudspeaker_layout is set to Binaural (9), num_layers SHALL be set to 1.
+- substream_count SHALL be greater than or equal to coupled_substream_count for all layers.
+- substream_count SHALL NOT be set to 0 for any layer.
+- The sum of substream_count across all layers SHALL be equal to num_substreams of the Audio Element.
 
