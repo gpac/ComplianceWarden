@@ -310,6 +310,111 @@ bool getExpectedSubstreamCountsForScalableLayer(int layout_prev, int layout_curr
   return true;
 }
 
+std::string read_string(ReaderBits *br)
+{
+  std::string s;
+  while(true) {
+    char c = br->sym("char", 8);
+    if(c == '\0')
+      break;
+    s += c;
+  }
+  return s;
+}
+
+void parseMixPresentationOBU(ReaderBits *br, MixPresentationInfo &info, uint64_t obuSize)
+{
+  info.mix_presentation_id = leb128_read(br);
+  uint64_t count_label = leb128_read(br);
+  for(uint64_t i = 0; i < count_label; i++) {
+    read_string(br); // annotations_language
+  }
+  for(uint64_t i = 0; i < count_label; i++) {
+    read_string(br); // localized_presentation_annotations
+  }
+
+  uint64_t num_sub_mixes = leb128_read(br);
+  for(uint64_t i = 0; i < num_sub_mixes; i++) {
+    SubMixInfo sub_mix;
+    uint64_t num_audio_elements = leb128_read(br);
+    for(uint64_t j = 0; j < num_audio_elements; j++) {
+      SubMixAudioElementInfo elem;
+      elem.audio_element_id = leb128_read(br);
+      for(uint64_t k = 0; k < count_label; k++) {
+        read_string(br); // localized_element_annotations
+      }
+
+      // Rendering Config
+      elem.rendering_config.headphones_rendering_mode = br->sym("headphones_rendering_mode", 2);
+      br->sym("reserved", 6);
+      uint64_t rendering_config_extension_size = leb128_read(br);
+      for(uint64_t k = 0; k < rendering_config_extension_size; k++) {
+        br->sym("rendering_config_extension_byte", 8);
+      }
+
+      // Element Mix Gain
+      static_cast<ParamDefinition &>(elem.element_mix_gain) = parseParamDefinition(br);
+      elem.element_mix_gain.default_mix_gain = br->sym("default_mix_gain", 16);
+
+      sub_mix.audio_elements.push_back(elem);
+    }
+
+    // Output Mix Gain
+    static_cast<ParamDefinition &>(sub_mix.output_mix_gain) = parseParamDefinition(br);
+    sub_mix.output_mix_gain.default_mix_gain = br->sym("default_mix_gain", 16);
+
+    uint64_t num_layouts = leb128_read(br);
+    for(uint64_t j = 0; j < num_layouts; j++) {
+      Layout layout;
+      layout.layout_type = br->sym("layout_type", 2);
+      if(layout.layout_type == 2) {
+        layout.sound_system = br->sym("sound_system", 4);
+        br->sym("reserved", 2);
+      } else if(layout.layout_type == 3) {
+        br->sym("reserved", 6);
+      } else {
+        br->sym("reserved", 6);
+      }
+
+      LoudnessInfo loudness;
+      loudness.info_type = br->sym("info_type", 8);
+      loudness.integrated_loudness = br->sym("integrated_loudness", 16);
+      loudness.digital_peak = br->sym("digital_peak", 16);
+      if(loudness.info_type & 1) {
+        loudness.true_peak = br->sym("true_peak", 16);
+      }
+      if(loudness.info_type & 2) {
+        uint8_t num_anchored_loudness = br->sym("num_anchored_loudness", 8);
+        for(int k = 0; k < num_anchored_loudness; k++) {
+          AnchoredLoudness anchor;
+          anchor.anchor_element = br->sym("anchor_element", 8);
+          anchor.anchored_loudness = br->sym("anchored_loudness", 16);
+          loudness.anchored_loudnesses.push_back(anchor);
+        }
+      }
+      if((loudness.info_type & 0b11111100) > 0) {
+        uint64_t info_type_size = leb128_read(br);
+        for(uint64_t k = 0; k < info_type_size; k++) {
+          br->sym("info_type_byte", 8);
+        }
+      }
+
+      sub_mix.layouts.push_back({ layout, loudness });
+    }
+    info.sub_mixes.push_back(sub_mix);
+  }
+
+  // Mix Presentation Tags
+  // As per spec, tags are present if OBU size > size up to end of num_sub_mixes loop.
+  if(obuSize > static_cast<uint64_t>(br->count) / 8) {
+    uint8_t num_tags = br->sym("num_tags", 8);
+    for(int i = 0; i < num_tags; i++) {
+      read_string(br); // tag_name
+      read_string(br); // tag_value
+    }
+  }
+}
+
 } // namespace
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
@@ -368,6 +473,15 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     parseAudioElementOBU(brBits.get(), info);
     state.audioElements.push_back(info);
     br->sym("/audio_element", 0);
+    break;
+  }
+
+  case OBU_IA_Mix_Presentation: {
+    br->sym("mix_presentation", 0);
+    MixPresentationInfo info;
+    parseMixPresentationOBU(brBits.get(), info, obuSize);
+    state.mixPresentations.push_back(info);
+    br->sym("/mix_presentation", 0);
     break;
   }
 
@@ -784,6 +898,46 @@ void validateAmbisonicsConfig(const IamfState &state, IReport *out)
       out->error(
         "[Section 3.6.4] substream_count (%u) SHALL be the same as num_substreams (%lu) in this OBU.", substream_count,
         elem.num_substreams);
+    }
+  }
+}
+
+void validateMixPresentation(const IamfState &state, IReport *out)
+{
+  std::set<uint64_t> unique_mix_ids;
+  for(auto const &mix : state.mixPresentations) {
+    if(!unique_mix_ids.insert(mix.mix_presentation_id).second) {
+      out->error("[Section 3.7] mix_presentation_id SHALL be unique within an IA Sequence.");
+    }
+
+    if(mix.sub_mixes.empty()) {
+      out->error("[Section 3.7] num_sub_mixes SHALL NOT be set to 0.");
+    }
+
+    std::set<uint64_t> ae_ids_in_mix;
+    for(auto const &sub_mix : mix.sub_mixes) {
+      if(sub_mix.audio_elements.empty()) {
+        out->error("[Section 3.7] num_audio_elements SHALL NOT be set to 0.");
+      }
+
+      for(auto const &elem : sub_mix.audio_elements) {
+        if(!ae_ids_in_mix.insert(elem.audio_element_id).second) {
+          out->error(
+            "[Section 3.7] There SHALL be no duplicate values of audio_element_id within one Mix Presentation.");
+        }
+      }
+
+      bool has_stereo_loudness = false;
+      for(auto const &p : sub_mix.layouts) {
+        auto const &layout = p.first;
+        if(layout.layout_type == 2 && layout.sound_system == 0) {
+          has_stereo_loudness = true;
+          break;
+        }
+      }
+      if(!has_stereo_loudness) {
+        out->error("[Section 3.7] Each sub-mix SHALL include loudness for Stereo.");
+      }
     }
   }
 }

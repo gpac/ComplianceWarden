@@ -92,6 +92,49 @@ struct AudioElementInfo {
   AmbisonicsConfig ambisonics_config;
 };
 
+struct RenderingConfig {
+  uint8_t headphones_rendering_mode;
+};
+
+struct MixGainParamDefinition : ParamDefinition {
+  int16_t default_mix_gain;
+};
+
+struct Layout {
+  uint8_t layout_type;
+  uint8_t sound_system; // only valid if layout_type == 2
+};
+
+struct AnchoredLoudness {
+  uint8_t anchor_element;
+  int16_t anchored_loudness;
+};
+
+struct LoudnessInfo {
+  uint8_t info_type = 0;
+  int16_t integrated_loudness = 0;
+  int16_t digital_peak = 0;
+  int16_t true_peak = 0; // valid if info_type & 1
+  std::vector<AnchoredLoudness> anchored_loudnesses; // valid if info_type & 2
+};
+
+struct SubMixAudioElementInfo {
+  uint64_t audio_element_id;
+  RenderingConfig rendering_config;
+  MixGainParamDefinition element_mix_gain;
+};
+
+struct SubMixInfo {
+  std::vector<SubMixAudioElementInfo> audio_elements;
+  MixGainParamDefinition output_mix_gain;
+  std::vector<std::pair<Layout, LoudnessInfo>> layouts;
+};
+
+struct MixPresentationInfo {
+  uint64_t mix_presentation_id;
+  std::vector<SubMixInfo> sub_mixes;
+};
+
 struct IamfState {
   // General
   bool seenSequenceHeader = false;
@@ -108,6 +151,9 @@ struct IamfState {
 
   // Audio Element
   std::vector<AudioElementInfo> audioElements;
+
+  // Mix Presentation
+  std::vector<MixPresentationInfo> mixPresentations;
 };
 
 int64_t parseIamfObus(IReader *br, IamfState &state);
@@ -121,4 +167,5 @@ void validateScalableChannelLayoutConfig(const IamfState &state, IReport *out);
 void validateScalableChannelLayoutGeneration(const IamfState &state, IReport *out);
 void validateScalableChannelGroupFormat(const IamfState &state, IReport *out);
 void validateAmbisonicsConfig(const IamfState &state, IReport *out);
+void validateMixPresentation(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

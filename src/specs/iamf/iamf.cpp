@@ -211,6 +211,28 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateAmbisonicsConfig(state, out);
+    } },
+  { "Section 3.7\n"
+    "Mix Presentation OBU checks:\n"
+    "- mix_presentation_id SHALL be unique within an IA Sequence.\n"
+    "- num_sub_mixes SHALL NOT be set to 0.\n"
+    "- num_audio_elements SHALL NOT be set to 0.\n"
+    "- There SHALL be no duplicate values of audio_element_id within one Mix Presentation.\n"
+    "- Each sub-mix SHALL include loudness for Stereo.",
+    "assert-mix-presentation-obu",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateMixPresentation(state, out);
     } }
 };
 
