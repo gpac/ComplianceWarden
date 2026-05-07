@@ -3,6 +3,7 @@
 #include "core/box_reader.h"
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 enum {
@@ -133,6 +134,7 @@ struct SubMixInfo {
 struct MixPresentationInfo {
   uint64_t mix_presentation_id;
   std::vector<SubMixInfo> sub_mixes;
+  std::vector<std::pair<std::string, std::string>> mix_presentation_tags;
 };
 
 struct IamfState {
@@ -168,4 +170,6 @@ void validateScalableChannelLayoutGeneration(const IamfState &state, IReport *ou
 void validateScalableChannelGroupFormat(const IamfState &state, IReport *out);
 void validateAmbisonicsConfig(const IamfState &state, IReport *out);
 void validateMixPresentation(const IamfState &state, IReport *out);
+void validateMixPresentationLoudness(const IamfState &state, IReport *out);
+void validateMixPresentationTags(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

@@ -181,3 +181,77 @@ db 0         ; info_type = 0
 db 0, 0      ; integrated_loudness = 0
 db 0, 0      ; digital_peak = 0
 obu_7_end:
+
+
+; OBU 8: Tests Loudness Info duplicate anchor
+obu_8_start:
+db 00010000b ; OBU Header: obu_type = 2 (Mix Presentation)
+db obu_8_end - obu_8_start - 2 ; obu_size
+db 7         ; mix_presentation_id = 7
+db 0         ; count_label = 0
+db 1         ; num_sub_mixes = 1
+; Sub-mix 1
+db 1         ; num_audio_elements = 1
+db 1         ; audio_element_id = 1
+db 0         ; headphones_rendering_mode = 0, reserved = 0
+db 0         ; rendering_config_extension_size = 0
+; element_mix_gain
+db 12        ; parameter_id = 12
+db 0         ; parameter_rate = 0
+db 10000000b ; param_definition_mode = 1, reserved = 0
+db 0, 0      ; default_mix_gain = 0
+; output_mix_gain
+db 13        ; parameter_id = 13
+db 0         ; parameter_rate = 0
+db 10000000b ; param_definition_mode = 1, reserved = 0
+db 0, 0      ; default_mix_gain = 0
+db 1         ; num_layouts = 1
+; Layout 1
+db 10000000b ; layout_type = 2 (LOUDSPEAKERS_SS_CONVENTION), sound_system = 0 (Stereo), reserved = 0
+; Loudness 1
+db 00000010b ; info_type = 2 (Anchored_Loudness only), reserved = 0
+db 0, 0      ; integrated_loudness = 0
+db 0, 0      ; digital_peak = 0
+db 2         ; num_anchored_loudness = 2
+db 1         ; anchor_element = 1 (Dialogue)
+db 0, 0      ; anchored_loudness = 0
+db 1         ; anchor_element = 1 (Dialogue) ; INVALID: duplicate anchor_element
+db 0, 0      ; anchored_loudness = 0
+obu_8_end:
+
+; OBU 9: Tests Mix Presentation Tags
+obu_9_start:
+db 00010000b ; OBU Header: obu_type = 2 (Mix Presentation)
+db obu_9_end - obu_9_start - 2 ; obu_size
+db 8         ; mix_presentation_id = 8
+db 0         ; count_label = 0
+db 1         ; num_sub_mixes = 1
+; Sub-mix 1
+db 1         ; num_audio_elements = 1
+db 1         ; audio_element_id = 1
+db 0         ; headphones_rendering_mode = 0, reserved = 0
+db 0         ; rendering_config_extension_size = 0
+; element_mix_gain
+db 14        ; parameter_id = 14
+db 0         ; parameter_rate = 0
+db 10000000b ; param_definition_mode = 1, reserved = 0
+db 0, 0      ; default_mix_gain = 0
+; output_mix_gain
+db 15        ; parameter_id = 15
+db 0         ; parameter_rate = 0
+db 10000000b ; param_definition_mode = 1, reserved = 0
+db 0, 0      ; default_mix_gain = 0
+db 1         ; num_layouts = 1
+; Layout 1
+db 10000000b ; layout_type = 2 (LOUDSPEAKERS_SS_CONVENTION), sound_system = 0 (Stereo), reserved = 0
+; Loudness 1
+db 0         ; info_type = 0
+db 0, 0      ; integrated_loudness = 0
+db 0, 0      ; digital_peak = 0
+; Tags
+db 2         ; num_tags = 2
+db 'content_language', 0
+db 'en-US', 0        ; INVALID: not a 3-letter ISO 639-2 code
+db 'content_language', 0 ; INVALID: duplicate content_language tag
+db 'spa', 0
+obu_9_end:

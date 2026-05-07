@@ -409,10 +409,54 @@ void parseMixPresentationOBU(ReaderBits *br, MixPresentationInfo &info, uint64_t
   if(obuSize > static_cast<uint64_t>(br->count) / 8) {
     uint8_t num_tags = br->sym("num_tags", 8);
     for(int i = 0; i < num_tags; i++) {
-      read_string(br); // tag_name
-      read_string(br); // tag_value
+      std::string tag_name = read_string(br);
+      std::string tag_value = read_string(br);
+      info.mix_presentation_tags.push_back({ tag_name, tag_value });
     }
   }
+}
+
+bool isValidIso6392Code(const std::string &code)
+{
+  static const std::set<std::string> kValidCodes = {
+    "aar", "abk", "ace", "ach", "ada", "ady", "afa", "afh", "afr", "ain", "aka", "akk", "alb", "ale", "alg", "alt",
+    "amh", "ang", "anp", "apa", "ara", "arc", "arg", "arm", "arn", "arp", "art", "arw", "asm", "ast", "ath", "aus",
+    "ava", "ave", "awa", "aym", "aze", "bad", "bai", "bak", "bal", "bam", "ban", "baq", "bas", "bat", "bej", "bel",
+    "bem", "ben", "ber", "bho", "bih", "bik", "bin", "bis", "bla", "bnt", "bod", "bos", "bra", "bre", "btk", "bua",
+    "bug", "bul", "bur", "byn", "cad", "cai", "car", "cat", "cau", "ceb", "cel", "ces", "cha", "chb", "che", "chg",
+    "chi", "chk", "chm", "chn", "cho", "chp", "chr", "chu", "chv", "chy", "cmc", "cnr", "cop", "cor", "cos", "cpe",
+    "cpf", "cpp", "cre", "crh", "crp", "csb", "cus", "cym", "cze", "dak", "dan", "dar", "day", "del", "den", "deu",
+    "dgr", "din", "div", "doi", "dra", "dsb", "dua", "dum", "dut", "dyu", "dzo", "efi", "egy", "eka", "ell", "elx",
+    "eng", "enm", "epo", "est", "ewe", "ewo", "fan", "fao", "fas", "fat", "fij", "fil", "fin", "fiu", "fon", "fra",
+    "fre", "frm", "fro", "frr", "frs", "fry", "ful", "fur", "gaa", "gay", "gba", "gem", "geo", "ger", "gez", "gil",
+    "gla", "gle", "glg", "glv", "gmh", "goh", "gon", "gor", "got", "grb", "grc", "gre", "grn", "gsw", "guj", "gwi",
+    "hai", "hat", "hau", "haw", "heb", "her", "hil", "him", "hin", "hit", "hmn", "hmo", "hrv", "hsb", "hun", "hup",
+    "hye", "iba", "ibo", "ice", "ido", "iii", "ijo", "iku", "ile", "ilo", "ina", "inc", "ind", "ine", "inh", "ipk",
+    "ira", "iro", "isl", "ita", "jav", "jbo", "jpn", "jpr", "jrb", "kaa", "kab", "kac", "kal", "kam", "kan", "kar",
+    "kas", "kat", "kau", "kaw", "kaz", "kbd", "kha", "khi", "khm", "kho", "kik", "kin", "kir", "kmb", "kok", "kom",
+    "kon", "kor", "kos", "kpe", "krc", "krl", "kro", "kru", "kua", "kum", "kur", "kut", "lad", "lah", "lam", "lao",
+    "lat", "lav", "lez", "lim", "lin", "lit", "lol", "loz", "ltz", "lua", "lub", "lug", "lui", "lun", "luo", "lus",
+    "mac", "mad", "mag", "mah", "mai", "mak", "mal", "man", "mao", "map", "mar", "mas", "may", "mdf", "mdr", "men",
+    "mga", "mic", "min", "mis", "mkd", "mkh", "mlg", "mlt", "mnc", "mni", "mno", "moh", "mon", "mos", "mri", "msa",
+    "mul", "mun", "mus", "mwl", "mwr", "mya", "myn", "myv", "nah", "nai", "nap", "nau", "nav", "nbl", "nde", "ndo",
+    "nds", "nep", "new", "nia", "nic", "niu", "nld", "nno", "nob", "nog", "non", "nor", "nqo", "nso", "nub", "nwc",
+    "nya", "nym", "nyn", "nyo", "nzi", "oci", "oji", "ori", "orm", "osa", "oss", "ota", "oto", "paa", "pag", "pal",
+    "pam", "pan", "pap", "pau", "peo", "per", "phi", "phn", "pli", "pol", "pon", "por", "pra", "pro", "pus", "que",
+    "raj", "rap", "rar", "roa", "roh", "rom", "ron", "rum", "run", "rup", "rus", "sad", "sag", "sah", "sai", "sal",
+    "sam", "san", "sas", "sat", "scn", "sco", "sel", "sem", "sga", "sgn", "shn", "sid", "sin", "sio", "sit", "sla",
+    "slk", "slo", "slv", "sma", "sme", "smi", "smj", "smn", "smo", "sms", "sna", "snd", "snk", "sog", "som", "son",
+    "sot", "spa", "sqi", "srd", "srn", "srp", "srr", "ssa", "ssw", "suk", "sun", "sus", "sux", "swa", "swe", "syc",
+    "syr", "tah", "tai", "tam", "tat", "tel", "tem", "ter", "tet", "tgk", "tgl", "tha", "tib", "tig", "tir", "tiv",
+    "tkl", "tlh", "tli", "tmh", "tog", "ton", "tpi", "tsi", "tsn", "tso", "tuk", "tum", "tup", "tur", "tut", "tvl",
+    "twi", "tyv", "udm", "uga", "uig", "ukr", "umb", "und", "urd", "uzb", "vai", "ven", "vie", "vol", "vot", "wak",
+    "wal", "war", "was", "wel", "wen", "wln", "wol", "xal", "xho", "yao", "yap", "yid", "yor", "ypk", "zap", "zbl",
+    "zen", "zgh", "zha", "zho", "znd", "zul", "zun", "zxx", "zza"
+  };
+  if(code.length() != 3)
+    return false;
+  if(code >= "qaa" && code <= "qtz")
+    return true;
+  return kValidCodes.find(code) != kValidCodes.end();
 }
 
 } // namespace
@@ -938,6 +982,43 @@ void validateMixPresentation(const IamfState &state, IReport *out)
       if(!has_stereo_loudness) {
         out->error("[Section 3.7] Each sub-mix SHALL include loudness for Stereo.");
       }
+    }
+  }
+}
+
+void validateMixPresentationLoudness(const IamfState &state, IReport *out)
+{
+  for(auto const &mix : state.mixPresentations) {
+    for(auto const &sub_mix : mix.sub_mixes) {
+      for(auto const &p : sub_mix.layouts) {
+        auto const &loudness = p.second;
+        std::set<uint8_t> anchor_elements;
+        for(auto const &anchor : loudness.anchored_loudnesses) {
+          if(!anchor_elements.insert(anchor.anchor_element).second) {
+            out->error("[Section 3.7.4] There SHALL be no duplicate values of anchor_element within one LoudnessInfo.");
+          }
+        }
+      }
+    }
+  }
+}
+
+void validateMixPresentationTags(const IamfState &state, IReport *out)
+{
+  for(auto const &mix : state.mixPresentations) {
+    int content_language_count = 0;
+    for(auto const &tag : mix.mix_presentation_tags) {
+      if(tag.first == "content_language") {
+        content_language_count++;
+        if(!isValidIso6392Code(tag.second)) {
+          out->error(
+            "[Section 3.7.5] content_language tag value SHALL conform to ISO-639-2-Codes (3-letter code), found '%s'",
+            tag.second.c_str());
+        }
+      }
+    }
+    if(content_language_count > 1) {
+      out->error("[Section 3.7.5] There SHALL be at most one instance of content_language tag.");
     }
   }
 }

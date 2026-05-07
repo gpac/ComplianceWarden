@@ -5,6 +5,7 @@
 
 #include <cstring>
 #include <set>
+#include <string>
 
 namespace
 {
@@ -20,6 +21,7 @@ bool probeIamf(Box const &root, BoxReader &br, IamfState &state, IReport *out)
   parseIamfObus(&br, state);
   return true;
 }
+
 std::initializer_list<RuleDesc> rulesIamf = {
   { "Section 3.2\n"
     "obu_trimming_status_flag is set to 0 for an IA Sequence Header OBU.",
@@ -233,6 +235,43 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateMixPresentation(state, out);
+    } },
+  { "Section 3.7.4\n"
+    "Loudness Info checks:\n"
+    "- There SHALL be no duplicate values of anchor_element within one LoudnessInfo.",
+    "assert-mix-presentation-loudness",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateMixPresentationLoudness(state, out);
+    } },
+  { "Section 3.7.5\n"
+    "Mix Presentation Tags checks:\n"
+    "- There SHALL be at most one instance of content_language tag.\n"
+    "- content_language tag value SHALL conform to ISO-639-2-Codes (3-letter code).",
+    "assert-mix-presentation-tags",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateMixPresentationTags(state, out);
     } }
 };
 
