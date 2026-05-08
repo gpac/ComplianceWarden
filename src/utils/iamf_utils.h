@@ -137,6 +137,14 @@ struct MixPresentationInfo {
   std::vector<std::pair<std::string, std::string>> mix_presentation_tags;
 };
 
+struct ParameterBlockInfo {
+  uint64_t parameter_id;
+  uint64_t duration;
+  uint64_t constant_subblock_duration;
+  uint64_t num_subblocks;
+  std::vector<uint64_t> subblock_durations;
+};
+
 struct IamfState {
   // General
   bool seenSequenceHeader = false;
@@ -156,6 +164,9 @@ struct IamfState {
 
   // Mix Presentation
   std::vector<MixPresentationInfo> mixPresentations;
+
+  // Parameter Block
+  std::vector<ParameterBlockInfo> parameterBlocks;
 };
 
 int64_t parseIamfObus(IReader *br, IamfState &state);
@@ -172,4 +183,5 @@ void validateAmbisonicsConfig(const IamfState &state, IReport *out);
 void validateMixPresentation(const IamfState &state, IReport *out);
 void validateMixPresentationLoudness(const IamfState &state, IReport *out);
 void validateMixPresentationTags(const IamfState &state, IReport *out);
+void validateParameterBlocks(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

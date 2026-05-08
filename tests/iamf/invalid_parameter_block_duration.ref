@@ -1,0 +1,25 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #13] Error: [Section 3.8] duration SHALL NOT be set to 0.
+[iamf][Rule #13] Error: [Section 3.8] subblock_duration SHALL NOT be set to 0.
+[iamf][Rule #13] Error: [Section 3.8] The summation of all subblock_duration (0) SHALL be equal to duration (10).
+[iamf][Rule #13] Error: [Section 3.8] The summation of all subblock_duration (8) SHALL be equal to duration (10).
+
+========================================
+[iamf] 4 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #13] id: assert-parameter-block-obu
+Section 3.8
+Parameter Block OBU checks:
+- duration SHALL NOT be set to 0.
+- subblock_duration SHALL NOT be set to 0.
+- The summation of all subblock_duration SHALL be equal to duration.
+

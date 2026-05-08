@@ -272,6 +272,26 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateMixPresentationTags(state, out);
+    } },
+  { "Section 3.8\n"
+    "Parameter Block OBU checks:\n"
+    "- duration SHALL NOT be set to 0.\n"
+    "- subblock_duration SHALL NOT be set to 0.\n"
+    "- The summation of all subblock_duration SHALL be equal to duration.",
+    "assert-parameter-block-obu",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateParameterBlocks(state, out);
     } }
 };
 

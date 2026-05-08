@@ -459,6 +459,152 @@ bool isValidIso6392Code(const std::string &code)
   return kValidCodes.find(code) != kValidCodes.end();
 }
 
+const ParamDefinition *findParamDefinition(
+  const IamfState &state, uint64_t parameter_id, uint64_t &param_definition_type,
+  const AudioElementInfo *&audio_element_ptr)
+{
+  audio_element_ptr = nullptr;
+  for(const auto &ae : state.audioElements) {
+    for(size_t i = 0; i < ae.param_definitions.size(); ++i) {
+      if(ae.param_definitions[i].parameter_id == parameter_id) {
+        param_definition_type = ae.param_definition_types[i];
+        audio_element_ptr = &ae;
+        return &ae.param_definitions[i];
+      }
+    }
+  }
+  for(const auto &mp : state.mixPresentations) {
+    for(const auto &sm : mp.sub_mixes) {
+      for(const auto &sae : sm.audio_elements) {
+        if(sae.element_mix_gain.parameter_id == parameter_id) {
+          param_definition_type = PARAMETER_DEFINITION_MIX_GAIN;
+          return &sae.element_mix_gain;
+        }
+      }
+      if(sm.output_mix_gain.parameter_id == parameter_id) {
+        param_definition_type = PARAMETER_DEFINITION_MIX_GAIN;
+        return &sm.output_mix_gain;
+      }
+    }
+  }
+  return nullptr;
+}
+
+void parseAnimatedParameterData(ReaderBits *br, int animation_type, int bit_width)
+{
+  if(animation_type == 0) { // STEP
+    br->sym("start_point_value", bit_width);
+  } else if(animation_type == 1) { // LINEAR
+    br->sym("start_point_value", bit_width);
+    br->sym("end_point_value", bit_width);
+  } else if(animation_type == 2) { // BEZIER
+    br->sym("start_point_value", bit_width);
+    br->sym("end_point_value", bit_width);
+    br->sym("control_point_value", bit_width);
+    br->sym("control_point_relative_time", 8);
+  }
+}
+
+void parseParameterBlockOBU(ReaderBits *br, IamfState &state)
+{
+  uint64_t parameter_id = leb128_read(br);
+
+  uint64_t param_definition_type = 0;
+  const AudioElementInfo *audio_element_ptr = nullptr;
+  const ParamDefinition *param_def = findParamDefinition(state, parameter_id, param_definition_type, audio_element_ptr);
+
+  if(!param_def) {
+    fprintf(
+      stderr, "Warning: Parameter definition not found for parameter_id %llu\n", (unsigned long long)parameter_id);
+    return;
+  }
+
+  ParameterBlockInfo pb_info;
+  pb_info.parameter_id = parameter_id;
+
+  uint8_t param_definition_mode = param_def->param_definition_mode;
+  uint64_t duration = param_def->duration;
+  uint64_t constant_subblock_duration = param_def->constant_subblock_duration;
+  uint64_t num_subblocks = param_def->num_subblocks;
+
+  if(param_definition_mode == 1) {
+    duration = leb128_read(br);
+    constant_subblock_duration = leb128_read(br);
+    if(constant_subblock_duration == 0) {
+      num_subblocks = leb128_read(br);
+    }
+  }
+
+  if(constant_subblock_duration != 0) {
+    if(constant_subblock_duration > 0) {
+      num_subblocks = (duration + constant_subblock_duration - 1) / constant_subblock_duration;
+    }
+  }
+
+  pb_info.duration = duration;
+  pb_info.constant_subblock_duration = constant_subblock_duration;
+  pb_info.num_subblocks = num_subblocks;
+
+  for(uint64_t i = 0; i < num_subblocks; i++) {
+    if(param_definition_mode == 1) {
+      if(constant_subblock_duration == 0) {
+        uint64_t subblock_dur = leb128_read(br);
+        pb_info.subblock_durations.push_back(subblock_dur);
+      } else {
+        if(i < num_subblocks - 1) {
+          pb_info.subblock_durations.push_back(constant_subblock_duration);
+        } else {
+          pb_info.subblock_durations.push_back(duration - (num_subblocks - 1) * constant_subblock_duration);
+        }
+      }
+    } else {
+      if(param_def->constant_subblock_duration == 0) {
+        if(i < param_def->subblock_durations.size()) {
+          pb_info.subblock_durations.push_back(param_def->subblock_durations[i]);
+        }
+      } else {
+        if(i < num_subblocks - 1) {
+          pb_info.subblock_durations.push_back(param_def->constant_subblock_duration);
+        } else {
+          pb_info.subblock_durations.push_back(
+            param_def->duration - (num_subblocks - 1) * param_def->constant_subblock_duration);
+        }
+      }
+    }
+
+    if(param_definition_type == PARAMETER_DEFINITION_MIX_GAIN) {
+      auto animation_type = leb128_read(br);
+      parseAnimatedParameterData(br, animation_type, 16);
+    } else if(param_definition_type == PARAMETER_DEFINITION_DEMIXING) {
+      br->sym("dmixp_mode", 3);
+      br->sym("reserved", 5);
+    } else if(param_definition_type == PARAMETER_DEFINITION_RECON_GAIN) {
+      if(audio_element_ptr && audio_element_ptr->audio_element_type == AUDIO_ELEMENT_CHANNEL_BASED) {
+        const auto &config = audio_element_ptr->scalable_channel_layout_config;
+        for(const auto &layer : config.channel_audio_layer_config) {
+          if(layer.recon_gain_is_present_flag) {
+            uint64_t recon_gain_flags = leb128_read(br);
+
+            int n = (recon_gain_flags < 128) ? 7 : 12;
+            for(int j = 0; j < n; j++) {
+              if((recon_gain_flags >> j) & 1) {
+                br->sym("recon_gain", 8);
+              }
+            }
+          }
+        }
+      }
+    } else {
+      uint64_t parameter_data_size = leb128_read(br);
+      for(uint64_t j = 0; j < parameter_data_size; j++) {
+        br->sym("parameter_data_byte", 8);
+      }
+    }
+  }
+
+  state.parameterBlocks.push_back(pb_info);
+}
+
 } // namespace
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
@@ -528,6 +674,12 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     br->sym("/mix_presentation", 0);
     break;
   }
+
+  case OBU_IA_Parameter_Block:
+    br->sym("parameter_block", 0);
+    parseParameterBlockOBU(brBits.get(), state);
+    br->sym("/parameter_block", 0);
+    break;
 
   default:
     break;
@@ -1019,6 +1171,29 @@ void validateMixPresentationTags(const IamfState &state, IReport *out)
     }
     if(content_language_count > 1) {
       out->error("[Section 3.7.5] There SHALL be at most one instance of content_language tag.");
+    }
+  }
+}
+
+void validateParameterBlocks(const IamfState &state, IReport *out)
+{
+  for(auto const &pb : state.parameterBlocks) {
+    if(pb.duration == 0) {
+      out->error("[Section 3.8] duration SHALL NOT be set to 0.");
+    }
+
+    uint64_t sum_durations = 0;
+    for(auto dur : pb.subblock_durations) {
+      if(dur == 0) {
+        out->error("[Section 3.8] subblock_duration SHALL NOT be set to 0.");
+      }
+      sum_durations += dur;
+    }
+
+    if(sum_durations != pb.duration) {
+      out->error(
+        "[Section 3.8] The summation of all subblock_duration (%lu) SHALL be equal to duration (%lu).", sum_durations,
+        pb.duration);
     }
   }
 }
