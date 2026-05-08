@@ -82,6 +82,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateCodecConfig(state, out);
     } },
+
   { "Section 3.6\n"
     "Audio Element OBU checks:\n"
     "- audio_element_id SHALL be unique within an IA Sequence.\n"
@@ -312,6 +313,27 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateAudioFrames(state, out);
+    } },
+  { "Section 3.11.1\n"
+    "OPUS Specific checks:\n"
+    "- Output Channel Count SHALL be set to 2.\n"
+    "- Output Gain SHALL be set to 0 dB.\n"
+    "- Channel Mapping Family SHALL be set to 0.\n"
+    "- Pre-skip SHALL be the same as the number of audio samples to be trimmed at the start of coded Audio Substreams.",
+    "assert-opus-specific",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateOpusSpecific(state, out);
     } }
 };
 

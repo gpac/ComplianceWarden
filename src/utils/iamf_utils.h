@@ -3,6 +3,7 @@
 #include "core/box_reader.h"
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -51,11 +52,26 @@ struct ParamDefinition {
   std::vector<uint64_t> subblock_durations;
 };
 
+struct DecoderConfig {
+  virtual ~DecoderConfig() = default;
+};
+
+struct OpusDecoderConfig : public DecoderConfig {
+  uint8_t version = 0;
+  uint8_t output_channel_count = 0;
+  uint16_t pre_skip = 0;
+  uint32_t input_sample_rate = 0;
+  uint16_t output_gain = 0;
+  uint8_t channel_mapping_family = 0;
+};
+
 struct CodecConfigInfo {
   uint64_t codec_config_id;
   uint32_t codec_id;
   uint64_t num_samples_per_frame;
   int16_t audio_roll_distance;
+
+  std::unique_ptr<DecoderConfig> decoder_config;
 };
 
 struct ChannelAudioLayerConfig {
@@ -166,6 +182,7 @@ struct ParameterBlockInfo {
 struct AudioFrameInfo {
   uint64_t obu_type;
   uint64_t substream_id;
+  uint64_t num_samples_to_trim_at_start = 0;
 };
 
 struct IamfState {
@@ -211,4 +228,5 @@ void validateMixPresentationLoudness(const IamfState &state, IReport *out);
 void validateMixPresentationTags(const IamfState &state, IReport *out);
 void validateParameterBlocks(const IamfState &state, IReport *out);
 void validateAudioFrames(const IamfState &state, IReport *out);
+void validateOpusSpecific(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

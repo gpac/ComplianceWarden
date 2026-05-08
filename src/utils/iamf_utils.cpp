@@ -617,9 +617,10 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
   uint64_t obuSize = leb128_read(br);
   auto brBits = std::make_unique<ReaderBits>(br);
 
+  uint64_t num_samples_to_trim_at_start = 0;
   if(state.obu_trimming_status_flag) {
     leb128_read(brBits.get()); // num_samples_to_trim_at_end
-    leb128_read(brBits.get()); // num_samples_to_trim_at_start
+    num_samples_to_trim_at_start = leb128_read(brBits.get());
   }
 
   if(obu_extension_flag) {
@@ -650,7 +651,20 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     uint64_t num_samples_per_frame = leb128_read(brBits.get());
     int16_t audio_roll_distance = brBits->sym("audio_roll_distance", 16);
 
-    state.codecConfigs.push_back({ codec_config_id, codec_id, num_samples_per_frame, audio_roll_distance });
+    std::unique_ptr<DecoderConfig> decoder_config = nullptr;
+    if(codec_id == FOURCC("Opus")) {
+      auto opus_config = std::make_unique<OpusDecoderConfig>();
+      opus_config->version = brBits->sym("version", 8);
+      opus_config->output_channel_count = brBits->sym("output_channel_count", 8);
+      opus_config->pre_skip = brBits->sym("pre_skip", 16);
+      opus_config->input_sample_rate = brBits->sym("input_sample_rate", 32);
+      opus_config->output_gain = brBits->sym("output_gain", 16);
+      opus_config->channel_mapping_family = brBits->sym("channel_mapping_family", 8);
+      decoder_config = std::move(opus_config);
+    }
+
+    state.codecConfigs.push_back(
+      { codec_config_id, codec_id, num_samples_per_frame, audio_roll_distance, std::move(decoder_config) });
 
     br->sym("/codec_config", 0);
     break;
@@ -709,7 +723,7 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
       substream_id = obu_type - OBU_IA_Audio_Frame_ID0;
     }
 
-    state.audioFrames.push_back({ static_cast<uint64_t>(obu_type), substream_id });
+    state.audioFrames.push_back({ static_cast<uint64_t>(obu_type), substream_id, num_samples_to_trim_at_start });
 
     // The rest of the OBU is the codec-specific audio_frame data. We do not need to
     // read it here as it is not required for structural validation, and the common
@@ -1275,6 +1289,63 @@ void validateAudioFrames(const IamfState &state, IReport *out)
     }
     if(!valid_id) {
       out->error("[Section 3.9] AudioFrameOBU refers to an unknown audio_substream_id %lu", af.substream_id);
+    }
+  }
+}
+
+void validateOpusSpecific(const IamfState &state, IReport *out)
+{
+  for(auto const &config : state.codecConfigs) {
+    if(config.codec_id == FOURCC("Opus")) {
+      auto opus_config = dynamic_cast<const OpusDecoderConfig *>(config.decoder_config.get());
+      if(!opus_config) {
+        out->error("[Section 3.11.1] DecoderConfig is missing or not OpusDecoderConfig for Opus codec");
+        continue;
+      }
+
+      if(opus_config->version != 1) {
+        out->error("[Section 3.11.1] Version SHALL be 1 for Opus DecoderConfig, found %d", opus_config->version);
+      }
+      if(opus_config->output_channel_count != 2) {
+        out->error(
+          "[Section 3.11.1] Output Channel Count SHALL be set to 2 for Opus, found %d",
+          opus_config->output_channel_count);
+      }
+      if(opus_config->output_gain != 0) {
+        out->error("[Section 3.11.1] Output Gain SHALL be set to 0 dB for Opus, found %d", opus_config->output_gain);
+      }
+      if(opus_config->channel_mapping_family != 0) {
+        out->error(
+          "[Section 3.11.1] Channel Mapping Family SHALL be set to 0 for Opus, found %d",
+          opus_config->channel_mapping_family);
+      }
+
+      std::set<uint64_t> substream_ids;
+      for(auto const &elem : state.audioElements) {
+        if(elem.codec_config_id == config.codec_config_id) {
+          for(auto id : elem.audio_substream_ids) {
+            substream_ids.insert(id);
+          }
+        }
+      }
+
+      for(auto substream_id : substream_ids) {
+        uint64_t total_trimmed = 0;
+        for(auto const &frame : state.audioFrames) {
+          if(frame.substream_id == substream_id) {
+            if(frame.num_samples_to_trim_at_start == 0) {
+              break;
+            }
+            total_trimmed += frame.num_samples_to_trim_at_start;
+          }
+        }
+        if(opus_config->pre_skip != total_trimmed) {
+          out->error(
+            "[Section 3.11.1] Pre-skip (%u) SHALL be the same as the total number of audio samples to be trimmed at "
+            "the start of coded Audio Substream %lu (%lu)",
+            opus_config->pre_skip, substream_id, total_trimmed);
+        }
+      }
     }
   }
 }
