@@ -292,6 +292,26 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateParameterBlocks(state, out);
+    } },
+  { "Section 3.9\n"
+    "Audio Frame OBU checks:\n"
+    "- When obu_type = OBU_IA_Audio_Frame, explicit_audio_substream_id SHALL be greater than 17.\n"
+    "- AudioFrameOBU SHALL refer to a valid audio_substream_id declared in an Audio Element OBU.\n"
+    "- There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors.",
+    "assert-audio-frame-obu",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateAudioFrames(state, out);
     } }
 };
 

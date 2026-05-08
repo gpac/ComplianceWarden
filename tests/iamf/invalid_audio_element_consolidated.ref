@@ -39,9 +39,20 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 [iamf][Rule #8] Error: [Section 3.6.3] Layer 7 (layout 0) has substream_count 1, expected 0
 [iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 0, expected 1
 [iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has coupled_substream_count 2, expected 0
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 2
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 2
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 2
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
 
 ========================================
-[iamf] 34 error(s), 0 warning(s).
+[iamf] 45 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -80,4 +91,11 @@ Channel Layout Generation Rule checks:
 Section 3.6.3
 Channel Group Format checks:
 - For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
+
+[iamf][Rule #14] id: assert-audio-frame-obu
+Section 3.9
+Audio Frame OBU checks:
+- When obu_type = OBU_IA_Audio_Frame, explicit_audio_substream_id SHALL be greater than 17.
+- AudioFrameOBU SHALL refer to a valid audio_substream_id declared in an Audio Element OBU.
+- There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors.
 

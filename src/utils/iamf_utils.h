@@ -13,6 +13,24 @@ enum {
   OBU_IA_Parameter_Block = 3,
   OBU_IA_Temporal_Delimiter = 4,
   OBU_IA_Audio_Frame = 5,
+  OBU_IA_Audio_Frame_ID0 = 6,
+  OBU_IA_Audio_Frame_ID1 = 7,
+  OBU_IA_Audio_Frame_ID2 = 8,
+  OBU_IA_Audio_Frame_ID3 = 9,
+  OBU_IA_Audio_Frame_ID4 = 10,
+  OBU_IA_Audio_Frame_ID5 = 11,
+  OBU_IA_Audio_Frame_ID6 = 12,
+  OBU_IA_Audio_Frame_ID7 = 13,
+  OBU_IA_Audio_Frame_ID8 = 14,
+  OBU_IA_Audio_Frame_ID9 = 15,
+  OBU_IA_Audio_Frame_ID10 = 16,
+  OBU_IA_Audio_Frame_ID11 = 17,
+  OBU_IA_Audio_Frame_ID12 = 18,
+  OBU_IA_Audio_Frame_ID13 = 19,
+  OBU_IA_Audio_Frame_ID14 = 20,
+  OBU_IA_Audio_Frame_ID15 = 21,
+  OBU_IA_Audio_Frame_ID16 = 22,
+  OBU_IA_Audio_Frame_ID17 = 23,
   OBU_IA_Sequence_Header = 31
 };
 
@@ -145,6 +163,11 @@ struct ParameterBlockInfo {
   std::vector<uint64_t> subblock_durations;
 };
 
+struct AudioFrameInfo {
+  uint64_t obu_type;
+  uint64_t substream_id;
+};
+
 struct IamfState {
   // General
   bool seenSequenceHeader = false;
@@ -167,6 +190,9 @@ struct IamfState {
 
   // Parameter Block
   std::vector<ParameterBlockInfo> parameterBlocks;
+
+  // Audio Frame
+  std::vector<AudioFrameInfo> audioFrames;
 };
 
 int64_t parseIamfObus(IReader *br, IamfState &state);
@@ -184,4 +210,5 @@ void validateMixPresentation(const IamfState &state, IReport *out);
 void validateMixPresentationLoudness(const IamfState &state, IReport *out);
 void validateMixPresentationTags(const IamfState &state, IReport *out);
 void validateParameterBlocks(const IamfState &state, IReport *out);
+void validateAudioFrames(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

@@ -36,7 +36,7 @@ db 2         ; audio_element_id = 2
 db 0         ; audio_element_type = 0 (CHANNEL_BASED)
 db 0         ; codec_config_id = 0
 db 1         ; num_substreams = 1
-db 1         ; audio_substream_id = 1
+db 2         ; audio_substream_id = 2
 db 1         ; num_parameters = 1
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
@@ -62,7 +62,7 @@ db 3         ; audio_element_id = 3
 db 0         ; audio_element_type = 0 (CHANNEL_BASED)
 db 0         ; codec_config_id = 0
 db 1         ; num_substreams = 1
-db 1         ; audio_substream_id = 1
+db 3         ; audio_substream_id = 3
 db 1         ; num_parameters = 1
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)

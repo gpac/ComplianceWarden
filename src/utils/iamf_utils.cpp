@@ -138,7 +138,6 @@ void parseAudioElementOBU(ReaderBits *br, AudioElementInfo &info)
   if(info.audio_element_type > 1) {
     fprintf(stderr, "Warning: Unknown audio_element_type %d. Ignoring Audio Element OBU.\n", info.audio_element_type);
     info.ignored = true;
-    return;
   }
 
   info.codec_config_id = leb128_read(br);
@@ -681,6 +680,45 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     br->sym("/parameter_block", 0);
     break;
 
+  case OBU_IA_Audio_Frame:
+  case OBU_IA_Audio_Frame_ID0:
+  case OBU_IA_Audio_Frame_ID1:
+  case OBU_IA_Audio_Frame_ID2:
+  case OBU_IA_Audio_Frame_ID3:
+  case OBU_IA_Audio_Frame_ID4:
+  case OBU_IA_Audio_Frame_ID5:
+  case OBU_IA_Audio_Frame_ID6:
+  case OBU_IA_Audio_Frame_ID7:
+  case OBU_IA_Audio_Frame_ID8:
+  case OBU_IA_Audio_Frame_ID9:
+  case OBU_IA_Audio_Frame_ID10:
+  case OBU_IA_Audio_Frame_ID11:
+  case OBU_IA_Audio_Frame_ID12:
+  case OBU_IA_Audio_Frame_ID13:
+  case OBU_IA_Audio_Frame_ID14:
+  case OBU_IA_Audio_Frame_ID15:
+  case OBU_IA_Audio_Frame_ID16:
+  case OBU_IA_Audio_Frame_ID17: {
+    br->sym("audio_frame", 0);
+
+    bool audio_substream_id_in_bitstream = (obu_type == OBU_IA_Audio_Frame);
+    uint64_t substream_id = 0;
+    if(audio_substream_id_in_bitstream) {
+      substream_id = leb128_read(brBits.get());
+    } else {
+      substream_id = obu_type - OBU_IA_Audio_Frame_ID0;
+    }
+
+    state.audioFrames.push_back({ static_cast<uint64_t>(obu_type), substream_id });
+
+    // The rest of the OBU is the codec-specific audio_frame data. We do not need to
+    // read it here as it is not required for structural validation, and the common
+    // code at the bottom of parseIamfObus will automatically skip any unread bytes.
+
+    br->sym("/audio_frame", 0);
+    break;
+  }
+
   default:
     break;
   }
@@ -1194,6 +1232,49 @@ void validateParameterBlocks(const IamfState &state, IReport *out)
       out->error(
         "[Section 3.8] The summation of all subblock_duration (%lu) SHALL be equal to duration (%lu).", sum_durations,
         pb.duration);
+    }
+  }
+}
+
+void validateAudioFrames(const IamfState &state, IReport *out)
+{
+  std::set<uint64_t> all_substream_ids;
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+    for(auto id : elem.audio_substream_ids) {
+      if(!all_substream_ids.insert(id).second) {
+        out->error(
+          "[Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of "
+          "Descriptors. Duplicate id %lu",
+          id);
+      }
+    }
+  }
+
+  for(auto const &af : state.audioFrames) {
+    if(af.obu_type == OBU_IA_Audio_Frame) {
+      if(af.substream_id <= 17) {
+        out->error(
+          "[Section 3.9] When obu_type = OBU_IA_Audio_Frame, explicit_audio_substream_id SHALL be greater than 17. "
+          "Found %lu",
+          af.substream_id);
+      }
+    }
+
+    bool valid_id = false;
+    for(auto const &elem : state.audioElements) {
+      for(auto id : elem.audio_substream_ids) {
+        if(id == af.substream_id) {
+          valid_id = true;
+          break;
+        }
+      }
+      if(valid_id)
+        break;
+    }
+    if(!valid_id) {
+      out->error("[Section 3.9] AudioFrameOBU refers to an unknown audio_substream_id %lu", af.substream_id);
     }
   }
 }
