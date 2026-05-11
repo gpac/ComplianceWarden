@@ -661,6 +661,12 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
       opus_config->output_gain = brBits->sym("output_gain", 16);
       opus_config->channel_mapping_family = brBits->sym("channel_mapping_family", 8);
       decoder_config = std::move(opus_config);
+    } else if(codec_id == FOURCC("ipcm")) {
+      auto pcm_config = std::make_unique<LpcmDecoderConfig>();
+      pcm_config->sample_format_flags = brBits->sym("sample_format_flags", 8);
+      pcm_config->sample_size = brBits->sym("sample_size", 8);
+      pcm_config->sample_rate = brBits->sym("sample_rate", 32);
+      decoder_config = std::move(pcm_config);
     }
 
     state.codecConfigs.push_back(
@@ -1345,6 +1351,33 @@ void validateOpusSpecific(const IamfState &state, IReport *out)
             "the start of coded Audio Substream %lu (%lu)",
             opus_config->pre_skip, substream_id, total_trimmed);
         }
+      }
+    }
+  }
+}
+
+void validateLpcmSpecific(const IamfState &state, IReport *out)
+{
+  for(auto const &config : state.codecConfigs) {
+    if(config.codec_id == FOURCC("ipcm")) {
+      auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(config.decoder_config.get());
+      if(!pcm_config) {
+        out->error("[Section 3.11.4] DecoderConfig is missing or not LpcmDecoderConfig for ipcm codec");
+        continue;
+      }
+
+      if(pcm_config->sample_format_flags != 0 && pcm_config->sample_format_flags != 1) {
+        out->error("[Section 3.11.4] sample_format_flags SHALL be 0 or 1, found %d", pcm_config->sample_format_flags);
+      }
+      if(pcm_config->sample_size != 16 && pcm_config->sample_size != 24 && pcm_config->sample_size != 32) {
+        out->error("[Section 3.11.4] sample_size SHALL be 16, 24, or 32, found %d", pcm_config->sample_size);
+      }
+      if(
+        pcm_config->sample_rate != 44100 && pcm_config->sample_rate != 16000 && pcm_config->sample_rate != 32000 &&
+        pcm_config->sample_rate != 48000 && pcm_config->sample_rate != 96000) {
+        out->error(
+          "[Section 3.11.4] sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000, found %u",
+          pcm_config->sample_rate);
       }
     }
   }

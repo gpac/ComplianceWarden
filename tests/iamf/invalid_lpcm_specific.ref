@@ -1,0 +1,24 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #16] Error: [Section 3.11.4] sample_format_flags SHALL be 0 or 1, found 2
+[iamf][Rule #16] Error: [Section 3.11.4] sample_size SHALL be 16, 24, or 32, found 8
+[iamf][Rule #16] Error: [Section 3.11.4] sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000, found 1000
+
+========================================
+[iamf] 3 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #16] id: assert-lpcm-specific
+Section 3.11.4
+LPCM Specific checks:
+- sample_format_flags SHALL be 0 or 1.
+- sample_size SHALL be 16, 24, or 32.
+- sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000.
+

@@ -7,11 +7,14 @@ db 0         ; additional_profile
 
 ; OBU 1: Valid Codec Config
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
-db 8         ; obu_size = 8 bytes
+db 14        ; obu_size = 14 bytes
 db 2         ; codec_config_id = 2
 db 'ipcm'    ; codec_id
 db 64        ; num_samples_per_frame = 64
 db 0, 0      ; audio_roll_distance = 0 (16 bits)
+db 1         ; sample_format_flags = 1 (little-endian)
+db 16        ; sample_size = 16
+db 0, 0, 0xBB, 0x80 ; sample_rate = 48000 (big-endian)
 
 ; OBU 2: Tests "ambisonics_mode SHALL be 0 or 1."
 obu_2_start:

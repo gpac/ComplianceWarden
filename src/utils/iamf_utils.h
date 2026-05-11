@@ -65,6 +65,12 @@ struct OpusDecoderConfig : public DecoderConfig {
   uint8_t channel_mapping_family = 0;
 };
 
+struct LpcmDecoderConfig : public DecoderConfig {
+  uint8_t sample_format_flags = 0;
+  uint8_t sample_size = 0;
+  uint32_t sample_rate = 0;
+};
+
 struct CodecConfigInfo {
   uint64_t codec_config_id;
   uint32_t codec_id;
@@ -229,4 +235,5 @@ void validateMixPresentationTags(const IamfState &state, IReport *out);
 void validateParameterBlocks(const IamfState &state, IReport *out);
 void validateAudioFrames(const IamfState &state, IReport *out);
 void validateOpusSpecific(const IamfState &state, IReport *out);
+void validateLpcmSpecific(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

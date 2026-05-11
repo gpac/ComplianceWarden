@@ -334,6 +334,26 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateOpusSpecific(state, out);
+    } },
+  { "Section 3.11.4\n"
+    "LPCM Specific checks:\n"
+    "- sample_format_flags SHALL be 0 or 1.\n"
+    "- sample_size SHALL be 16, 24, or 32.\n"
+    "- sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000.",
+    "assert-lpcm-specific",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateLpcmSpecific(state, out);
     } }
 };
 
