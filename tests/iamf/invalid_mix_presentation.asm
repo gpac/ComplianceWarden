@@ -5,6 +5,20 @@ db 'iamf'    ; ia_code
 db 0         ; primary_profile
 db 0         ; additional_profile
 
+; Codec Config OBU (Valid ipcm)
+obu_codec_start:
+db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
+db obu_codec_end - obu_codec_start - 2 ; obu_size
+db 0         ; codec_config_id = 0
+db 'ipcm'    ; codec_id = 'ipcm'
+db 64        ; num_samples_per_frame = 64
+db 0         ; audio_roll_distance (high byte)
+db 0         ; audio_roll_distance (low byte)
+db 1         ; sample_format_flags = 1 (little-endian)
+db 16        ; sample_size = 16
+db 0, 0, 0xBB, 0x80 ; sample_rate = 48000 (big-endian)
+obu_codec_end:
+
 ; OBU 1: Valid Audio Element (to be referenced)
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
 db 10        ; obu_size = 10 bytes

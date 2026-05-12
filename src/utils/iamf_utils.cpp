@@ -610,7 +610,7 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
 {
   br->sym("obu", 0); // virtual OBU separator
   auto obu_type = br->sym("obu_type", 5);
-  br->sym("obu_redundant_copy", 1);
+  state.obu_redundant_copy = br->sym("obu_redundant_copy", 1);
   state.obu_trimming_status_flag = br->sym("obu_trimming_status_flag", 1);
   auto obu_extension_flag = br->sym("obu_extension_flag", 1);
 
@@ -700,6 +700,11 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     br->sym("/parameter_block", 0);
     break;
 
+  case OBU_IA_Temporal_Delimiter:
+    br->sym("temporal_delimiter", 0);
+    br->sym("/temporal_delimiter", 0);
+    break;
+
   case OBU_IA_Audio_Frame:
   case OBU_IA_Audio_Frame_ID0:
   case OBU_IA_Audio_Frame_ID1:
@@ -753,6 +758,7 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     boxReader->br.m_pos += remainingBits;
   }
 
+  state.obuSequence.push_back({ obu_type, state.obu_redundant_copy });
   return obu_type;
 }
 
@@ -1379,6 +1385,114 @@ void validateLpcmSpecific(const IamfState &state, IReport *out)
           "[Section 3.11.4] sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000, found %u",
           pcm_config->sample_rate);
       }
+    }
+  }
+}
+
+void validateDescriptorObusOrder(const IamfState &state, IReport *out)
+{
+  if(state.obuSequence.empty()) {
+    return;
+  }
+
+  auto getDescriptorName = [](int order) {
+    switch(order) {
+    case -1:
+      return "start of sequence";
+    case 0:
+      return "IA Sequence Header OBU";
+    case 1:
+      return "Codec Config OBU";
+    case 2:
+      return "Audio Element OBU";
+    case 3:
+      return "Mix Presentation OBU";
+    default:
+      return "Unknown OBU";
+    }
+  };
+
+  int last_descriptor_order = -1;
+  bool in_data = false;
+  bool is_first_sequence = true;
+  bool current_sequence_requires_full_set = true;
+
+  for(const auto &obu : state.obuSequence) {
+    int64_t obu_type = obu.type;
+
+    int current_descriptor_order = -1;
+    switch(obu_type) {
+    case OBU_IA_Sequence_Header:
+      current_descriptor_order = 0;
+      break;
+    case OBU_IA_Codec_Config:
+      current_descriptor_order = 1;
+      break;
+    case OBU_IA_Audio_Element:
+      current_descriptor_order = 2;
+      break;
+    case OBU_IA_Mix_Presentation:
+      current_descriptor_order = 3;
+      break;
+    default:
+      break;
+    }
+
+    if(current_descriptor_order >= 0) {
+      // Encountered a known Descriptor OBU or Reserved OBUs.
+      // Allow Reserved OBUs because the spec does not predetermine if they are Descriptors or IA Data OBUs.
+      if(in_data && obu_type != OBU_IA_Sequence_Header) {
+        out->error(
+          "[Section 5.1.1] Descriptor OBUs must follow IA Sequence Header. Found OBU type %ld after data OBUs.",
+          obu_type);
+      }
+
+      if(!in_data && obu_type != OBU_IA_Sequence_Header) {
+        if(current_descriptor_order < last_descriptor_order) {
+          out->error(
+            "[Section 5.1.1] Descriptor OBUs out of order. Found %s after %s",
+            getDescriptorName(current_descriptor_order), getDescriptorName(last_descriptor_order));
+        } else if(current_descriptor_order > last_descriptor_order + 1) {
+          out->error(
+            "[Section 5.1.1] Descriptor OBUs skipped. Found %s after %s", getDescriptorName(current_descriptor_order),
+            getDescriptorName(last_descriptor_order));
+        }
+      }
+
+      if(obu_type == OBU_IA_Sequence_Header) {
+        // Allow redundant IA Sequence Header inserted before descriptors.
+        if(
+          current_sequence_requires_full_set && last_descriptor_order != 3 && last_descriptor_order != -1 &&
+          last_descriptor_order != 0) {
+          out->error(
+            "[Section 5.1.1] Missing required descriptor OBUs. Last seen %s before IA Sequence Header OBU",
+            getDescriptorName(last_descriptor_order));
+        }
+        current_sequence_requires_full_set = is_first_sequence || (obu.obu_redundant_copy == 0);
+        is_first_sequence = false;
+      }
+
+      in_data = false;
+      last_descriptor_order = current_descriptor_order;
+    } else if(obu_type >= OBU_IA_Parameter_Block && obu_type <= OBU_IA_Audio_Frame_ID17) {
+      // Encountered a known IA Data OBU
+      if(!in_data) {
+        if(current_sequence_requires_full_set && last_descriptor_order != 3) {
+          out->error(
+            "[Section 5.1.1] Missing required descriptor OBUs before data OBUs. Last seen %s before OBU type %ld",
+            getDescriptorName(last_descriptor_order), obu_type);
+        }
+      }
+      in_data = true;
+    }
+  }
+
+  // Handle case where bitstream ends without any data OBUs
+  if(!in_data) {
+    if(current_sequence_requires_full_set && last_descriptor_order != 3) {
+      out->error(
+        "[Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen %s",
+        getDescriptorName(last_descriptor_order));
     }
   }
 }

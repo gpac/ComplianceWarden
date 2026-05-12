@@ -354,6 +354,30 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateLpcmSpecific(state, out);
+    } },
+  { "Section 5.1.1\n"
+    "Descriptor OBUs SHALL be placed in the following order:\n"
+    "1. One IA Sequence Header OBU\n"
+    "2. All Codec Config OBUs\n"
+    "3. All Audio Element OBUs\n"
+    "4. All Mix Presentation OBUs\n"
+    "An IA Sequence is composed of a series of OBUs in the sequence of a set of "
+    "Descriptors followed by their associated IA Data.",
+    "assert-descriptor-obus-order",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr)) {
+        return;
+      }
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateDescriptorObusOrder(state, out);
     } }
 };
 
