@@ -47,12 +47,12 @@ db 0         ; headphones_rendering_mode = 0, reserved = 0
 db 0         ; rendering_config_extension_size = 0
 ; element_mix_gain
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 ; output_mix_gain
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 db 1         ; num_layouts = 1

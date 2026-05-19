@@ -43,27 +43,23 @@ db 3         ; num_parameters = 3 -> INVALID!
 ; Parameter 1 (Demixing)
 db 1         ; param_definition_type = 1 (Demixing)
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; dmixp_mode = 0, reserved = 0
 db 0         ; default_w = 0, reserved = 0
 ; Parameter 2 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 ; Parameter 3 (Type 3)
 db 3         ; param_definition_type = 3
-db 2         ; parameter_id = 2
-db 0         ; parameter_rate = 0
-db 10000000b ; param_definition_mode = 1, reserved = 0
-db 1         ; param_definition_size = 1
-db 0         ; param_definition_byte = 0
+db 0         ; param_definition_size = 0
 db 0         ; num_layers = 0
 
 ; OBU 3: Tests "When audio_element_type = 1 (SCENE_BASED), num_parameters SHALL be set to 0."
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
-db 16        ; obu_size = 16 bytes
+db 18        ; obu_size = 18 bytes
 db 3         ; audio_element_id = 3
 db 00100000b ; audio_element_type = 1 (SCENE_BASED), reserved = 0
 db 0         ; codec_config_id = 0
@@ -73,7 +69,7 @@ db 1         ; num_parameters = 1 -> INVALID!
 ; Parameter 1 (Demixing)
 db 1         ; param_definition_type = 1 (Demixing)
 db 3         ; parameter_id = 3
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; dmixp_mode = 0, reserved = 0
 db 0         ; default_w = 0, reserved = 0
@@ -84,7 +80,7 @@ db 0         ; channel_mapping = 0
 
 ; OBU 4: Tests "The type PARAMETER_DEFINITION_MIX_GAIN SHALL NOT be present in Audio Element OBU."
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
-db 11        ; obu_size = 11 bytes
+db 13        ; obu_size = 13 bytes
 db 5         ; audio_element_id = 5
 db 0         ; audio_element_type = 0 (CHANNEL_BASED), reserved = 0
 db 0         ; codec_config_id = 0
@@ -93,7 +89,7 @@ db 1         ; audio_substream_id = 1
 db 1         ; num_parameters = 1
 db 0         ; param_definition_type = 0 (Mix Gain) -> INVALID!
 db 5         ; parameter_id = 5
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; num_layers = 0
 
@@ -119,7 +115,7 @@ db 1         ; coupled_substream_count = 1
 
 ; OBU 6: Tests "When the highest loudspeaker_layout of the scalable channel audio (i.e., num_layers > 1) is greater than 3.1.2ch, both PARAMETER_DEFINITION_DEMIXING and PARAMETER_DEFINITION_RECON_GAIN types SHALL be present."
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
-db 18        ; obu_size = 18 bytes
+db 20        ; obu_size = 20 bytes
 db 7         ; audio_element_id = 7
 db 0         ; audio_element_type = 0 (CHANNEL_BASED)
 db 0         ; codec_config_id = 0
@@ -130,7 +126,7 @@ db 1         ; num_parameters = 1 -> INVALID (missing DEMIXING)
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 6         ; parameter_id = 6
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 01000000b ; num_layers = 2, reserved = 0
 ; Layer 1
@@ -252,12 +248,12 @@ db 0         ; headphones_rendering_mode = 0, reserved = 0
 db 0         ; rendering_config_extension_size = 0
 ; element_mix_gain
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 ; output_mix_gain
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 db 1         ; num_layouts = 1

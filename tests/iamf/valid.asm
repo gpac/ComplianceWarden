@@ -15,7 +15,7 @@ db 0         ; audio_roll_distance (high byte)
 db 0         ; audio_roll_distance (low byte)
 db 1         ; sample_format_flags = 1 (little-endian)
 db 16        ; sample_size = 16
-db 0, 0, 0xBB, 0x80 ; sample_rate = 48000 (big-endian)
+db 0, 0, 0xAC, 0x44 ; sample_rate = 44100 (big-endian)
 
 ; Audio Element OBU (Valid)
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
@@ -45,12 +45,12 @@ db 0         ; headphones_rendering_mode = 0
 db 0         ; rendering_config_extension_size = 0
 ; element_mix_gain
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0xC4, 0xD8, 0x02 ; parameter_rate = 44100
 db 10000000b ; param_definition_mode = 1
 db 0, 0      ; default_mix_gain = 0
 ; output_mix_gain
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0xC4, 0xD8, 0x02 ; parameter_rate = 44100
 db 10000000b ; param_definition_mode = 1
 db 0, 0      ; default_mix_gain = 0
 db 1         ; num_layouts = 1

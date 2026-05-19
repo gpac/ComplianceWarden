@@ -604,6 +604,43 @@ void parseParameterBlockOBU(ReaderBits *br, IamfState &state)
   state.parameterBlocks.push_back(pb_info);
 }
 
+void checkTicksPerFrame(const ParamDefinition &param, uint64_t codec_config_id, const IamfState &state, IReport *out)
+{
+  const CodecConfigInfo *matched_config = nullptr;
+  for(auto const &config : state.codecConfigs) {
+    if(config.codec_config_id == codec_config_id) {
+      matched_config = &config;
+      break;
+    }
+  }
+
+  if(matched_config) {
+    uint32_t sample_rate = 0;
+    if(matched_config->codec_id == FOURCC("Opus")) {
+      sample_rate = 48000;
+    } else if(matched_config->codec_id == FOURCC("ipcm")) {
+      auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(matched_config->decoder_config.get());
+      if(pcm_config) {
+        sample_rate = pcm_config->sample_rate;
+      }
+    }
+
+    if(sample_rate != 0) {
+      uint64_t ticks_per_frame_num = param.parameter_rate * matched_config->num_samples_per_frame;
+      if(ticks_per_frame_num % sample_rate != 0) {
+        out->error(
+          "[Section 3.6.1] The parameter rate SHALL be a value such that the number of ticks per frame is an integer. "
+          "Found %lu * %lu / %u",
+          param.parameter_rate, matched_config->num_samples_per_frame, sample_rate);
+      } else if(ticks_per_frame_num / sample_rate == 0) {
+        out->error(
+          "[Section 3.6.1] The parameter rate SHALL be a value such that the number of ticks per frame is a non-zero "
+          "integer. Found 0.");
+      }
+    }
+  }
+}
+
 } // namespace
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
@@ -952,6 +989,8 @@ void validateParameterDefinitions(const IamfState &state, IReport *out)
           param.parameter_id);
       }
 
+      checkTicksPerFrame(param, elem.codec_config_id, state, out);
+
       if(param.param_definition_mode == 0) {
         if(param.duration == 0) {
           out->error("[Section 3.6.1] duration SHALL NOT be set to 0 when param_definition_mode is 0.");
@@ -971,6 +1010,33 @@ void validateParameterDefinitions(const IamfState &state, IReport *out)
               sum_durations, param.duration);
           }
         }
+      }
+    }
+  }
+
+  for(auto const &mix : state.mixPresentations) {
+    for(auto const &sub_mix : mix.sub_mixes) {
+      for(auto const &elem : sub_mix.audio_elements) {
+        uint64_t codec_config_id = 0;
+        for(auto const &ae : state.audioElements) {
+          if(ae.audio_element_id == elem.audio_element_id) {
+            codec_config_id = ae.codec_config_id;
+            break;
+          }
+        }
+        checkTicksPerFrame(elem.element_mix_gain, codec_config_id, state, out);
+      }
+
+      if(!sub_mix.audio_elements.empty()) {
+        uint64_t first_ae_id = sub_mix.audio_elements[0].audio_element_id;
+        uint64_t codec_config_id = 0;
+        for(auto const &ae : state.audioElements) {
+          if(ae.audio_element_id == first_ae_id) {
+            codec_config_id = ae.codec_config_id;
+            break;
+          }
+        }
+        checkTicksPerFrame(sub_mix.output_mix_gain, codec_config_id, state, out);
       }
     }
   }

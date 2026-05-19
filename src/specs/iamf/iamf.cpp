@@ -112,6 +112,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
   { "Section 3.6.1\n"
     "Parameter Definition Syntax and Semantics checks:\n"
     "- There SHALL be one unique parameter_id per Parameter Substream.\n"
+    "- The parameter rate SHALL be a value such that the number of ticks per frame is a non-zero integer.\n"
     "- duration SHALL NOT be set to 0.\n"
     "- When constant_subblock_duration is equal to 0, the summation of all subblock_duration in this parameter block "
     "SHALL be equal to duration.\n"

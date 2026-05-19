@@ -18,7 +18,7 @@ db 0, 0, 0xBB, 0x80 ; sample_rate = 48000 (big-endian)
 
 ; Audio Element OBU: Tests "When codec_id = fLaC or ipcm, the type PARAMETER_DEFINITION_RECON_GAIN SHALL NOT be present."
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
-db 11        ; obu_size = 11 bytes
+db 13        ; obu_size = 13 bytes
 db 1         ; audio_element_id = 1
 db 0         ; audio_element_type = 0 (CHANNEL_BASED), reserved = 0
 db 1         ; codec_config_id = 1 (References ipcm)
@@ -28,7 +28,7 @@ db 1         ; num_parameters = 1
 ; Parameter 1 (Recon Gain) -> INVALID for ipcm!
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; num_layers = 0
 
@@ -46,12 +46,12 @@ db 0         ; headphones_rendering_mode = 0, reserved = 0
 db 0         ; rendering_config_extension_size = 0
 ; element_mix_gain
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 ; output_mix_gain
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 db 1         ; num_layouts = 1

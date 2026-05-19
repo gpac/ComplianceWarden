@@ -35,14 +35,14 @@ db 2         ; num_parameters = 2
 ; Parameter 1 (Demixing)
 db 1         ; param_definition_type = 1 (Demixing)
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; dmixp_mode = 0, reserved = 0
 db 0         ; default_w = 0, reserved = 0
 ; Parameter 2 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 0         ; parameter_id = 0 -> DUPLICATE!
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0         ; num_layers = 0
 obu_1_end:
@@ -60,7 +60,7 @@ db 1         ; num_parameters = 1
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 00000000b ; param_definition_mode = 0, reserved = 0
 db 0         ; duration = 0 -> INVALID!
 db 1         ; constant_subblock_duration = 1
@@ -80,7 +80,7 @@ db 1         ; num_parameters = 1
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 2         ; parameter_id = 2
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 00000000b ; param_definition_mode = 0, reserved = 0
 db 10        ; duration = 10
 db 0         ; constant_subblock_duration = 0
@@ -103,7 +103,7 @@ db 1         ; num_parameters = 1
 ; Parameter 1 (Recon Gain)
 db 2         ; param_definition_type = 2 (Recon Gain)
 db 3         ; parameter_id = 3
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 00000000b ; param_definition_mode = 0, reserved = 0
 db 10        ; duration = 10
 db 0         ; constant_subblock_duration = 0
@@ -127,12 +127,12 @@ db 0         ; headphones_rendering_mode = 0, reserved = 0
 db 0         ; rendering_config_extension_size = 0
 ; element_mix_gain
 db 0         ; parameter_id = 0
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 ; output_mix_gain
 db 1         ; parameter_id = 1
-db 0         ; parameter_rate = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 db 0, 0      ; default_mix_gain = 0
 db 1         ; num_layouts = 1
