@@ -189,6 +189,7 @@ struct AudioFrameInfo {
   uint64_t obu_type;
   uint64_t substream_id;
   uint64_t num_samples_to_trim_at_start = 0;
+  uint64_t num_samples_to_trim_at_end = 0;
 };
 
 struct ObuInfo {
@@ -204,6 +205,7 @@ struct IamfState {
   uint32_t ia_code = 0;
   int obu_redundant_copy = -1; // Value from the current OBU
   std::vector<ObuInfo> obuSequence;
+  bool has_invalid_trimming_flag = false;
 
   // IA Sequence Header
   bool firstObuIsSeqHdr = false;
@@ -228,6 +230,7 @@ struct IamfState {
 int64_t parseIamfObus(IReader *br, IamfState &state);
 void validateFirstObuIsSeqHdr(const IamfState &state, IReport *out);
 void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
+void validateObuTrimming(const IamfState &state, IReport *out);
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
 void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);
@@ -243,5 +246,6 @@ void validateParameterBlocks(const IamfState &state, IReport *out);
 void validateAudioFrames(const IamfState &state, IReport *out);
 void validateOpusSpecific(const IamfState &state, IReport *out);
 void validateLpcmSpecific(const IamfState &state, IReport *out);
+void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out);
 void validateDescriptorObusOrder(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

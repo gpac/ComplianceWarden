@@ -4,6 +4,7 @@
 #include "utils/iamf_utils.h"
 
 #include <cstring>
+#include <map>
 #include <set>
 #include <string>
 
@@ -24,15 +25,24 @@ bool probeIamf(Box const &root, BoxReader &br, IamfState &state, IReport *out)
 
 std::initializer_list<RuleDesc> rulesIamf = {
   { "Section 3.2\n"
-    "obu_trimming_status_flag is set to 0 for an IA Sequence Header OBU.",
-    "assert-seq-hdr-trimming-flag-zero",
+    "OBU trimming checks:\n"
+    "- obu_trimming_status_flag SHALL be set to 0 for all OBUs except Audio Frame OBUs.\n"
+    "- When num_samples_to_trim_at_start is non-zero, all preceding Audio Frame OBUs with the same audio_substream_id "
+    "SHALL have their num_samples_to_trim_at_start field equal to num_samples_per_frame.",
+    "assert-obu-trimming-rules",
     [](Box const &root, IReport *out) {
       IamfState state;
       BoxReader br;
       if(!probeIamf(root, br, state, nullptr))
         return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
       out->covered();
       validateSequenceHeaderTrimming(state, out);
+      validateObuTrimming(state, out);
     } },
   { "Section 3.4\n"
     "The first OBU in an IA Sequence SHALL have obu_type = OBU_IA_Sequence_Header.",
@@ -356,6 +366,25 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateLpcmSpecific(state, out);
     } },
+  { "Section 4\n"
+    "Audio Substream trimming consistency checks:\n"
+    "- Every Audio Substream in the IA Sequence SHALL have the same start timestamp, SHALL consist of the same number "
+    "of Audio Frame OBUs, and SHALL have the same trimming information.",
+    "assert-substream-trimming-consistency",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateSubstreamTrimmingConsistency(state, out);
+    } },
   { "Section 5.1.1\n"
     "Descriptor OBUs SHALL be placed in the following order:\n"
     "1. One IA Sequence Header OBU\n"
@@ -379,7 +408,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateDescriptorObusOrder(state, out);
-    } }
+    } },
 };
 
 static const SpecDesc specIamf = {

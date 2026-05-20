@@ -4,6 +4,7 @@
 #include "core/fourcc.h"
 #include "core/spec.h"
 
+#include <map>
 #include <memory>
 #include <set>
 
@@ -651,12 +652,19 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
   state.obu_trimming_status_flag = br->sym("obu_trimming_status_flag", 1);
   auto obu_extension_flag = br->sym("obu_extension_flag", 1);
 
+  bool is_audio_frame =
+    (obu_type == OBU_IA_Audio_Frame) || (obu_type >= OBU_IA_Audio_Frame_ID0 && obu_type <= OBU_IA_Audio_Frame_ID17);
+  if(!is_audio_frame && state.obu_trimming_status_flag != 0) {
+    state.has_invalid_trimming_flag = true;
+  }
+
   uint64_t obuSize = leb128_read(br);
   auto brBits = std::make_unique<ReaderBits>(br);
 
+  uint64_t num_samples_to_trim_at_end = 0;
   uint64_t num_samples_to_trim_at_start = 0;
   if(state.obu_trimming_status_flag) {
-    leb128_read(brBits.get()); // num_samples_to_trim_at_end
+    num_samples_to_trim_at_end = leb128_read(brBits.get());
     num_samples_to_trim_at_start = leb128_read(brBits.get());
   }
 
@@ -771,7 +779,8 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
       substream_id = obu_type - OBU_IA_Audio_Frame_ID0;
     }
 
-    state.audioFrames.push_back({ static_cast<uint64_t>(obu_type), substream_id, num_samples_to_trim_at_start });
+    state.audioFrames.push_back(
+      { static_cast<uint64_t>(obu_type), substream_id, num_samples_to_trim_at_start, num_samples_to_trim_at_end });
 
     // The rest of the OBU is the codec-specific audio_frame data. We do not need to
     // read it here as it is not required for structural validation, and the common
@@ -802,10 +811,69 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
 void validateSequenceHeaderTrimming(const IamfState &state, IReport *out)
 {
   if(state.seenSequenceHeader) {
-    if(state.obu_trimming_status_flag != 0) {
+    if(state.seq_hdr_obu_trimming_status_flag != 0) {
       out->error(
         "[Section 3.2] obu_trimming_status_flag SHALL be 0 for IA Sequence Header OBU, found %d",
-        state.obu_trimming_status_flag);
+        state.seq_hdr_obu_trimming_status_flag);
+    }
+  }
+}
+
+void validateObuTrimming(const IamfState &state, IReport *out)
+{
+  if(state.has_invalid_trimming_flag) {
+    out->error("[Section 3.2] obu_trimming_status_flag SHALL be set to 0 for all OBUs except Audio Frame OBUs.");
+  }
+
+  // Group frames by substream_id
+  std::map<uint64_t, std::vector<AudioFrameInfo>> substream_frames;
+  for(auto const &af : state.audioFrames) {
+    substream_frames[af.substream_id].push_back(af);
+  }
+
+  // Pre-compute map from substream_id to num_samples_per_frame
+  std::map<uint64_t, uint64_t> substream_to_frame_size;
+  for(auto const &elem : state.audioElements) {
+    uint64_t frame_size = 0;
+    for(auto const &config : state.codecConfigs) {
+      if(config.codec_config_id == elem.codec_config_id) {
+        frame_size = config.num_samples_per_frame;
+        break;
+      }
+    }
+    if(frame_size == 0)
+      continue;
+
+    for(auto id : elem.audio_substream_ids) {
+      substream_to_frame_size[id] = frame_size;
+    }
+  }
+
+  for(auto const &p : substream_frames) {
+    uint64_t substream_id = p.first;
+    auto const &frames = p.second;
+
+    auto it = substream_to_frame_size.find(substream_id);
+    if(it == substream_to_frame_size.end())
+      continue;
+    uint64_t num_samples_per_frame = it->second;
+
+    bool seen_partial_or_no_trim = false;
+    for(size_t i = 0; i < frames.size(); ++i) {
+      uint64_t trim = frames[i].num_samples_to_trim_at_start;
+
+      if(seen_partial_or_no_trim) {
+        if(trim != 0) {
+          out->error(
+            "[Section 3.2] Audio Frame OBU for substream %lu has non-zero num_samples_to_trim_at_start (%lu) after a "
+            "frame that was not fully trimmed.",
+            substream_id, trim);
+        }
+      } else {
+        if(trim < num_samples_per_frame) {
+          seen_partial_or_no_trim = true;
+        }
+      }
     }
   }
 }
@@ -1409,12 +1477,13 @@ void validateOpusSpecific(const IamfState &state, IReport *out)
 
       for(auto substream_id : substream_ids) {
         uint64_t total_trimmed = 0;
+        uint64_t num_samples_per_frame = config.num_samples_per_frame;
         for(auto const &frame : state.audioFrames) {
           if(frame.substream_id == substream_id) {
-            if(frame.num_samples_to_trim_at_start == 0) {
+            total_trimmed += frame.num_samples_to_trim_at_start;
+            if(frame.num_samples_to_trim_at_start < num_samples_per_frame) {
               break;
             }
-            total_trimmed += frame.num_samples_to_trim_at_start;
           }
         }
         if(opus_config->pre_skip != total_trimmed) {
@@ -1450,6 +1519,48 @@ void validateLpcmSpecific(const IamfState &state, IReport *out)
         out->error(
           "[Section 3.11.4] sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000, found %u",
           pcm_config->sample_rate);
+      }
+    }
+  }
+}
+
+void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out)
+{
+  // Group frames by substream_id
+  std::map<uint64_t, std::vector<AudioFrameInfo>> substream_frames;
+  for(auto const &af : state.audioFrames) {
+    substream_frames[af.substream_id].push_back(af);
+  }
+
+  if(substream_frames.empty())
+    return;
+
+  // Use the first substream as reference
+  auto const &ref_frames = substream_frames.begin()->second;
+  uint64_t ref_substream_id = substream_frames.begin()->first;
+
+  for(auto const &p : substream_frames) {
+    if(p.first == ref_substream_id)
+      continue;
+    auto const &frames = p.second;
+
+    if(frames.size() != ref_frames.size()) {
+      out->error(
+        "[Section 4] Substream %lu has %lu frames, expected %lu (matching substream %lu)", p.first, frames.size(),
+        ref_frames.size(), ref_substream_id);
+      continue;
+    }
+
+    for(size_t i = 0; i < frames.size(); ++i) {
+      if(frames[i].num_samples_to_trim_at_start != ref_frames[i].num_samples_to_trim_at_start) {
+        out->error(
+          "[Section 4] Substream %lu frame %zu has start trim %lu, expected %lu (matching substream %lu)", p.first, i,
+          frames[i].num_samples_to_trim_at_start, ref_frames[i].num_samples_to_trim_at_start, ref_substream_id);
+      }
+      if(frames[i].num_samples_to_trim_at_end != ref_frames[i].num_samples_to_trim_at_end) {
+        out->error(
+          "[Section 4] Substream %lu frame %zu has end trim %lu, expected %lu (matching substream %lu)", p.first, i,
+          frames[i].num_samples_to_trim_at_end, ref_frames[i].num_samples_to_trim_at_end, ref_substream_id);
       }
     }
   }
