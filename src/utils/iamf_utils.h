@@ -206,6 +206,7 @@ struct IamfState {
   int obu_redundant_copy = -1; // Value from the current OBU
   std::vector<ObuInfo> obuSequence;
   bool has_invalid_trimming_flag = false;
+  uint64_t max_obu_size_seen = 0;
 
   // IA Sequence Header
   bool firstObuIsSeqHdr = false;
@@ -231,6 +232,7 @@ int64_t parseIamfObus(IReader *br, IamfState &state);
 void validateFirstObuIsSeqHdr(const IamfState &state, IReport *out);
 void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
 void validateObuTrimming(const IamfState &state, IReport *out);
+void validateObuMaxSize(const IamfState &state, IReport *out);
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
 void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);

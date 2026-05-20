@@ -658,7 +658,17 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
     state.has_invalid_trimming_flag = true;
   }
 
-  uint64_t obuSize = leb128_read(br);
+  ReaderBits brSize(br);
+  uint64_t obuSize = leb128_read(&brSize);
+  // Number of bytes used to encode the OBU size. Since leb128_read reads full bytes (8 bits at a time),
+  // brSize.count will always be a multiple of 8.
+  int leb128_bytes = brSize.count / 8;
+
+  // Total OBU size = 1 byte (header) + bytes used for obu_size field + payload size.
+  uint64_t total_obu_size = 1 + leb128_bytes + obuSize;
+  if(total_obu_size > state.max_obu_size_seen) {
+    state.max_obu_size_seen = total_obu_size;
+  }
   auto brBits = std::make_unique<ReaderBits>(br);
 
   uint64_t num_samples_to_trim_at_end = 0;
@@ -875,6 +885,15 @@ void validateObuTrimming(const IamfState &state, IReport *out)
         }
       }
     }
+  }
+}
+
+void validateObuMaxSize(const IamfState &state, IReport *out)
+{
+  if(state.max_obu_size_seen > 2097152) {
+    out->error(
+      "[Section 4] The maximum size of an OBU SHALL be limited to 2MB (2097152 bytes), found %lu",
+      state.max_obu_size_seen);
   }
 }
 

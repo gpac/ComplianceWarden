@@ -1,0 +1,19 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #17] Error: [Section 4] The maximum size of an OBU SHALL be limited to 2MB (2097152 bytes), found 2097158
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #17] id: assert-obu-max-size
+Section 4
+The maximum size of an OBU (an OBU Header followed by the OBU payload) SHALL be limited to 2MB.
+

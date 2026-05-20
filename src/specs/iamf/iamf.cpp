@@ -367,6 +367,23 @@ std::initializer_list<RuleDesc> rulesIamf = {
       validateLpcmSpecific(state, out);
     } },
   { "Section 4\n"
+    "The maximum size of an OBU (an OBU Header followed by the OBU payload) SHALL be limited to 2MB.",
+    "assert-obu-max-size",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateObuMaxSize(state, out);
+    } },
+  { "Section 4\n"
     "Audio Substream trimming consistency checks:\n"
     "- Every Audio Substream in the IA Sequence SHALL have the same start timestamp, SHALL consist of the same number "
     "of Audio Frame OBUs, and SHALL have the same trimming information.",

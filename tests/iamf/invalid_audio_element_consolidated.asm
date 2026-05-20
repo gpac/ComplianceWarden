@@ -33,7 +33,7 @@ db 0         ; num_layers = 0
 
 ; OBU 2: Tests "When audio_element_type = 0 (CHANNEL_BASED), num_parameters SHALL be set to 0, 1, or 2."
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
-db 23        ; obu_size = 23 bytes
+db 24        ; obu_size = 24 bytes
 db 2         ; audio_element_id = 2
 db 0         ; audio_element_type = 0 (CHANNEL_BASED), reserved = 0
 db 0         ; codec_config_id = 0
@@ -54,7 +54,8 @@ db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
 db 10000000b ; param_definition_mode = 1, reserved = 0
 ; Parameter 3 (Type 3)
 db 3         ; param_definition_type = 3
-db 0         ; param_definition_size = 0
+db 1         ; param_definition_size = 1
+db 0         ; param_definition_byte = 0
 db 0         ; num_layers = 0
 
 ; OBU 3: Tests "When audio_element_type = 1 (SCENE_BASED), num_parameters SHALL be set to 0."
