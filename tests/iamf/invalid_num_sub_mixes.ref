@@ -5,23 +5,13 @@
 Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
-[iamf][Rule #16] Error: [Section 3.11.4] sample_format_flags SHALL be 0 or 1, found 2
-[iamf][Rule #16] Error: [Section 3.11.4] sample_size SHALL be 16, 24, or 32, found 8
-[iamf][Rule #16] Error: [Section 3.11.4] sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000, found 1000
-[iamf][Rule #17] Error: [Section 4] There SHALL be only one unique Codec Config OBU. Found 4 unique IDs.
+[iamf][Rule #17] Warning: [Section 4] num_sub_mixes SHOULD be set to 1. Found 2
 
 ========================================
-[iamf] 4 error(s), 0 warning(s).
+[iamf] 0 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
-
-[iamf][Rule #16] id: assert-lpcm-specific
-Section 3.11.4
-LPCM Specific checks:
-- sample_format_flags SHALL be 0 or 1.
-- sample_size SHALL be 16, 24, or 32.
-- sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000.
 
 [iamf][Rule #17] id: assert-common-profile-restrictions
 Section 4

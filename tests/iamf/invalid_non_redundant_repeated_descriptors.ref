@@ -1,0 +1,34 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #20] Error: [Section 4] Repeated Descriptors in the middle of the IA Sequence SHALL be marked as redundant (obu_redundant_copy = 1).
+[iamf][Rule #21] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen IA Sequence Header OBU
+
+========================================
+[iamf] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #20] id: assert-section4-descriptor-placement
+Section 4
+Descriptor and Data placement restrictions for all profiles:
+- There SHALL be only one unique set of Descriptors in an IA Sequence. If the Descriptors are repeated in the middle of the IA Sequence, all the OBUs in that set of Descriptors SHALL be marked as redundant (i.e., obu_redundant_copy = 1).
+- When a set of Descriptors is placed in the middle of the IA Sequence, it SHALL NOT be placed in the middle of a Temporal Unit.
+- There SHALL be no redundant Parameter Block OBUs in a Temporal Unit.
+- Parameter Block OBUs SHALL come first and SHALL be followed by Audio Frame OBUs in a Temporal Unit.
+- There MAY be Temporal Delimiter OBUs present. If present, the first OBU of every Temporal Unit SHALL be the Temporal Delimiter OBU.
+
+[iamf][Rule #21] id: assert-descriptor-obus-order
+Section 5.1.1
+Descriptor OBUs SHALL be placed in the following order:
+1. One IA Sequence Header OBU
+2. All Codec Config OBUs
+3. All Audio Element OBUs
+4. All Mix Presentation OBUs
+An IA Sequence is composed of a series of OBUs in the sequence of a set of Descriptors followed by their associated IA Data.
+

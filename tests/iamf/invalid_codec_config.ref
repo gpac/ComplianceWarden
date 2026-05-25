@@ -10,9 +10,10 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 [iamf][Rule #3] Error: [Section 3.5] audio_roll_distance SHALL be -1 for mp4a, found 0
 [iamf][Rule #3] Error: [Section 3.5] audio_roll_distance SHALL be 0 for fLaC or ipcm, found -1
 [iamf][Rule #3] Error: [Section 3.5] audio_roll_distance SHALL be -4 for Opus with num_samples_per_frame = 960, found 0
+[iamf][Rule #17] Error: [Section 4] There SHALL be only one unique Codec Config OBU. Found 5 unique IDs.
 
 ========================================
-[iamf] 5 error(s), 0 warning(s).
+[iamf] 6 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -27,4 +28,13 @@ Codec Config OBU checks:
 - audio_roll_distance SHALL be set to -R when codec_id is set to Opus, where R = ceil(3840 / num_samples_per_frame).
 - audio_roll_distance SHALL be set to -1 when codec_id is set to mp4a.
 - audio_roll_distance SHALL be set to 0 when codec_id is set to fLaC or ipcm.
+
+[iamf][Rule #17] id: assert-common-profile-restrictions
+Section 4
+Common restrictions on the IA Sequence for all profiles:
+- The maximum size of an OBU SHALL be limited to 2MB.
+- There SHALL be only one unique Codec Config OBU.
+- num_sub_mixes SHOULD be set to 1.
+- num_audio_elements SHOULD be set to at most 28.
+- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
 

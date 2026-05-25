@@ -233,6 +233,8 @@ void validateFirstObuIsSeqHdr(const IamfState &state, IReport *out);
 void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
 void validateObuTrimming(const IamfState &state, IReport *out);
 void validateObuMaxSize(const IamfState &state, IReport *out);
+void validateCommonProfileRestrictions(const IamfState &state, IReport *out);
+
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
 void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);
@@ -249,5 +251,7 @@ void validateAudioFrames(const IamfState &state, IReport *out);
 void validateOpusSpecific(const IamfState &state, IReport *out);
 void validateLpcmSpecific(const IamfState &state, IReport *out);
 void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out);
+void validateParameterSubstreamConsistency(const IamfState &state, IReport *out);
+void validateDescriptorsAndDataPlacement(IReader *br, IReport *out);
 void validateDescriptorObusOrder(const IamfState &state, IReport *out);
 void parseIacb(IReader *br);

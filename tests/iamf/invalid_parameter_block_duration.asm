@@ -64,6 +64,10 @@ db 0, 0      ; integrated_loudness = 0
 db 0, 0      ; digital_peak = 0
 obu_end:
 
+; Temporal Delimiter OBU
+db 00100000b ; OBU Header: obu_type = 4 (Temporal Delimiter)
+db 0         ; obu_size = 0
+
 ; Parameter Block OBU (Invalid: duration = 0)
 db 00011000b ; OBU Header: obu_type = 3 (Parameter Block)
 db 9         ; obu_size = 9 bytes
@@ -77,22 +81,40 @@ db 0, 0      ; start_point_value = 0
 db 0         ; animation_type = 0, reserved = 0
 db 0, 0      ; start_point_value = 0
 
+; Audio Frame OBU
+db 00111000b ; OBU Header: obu_type = 7 (Audio Frame ID1)
+db 1         ; obu_size = 1 byte
+db 0         ; dummy audio frame byte
+
+; Temporal Delimiter OBU
+db 00100000b ; OBU Header: obu_type = 4 (Temporal Delimiter)
+db 0         ; obu_size = 0
+
 ; Parameter Block OBU (Invalid: subblock_duration = 0)
 db 00011000b ; OBU Header: obu_type = 3 (Parameter Block)
 db 8         ; obu_size = 8 bytes
 db 0         ; parameter_id = 0
-db 10        ; duration = 10
+db 64        ; duration = 64
 db 0         ; constant_subblock_duration = 0
 db 1         ; num_subblocks = 1
 db 0         ; subblock_duration = 0 -> INVALID!
 db 0         ; animation_type = 0
 db 0, 0      ; start_point_value = 0
 
+; Audio Frame OBU
+db 00111000b ; OBU Header: obu_type = 7 (Audio Frame ID1)
+db 1         ; obu_size = 1 byte
+db 0         ; dummy audio frame byte
+
+; Temporal Delimiter OBU
+db 00100000b ; OBU Header: obu_type = 4 (Temporal Delimiter)
+db 0         ; obu_size = 0
+
 ; Parameter Block OBU (Invalid: summation of subblock_duration != duration)
 db 00011000b ; OBU Header: obu_type = 3 (Parameter Block)
 db 12        ; obu_size = 12 bytes
 db 0         ; parameter_id = 0
-db 10        ; duration = 10
+db 64        ; duration = 64
 db 0         ; constant_subblock_duration = 0
 db 2         ; num_subblocks = 2
 ; Subblock 1
@@ -100,6 +122,11 @@ db 4         ; subblock_duration = 4
 db 0         ; animation_type = 0
 db 0, 0      ; start_point_value = 0
 ; Subblock 2
-db 4         ; subblock_duration = 4 (Sum = 8 != duration 10) -> INVALID!
+db 4         ; subblock_duration = 4 (Sum = 8 != duration 64) -> INVALID!
 db 0         ; animation_type = 0
 db 0, 0      ; start_point_value = 0
+
+; Audio Frame OBU
+db 00111000b ; OBU Header: obu_type = 7 (Audio Frame ID1)
+db 1         ; obu_size = 1 byte
+db 0         ; dummy audio frame byte

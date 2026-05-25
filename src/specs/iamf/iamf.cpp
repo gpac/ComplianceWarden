@@ -367,8 +367,14 @@ std::initializer_list<RuleDesc> rulesIamf = {
       validateLpcmSpecific(state, out);
     } },
   { "Section 4\n"
-    "The maximum size of an OBU (an OBU Header followed by the OBU payload) SHALL be limited to 2MB.",
-    "assert-obu-max-size",
+    "Common restrictions on the IA Sequence for all profiles:\n"
+    "- The maximum size of an OBU SHALL be limited to 2MB.\n"
+    "- There SHALL be only one unique Codec Config OBU.\n"
+    "- num_sub_mixes SHOULD be set to 1.\n"
+    "- num_audio_elements SHOULD be set to at most 28.\n"
+    "- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.",
+    "assert-common-profile-restrictions",
+
     [](Box const &root, IReport *out) {
       IamfState state;
       BoxReader br;
@@ -381,7 +387,8 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       out->covered();
 
-      validateObuMaxSize(state, out);
+      validateCommonProfileRestrictions(state, out);
+
     } },
   { "Section 4\n"
     "Audio Substream trimming consistency checks:\n"
@@ -402,6 +409,48 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateSubstreamTrimmingConsistency(state, out);
     } },
+  { "Section 4\n"
+    "Parameter Substream consistency checks:\n"
+    "- Every Parameter Substream in the IA Sequence SHALL consist of the same number of Parameter Block OBUs.\n"
+    "- Every Parameter Block OBU SHALL have the same duration as its corresponding Audio Frame OBU under the same "
+    "sample rate.",
+    "assert-parameter-substream-consistency",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+      validateParameterSubstreamConsistency(state, out);
+    } },
+
+  { "Section 4\n"
+    "Descriptor and Data placement restrictions for all profiles:\n"
+    "- There SHALL be only one unique set of Descriptors in an IA Sequence. If the Descriptors are repeated in the "
+    "middle of the IA Sequence, all the OBUs in that set of Descriptors SHALL be marked as redundant (i.e., "
+    "obu_redundant_copy = 1).\n"
+    "- When a set of Descriptors is placed in the middle of the IA Sequence, it SHALL NOT be placed in the middle of a "
+    "Temporal Unit.\n"
+    "- There SHALL be no redundant Parameter Block OBUs in a Temporal Unit.\n"
+    "- Parameter Block OBUs SHALL come first and SHALL be followed by Audio Frame OBUs in a Temporal Unit.\n"
+    "- There MAY be Temporal Delimiter OBUs present. If present, the first OBU of every Temporal Unit SHALL be the "
+    "Temporal Delimiter OBU.",
+    "assert-section4-descriptor-placement",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      out->covered();
+      validateDescriptorsAndDataPlacement(&br, out);
+    } },
+
   { "Section 5.1.1\n"
     "Descriptor OBUs SHALL be placed in the following order:\n"
     "1. One IA Sequence Header OBU\n"

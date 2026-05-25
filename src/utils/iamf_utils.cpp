@@ -897,6 +897,59 @@ void validateObuMaxSize(const IamfState &state, IReport *out)
   }
 }
 
+void validateCommonProfileRestrictions(const IamfState &state, IReport *out)
+
+{
+  // 1. OBU max size
+  validateObuMaxSize(state, out);
+
+  // 2. Unique Codec Config
+  std::set<uint64_t> unique_codec_config_ids;
+  for(auto const &config : state.codecConfigs) {
+    unique_codec_config_ids.insert(config.codec_config_id);
+  }
+  if(unique_codec_config_ids.size() > 1) {
+    out->error(
+      "[Section 4] There SHALL be only one unique Codec Config OBU. Found %zu unique IDs.",
+      unique_codec_config_ids.size());
+  }
+
+  // 3. Mix Presentation restrictions
+  for(auto const &mix : state.mixPresentations) {
+    if(mix.sub_mixes.size() > 1) {
+      out->warning("[Section 4] num_sub_mixes SHOULD be set to 1. Found %zu", mix.sub_mixes.size());
+    }
+    for(auto const &sub_mix : mix.sub_mixes) {
+      if(sub_mix.audio_elements.size() > 28) {
+        out->warning(
+          "[Section 4] num_audio_elements SHOULD be set to at most 28. Found %zu in a sub-mix",
+          sub_mix.audio_elements.size());
+      }
+    }
+  }
+
+  // 4. Scalable Channel Layout num_layers=1
+  for(auto const &elem : state.audioElements) {
+    if(elem.ignored)
+      continue;
+    if(elem.audio_element_type != AUDIO_ELEMENT_CHANNEL_BASED)
+      continue;
+
+    auto const &config = elem.scalable_channel_layout_config;
+    if(config.num_layers == 1) {
+      if(!config.channel_audio_layer_config.empty()) {
+        auto const &layer = config.channel_audio_layer_config[0];
+        if(layer.output_gain_is_present_flag != 0) {
+          out->error("[Section 4] When num_layers = 1, output_gain_is_present_flag SHALL be set to 0.");
+        }
+        if(layer.recon_gain_is_present_flag != 0) {
+          out->error("[Section 4] When num_layers = 1, recon_gain_is_present_flag SHALL be set to 0.");
+        }
+      }
+    }
+  }
+}
+
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out)
 {
   if(state.seenSequenceHeader) {
@@ -1693,7 +1746,217 @@ void validateDescriptorObusOrder(const IamfState &state, IReport *out)
   }
 }
 
+void validateParameterSubstreamConsistency(const IamfState &state, IReport *out)
+{
+  if(state.codecConfigs.empty())
+    return;
+  const auto &config = state.codecConfigs[0];
+  uint32_t audio_sample_rate = 0;
+  if(config.codec_id == FOURCC("Opus")) {
+    audio_sample_rate = 48000;
+  } else if(config.codec_id == FOURCC("ipcm")) {
+    auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(config.decoder_config.get());
+    if(pcm_config) {
+      audio_sample_rate = pcm_config->sample_rate;
+    }
+  }
+
+  if(audio_sample_rate == 0)
+    return;
+
+  // Group blocks by parameter_id
+  std::map<uint64_t, std::vector<ParameterBlockInfo>> param_blocks;
+  for(auto const &pb : state.parameterBlocks) {
+    param_blocks[pb.parameter_id].push_back(pb);
+  }
+
+  // Find expected number of frames per substream.
+  size_t expected_frames = 0;
+  if(!state.audioFrames.empty()) {
+    uint64_t ref_substream_id = state.audioFrames[0].substream_id;
+    for(auto const &af : state.audioFrames) {
+      if(af.substream_id == ref_substream_id) {
+        expected_frames++;
+      }
+    }
+  }
+
+  // Maps parameter_id (key) to parameter_rate (value)
+  std::map<uint64_t, uint64_t> param_rates;
+  auto check_rate = [&](uint64_t parameter_id, uint64_t new_rate) {
+    auto it = param_rates.find(parameter_id);
+    if(it == param_rates.end()) {
+      param_rates[parameter_id] = new_rate;
+    } else if(it->second != new_rate) {
+      out->error(
+        "[Section 4] Inconsistent parameter_rate for parameter_id %lu: %lu vs %lu", parameter_id, new_rate, it->second);
+    }
+  };
+
+  for(const auto &ae : state.audioElements) {
+    for(const auto &param : ae.param_definitions) {
+      check_rate(param.parameter_id, param.parameter_rate);
+    }
+  }
+  for(const auto &mp : state.mixPresentations) {
+    for(const auto &sm : mp.sub_mixes) {
+      for(const auto &sae : sm.audio_elements) {
+        check_rate(sae.element_mix_gain.parameter_id, sae.element_mix_gain.parameter_rate);
+      }
+      check_rate(sm.output_mix_gain.parameter_id, sm.output_mix_gain.parameter_rate);
+    }
+  }
+
+  for(auto const &p : param_blocks) {
+    if(p.second.size() != expected_frames) {
+      out->error(
+        "[Section 4] Parameter Substream %lu has %lu blocks, expected %lu (matching audio substreams)", p.first,
+        p.second.size(), expected_frames);
+    }
+
+    uint64_t param_rate = 0;
+    auto it = param_rates.find(p.first);
+    if(it != param_rates.end()) {
+      param_rate = it->second;
+    }
+
+    if(param_rate != 0) {
+      // Division is guaranteed to be exact as checked in assert-parameter-definition (Section 3.6.1).
+      uint64_t expected_duration = config.num_samples_per_frame * param_rate / audio_sample_rate;
+
+      for(size_t i = 0; i < p.second.size(); ++i) {
+        if(p.second[i].duration != expected_duration) {
+          out->error(
+            "[Section 4] Parameter Substream %lu block %zu has duration %lu, expected %lu", p.first, i,
+            p.second[i].duration, expected_duration);
+        }
+      }
+    }
+  }
+}
+
+void validateDescriptorsAndDataPlacement(IReader *br, IReport *out)
+
+{
+  IamfState state;
+
+  bool seen_data = false;
+  bool seen_temporal_delimiter = false;
+  size_t total_declared_audio_substreams = 0;
+  std::set<uint64_t> seen_audio_frames_in_temporal_unit;
+  std::set<uint64_t> seen_param_blocks_in_temporal_unit;
+
+  auto reset_temporal_unit_state = [&]() {
+    seen_audio_frames_in_temporal_unit.clear();
+    seen_param_blocks_in_temporal_unit.clear();
+  };
+
+  while(!br->empty()) {
+    int64_t obu_type = parseIamfObus(br, state);
+
+    const bool is_reserved = (obu_type > OBU_IA_Audio_Frame_ID17 && obu_type < OBU_IA_Sequence_Header);
+    if(is_reserved) {
+      continue;
+    }
+
+    const bool started_temporal_unit =
+      !seen_audio_frames_in_temporal_unit.empty() || !seen_param_blocks_in_temporal_unit.empty();
+    const bool completed_temporal_unit =
+      (total_declared_audio_substreams > 0 &&
+       seen_audio_frames_in_temporal_unit.size() == total_declared_audio_substreams);
+
+    const bool is_descriptor =
+      (obu_type == OBU_IA_Sequence_Header || obu_type == OBU_IA_Codec_Config || obu_type == OBU_IA_Audio_Element ||
+       obu_type == OBU_IA_Mix_Presentation);
+
+    if(is_descriptor) {
+      if(obu_type == OBU_IA_Audio_Element && state.obu_redundant_copy == 0) {
+        if(!state.audioElements.empty()) {
+          const auto &elem = state.audioElements.back();
+          if(!elem.ignored) {
+            total_declared_audio_substreams += elem.audio_substream_ids.size();
+          }
+        }
+      }
+
+      if(seen_data) {
+        if(state.obu_redundant_copy != 1) {
+          out->error(
+            "[Section 4] Repeated Descriptors in the middle of the IA Sequence SHALL be marked as redundant "
+            "(obu_redundant_copy = 1).");
+        }
+
+        if(started_temporal_unit && !completed_temporal_unit) {
+          out->error(
+            "[Section 4] Descriptors placed mid-sequence SHALL NOT be placed in the middle of a Temporal Unit.");
+        }
+      }
+      continue;
+    }
+
+    // Data OBUs
+    seen_data = true;
+
+    if(obu_type == OBU_IA_Temporal_Delimiter) {
+      if(!seen_temporal_delimiter) {
+        if(started_temporal_unit) {
+          out->error(
+            "[Section 4] If Temporal Delimiter OBUs are present, the first OBU of every Temporal Unit SHALL be the "
+            "Temporal Delimiter OBU.");
+        }
+        seen_temporal_delimiter = true;
+      } else if(!completed_temporal_unit) {
+        out->error("[Section 4] Incomplete set of Audio Frames in Temporal Unit.");
+      }
+
+      reset_temporal_unit_state();
+      continue;
+    }
+
+    // Non-delimiter Data OBUs (Parameter Block or Audio Frame)
+    if(completed_temporal_unit) {
+      if(seen_temporal_delimiter) {
+        out->error(
+          "[Section 4] If Temporal Delimiter OBUs are present, the first OBU of every Temporal Unit SHALL be the "
+          "Temporal Delimiter OBU.");
+      }
+      reset_temporal_unit_state();
+    }
+
+    if(obu_type == OBU_IA_Parameter_Block) {
+      if(!seen_audio_frames_in_temporal_unit.empty()) {
+        out->error("[Section 4] Parameter Block OBUs SHALL come first and SHALL be followed by Audio Frame OBUs.");
+      }
+
+      if(!state.parameterBlocks.empty()) {
+        const uint64_t param_id = state.parameterBlocks.back().parameter_id;
+        if(seen_param_blocks_in_temporal_unit.count(param_id)) {
+          out->error("[Section 4] There SHALL be no redundant Parameter Block OBUs.");
+        }
+        seen_param_blocks_in_temporal_unit.insert(param_id);
+      }
+    } else if(obu_type >= OBU_IA_Audio_Frame && obu_type <= OBU_IA_Audio_Frame_ID17) {
+      if(!state.audioFrames.empty()) {
+        const uint64_t substream_id = state.audioFrames.back().substream_id;
+
+        if(seen_audio_frames_in_temporal_unit.count(substream_id)) {
+          if(seen_temporal_delimiter) {
+            out->error(
+              "[Section 4] If Temporal Delimiter OBUs are present, the first OBU of every Temporal Unit SHALL be the "
+              "Temporal Delimiter OBU.");
+          }
+          out->error("[Section 4] Incomplete set of Audio Frames in Temporal Unit.");
+
+          reset_temporal_unit_state();
+        }
+        seen_audio_frames_in_temporal_unit.insert(substream_id);
+      }
+    }
+  }
+}
+
 void parseIacb(IReader *br)
+
 {
   br->sym("configurationVersion", 8);
   leb128_read(br); // configOBUs_size
