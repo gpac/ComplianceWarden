@@ -50,9 +50,10 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 [iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 2
 [iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
 [iamf][Rule #14] Error: [Section 3.9] There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors. Duplicate id 1
+[iamf][Rule #21] Error: [Section 4.1] For Simple Profile, only one unique Audio Element OBU is allowed. Found 10
 
 ========================================
-[iamf] 45 error(s), 0 warning(s).
+[iamf] 46 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -98,4 +99,10 @@ Audio Frame OBU checks:
 - When obu_type = OBU_IA_Audio_Frame, explicit_audio_substream_id SHALL be greater than 17.
 - AudioFrameOBU SHALL refer to a valid audio_substream_id declared in an Audio Element OBU.
 - There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors.
+
+[iamf][Rule #21] id: assert-profile-restrictions
+Section 4.1
+Simple Profile restrictions:
+- There SHALL be only one unique Audio Element OBU.
+- The IA parser, decoder, and processor SHALL be able to handle up to 16 channels.
 

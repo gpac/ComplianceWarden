@@ -6,9 +6,10 @@ Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
 [iamf][Rule #17] Warning: [Section 4] num_audio_elements SHOULD be set to at most 28. Found 29 in a sub-mix
+[iamf][Rule #21] Error: [Section 4.1] For Simple Profile, no Mix Presentation complies with Simple Profile constraints.
 
 ========================================
-[iamf] 0 error(s), 1 warning(s).
+[iamf] 1 error(s), 1 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -21,4 +22,10 @@ Common restrictions on the IA Sequence for all profiles:
 - num_sub_mixes SHOULD be set to 1.
 - num_audio_elements SHOULD be set to at most 28.
 - When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+
+[iamf][Rule #21] id: assert-profile-restrictions
+Section 4.1
+Simple Profile restrictions:
+- There SHALL be only one unique Audio Element OBU.
+- The IA parser, decoder, and processor SHALL be able to handle up to 16 channels.
 

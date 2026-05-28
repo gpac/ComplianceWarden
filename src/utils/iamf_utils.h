@@ -211,6 +211,8 @@ struct IamfState {
   // IA Sequence Header
   bool firstObuIsSeqHdr = false;
   int seq_hdr_obu_trimming_status_flag = -1;
+  int primary_profile = -1;
+  int additional_profile = -1;
 
   // Codec Config
   std::vector<CodecConfigInfo> codecConfigs;
@@ -234,7 +236,7 @@ void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
 void validateObuTrimming(const IamfState &state, IReport *out);
 void validateObuMaxSize(const IamfState &state, IReport *out);
 void validateCommonProfileRestrictions(const IamfState &state, IReport *out);
-
+void validateProfileRestrictions(const IamfState &state, IReport *out);
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
 void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);

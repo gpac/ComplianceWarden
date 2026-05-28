@@ -5,16 +5,21 @@
 Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 17, expected 1
+[iamf][Rule #21] Error: [Section 4.1] For Simple Profile, Audio Element 1 has 17 channels, which exceeds the limit of 16.
 [iamf][Rule #21] Error: [Section 4.1] For Simple Profile, no Mix Presentation complies with Simple Profile constraints.
-[iamf][Rule #22] Error: [Section 5.1.1] Descriptor OBUs skipped. Found Audio Element OBU after IA Sequence Header OBU
-[iamf][Rule #22] Error: [Section 5.1.1] Descriptor OBUs out of order. Found Codec Config OBU after Audio Element OBU
-[iamf][Rule #22] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen Codec Config OBU
+[iamf][Rule #22] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen Audio Element OBU
 
 ========================================
 [iamf] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
+
+[iamf][Rule #8] id: assert-scalable-channel-group-format
+Section 3.6.3
+Channel Group Format checks:
+- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
 
 [iamf][Rule #21] id: assert-profile-restrictions
 Section 4.1

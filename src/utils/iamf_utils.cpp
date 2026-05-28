@@ -16,8 +16,8 @@ namespace
 void parseIASequenceHeaderOBU(ReaderBits *br, IamfState &state)
 {
   state.ia_code = br->sym("ia_code", 32);
-  br->sym("primary_profile", 8);
-  br->sym("additional_profile", 8);
+  state.primary_profile = br->sym("primary_profile", 8);
+  state.additional_profile = br->sym("additional_profile", 8);
 }
 
 ParamDefinition parseParamDefinition(ReaderBits *br)
@@ -642,6 +642,24 @@ void checkTicksPerFrame(const ParamDefinition &param, uint64_t codec_config_id, 
   }
 }
 
+int getAudioElementChannelCount(const AudioElementInfo &elem)
+{
+  int channels = 0;
+  if(elem.audio_element_type == AUDIO_ELEMENT_CHANNEL_BASED) {
+    for(const auto &layer : elem.scalable_channel_layout_config.channel_audio_layer_config) {
+      channels += layer.substream_count + layer.coupled_substream_count;
+    }
+  } else if(elem.audio_element_type == AUDIO_ELEMENT_SCENE_BASED) {
+    if(elem.ambisonics_config.ambisonics_mode == 0) {
+      channels = elem.ambisonics_config.mono_config.substream_count;
+    } else if(elem.ambisonics_config.ambisonics_mode == 1) {
+      channels = elem.ambisonics_config.projection_config.substream_count +
+        elem.ambisonics_config.projection_config.coupled_substream_count;
+    }
+  }
+  return channels;
+}
+
 } // namespace
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
@@ -946,6 +964,73 @@ void validateCommonProfileRestrictions(const IamfState &state, IReport *out)
           out->error("[Section 4] When num_layers = 1, recon_gain_is_present_flag SHALL be set to 0.");
         }
       }
+    }
+  }
+}
+
+void validateProfileRestrictions(const IamfState &state, IReport *out)
+{
+  bool check_entire_sequence = (state.additional_profile == 0);
+  bool check_at_least_one_mix = (state.primary_profile == 0);
+
+  if(!check_entire_sequence && !check_at_least_one_mix) {
+    return;
+  }
+  if(state.audioElements.empty()) {
+    return;
+  }
+
+  out->covered();
+
+  std::map<uint64_t, const AudioElementInfo *> id_to_ae;
+  for(const auto &ae : state.audioElements) {
+    if(id_to_ae.find(ae.audio_element_id) == id_to_ae.end()) {
+      id_to_ae[ae.audio_element_id] = &ae;
+    }
+  }
+
+  if(check_entire_sequence) {
+    if(state.audioElements.size() > 1) {
+      out->error(
+        "[Section 4.1] For Simple Profile, only one unique Audio Element OBU is allowed. Found %zu",
+        state.audioElements.size());
+    }
+
+    const auto &elem = state.audioElements[0];
+    if(elem.ignored) {
+      out->warning(
+        "[Section 4.1] Ignored Audio Element %lu with unknown type %u.", elem.audio_element_id,
+        elem.audio_element_type);
+    } else {
+      int channels = getAudioElementChannelCount(elem);
+      if(channels > 16) {
+        out->error(
+          "[Section 4.1] For Simple Profile, Audio Element %lu has %d channels, which exceeds the limit of 16.",
+          elem.audio_element_id, channels);
+      }
+    }
+  }
+
+  if(check_at_least_one_mix) {
+    bool found_compliant_mix = false;
+    for(const auto &mix : state.mixPresentations) {
+      std::set<uint64_t> ae_ids;
+      for(const auto &sub_mix : mix.sub_mixes) {
+        for(const auto &sub_elem : sub_mix.audio_elements) {
+          ae_ids.insert(sub_elem.audio_element_id);
+        }
+      }
+      if(ae_ids.size() == 1) {
+        auto it = id_to_ae.find(*ae_ids.begin());
+        if(it != id_to_ae.end() && !it->second->ignored && getAudioElementChannelCount(*it->second) <= 16) {
+          found_compliant_mix = true;
+          break;
+        }
+      }
+    }
+
+    if(!found_compliant_mix) {
+      out->error("[Section 4.1] For Simple Profile, no Mix Presentation complies with Simple Profile constraints.");
     }
   }
 }

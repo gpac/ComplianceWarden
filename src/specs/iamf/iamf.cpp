@@ -450,7 +450,23 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
       validateDescriptorsAndDataPlacement(&br, out);
     } },
+  { "Section 4.1\n"
+    "Simple Profile restrictions:\n"
+    "- There SHALL be only one unique Audio Element OBU.\n"
+    "- The IA parser, decoder, and processor SHALL be able to handle up to 16 channels.",
+    "assert-profile-restrictions",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
 
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      validateProfileRestrictions(state, out);
+    } },
   { "Section 5.1.1\n"
     "Descriptor OBUs SHALL be placed in the following order:\n"
     "1. One IA Sequence Header OBU\n"
