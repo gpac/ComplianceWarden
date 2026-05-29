@@ -236,7 +236,7 @@ void validateSequenceHeaderTrimming(const IamfState &state, IReport *out);
 void validateObuTrimming(const IamfState &state, IReport *out);
 void validateObuMaxSize(const IamfState &state, IReport *out);
 void validateCommonProfileRestrictions(const IamfState &state, IReport *out);
-void validateProfileRestrictions(const IamfState &state, IReport *out);
+void validateProfileRestrictions(const IamfState &state, IReport *out, int target_profile);
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out);
 void validateCodecConfig(const IamfState &state, IReport *out);
 void validateAudioElement(const IamfState &state, IReport *out);

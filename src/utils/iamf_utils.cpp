@@ -968,19 +968,11 @@ void validateCommonProfileRestrictions(const IamfState &state, IReport *out)
   }
 }
 
-void validateProfileRestrictions(const IamfState &state, IReport *out)
+void validateProfileRestrictions(const IamfState &state, IReport *out, int target_profile)
 {
-  bool check_entire_sequence = (state.additional_profile == 0);
-  bool check_at_least_one_mix = (state.primary_profile == 0);
-
-  if(!check_entire_sequence && !check_at_least_one_mix) {
-    return;
-  }
   if(state.audioElements.empty()) {
     return;
   }
-
-  out->covered();
 
   std::map<uint64_t, const AudioElementInfo *> id_to_ae;
   for(const auto &ae : state.audioElements) {
@@ -989,48 +981,149 @@ void validateProfileRestrictions(const IamfState &state, IReport *out)
     }
   }
 
-  if(check_entire_sequence) {
-    if(state.audioElements.size() > 1) {
-      out->error(
-        "[Section 4.1] For Simple Profile, only one unique Audio Element OBU is allowed. Found %zu",
-        state.audioElements.size());
-    }
+  struct Counts {
+    int num_scene_based_elements = 0;
+    int num_multi_layer_channel_elements = 0;
+    int total_channels = 0;
+    int num_valid_elements = 0;
+  };
 
-    const auto &elem = state.audioElements[0];
-    if(elem.ignored) {
-      out->warning(
-        "[Section 4.1] Ignored Audio Element %lu with unknown type %u.", elem.audio_element_id,
-        elem.audio_element_type);
-    } else {
-      int channels = getAudioElementChannelCount(elem);
-      if(channels > 16) {
-        out->error(
-          "[Section 4.1] For Simple Profile, Audio Element %lu has %d channels, which exceeds the limit of 16.",
-          elem.audio_element_id, channels);
+  auto getCounts = [&](const std::set<uint64_t> &ids) {
+    Counts counts;
+    for(auto id : ids) {
+      auto it = id_to_ae.find(id);
+      if(it == id_to_ae.end() || it->second->ignored) {
+        continue;
       }
-    }
-  }
-
-  if(check_at_least_one_mix) {
-    bool found_compliant_mix = false;
-    for(const auto &mix : state.mixPresentations) {
-      std::set<uint64_t> ae_ids;
-      for(const auto &sub_mix : mix.sub_mixes) {
-        for(const auto &sub_elem : sub_mix.audio_elements) {
-          ae_ids.insert(sub_elem.audio_element_id);
+      const auto &elem = *it->second;
+      if(elem.audio_element_type == AUDIO_ELEMENT_SCENE_BASED) {
+        counts.num_scene_based_elements++;
+      } else if(elem.audio_element_type == AUDIO_ELEMENT_CHANNEL_BASED) {
+        if(elem.scalable_channel_layout_config.num_layers > 1) {
+          counts.num_multi_layer_channel_elements++;
         }
       }
-      if(ae_ids.size() == 1) {
-        auto it = id_to_ae.find(*ae_ids.begin());
-        if(it != id_to_ae.end() && !it->second->ignored && getAudioElementChannelCount(*it->second) <= 16) {
+      counts.total_channels += getAudioElementChannelCount(elem);
+      counts.num_valid_elements++;
+    }
+    return counts;
+  };
+
+  // --- Simple Profile checks ---
+  bool check_entire_sequence_simple = (target_profile == 0 && state.additional_profile == 0);
+  bool check_at_least_one_mix_simple = (target_profile == 0 && state.primary_profile == 0);
+
+  if(check_entire_sequence_simple || check_at_least_one_mix_simple) {
+    out->covered();
+
+    if(check_entire_sequence_simple) {
+      if(state.audioElements.size() > 1) {
+        out->error(
+          "[Section 4.1] For Simple Profile, only one unique Audio Element OBU is allowed. Found %zu",
+          state.audioElements.size());
+      }
+
+      const auto &elem = state.audioElements[0];
+      if(elem.ignored) {
+        out->warning(
+          "[Section 4.1] Ignored Audio Element %lu with unknown type %u.", elem.audio_element_id,
+          elem.audio_element_type);
+      } else {
+        int channels = getAudioElementChannelCount(elem);
+        if(channels > 16) {
+          out->error(
+            "[Section 4.1] For Simple Profile, Audio Element %lu has %d channels, which exceeds the limit of 16.",
+            elem.audio_element_id, channels);
+        }
+      }
+    }
+
+    if(check_at_least_one_mix_simple) {
+      bool found_compliant_mix = false;
+      for(const auto &mix : state.mixPresentations) {
+        std::set<uint64_t> ae_ids;
+        for(const auto &sub_mix : mix.sub_mixes) {
+          for(const auto &sub_elem : sub_mix.audio_elements) {
+            ae_ids.insert(sub_elem.audio_element_id);
+          }
+        }
+        auto counts = getCounts(ae_ids);
+        if(ae_ids.size() == 1 && counts.num_valid_elements == 1 && counts.total_channels <= 16) {
           found_compliant_mix = true;
           break;
         }
       }
+
+      if(!found_compliant_mix) {
+        out->error("[Section 4.1] For Simple Profile, no Mix Presentation complies with Simple Profile constraints.");
+      }
+    }
+  }
+
+  // --- Base Profile checks ---
+  bool check_entire_sequence_base = (target_profile == 1 && state.additional_profile == 1);
+  bool check_at_least_one_mix_base = (target_profile == 1 && state.primary_profile == 1);
+
+  if(check_entire_sequence_base || check_at_least_one_mix_base) {
+    out->covered();
+
+    if(check_entire_sequence_base) {
+      if(state.audioElements.size() > 2) {
+        out->error(
+          "[Section 4.2] For Base Profile, at most two unique Audio Element OBUs are allowed. Found %zu",
+          state.audioElements.size());
+      }
+
+      std::set<uint64_t> all_ae_ids;
+      for(const auto &ae : state.audioElements) {
+        all_ae_ids.insert(ae.audio_element_id);
+      }
+
+      auto counts = getCounts(all_ae_ids);
+
+      if(counts.num_scene_based_elements > 1) {
+        out->error(
+          "[Section 4.2] For Base Profile, at most one Scene-based Audio Element is allowed. Found %d",
+          counts.num_scene_based_elements);
+      }
+      if(counts.num_multi_layer_channel_elements > 1) {
+        out->error(
+          "[Section 4.2] For Base Profile, at most one Channel-based Audio Element having num_layers > 1 "
+          "is allowed. Found %d",
+          counts.num_multi_layer_channel_elements);
+      }
     }
 
-    if(!found_compliant_mix) {
-      out->error("[Section 4.1] For Simple Profile, no Mix Presentation complies with Simple Profile constraints.");
+    if(check_entire_sequence_base || check_at_least_one_mix_base) {
+      bool found_compliant_mix = false;
+      for(const auto &mix : state.mixPresentations) {
+        std::set<uint64_t> mix_ids;
+        for(const auto &sub_mix : mix.sub_mixes) {
+          for(const auto &sub_elem : sub_mix.audio_elements) {
+            mix_ids.insert(sub_elem.audio_element_id);
+          }
+        }
+        auto counts = getCounts(mix_ids);
+
+        if(check_entire_sequence_base && counts.total_channels > 18) {
+          out->error(
+            "[Section 4.2] For Base Profile, the sum of channels across all Audio Elements in Mix Presentation %lu "
+            "before mixing exceeds 18. Found %d",
+            mix.mix_presentation_id, counts.total_channels);
+        }
+
+        if(check_at_least_one_mix_base && !found_compliant_mix) {
+          if(
+            mix_ids.size() <= 2 && counts.num_scene_based_elements <= 1 &&
+            counts.num_multi_layer_channel_elements <= 1 && counts.total_channels <= 18) {
+            found_compliant_mix = true;
+          }
+        }
+      }
+
+      if(check_at_least_one_mix_base && !found_compliant_mix) {
+        out->error("[Section 4.2] For Base Profile, no Mix Presentation complies with Base Profile constraints.");
+      }
     }
   }
 }

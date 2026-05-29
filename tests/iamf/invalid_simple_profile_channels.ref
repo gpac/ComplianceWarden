@@ -5,16 +5,38 @@
 Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
-[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 17, expected 1
-[iamf][Rule #21] Error: [Section 4.1] For Simple Profile, Audio Element 1 has 17 channels, which exceeds the limit of 16.
+[iamf][Rule #4] Error: [Section 3.6] When num_layers > 1, the type PARAMETER_DEFINITION_RECON_GAIN SHALL be present.
+[iamf][Rule #7] Error: [Section 3.6.3] Duplicate layers are NOT allowed. Layer 2 has same counts as previous (1,0,0)
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 9, expected 1
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 2 (layout 0) has substream_count 9, expected 0
+[iamf][Rule #21] Error: [Section 4.1] For Simple Profile, Audio Element 1 has 18 channels, which exceeds the limit of 16.
 [iamf][Rule #21] Error: [Section 4.1] For Simple Profile, no Mix Presentation complies with Simple Profile constraints.
-[iamf][Rule #22] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen Audio Element OBU
+[iamf][Rule #23] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen Audio Element OBU
 
 ========================================
-[iamf] 4 error(s), 0 warning(s).
+[iamf] 7 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
+
+[iamf][Rule #4] id: assert-audio-element-obu
+Section 3.6
+Audio Element OBU checks:
+- audio_element_id SHALL be unique within an IA Sequence.
+- num_substreams SHALL NOT be set to 0.
+- When audio_element_type = 0 (CHANNEL_BASED), num_parameters SHALL be set to 0, 1, or 2.
+- When audio_element_type = 1 (SCENE_BASED), num_parameters SHALL be set to 0.
+- The type PARAMETER_DEFINITION_MIX_GAIN SHALL NOT be present in Audio Element OBU.
+- The parameter type SHALL NOT be duplicated in one Audio Element OBU.
+- When codec_id = fLaC or ipcm, the type PARAMETER_DEFINITION_RECON_GAIN SHALL NOT be present.
+- When num_layers > 1, the type PARAMETER_DEFINITION_RECON_GAIN SHALL be present.
+- When highest loudspeaker_layout does not correspond to Mono, Stereo, or 3.1.2 and num_layers > 1, both PARAMETER_DEFINITION_DEMIXING and PARAMETER_DEFINITION_RECON_GAIN SHALL be present.
+
+[iamf][Rule #7] id: assert-scalable-channel-layout-generation
+Section 3.6.3
+Channel Layout Generation Rule checks:
+- For scalable channel audio, channel layouts SHALL follow non-decreasing order of surround, LFE and height channels.
+- Duplicate layers are NOT allowed.
 
 [iamf][Rule #8] id: assert-scalable-channel-group-format
 Section 3.6.3
@@ -27,7 +49,7 @@ Simple Profile restrictions:
 - There SHALL be only one unique Audio Element OBU.
 - The IA parser, decoder, and processor SHALL be able to handle up to 16 channels.
 
-[iamf][Rule #22] id: assert-descriptor-obus-order
+[iamf][Rule #23] id: assert-descriptor-obus-order
 Section 5.1.1
 Descriptor OBUs SHALL be placed in the following order:
 1. One IA Sequence Header OBU

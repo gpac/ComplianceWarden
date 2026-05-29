@@ -5,24 +5,21 @@
 Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
-[iamf][Rule #17] Warning: [Section 4] num_audio_elements SHOULD be set to at most 28. Found 29 in a sub-mix
-[iamf][Rule #22] Error: [Section 4.2] For Base Profile, at most two unique Audio Element OBUs are allowed. Found 3
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 10, expected 1
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 10, expected 1
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, the sum of channels across all Audio Elements in Mix Presentation 1 before mixing exceeds 18. Found 20
 [iamf][Rule #22] Error: [Section 4.2] For Base Profile, no Mix Presentation complies with Base Profile constraints.
 
 ========================================
-[iamf] 2 error(s), 1 warning(s).
+[iamf] 4 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[iamf][Rule #17] id: assert-common-profile-restrictions
-Section 4
-Common restrictions on the IA Sequence for all profiles:
-- The maximum size of an OBU SHALL be limited to 2MB.
-- There SHALL be only one unique Codec Config OBU.
-- num_sub_mixes SHOULD be set to 1.
-- num_audio_elements SHOULD be set to at most 28.
-- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+[iamf][Rule #8] id: assert-scalable-channel-group-format
+Section 3.6.3
+Channel Group Format checks:
+- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
 
 [iamf][Rule #22] id: assert-base-profile-restrictions
 Section 4.2

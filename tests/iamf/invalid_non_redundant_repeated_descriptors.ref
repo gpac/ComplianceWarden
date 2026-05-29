@@ -6,7 +6,7 @@ Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
 [iamf][Rule #20] Error: [Section 4] Repeated Descriptors in the middle of the IA Sequence SHALL be marked as redundant (obu_redundant_copy = 1).
-[iamf][Rule #22] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen IA Sequence Header OBU
+[iamf][Rule #23] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen IA Sequence Header OBU
 
 ========================================
 [iamf] 2 error(s), 0 warning(s).
@@ -23,7 +23,7 @@ Descriptor and Data placement restrictions for all profiles:
 - Parameter Block OBUs SHALL come first and SHALL be followed by Audio Frame OBUs in a Temporal Unit.
 - There MAY be Temporal Delimiter OBUs present. If present, the first OBU of every Temporal Unit SHALL be the Temporal Delimiter OBU.
 
-[iamf][Rule #22] id: assert-descriptor-obus-order
+[iamf][Rule #23] id: assert-descriptor-obus-order
 Section 5.1.1
 Descriptor OBUs SHALL be placed in the following order:
 1. One IA Sequence Header OBU

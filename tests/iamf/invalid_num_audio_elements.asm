@@ -2,8 +2,8 @@
 db 11111000b ; OBU Header: obu_type = 31, redundant_copy = 0, trimming = 0, extension = 0
 db 6         ; obu_size = 6 bytes
 db 'iamf'    ; ia_code
-db 0         ; primary_profile
-db 0         ; additional_profile
+db 1         ; primary_profile = 1 (Base)
+db 1         ; additional_profile = 1 (Base)
 
 ; Codec Config OBU (Valid ipcm)
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
@@ -17,7 +17,7 @@ db 1         ; sample_format_flags = 1 (little-endian)
 db 16        ; sample_size = 16
 db 0, 0, 0xAC, 0x44 ; sample_rate = 44100 (big-endian)
 
-; Audio Element OBU (Valid)
+; Audio Element OBU 1 (Valid)
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
 db 10        ; obu_size = 10 bytes
 db 1         ; audio_element_id = 1
@@ -30,6 +30,35 @@ db 00100000b ; num_layers = 1
 db 0         ; loudspeaker_layout = 0 (Mono)
 db 1         ; substream_count = 1
 db 0         ; coupled_substream_count = 0
+
+; Audio Element OBU 2 (Valid)
+db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
+db 10        ; obu_size = 10 bytes
+db 2         ; audio_element_id = 2
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
+db 1         ; num_substreams = 1
+db 2         ; audio_substream_id = 2
+db 0         ; num_parameters = 0
+db 00100000b ; num_layers = 1
+db 0         ; loudspeaker_layout = 0 (Mono)
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+
+; Audio Element OBU 3 (Valid)
+db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
+db 10        ; obu_size = 10 bytes
+db 3         ; audio_element_id = 3
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
+db 1         ; num_substreams = 1
+db 3         ; audio_substream_id = 3
+db 0         ; num_parameters = 0
+db 00100000b ; num_layers = 1
+db 0         ; loudspeaker_layout = 0 (Mono)
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
+
 
 ; Mix Presentation OBU (Invalid: num_audio_elements = 29)
 obu_start:
