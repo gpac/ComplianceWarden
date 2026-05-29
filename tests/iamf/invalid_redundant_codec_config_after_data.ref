@@ -6,9 +6,9 @@ Specification description: IAMF v1.1.0
 https://aomediacodec.github.io/iamf/v1.1.0.html
 
 [iamf][Rule #3] Error: [Section 3.5] There SHALL be exactly one Codec Config OBU with a given identifier in a set of Descriptors.
-[iamf][Rule #23] Error: [Section 5.1.1] Missing required descriptor OBUs before data OBUs. Last seen Codec Config OBU before OBU type 4
-[iamf][Rule #23] Error: [Section 5.1.1] Descriptor OBUs must follow IA Sequence Header. Found OBU type 0 after data OBUs.
-[iamf][Rule #23] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen Codec Config OBU
+[iamf][Rule #24] Error: [Section 5.1.1] Missing required descriptor OBUs before data OBUs. Last seen Codec Config OBU before OBU type 4
+[iamf][Rule #24] Error: [Section 5.1.1] Descriptor OBUs must follow IA Sequence Header. Found OBU type 0 after data OBUs.
+[iamf][Rule #24] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen Codec Config OBU
 
 ========================================
 [iamf] 4 error(s), 0 warning(s).
@@ -27,7 +27,7 @@ Codec Config OBU checks:
 - audio_roll_distance SHALL be set to -1 when codec_id is set to mp4a.
 - audio_roll_distance SHALL be set to 0 when codec_id is set to fLaC or ipcm.
 
-[iamf][Rule #23] id: assert-descriptor-obus-order
+[iamf][Rule #24] id: assert-descriptor-obus-order
 Section 5.1.1
 Descriptor OBUs SHALL be placed in the following order:
 1. One IA Sequence Header OBU

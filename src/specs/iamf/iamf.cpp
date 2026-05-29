@@ -486,6 +486,24 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateProfileRestrictions(state, out, 1);
     } },
+  { "Section 4.3\n"
+    "Base-Enhanced Profile restrictions:\n"
+    "- There SHALL be at least one Mix Presentation OBU for at most 28 Audio Elements.\n"
+    "- The sum of channels across all Audio Elements in a Mix Presentation before mixing SHALL NOT exceed 28.\n"
+    "- There SHALL be at most 28 channels in total across all Audio Elements in the IA Sequence.",
+    "assert-base-enhanced-profile-restrictions",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      validateProfileRestrictions(state, out, 2);
+    } },
   { "Section 5.1.1\n"
     "Descriptor OBUs SHALL be placed in the following order:\n"
     "1. One IA Sequence Header OBU\n"

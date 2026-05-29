@@ -1126,6 +1126,63 @@ void validateProfileRestrictions(const IamfState &state, IReport *out, int targe
       }
     }
   }
+
+  // --- Base-Enhanced Profile checks ---
+  bool check_entire_sequence_enhanced =
+    (target_profile == 2 && state.additional_profile == 2 && state.primary_profile <= 2);
+  bool check_at_least_one_mix_enhanced = (target_profile == 2 && state.primary_profile == 2);
+
+  if(check_entire_sequence_enhanced || check_at_least_one_mix_enhanced) {
+    out->covered();
+
+    if(check_entire_sequence_enhanced) {
+      std::set<uint64_t> all_ae_ids;
+      for(const auto &ae : state.audioElements) {
+        all_ae_ids.insert(ae.audio_element_id);
+      }
+
+      auto counts = getCounts(all_ae_ids);
+
+      if(counts.total_channels > 28) {
+        out->error(
+          "[Section 4.3] For Base-Enhanced Profile, at most 28 channels in total across all Audio Elements in "
+          "the IA Sequence are allowed. Found %d",
+          counts.total_channels);
+      }
+    }
+
+    if(check_entire_sequence_enhanced || check_at_least_one_mix_enhanced) {
+      bool found_compliant_mix = false;
+      for(const auto &mix : state.mixPresentations) {
+        std::set<uint64_t> mix_ids;
+        for(const auto &sub_mix : mix.sub_mixes) {
+          for(const auto &sub_elem : sub_mix.audio_elements) {
+            mix_ids.insert(sub_elem.audio_element_id);
+          }
+        }
+        auto counts = getCounts(mix_ids);
+
+        if(check_entire_sequence_enhanced && counts.total_channels > 28) {
+          out->error(
+            "[Section 4.3] For Base-Enhanced Profile, the sum of channels across all Audio Elements in "
+            "Mix Presentation %lu before mixing exceeds 28. Found %d",
+            mix.mix_presentation_id, counts.total_channels);
+        }
+
+        if(check_at_least_one_mix_enhanced && !found_compliant_mix) {
+          if(mix_ids.size() <= 28 && counts.total_channels <= 28) {
+            found_compliant_mix = true;
+          }
+        }
+      }
+
+      if(check_at_least_one_mix_enhanced && !found_compliant_mix) {
+        out->error(
+          "[Section 4.3] For Base-Enhanced Profile, no Mix Presentation complies with Base-Enhanced Profile "
+          "constraints.");
+      }
+    }
+  }
 }
 
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out)
