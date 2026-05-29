@@ -26,9 +26,10 @@ bool probeIamf(Box const &root, BoxReader &br, IamfState &state, IReport *out)
 std::initializer_list<RuleDesc> rulesIamf = {
   { "Section 3.2\n"
     "OBU trimming checks:\n"
-    "- obu_trimming_status_flag SHALL be set to 0 for all OBUs except Audio Frame OBUs.\n"
     "- When num_samples_to_trim_at_start is non-zero, all preceding Audio Frame OBUs with the same audio_substream_id "
-    "SHALL have their num_samples_to_trim_at_start field equal to num_samples_per_frame.",
+    "SHALL have their num_samples_to_trim_at_start field equal to num_samples_per_frame.\n"
+    "- The sum of num_samples_to_trim_at_start and num_samples_to_trim_at_end SHALL be less than or equal to "
+    "num_samples_per_frame.",
     "assert-obu-trimming-rules",
     [](Box const &root, IReport *out) {
       IamfState state;
@@ -366,6 +367,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateLpcmSpecific(state, out);
     } },
+
   { "Section 4\n"
     "Common restrictions on the IA Sequence for all profiles:\n"
     "- The maximum size of an OBU SHALL be limited to 2MB.\n"
