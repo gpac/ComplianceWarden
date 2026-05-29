@@ -1185,6 +1185,24 @@ void validateProfileRestrictions(const IamfState &state, IReport *out, int targe
   }
 }
 
+bool validateProfiles(const IamfState &state, IReport *out)
+{
+  if(state.primary_profile > 2) {
+    if(out) {
+      out->error("Unsupported primary profile %d", state.primary_profile);
+    }
+    return false;
+  }
+  if(state.additional_profile > 2) {
+    if(out) {
+      out->warning(
+        "Unsupported additional profile %d. Compliance will be evaluated against the primary profile.",
+        state.additional_profile);
+    }
+  }
+  return true;
+}
+
 void validateSequenceHeaderIaCode(const IamfState &state, IReport *out)
 {
   if(state.seenSequenceHeader) {

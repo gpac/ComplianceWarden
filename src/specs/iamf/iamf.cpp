@@ -20,7 +20,7 @@ bool probeIamf(Box const &root, BoxReader &br, IamfState &state, IReport *out)
     return false;
   }
   parseIamfObus(&br, state);
-  return true;
+  return validateProfiles(state, out);
 }
 
 std::initializer_list<RuleDesc> rulesIamf = {
