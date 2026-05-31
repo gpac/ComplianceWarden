@@ -17,7 +17,7 @@ db 0xFC
 ; DecoderConfig for Opus
 db 1         ; version = 1
 db 2         ; output_channel_count = 2
-db 0, 0      ; pre_skip = 0 (Big Endian)
+db 0, 0      ; pre_skip = 0 -> INVALID! (Opus requires non-zero pre_skip to account for encoder delay)
 db 0, 0, 0xBB, 0x80 ; input_sample_rate = 48000
 db 0, 0      ; output_gain = 0
 db 0         ; channel_mapping_family = 0
@@ -72,6 +72,6 @@ mix_end:
 
 ; OBU 4: Audio Frame OBU with INVALID size (> 2MB)
 db 00101000b ; OBU Header: obu_type = 5 (Audio Frame), trimming = 0
-db 0x81, 0x80, 0x80, 0x01 ; obu_size = 2097153 bytes
+db 0x81, 0x80, 0x80, 0x01 ; obu_size = 2097153 bytes -> INVALID! (> 2MB)
 db 18        ; explicit_audio_substream_id = 18
 times 2097152 db 0 ; dummy audio frame bytes

@@ -1644,6 +1644,11 @@ void validateMixPresentation(const IamfState &state, IReport *out)
           out->error(
             "[Section 3.7] There SHALL be no duplicate values of audio_element_id within one Mix Presentation.");
         }
+        if(elem.rendering_config.headphones_rendering_mode >= 2) {
+          out->error(
+            "[Section 3.7.3] headphones_rendering_mode must be 0 or 1, found %d",
+            elem.rendering_config.headphones_rendering_mode);
+        }
       }
 
       bool has_stereo_loudness = false;
@@ -1798,6 +1803,22 @@ void validateOpusSpecific(const IamfState &state, IReport *out)
             substream_ids.insert(id);
           }
         }
+      }
+
+      bool has_audio_frames = false;
+      for(auto const &frame : state.audioFrames) {
+        if(substream_ids.find(frame.substream_id) != substream_ids.end()) {
+          has_audio_frames = true;
+          break;
+        }
+      }
+
+      // Section 3.11.1: "Opus : All coded Audio Substreams referred to by all Audio Elements with this codec
+      // configuration must comply with the [RFC-6716] specification." Since Opus encoders always introduce a non-zero
+      // lookahead, pre_skip must not be 0.
+      if(has_audio_frames && opus_config->pre_skip == 0) {
+        out->error(
+          "[Section 3.11.1] Opus streams must have a non-zero pre_skip (found 0) to account for encoder delay.");
       }
 
       for(auto substream_id : substream_ids) {
