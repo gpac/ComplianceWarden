@@ -2110,7 +2110,6 @@ void validateParameterSubstreamConsistency(const IamfState &state, IReport *out)
 }
 
 void validateDescriptorsAndDataPlacement(IReader *br, IReport *out)
-
 {
   IamfState state;
 
@@ -2229,13 +2228,11 @@ void validateDescriptorsAndDataPlacement(IReader *br, IReport *out)
   }
 }
 
-void parseIacb(IReader *br)
-
+void parseIacb(IReader *br, IamfState &state)
 {
   br->sym("configurationVersion", 8);
   leb128_read(br); // configOBUs_size
 
-  IamfState state;
   try {
     while(!br->empty()) {
       if(parseIamfObus(br, state) == -1) {
@@ -2249,4 +2246,10 @@ void parseIacb(IReader *br)
       boxReader->br.m_pos = boxReader->br.size * 8;
     }
   }
+}
+
+void parseIacb(IReader *br)
+{
+  IamfState state;
+  parseIacb(br, state);
 }

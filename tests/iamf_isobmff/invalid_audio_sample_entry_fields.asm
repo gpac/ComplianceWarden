@@ -133,6 +133,9 @@ iamf_start:
         dd "iacb"
         db 1 ; configurationVersion
         db 8 ; configOBUs_size
+        ; We lazily add only an IA Sequence Header OBU here. This triggers an error
+        ; for missing subsequent descriptor OBUs, but since we are not testing
+        ; descriptor OBUs in this test, it is fine.
         ; IA Sequence Header OBU
         db 11111000b ; OBU Header: obu_type = 31 (IA Sequence Header), redundant_copy = 0, trimming = 0, extension = 0
         db 6         ; obu_size = 6 bytes

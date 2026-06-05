@@ -57,6 +57,50 @@ std::initializer_list<RuleDesc> rulesIamfIsobmff = {
         }
       }
     } },
+  { "Section 6.2.4\n"
+    "The Configuration OBUs contained in the 'iacb' box SHALL comply with the IAMF specification.",
+    "assert-iacb-config-obus",
+    [](Box const &root, IReport *out) {
+      auto iacbBoxes = findBoxes(root, FOURCC("iacb"));
+      for(auto const &iacbBox : iacbBoxes) {
+        out->covered();
+
+        BoxReader br;
+        br.br = BitReader{ iacbBox->original, (int)iacbBox->size };
+        uint64_t size = br.br.u(32);
+        br.br.u(32); // fourcc
+        if(size == 1) {
+          br.br.u(64);
+        }
+
+        IamfState state;
+        parseIacb(&br, state);
+
+        if(!validateProfiles(state, out)) {
+          continue;
+        }
+
+        validateFirstObuIsSeqHdr(state, out);
+        validateSequenceHeaderIaCode(state, out);
+        validateSequenceHeaderTrimming(state, out);
+        validateCodecConfig(state, out);
+        validateAudioElement(state, out);
+        validateParameterDefinitions(state, out);
+        validateScalableChannelLayoutConfig(state, out);
+        validateScalableChannelLayoutGeneration(state, out);
+        validateScalableChannelGroupFormat(state, out);
+        validateAmbisonicsConfig(state, out);
+        validateMixPresentation(state, out);
+        validateMixPresentationLoudness(state, out);
+        validateMixPresentationTags(state, out);
+        validateLpcmSpecific(state, out);
+        validateCommonProfileRestrictions(state, out);
+        validateProfileRestrictions(state, out, 0);
+        validateProfileRestrictions(state, out, 1);
+        validateProfileRestrictions(state, out, 2);
+        validateDescriptorObusOrder(state, out);
+      }
+    } },
 };
 
 static const SpecDesc specIamfIsobmff = {

@@ -257,4 +257,5 @@ void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out);
 void validateParameterSubstreamConsistency(const IamfState &state, IReport *out);
 void validateDescriptorsAndDataPlacement(IReader *br, IReport *out);
 void validateDescriptorObusOrder(const IamfState &state, IReport *out);
+void parseIacb(IReader *br, IamfState &state);
 void parseIacb(IReader *br);

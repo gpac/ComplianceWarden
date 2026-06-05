@@ -5,9 +5,10 @@
 Specification description: IAMF in ISOBMFF
 
 [iamf_isobmff][Rule #1] Error: Sample entry 'iamf' SHALL NOT contain a SamplingRateBox ('srat')
+[iamf_isobmff][Rule #2] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen IA Sequence Header OBU
 
 ========================================
-[iamf_isobmff] 1 error(s), 0 warning(s).
+[iamf_isobmff] 2 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -15,6 +16,10 @@ Specification description: IAMF in ISOBMFF
 [iamf_isobmff][Rule #1] id: assert-iamf-audio-sample-entry-fields-zero
 Section 6.2.3
 The channelcount field of AudioSampleEntry SHALL be set to 0. The samplerate field of AudioSampleEntry SHALL be set to 0. There SHALL be no SamplingRateBox.
+
+[iamf_isobmff][Rule #2] id: assert-iacb-config-obus
+Section 6.2.4
+The Configuration OBUs contained in the 'iacb' box SHALL comply with the IAMF specification.
 
 +--------------------------------------+
 |          isobmff validation          |
