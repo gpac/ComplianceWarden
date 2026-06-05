@@ -101,6 +101,93 @@ std::initializer_list<RuleDesc> rulesIamfIsobmff = {
         validateDescriptorObusOrder(state, out);
       }
     } },
+  { "Section 6.2.5\n"
+    "IA Sample Format checks:\n"
+    "- The stss box SHALL NOT be present.\n"
+    "- One IA Sample SHALL be one Temporal Unit and SHALL NOT contain the Temporal Delimiter OBU.\n"
+    "assert-ia-sample-format",
+    [](Box const &root, IReport *out) {
+      auto trakBoxes = findBoxes(root, FOURCC("trak"));
+      for(auto const &trakBox : trakBoxes) {
+        auto iamfBoxes = findBoxes(*trakBox, FOURCC("iamf"));
+        if(iamfBoxes.empty()) {
+          continue;
+        }
+
+        out->covered();
+
+        auto stssBoxes = findBoxes(*trakBox, FOURCC("stss"));
+        if(!stssBoxes.empty()) {
+          out->error("The stss box SHALL NOT be present in an IAMF track.");
+        }
+
+        uint32_t trackId = 0;
+        auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
+        for(auto const &tkhd : tkhdBoxes) {
+          for(auto const &sym : tkhd->syms) {
+            if(!strcmp(sym.name, "track_ID")) {
+              trackId = sym.value;
+            }
+          }
+        }
+
+        auto const samples = getData(root, out, trackId);
+        if(samples.empty()) {
+          continue;
+        }
+
+        for(auto const &iamfBox : iamfBoxes) {
+          auto iacbBoxes = findBoxes(*iamfBox, FOURCC("iacb"));
+
+          for(auto const &iacbBox : iacbBoxes) {
+            BoxReader br;
+            br.br = BitReader{ iacbBox->original, (int)iacbBox->size };
+            uint64_t size = br.br.u(32);
+            br.br.u(32); // fourcc
+            if(size == 1) {
+              br.br.u(64);
+            }
+
+            IamfState state;
+            parseIacb(&br, state);
+
+            if(!validateProfiles(state, out)) {
+              continue;
+            }
+
+            auto const samples = getData(root, out, trackId);
+            for(auto const &sample : samples) {
+              BoxReader pbr;
+              pbr.br = BitReader{ sample.position, (int)sample.size };
+              validateDescriptorsAndDataPlacement(&pbr, out);
+
+              BoxReader sbr;
+              sbr.br = BitReader{ sample.position, (int)sample.size };
+
+              bool seen_delimiter = false;
+              while(!sbr.empty()) {
+                int64_t obu_type = parseIamfObus(&sbr, state);
+                if(obu_type == OBU_IA_Temporal_Delimiter) {
+                  seen_delimiter = true;
+                }
+              }
+
+              if(seen_delimiter) {
+                out->error("One IA Sample SHALL NOT contain the Temporal Delimiter OBU.");
+              }
+            }
+
+            validateParameterBlocks(state, out);
+            validateAudioFrames(state, out);
+            validateOpusSpecific(state, out);
+            validateObuTrimming(state, out);
+            validateSubstreamTrimmingConsistency(state, out);
+            validateParameterSubstreamConsistency(state, out);
+            validateDescriptorObusOrder(state, out);
+          }
+        }
+      }
+    } },
 };
 
 static const SpecDesc specIamfIsobmff = {

@@ -390,7 +390,6 @@ std::initializer_list<RuleDesc> rulesIamf = {
       out->covered();
 
       validateCommonProfileRestrictions(state, out);
-
     } },
   { "Section 4\n"
     "Audio Substream trimming consistency checks:\n"
