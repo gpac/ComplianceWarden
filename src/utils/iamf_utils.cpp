@@ -310,7 +310,7 @@ bool getExpectedSubstreamCountsForScalableLayer(int layout_prev, int layout_curr
   return true;
 }
 
-std::string read_string(ReaderBits *br)
+std::string read_string(ReaderBits *br, size_t max_len = 1024)
 {
   std::string s;
   while(true) {
@@ -318,6 +318,7 @@ std::string read_string(ReaderBits *br)
     if(c == '\0')
       break;
     s += c;
+    ENSURE(s.size() <= max_len, "read_string(): string length (%zu) exceeded maximum limit (%zu)", s.size(), max_len);
   }
   return s;
 }
