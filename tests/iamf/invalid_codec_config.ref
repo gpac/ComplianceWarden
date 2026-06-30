@@ -22,7 +22,7 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 Section 3.5
 Codec Config OBU checks:
 - There SHALL be exactly one Codec Config OBU with a given identifier in a set of Descriptors.
-- codec_id indicates a ‘four-character code’ (4CC) to identify the codec. Supported values: Opus, mp4a, fLaC, ipcm.
+- codec_id indicates a 'four-character code' (4CC) to identify the codec. Supported values: Opus, mp4a, fLaC, ipcm.
 - num_samples_per_frame SHALL NOT be set to zero.
 - audio_roll_distance SHALL always be a negative value or zero.
 - audio_roll_distance SHALL be set to -R when codec_id is set to Opus, where R = ceil(3840 / num_samples_per_frame).

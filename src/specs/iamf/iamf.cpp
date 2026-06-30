@@ -70,7 +70,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
   { "Section 3.5\n"
     "Codec Config OBU checks:\n"
     "- There SHALL be exactly one Codec Config OBU with a given identifier in a set of Descriptors.\n"
-    "- codec_id indicates a ‘four-character code’ (4CC) to identify the codec. Supported values: Opus, mp4a, fLaC, "
+    "- codec_id indicates a 'four-character code' (4CC) to identify the codec. Supported values: Opus, mp4a, fLaC, "
     "ipcm.\n"
     "- num_samples_per_frame SHALL NOT be set to zero.\n"
     "- audio_roll_distance SHALL always be a negative value or zero.\n"
@@ -427,6 +427,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
       }
 
       out->covered();
+
       validateParameterSubstreamConsistency(state, out);
     } },
 
@@ -449,6 +450,7 @@ std::initializer_list<RuleDesc> rulesIamf = {
         return;
 
       out->covered();
+
       validateDescriptorsAndDataPlacement(&br, out);
     } },
   { "Section 4.1\n"
@@ -465,6 +467,8 @@ std::initializer_list<RuleDesc> rulesIamf = {
       while(!br.empty()) {
         parseIamfObus(&br, state);
       }
+
+      out->covered();
 
       validateProfileRestrictions(state, out, 0);
     } },
@@ -485,6 +489,8 @@ std::initializer_list<RuleDesc> rulesIamf = {
         parseIamfObus(&br, state);
       }
 
+      out->covered();
+
       validateProfileRestrictions(state, out, 1);
     } },
   { "Section 4.3\n"
@@ -502,6 +508,8 @@ std::initializer_list<RuleDesc> rulesIamf = {
       while(!br.empty()) {
         parseIamfObus(&br, state);
       }
+
+      out->covered();
 
       validateProfileRestrictions(state, out, 2);
     } },

@@ -1,10 +1,11 @@
 #include "av1_utils.h"
 
 #include "core/box_reader_impl.h" // BoxReader
-#include "bit_reader_utils.h"
 
 #include <memory> // make_unique
 #include <stdexcept>
+
+#include "bit_reader_utils.h"
 
 namespace
 {
@@ -292,8 +293,6 @@ int parseAv1UncompressedHeader(IReader *reader, Av1State const &state)
     return readBits / 8;
   }
 }
-
-
 
 void parseMetadataItutT35(ReaderBits *br, Av1State & /*state*/)
 {

@@ -85,6 +85,19 @@ Specification name: miaf
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
         depends on: "heif" specifications.
 ================================================================================
+
+================================================================================
+Specification name: iamf
+            detail: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+        depends on: none.
+================================================================================
+
+================================================================================
+Specification name: iamf_isobmff
+            detail: IAMF in ISOBMFF
+        depends on: "isobmff" specifications.
+================================================================================
 ```
 
 ## Building
@@ -308,3 +321,5 @@ Some aspects are not activated:
 This work was initiated as part of the MPEG MIAF conformance software.
 
 The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF, AV1-ISOBMFF, and AV1 HDR10+.
+
+Google contributed the work on IAMF.
