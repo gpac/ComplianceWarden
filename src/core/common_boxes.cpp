@@ -7,6 +7,7 @@
 #include "fourcc.h"
 
 void parseAv1C(IReader *br);
+void parseIacb(IReader *br);
 
 std::string toString(uint32_t fourcc)
 {
@@ -979,10 +980,13 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseHvcC;
   case FOURCC("av1C"):
     return &parseAv1C;
+  case FOURCC("iacb"):
+    return &parseIacb;
   case FOURCC("pict"):
   case FOURCC("thmb"):
   case FOURCC("auxl"):
     return &parseReferenceTypeChildren;
+  case FOURCC("iamf"):
   case FOURCC("mp4a"):
   case FOURCC("twos"):
     return &parseAudioSampleEntry;

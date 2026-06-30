@@ -1,0 +1,42 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #10] Error: [Section 3.7] mix_presentation_id SHALL be unique within an IA Sequence.
+[iamf][Rule #10] Error: [Section 3.7] num_sub_mixes SHALL NOT be set to 0.
+[iamf][Rule #10] Error: [Section 3.7] num_audio_elements SHALL NOT be set to 0.
+[iamf][Rule #10] Error: [Section 3.7] There SHALL be no duplicate values of audio_element_id within one Mix Presentation.
+[iamf][Rule #10] Error: [Section 3.7] Each sub-mix SHALL include loudness for Stereo.
+[iamf][Rule #11] Error: [Section 3.7.4] There SHALL be no duplicate values of anchor_element within one LoudnessInfo.
+[iamf][Rule #12] Error: [Section 3.7.5] content_language tag value SHALL conform to ISO-639-2-Codes (3-letter code), found 'en-US'
+[iamf][Rule #12] Error: [Section 3.7.5] There SHALL be at most one instance of content_language tag.
+
+========================================
+[iamf] 8 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #10] id: assert-mix-presentation-obu
+Section 3.7
+Mix Presentation OBU checks:
+- mix_presentation_id SHALL be unique within an IA Sequence.
+- num_sub_mixes SHALL NOT be set to 0.
+- num_audio_elements SHALL NOT be set to 0.
+- There SHALL be no duplicate values of audio_element_id within one Mix Presentation.
+- Each sub-mix SHALL include loudness for Stereo.
+
+[iamf][Rule #11] id: assert-mix-presentation-loudness
+Section 3.7.4
+Loudness Info checks:
+- There SHALL be no duplicate values of anchor_element within one LoudnessInfo.
+
+[iamf][Rule #12] id: assert-mix-presentation-tags
+Section 3.7.5
+Mix Presentation Tags checks:
+- There SHALL be at most one instance of content_language tag.
+- content_language tag value SHALL conform to ISO-639-2-Codes (3-letter code).
+

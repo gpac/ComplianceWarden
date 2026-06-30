@@ -1,0 +1,32 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #13] Error: [Section 3.8] duration SHALL NOT be set to 0.
+[iamf][Rule #13] Error: [Section 3.8] subblock_duration SHALL NOT be set to 0.
+[iamf][Rule #13] Error: [Section 3.8] The summation of all subblock_duration (0) SHALL be equal to duration (64).
+[iamf][Rule #13] Error: [Section 3.8] The summation of all subblock_duration (8) SHALL be equal to duration (64).
+[iamf][Rule #19] Error: [Section 4] Parameter Substream 0 block 0 has duration 0, expected 64
+
+========================================
+[iamf] 5 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #13] id: assert-parameter-block-obu
+Section 3.8
+Parameter Block OBU checks:
+- duration SHALL NOT be set to 0.
+- subblock_duration SHALL NOT be set to 0.
+- The summation of all subblock_duration SHALL be equal to duration.
+
+[iamf][Rule #19] id: assert-parameter-substream-consistency
+Section 4
+Parameter Substream consistency checks:
+- Every Parameter Substream in the IA Sequence SHALL consist of the same number of Parameter Block OBUs.
+- Every Parameter Block OBU SHALL have the same duration as its corresponding Audio Frame OBU under the same sample rate.
+

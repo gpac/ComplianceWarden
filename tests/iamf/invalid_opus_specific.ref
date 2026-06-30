@@ -1,0 +1,37 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #15] Error: [Section 3.11.1] Version SHALL be 1 for Opus DecoderConfig, found 2
+[iamf][Rule #15] Error: [Section 3.11.1] Output Channel Count SHALL be set to 2 for Opus, found 1
+[iamf][Rule #15] Error: [Section 3.11.1] Output Gain SHALL be set to 0 dB for Opus, found 1
+[iamf][Rule #15] Error: [Section 3.11.1] Channel Mapping Family SHALL be set to 0 for Opus, found 1
+[iamf][Rule #15] Error: [Section 3.11.1] Pre-skip (312) SHALL be the same as the total number of audio samples to be trimmed at the start of coded Audio Substream 5 (0)
+[iamf][Rule #17] Error: [Section 4] There SHALL be only one unique Codec Config OBU. Found 5 unique IDs.
+
+========================================
+[iamf] 6 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #15] id: assert-opus-specific
+Section 3.11.1
+OPUS Specific checks:
+- Output Channel Count SHALL be set to 2.
+- Output Gain SHALL be set to 0 dB.
+- Channel Mapping Family SHALL be set to 0.
+- Pre-skip SHALL be the same as the number of audio samples to be trimmed at the start of coded Audio Substreams.
+
+[iamf][Rule #17] id: assert-common-profile-restrictions
+Section 4
+Common restrictions on the IA Sequence for all profiles:
+- The maximum size of an OBU SHALL be limited to 2MB.
+- There SHALL be only one unique Codec Config OBU.
+- num_sub_mixes SHOULD be set to 1.
+- num_audio_elements SHOULD be set to at most 28.
+- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+

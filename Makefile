@@ -49,15 +49,20 @@ SRCS_CW+=\
   src/utils/isobmff_utils.cpp\
   src/utils/isobmff_derivations.cpp\
   src/utils/spec_utils.cpp\
+  src/utils/iamf_utils.cpp\
 
 SRCS_CW+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
 SRCS_CW+=src/specs/av1_isobmff/av1_isobmff.cpp
+SRCS_CW+=src/specs/iamf_isobmff/iamf_isobmff.cpp
+
 SRCS_CW+=src/specs/avif/avif.cpp src/specs/avif/profiles.cpp src/specs/avif/utils.cpp
 SRCS_CW+=src/specs/isobmff/isobmff.cpp
 SRCS_CW+=src/specs/heif/heif.cpp
 SRCS_CW+=src/specs/miaf/miaf.cpp src/specs/miaf/audio.cpp src/specs/miaf/brands.cpp\
   src/specs/miaf/derivations.cpp src/specs/miaf/colours.cpp src/specs/miaf/num_pixels.cpp\
   src/specs/miaf/profiles.cpp
+SRCS_CW+=src/specs/iamf/iamf.cpp
+SRCS_CW+=src/specs/iamf_isobmff/iamf_isobmff.cpp
 
 SRCS_CW+=$(BIN)/cw_version.cpp
 

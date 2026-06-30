@@ -1,0 +1,24 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, at most one Scene-based Audio Element is allowed. Found 2
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, no Mix Presentation complies with Base Profile constraints.
+
+========================================
+[iamf] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #22] id: assert-base-profile-restrictions
+Section 4.2
+Base Profile restrictions:
+- There SHALL be at most two unique Audio Element OBUs.
+- There SHALL be at most one Channel-based Audio Element having num_layers > 1.
+- There SHALL be at most one Scene-based Audio Element.
+- The sum of channels across all Audio Elements in a Mix Presentation before mixing SHALL NOT exceed 18.
+

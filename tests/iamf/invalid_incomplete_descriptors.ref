@@ -1,0 +1,24 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #24] Error: [Section 5.1.1] Missing required descriptor OBUs. Last seen Codec Config OBU before IA Sequence Header OBU
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #24] id: assert-descriptor-obus-order
+Section 5.1.1
+Descriptor OBUs SHALL be placed in the following order:
+1. One IA Sequence Header OBU
+2. All Codec Config OBUs
+3. All Audio Element OBUs
+4. All Mix Presentation OBUs
+An IA Sequence is composed of a series of OBUs in the sequence of a set of Descriptors followed by their associated IA Data.
+

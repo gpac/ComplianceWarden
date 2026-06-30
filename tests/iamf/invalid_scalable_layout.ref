@@ -1,0 +1,28 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #7] Error: [Section 3.6.3] Channel layouts SHALL follow non-decreasing order. Layer 2 has (2,0,0), previous had (5,1,0)
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 2 (layout 1) has substream_count 1, expected 0
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 2 (layout 1) has coupled_substream_count 1, expected 0
+
+========================================
+[iamf] 3 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #7] id: assert-scalable-channel-layout-generation
+Section 3.6.3
+Channel Layout Generation Rule checks:
+- For scalable channel audio, channel layouts SHALL follow non-decreasing order of surround, LFE and height channels.
+- Duplicate layers are NOT allowed.
+
+[iamf][Rule #8] id: assert-scalable-channel-group-format
+Section 3.6.3
+Channel Group Format checks:
+- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
+

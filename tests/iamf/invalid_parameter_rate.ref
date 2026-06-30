@@ -1,0 +1,24 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #5] Error: [Section 3.6.1] The parameter rate SHALL be a value such that the number of ticks per frame is an integer. Found 1 * 960 / 48000
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #5] id: assert-parameter-definition
+Section 3.6.1
+Parameter Definition Syntax and Semantics checks:
+- There SHALL be one unique parameter_id per Parameter Substream.
+- The parameter rate SHALL be a value such that the number of ticks per frame is a non-zero integer.
+- duration SHALL NOT be set to 0.
+- When constant_subblock_duration is equal to 0, the summation of all subblock_duration in this parameter block SHALL be equal to duration.
+- subblock_duration SHALL NOT be set to 0.
+
