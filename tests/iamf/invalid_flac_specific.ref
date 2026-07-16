@@ -1,0 +1,28 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #25] Error: [Section 3.11.3] FLAC STREAMINFO minimum_block_size (32) SHALL be set to num_samples_per_frame (64)
+[iamf][Rule #25] Error: [Section 3.11.3] FLAC STREAMINFO maximum_block_size (32) SHALL be set to num_samples_per_frame (64)
+[iamf][Rule #25] Warning: [Section 3.11.3] FLAC STREAMINFO minimum_frame_size SHOULD be set to 0, found 100
+[iamf][Rule #25] Warning: [Section 3.11.3] FLAC STREAMINFO maximum_frame_size SHOULD be set to 0, found 100
+[iamf][Rule #25] Error: [Section 3.11.3] FLAC STREAMINFO (number of channels) - 1 SHALL be set to 1, found 0
+[iamf][Rule #25] Warning: [Section 3.11.3] FLAC STREAMINFO MD5 signature SHOULD be set to 0
+
+========================================
+[iamf] 3 error(s), 3 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #25] id: assert-flac-specific
+Section 3.11.3
+FLAC Specific checks:
+- minimum_block_size and maximum_block_size SHALL be set to num_samples_per_frame.
+- minimum_frame_size and maximum_frame_size SHOULD be set to 0.
+- number of channels SHALL be set to 1.
+- MD5 signature SHOULD be set to 0.
+

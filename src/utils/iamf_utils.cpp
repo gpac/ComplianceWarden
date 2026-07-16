@@ -625,6 +625,11 @@ void checkTicksPerFrame(const ParamDefinition &param, uint64_t codec_config_id, 
       if(pcm_config) {
         sample_rate = pcm_config->sample_rate;
       }
+    } else if(matched_config->codec_id == FOURCC("fLaC")) {
+      auto flac_config = dynamic_cast<const FlacDecoderConfig *>(matched_config->decoder_config.get());
+      if(flac_config && !flac_config->metadata_blocks.empty()) {
+        sample_rate = flac_config->metadata_blocks[0].sample_rate;
+      }
     }
 
     if(sample_rate != 0) {
@@ -741,6 +746,53 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
       pcm_config->sample_size = brBits->sym("sample_size", 8);
       pcm_config->sample_rate = brBits->sym("sample_rate", 32);
       decoder_config = std::move(pcm_config);
+    } else if(codec_id == FOURCC("fLaC")) {
+      if(static_cast<uint64_t>(brBits->count) < obuSize * 8) {
+        auto flac_config = std::make_unique<FlacDecoderConfig>();
+        bool last_metadata_block_flag = false;
+        int metadata_block_count = 0;
+        while(!last_metadata_block_flag) {
+          metadata_block_count++;
+          ENSURE(metadata_block_count <= 128, "Too many FLAC metadata blocks");
+
+          // Ensure there are at least 32 bits (4 bytes) to parse the metadata block header:
+          // last_metadata_block_flag (1 bit) + block_type (7 bits) + metadata_data_block_length (24 bits)
+          if(static_cast<uint64_t>(brBits->count + 32) > obuSize * 8) {
+            ENSURE(false, "Truncated FLAC metadata block header");
+          }
+
+          FlacDecoderConfig::MetadataBlock block;
+          block.last_metadata_block_flag = brBits->sym("last_metadata_block_flag", 1);
+          last_metadata_block_flag = block.last_metadata_block_flag;
+          block.block_type = brBits->sym("block_type", 7);
+          block.metadata_data_block_length = brBits->sym("metadata_data_block_length", 24);
+
+          if(static_cast<uint64_t>(brBits->count) + block.metadata_data_block_length * 8 > obuSize * 8) {
+            ENSURE(false, "Truncated FLAC metadata block payload");
+          }
+
+          if(block.block_type == 0) { // STREAMINFO
+            ENSURE(block.metadata_data_block_length == 34, "FLAC STREAMINFO size must be 34 bytes");
+            block.minimum_block_size = brBits->sym("minimum_block_size", 16);
+            block.maximum_block_size = brBits->sym("maximum_block_size", 16);
+            block.minimum_frame_size = brBits->sym("minimum_frame_size", 24);
+            block.maximum_frame_size = brBits->sym("maximum_frame_size", 24);
+            block.sample_rate = brBits->sym("sample_rate", 20);
+            block.number_of_channels_minus_one = brBits->sym("number_of_channels", 3);
+            block.bits_per_sample_minus_one = brBits->sym("bits_per_sample", 5);
+            block.total_samples_in_stream = brBits->sym("total_samples_in_stream", 36);
+            for(int i = 0; i < 16; ++i) {
+              block.md5_signature.push_back(brBits->sym("md5", 8));
+            }
+          } else {
+            for(uint32_t i = 0; i < block.metadata_data_block_length; ++i) {
+              brBits->sym("", 8);
+            }
+          }
+          flac_config->metadata_blocks.push_back(block);
+        }
+        decoder_config = std::move(flac_config);
+      }
     }
 
     state.codecConfigs.push_back(
@@ -1871,6 +1923,74 @@ void validateLpcmSpecific(const IamfState &state, IReport *out)
   }
 }
 
+void validateFlacSpecific(const IamfState &state, IReport *out)
+{
+  for(auto const &config : state.codecConfigs) {
+    if(config.codec_id == FOURCC("fLaC")) {
+      auto flac_config = dynamic_cast<const FlacDecoderConfig *>(config.decoder_config.get());
+      if(!flac_config) {
+        out->error("[Section 3.11.3] DecoderConfig is missing or not FlacDecoderConfig for FLAC codec");
+        continue;
+      }
+
+      if(flac_config->metadata_blocks.empty()) {
+        out->error("[Section 3.11.3] FLAC DecoderConfig MUST contain at least one metadata block");
+        continue;
+      }
+
+      const auto &first_block = flac_config->metadata_blocks[0];
+      if(first_block.block_type != 0) {
+        out->error("[Section 3.11.3] The first metadata block in FLAC DecoderConfig MUST be STREAMINFO");
+        continue;
+      }
+
+      if(first_block.minimum_block_size != config.num_samples_per_frame) {
+        out->error(
+          "[Section 3.11.3] FLAC STREAMINFO minimum_block_size (%d) SHALL be set to num_samples_per_frame (%lu)",
+          first_block.minimum_block_size, config.num_samples_per_frame);
+      }
+      if(first_block.maximum_block_size != config.num_samples_per_frame) {
+        out->error(
+          "[Section 3.11.3] FLAC STREAMINFO maximum_block_size (%d) SHALL be set to num_samples_per_frame (%lu)",
+          first_block.maximum_block_size, config.num_samples_per_frame);
+      }
+
+      if(first_block.minimum_frame_size != 0) {
+        out->warning(
+          "[Section 3.11.3] FLAC STREAMINFO minimum_frame_size SHOULD be set to 0, found %d",
+          first_block.minimum_frame_size);
+      }
+      if(first_block.maximum_frame_size != 0) {
+        out->warning(
+          "[Section 3.11.3] FLAC STREAMINFO maximum_frame_size SHOULD be set to 0, found %d",
+          first_block.maximum_frame_size);
+      }
+
+      // The IAMF specification Section 3.11.3 specifies: "number of channels SHALL be set to 1."
+      // In the FLAC STREAMINFO header, the "number of channels" field (3 bits) stores the value (channels - 1).
+      // Setting this field value to 1 corresponds to a logical channel count of 2 (stereo).
+      // Note that this value can be ignored by parsers because the actual channel count can be
+      // determined from the Audio Element OBU and the Frame_Header.
+      if(first_block.number_of_channels_minus_one != 1) {
+        out->error(
+          "[Section 3.11.3] FLAC STREAMINFO (number of channels) - 1 SHALL be set to 1, found %d",
+          first_block.number_of_channels_minus_one);
+      }
+
+      bool md5_is_zero = true;
+      for(auto b : first_block.md5_signature) {
+        if(b != 0) {
+          md5_is_zero = false;
+          break;
+        }
+      }
+      if(!md5_is_zero) {
+        out->warning("[Section 3.11.3] FLAC STREAMINFO MD5 signature SHOULD be set to 0");
+      }
+    }
+  }
+}
+
 void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out)
 {
   // Group frames by substream_id
@@ -2033,6 +2153,11 @@ void validateParameterSubstreamConsistency(const IamfState &state, IReport *out)
     auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(config.decoder_config.get());
     if(pcm_config) {
       audio_sample_rate = pcm_config->sample_rate;
+    }
+  } else if(config.codec_id == FOURCC("fLaC")) {
+    auto flac_config = dynamic_cast<const FlacDecoderConfig *>(config.decoder_config.get());
+    if(flac_config && !flac_config->metadata_blocks.empty()) {
+      audio_sample_rate = flac_config->metadata_blocks[0].sample_rate;
     }
   }
 
