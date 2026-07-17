@@ -94,6 +94,7 @@ std::initializer_list<RuleDesc> rulesIamfIsobmff = {
         validateMixPresentationLoudness(state, out);
         validateMixPresentationTags(state, out);
         validateLpcmSpecific(state, out);
+        validateFlacSpecific(state, out);
         validateCommonProfileRestrictions(state, out);
         validateProfileRestrictions(state, out, 0);
         validateProfileRestrictions(state, out, 1);

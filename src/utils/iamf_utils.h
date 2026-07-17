@@ -71,6 +71,26 @@ struct LpcmDecoderConfig : public DecoderConfig {
   uint32_t sample_rate = 0;
 };
 
+struct FlacDecoderConfig : public DecoderConfig {
+  struct MetadataBlock {
+    bool last_metadata_block_flag = false;
+    uint8_t block_type = 0;
+    uint32_t metadata_data_block_length = 0;
+
+    // STREAMINFO block fields (populated if block_type == 0)
+    uint16_t minimum_block_size = 0;
+    uint16_t maximum_block_size = 0;
+    uint32_t minimum_frame_size = 0;
+    uint32_t maximum_frame_size = 0;
+    uint32_t sample_rate = 0;
+    uint8_t number_of_channels_minus_one = 0; // Raw 3 bits: (channels - 1)
+    uint8_t bits_per_sample_minus_one = 0; // Raw 5 bits: (bits_per_sample - 1)
+    uint64_t total_samples_in_stream = 0; // 36 bits
+    std::vector<uint8_t> md5_signature; // 16 bytes
+  };
+  std::vector<MetadataBlock> metadata_blocks;
+};
+
 struct CodecConfigInfo {
   uint64_t codec_config_id;
   uint32_t codec_id;
@@ -253,6 +273,7 @@ void validateParameterBlocks(const IamfState &state, IReport *out);
 void validateAudioFrames(const IamfState &state, IReport *out);
 void validateOpusSpecific(const IamfState &state, IReport *out);
 void validateLpcmSpecific(const IamfState &state, IReport *out);
+void validateFlacSpecific(const IamfState &state, IReport *out);
 void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out);
 void validateParameterSubstreamConsistency(const IamfState &state, IReport *out);
 void validateDescriptorsAndDataPlacement(IReader *br, IReport *out);

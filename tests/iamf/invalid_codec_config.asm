@@ -45,13 +45,26 @@ db 0         ; audio_roll_distance = 0 -> INVALID (mp4a requires -1)
 db 0         ; audio_roll_distance (low byte)
 
 ; OBU 5: fLaC with invalid roll distance (-1 instead of 0)
+obu_5_start:
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
-db 8         ; obu_size = 8 bytes
+db obu_5_end - obu_5_start - 2 ; obu_size
 db 3         ; codec_config_id = 3
 db 'fLaC'    ; codec_id = 'fLaC'
 db 100       ; num_samples_per_frame = 100
 db 0xFF      ; audio_roll_distance = -1 -> INVALID (fLaC requires 0)
 db 0xFF      ; audio_roll_distance (low byte)
+; DecoderConfig for FLAC
+db 0x80      ; last_metadata_block_flag = 1, block_type = 0 (STREAMINFO)
+db 0, 0, 34  ; metadata_data_block_length = 34
+; STREAMINFO payload
+db 0, 100    ; minimum_block_size = 100
+db 0, 100    ; maximum_block_size = 100
+db 0, 0, 0   ; minimum_frame_size = 0
+db 0, 0, 0   ; maximum_frame_size = 0
+db 0x0B, 0xB8, 0x02, 0xF0 ; sr = 48000, ch = 1 (stereo), bps = 15 (16-bit)
+db 0, 0, 0, 0 ; total_samples = 0 (low 32 bits)
+times 16 db 0 ; MD5 signature = 0
+obu_5_end:
 
 ; OBU 6: Opus with invalid roll distance (0 instead of -4)
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)

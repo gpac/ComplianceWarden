@@ -1,18 +1,19 @@
 ; IA Sequence Header OBU
-db 11111000b ; OBU Header: obu_type = 31, redundant_copy = 0, trimming = 0, extension = 0
+db 11111000b ; OBU Header: obu_type = 31  (IA Sequence Header), redundant_copy = 0, trimming = 0, extension = 0
 db 6         ; obu_size = 6 bytes
 db 'iamf'    ; ia_code
 db 0         ; primary_profile
 db 0         ; additional_profile
 
-; Codec Config OBU: fLaC
+; Codec Config OBU (Valid fLaC)
 obu_1_start:
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
 db obu_1_end - obu_1_start - 2 ; obu_size
-db 1         ; codec_config_id = 1
-db 'fLaC'    ; codec_id
+db 0         ; codec_config_id = 0
+db 'fLaC'    ; codec_id = 'fLaC'
 db 64        ; num_samples_per_frame = 64
-db 0, 0      ; audio_roll_distance = 0 (16 bits)
+db 0         ; audio_roll_distance (high byte)
+db 0         ; audio_roll_distance (low byte)
 ; DecoderConfig for FLAC
 db 0x80      ; last_metadata_block_flag = 1, block_type = 0 (STREAMINFO)
 db 0, 0, 34  ; metadata_data_block_length = 34
@@ -26,50 +27,47 @@ db 0, 0, 0, 0 ; total_samples = 0 (low 32 bits)
 times 16 db 0 ; MD5 signature = 0
 obu_1_end:
 
-; Audio Element OBU: Tests "When codec_id = fLaC or ipcm, the type PARAMETER_DEFINITION_RECON_GAIN SHALL NOT be present."
+; Audio Element OBU (Valid)
 db 00001000b ; OBU Header: obu_type = 1 (Audio Element)
-db 13        ; obu_size = 13 bytes
+db 10        ; obu_size = 10 bytes
 db 1         ; audio_element_id = 1
-db 0         ; audio_element_type = 0 (CHANNEL_BASED), reserved = 0
-db 1         ; codec_config_id = 1 (References fLaC)
+db 0         ; audio_element_type = 0 (CHANNEL_BASED)
+db 0         ; codec_config_id = 0
 db 1         ; num_substreams = 1
 db 1         ; audio_substream_id = 1
-db 1         ; num_parameters = 1
-; Parameter 1 (Recon Gain) -> INVALID for fLaC!
-db 2         ; param_definition_type = 2 (Recon Gain)
-db 0         ; parameter_id = 0
-db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
-db 10000000b ; param_definition_mode = 1, reserved = 0
-db 0         ; num_layers = 0
+db 0         ; num_parameters = 0
+db 00100000b ; num_layers = 1
+db 0         ; loudspeaker_layout = 0 (Mono)
+db 1         ; substream_count = 1
+db 0         ; coupled_substream_count = 0
 
-; OBU 3: Valid Mix Presentation
-obu_3_start:
+; Mix Presentation OBU (Valid)
+obu_start:
 db 00010000b ; OBU Header: obu_type = 2 (Mix Presentation)
-db obu_3_end - obu_3_start - 2 ; obu_size
+db obu_end - obu_start - 2 ; obu_size
 db 1         ; mix_presentation_id = 1
 db 0         ; count_label = 0
 db 1         ; num_sub_mixes = 1
 ; Sub-mix 1
 db 1         ; num_audio_elements = 1
 db 1         ; audio_element_id = 1
-db 0         ; headphones_rendering_mode = 0, reserved = 0
+db 0         ; headphones_rendering_mode = 0
 db 0         ; rendering_config_extension_size = 0
 ; element_mix_gain
 db 0         ; parameter_id = 0
-db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
-db 10000000b ; param_definition_mode = 1, reserved = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000 (leb128)
+db 10000000b ; param_definition_mode = 1
 db 0, 0      ; default_mix_gain = 0
 ; output_mix_gain
 db 1         ; parameter_id = 1
-db 0x80, 0xF7, 0x02 ; parameter_rate = 48000
-db 10000000b ; param_definition_mode = 1, reserved = 0
+db 0x80, 0xF7, 0x02 ; parameter_rate = 48000 (leb128)
+db 10000000b ; param_definition_mode = 1
 db 0, 0      ; default_mix_gain = 0
 db 1         ; num_layouts = 1
 ; Layout 1
-db 10000000b ; layout_type = 2 (LOUDSPEAKERS_SS_CONVENTION), sound_system = 0 (Stereo), reserved = 0
+db 10000000b ; layout_type = 2, sound_system = 0 (Stereo)
 ; Loudness
 db 0         ; info_type = 0
 db 0, 0      ; integrated_loudness = 0
 db 0, 0      ; digital_peak = 0
-obu_3_end:
-
+obu_end:

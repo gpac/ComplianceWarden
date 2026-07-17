@@ -537,6 +537,28 @@ std::initializer_list<RuleDesc> rulesIamf = {
 
       validateDescriptorObusOrder(state, out);
     } },
+
+  { "Section 3.11.3\n"
+    "FLAC Specific checks:\n"
+    "- minimum_block_size and maximum_block_size SHALL be set to num_samples_per_frame.\n"
+    "- minimum_frame_size and maximum_frame_size SHOULD be set to 0.\n"
+    "- number of channels SHALL be set to 1.\n"
+    "- MD5 signature SHOULD be set to 0.",
+    "assert-flac-specific",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateFlacSpecific(state, out);
+    } },
 };
 
 static const SpecDesc specIamf = {
