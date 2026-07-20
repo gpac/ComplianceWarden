@@ -65,6 +65,31 @@ struct OpusDecoderConfig : public DecoderConfig {
   uint8_t channel_mapping_family = 0;
 };
 
+struct AacLcDecoderConfig : public DecoderConfig {
+  uint8_t decoder_config_descriptor_tag = 0;
+  uint32_t decoder_config_descriptor_length = 0;
+  uint8_t objectTypeIndication = 0;
+  uint8_t streamType = 0;
+  uint8_t upStream = 0;
+  uint32_t bufferSizeDB = 0;
+  uint32_t maxBitrate = 0;
+  uint32_t avgBitrate = 0;
+
+  uint8_t decoder_specific_info_tag = 0;
+  uint32_t decoder_specific_info_length = 0;
+
+  // AudioSpecificConfig
+  uint8_t audioObjectType = 0;
+  uint8_t samplingFrequencyIndex = 0;
+  uint32_t samplingFrequency = 0;
+  uint8_t channelConfiguration = 0;
+
+  // GASpecificConfig
+  uint8_t frameLengthFlag = 0;
+  uint8_t dependsOnCoreCoder = 0;
+  uint8_t extensionFlag = 0;
+};
+
 struct LpcmDecoderConfig : public DecoderConfig {
   uint8_t sample_format_flags = 0;
   uint8_t sample_size = 0;
@@ -274,9 +299,12 @@ void validateAudioFrames(const IamfState &state, IReport *out);
 void validateOpusSpecific(const IamfState &state, IReport *out);
 void validateLpcmSpecific(const IamfState &state, IReport *out);
 void validateFlacSpecific(const IamfState &state, IReport *out);
+void validateAacLcSpecific(const IamfState &state, IReport *out);
 void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out);
 void validateParameterSubstreamConsistency(const IamfState &state, IReport *out);
 void validateDescriptorsAndDataPlacement(IReader *br, IReport *out);
 void validateDescriptorObusOrder(const IamfState &state, IReport *out);
+uint32_t getSampleRate(const CodecConfigInfo &config);
+
 void parseIacb(IReader *br, IamfState &state);
 void parseIacb(IReader *br);

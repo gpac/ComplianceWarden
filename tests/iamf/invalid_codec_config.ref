@@ -11,9 +11,11 @@ https://aomediacodec.github.io/iamf/v1.1.0.html
 [iamf][Rule #3] Error: [Section 3.5] audio_roll_distance SHALL be 0 for fLaC or ipcm, found -1
 [iamf][Rule #3] Error: [Section 3.5] audio_roll_distance SHALL be -4 for Opus with num_samples_per_frame = 960, found 0
 [iamf][Rule #17] Error: [Section 4] There SHALL be only one unique Codec Config OBU. Found 5 unique IDs.
+[iamf][Rule #25] Error: [Section 3.11.2] num_samples_per_frame SHALL be 1024 for AAC-LC, found 100
+[iamf][Rule #25] Error: [Section 3.11.2] num_samples_per_frame SHALL be 1024 for AAC-LC, found 100
 
 ========================================
-[iamf] 6 error(s), 0 warning(s).
+[iamf] 8 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
@@ -37,4 +39,18 @@ Common restrictions on the IA Sequence for all profiles:
 - num_sub_mixes SHOULD be set to 1.
 - num_audio_elements SHOULD be set to at most 28.
 - When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+
+[iamf][Rule #25] id: assert-aac-lc-specific
+Section 3.11.2
+AAC-LC Specific checks:
+- codec_id SHALL be mp4a.
+- objectTypeIndication SHALL be 0x40.
+- streamType SHALL be 0x05 (Audio Stream).
+- upstream SHALL be 0.
+- audioObjectType SHALL be 2 (AAC-LC).
+- channelConfiguration SHALL be 2.
+- frameLengthFlag SHALL be 0 (1024 lines IMDCT).
+- dependsOnCoreCoder SHALL be 0.
+- extensionFlag SHALL be 0.
+- num_samples_per_frame SHALL be 1024 (Section 3.5 requires it to match the decoder_config frame length, which Section 3.11.2 defines as 1024 via frameLengthFlag = 0).
 
