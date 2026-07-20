@@ -2515,7 +2515,7 @@ void validateDescriptorsAndDataPlacement(IReader *br, IReport *out)
 
 void parseIacb(IReader *br, IamfState &state)
 {
-  br->sym("configurationVersion", 8);
+  state.configurationVersion = br->sym("configurationVersion", 8);
   leb128_read(br); // configOBUs_size
 
   try {
@@ -2537,4 +2537,11 @@ void parseIacb(IReader *br)
 {
   IamfState state;
   parseIacb(br, state);
+}
+
+void validateIacb(const IamfState &state, IReport *out)
+{
+  if(state.configurationVersion != 1) {
+    out->error("[Section 6.2.4] configurationVersion SHALL be set to 1, found %d", state.configurationVersion);
+  }
 }

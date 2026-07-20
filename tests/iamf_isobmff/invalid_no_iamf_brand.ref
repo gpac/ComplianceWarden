@@ -4,7 +4,7 @@
 
 Specification description: IAMF in ISOBMFF
 
-[iamf_isobmff][Rule #1] Error: Sample entry 'iamf' does not contain an 'iacb' box
+[iamf_isobmff][Rule #0] Error: The compatible_brands list in FileTypeBox SHALL contain 'iamf'
 
 ========================================
 [iamf_isobmff] 1 error(s), 0 warning(s).
@@ -12,9 +12,9 @@ Specification description: IAMF in ISOBMFF
 
 ===== Involved rules descriptions:
 
-[iamf_isobmff][Rule #1] id: assert-iamf-sample-entry-has-iacb
-Section 6.2.3
-An 'iamf' sample entry SHALL contain an 'iacb' box.
+[iamf_isobmff][Rule #0] id: assert-ftyp-iamf-brand
+Section 6.1
+An IAMF file SHALL have the 'iamf' brand among the compatible brands array of the FileTypeBox.
 
 +--------------------------------------+
 |          isobmff validation          |

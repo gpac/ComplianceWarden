@@ -4,7 +4,7 @@
 
 Specification description: IAMF in ISOBMFF
 
-[iamf_isobmff][Rule #3] Error: The stss box SHALL NOT be present in an IAMF track.
+[iamf_isobmff][Rule #4] Error: The stss box SHALL NOT be present in an IAMF track.
 
 ========================================
 [iamf_isobmff] 1 error(s), 0 warning(s).
@@ -12,7 +12,7 @@ Specification description: IAMF in ISOBMFF
 
 ===== Involved rules descriptions:
 
-[iamf_isobmff][Rule #3] Section 6.2.5
+[iamf_isobmff][Rule #4] Section 6.2.5
 IA Sample Format checks:
 - The stss box SHALL NOT be present.
 - One IA Sample SHALL be one Temporal Unit and SHALL NOT contain the Temporal Delimiter OBU.

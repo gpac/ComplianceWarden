@@ -273,6 +273,8 @@ struct IamfState {
 
   // Audio Frame
   std::vector<AudioFrameInfo> audioFrames;
+
+  int configurationVersion = -1;
 };
 
 int64_t parseIamfObus(IReader *br, IamfState &state);
@@ -304,6 +306,7 @@ void validateSubstreamTrimmingConsistency(const IamfState &state, IReport *out);
 void validateParameterSubstreamConsistency(const IamfState &state, IReport *out);
 void validateDescriptorsAndDataPlacement(IReader *br, IReport *out);
 void validateDescriptorObusOrder(const IamfState &state, IReport *out);
+void validateIacb(const IamfState &state, IReport *out);
 uint32_t getSampleRate(const CodecConfigInfo &config);
 
 void parseIacb(IReader *br, IamfState &state);
