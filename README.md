@@ -113,7 +113,7 @@ Linux, Windows:
 $ make -j
 ```
 
-MacOS X and BSD-likes:
+MacOS X and BSD-likes, just do `./check` unless not willing to execute the tests:
 
 ```
 $ CXX=scripts/darwin.sh make -j
