@@ -1,0 +1,34 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #16] Error: [Section 3.11.4] sample_format_flags SHALL be 0 or 1, found 2
+[iamf][Rule #16] Error: [Section 3.11.4] sample_size SHALL be 16, 24, or 32, found 8
+[iamf][Rule #16] Error: [Section 3.11.4] sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000, found 1000
+[iamf][Rule #17] Error: [Section 4] There SHALL be only one unique Codec Config OBU. Found 4 unique IDs.
+
+========================================
+[iamf] 4 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #16] id: assert-lpcm-specific
+Section 3.11.4
+LPCM Specific checks:
+- sample_format_flags SHALL be 0 or 1.
+- sample_size SHALL be 16, 24, or 32.
+- sample_rate SHALL be 44100, 16000, 32000, 48000, or 96000.
+
+[iamf][Rule #17] id: assert-common-profile-restrictions
+Section 4
+Common restrictions on the IA Sequence for all profiles:
+- The maximum size of an OBU SHALL be limited to 2MB.
+- There SHALL be only one unique Codec Config OBU.
+- num_sub_mixes SHOULD be set to 1.
+- num_audio_elements SHOULD be set to at most 28.
+- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+

@@ -1,0 +1,35 @@
++--------------------------------------+
+|       iamf_isobmff validation        |
++--------------------------------------+
+
+Specification description: IAMF in ISOBMFF
+
+[iamf_isobmff][Rule #1] Error: Sample entry 'iamf' channelcount is 2, SHALL be 0
+[iamf_isobmff][Rule #1] Error: Sample entry 'iamf' samplerate is 44100, SHALL be 0
+[iamf_isobmff][Rule #2] Error: [Section 5.1.1] Missing required descriptor OBUs. Reached end of bitstream. Last seen IA Sequence Header OBU
+
+========================================
+[iamf_isobmff] 3 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf_isobmff][Rule #1] id: assert-iamf-audio-sample-entry-fields-zero
+Section 6.2.3
+The channelcount field of AudioSampleEntry SHALL be set to 0. The samplerate field of AudioSampleEntry SHALL be set to 0. There SHALL be no SamplingRateBox.
+
+[iamf_isobmff][Rule #2] id: assert-iacb-config-obus
+Section 6.2.4
+The Configuration OBUs contained in the 'iacb' box SHALL comply with the IAMF specification.
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

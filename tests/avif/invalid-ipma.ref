@@ -2,12 +2,12 @@
 |           avif validation            |
 +--------------------------------------+
 
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+Specification description: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
 
 [avif][Rule #0] Error: AV1 Image Item (ID=1) shall be associated with an AV1 Item Configuration Property
-[avif][Rule #6] Error: [ItemId=1] No av1C configuration found (expected 1)
-[avif][Rule #7] Error: [ItemId=1] No av1C configuration found (expected 1)
+[avif][Rule #4] Error: [ItemId=1] No av1C configuration found (expected 1)
+[avif][Rule #5] Error: [ItemId=1] No av1C configuration found (expected 1)
 
 ========================================
 [avif] 3 error(s), 0 warning(s).
@@ -15,15 +15,18 @@ https://aomediacodec.github.io/av1-avif/
 
 ===== Involved rules descriptions:
 
-[avif][Rule #0] Section 2.1 AV1 Image Item
-The AV1 Image Item shall be associated with an AV1 Item Configuration Property.
+[avif][Rule #0] id: assert-dd521ae6
+Section 2.1 AV1 Image Item
+The AV1 Image Item shall be associated with an AV1ItemConfigurationProperty.
 
-[avif][Rule #6] Section 2.2.1
-If a Sequence Header OBU is present in the AV1CodecConfigurationBox, it shall match the
+[avif][Rule #4] id: assert-a0fd4b2f
+Section 2.2.1
+If a Sequence Header OBU is present in the AV1ItemConfigurationProperty, it shall match the
 Sequence Header OBU in the AV1 Image Item Data.
 
-[avif][Rule #7] Section 2.2.1
-The values of the fields in the AV1CodecConfigurationBox shall match those of the
+[avif][Rule #5] id: assert-4f2a2770
+Section 2.2.1
+The values of the fields in the AV1ItemConfigurationProperty shall match those of the
 Sequence Header OBU in the AV1 Image Item Data.
 
 +--------------------------------------+

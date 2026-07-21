@@ -2,10 +2,10 @@
 |           avif validation            |
 +--------------------------------------+
 
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+Specification description: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
 
-[avif][Rule #9] Error: Property "av1C" shall be marked as essential (item_ID=1)
+[avif][Rule #7] Error: Property "av1C" shall be marked as essential (item_ID=1)
 
 ========================================
 [avif] 1 error(s), 0 warning(s).
@@ -13,7 +13,8 @@ https://aomediacodec.github.io/av1-avif/
 
 ===== Involved rules descriptions:
 
-[avif][Rule #9] Section 2.2.1
+[avif][Rule #7] id: assert-ebb95262
+Section 2.2.1
 AV1 Item Configuration Property [...] shall be marked as essential.
 
 +--------------------------------------+

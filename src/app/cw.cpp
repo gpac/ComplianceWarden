@@ -71,7 +71,8 @@ bool specCheck(const SpecDesc *spec, const char *filename, uint8_t *data, size_t
 
   if(
     extPos == std::string::npos ||
-    (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b")) {
+    (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b" &&
+     fnStr.substr(extPos) != ".iamf")) {
     try {
       probeIsobmff(data, size);
     } catch(...) {
@@ -151,7 +152,14 @@ int main(int argc, const char *argv[])
     return 0;
   }
 
-  if(specName.empty() || urls.size() != 1) {
+  if(specName.empty()) {
+    fprintVersion(stderr);
+    opt.printHelp(stderr);
+    fprintf(stderr, ">>>>> Specification name not provided. <<<<<\n\n");
+    return 1;
+  }
+
+  if(urls.size() != 1) {
     fprintVersion(stderr);
     opt.printHelp(stderr);
     fprintf(stderr, ">>>>> Expected 1 input file, got %zu. See usage above. <<<<<\n\n", urls.size());

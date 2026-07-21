@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib> // exit
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 void ENSURE(bool cond, const char *format, ...)

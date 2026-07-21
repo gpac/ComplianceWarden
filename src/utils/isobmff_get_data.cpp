@@ -55,7 +55,7 @@ std::vector<int> getOffsets(const Box *offsetBox, const Box *sampleToChunkBox, s
 
       chunkIdx++;
 
-      if(j < chunkEntries.size() && chunkIdx >= chunkEntries[j + 1].first) {
+      if(j + 1 < chunkEntries.size() && chunkIdx >= chunkEntries[j + 1].first) {
         j++; // move to next chunk
       }
     }

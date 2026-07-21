@@ -1,0 +1,25 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #17] Error: [Section 4] When num_layers = 1, output_gain_is_present_flag SHALL be set to 0.
+[iamf][Rule #17] Error: [Section 4] When num_layers = 1, recon_gain_is_present_flag SHALL be set to 0.
+
+========================================
+[iamf] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #17] id: assert-common-profile-restrictions
+Section 4
+Common restrictions on the IA Sequence for all profiles:
+- The maximum size of an OBU SHALL be limited to 2MB.
+- There SHALL be only one unique Codec Config OBU.
+- num_sub_mixes SHOULD be set to 1.
+- num_audio_elements SHOULD be set to at most 28.
+- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+

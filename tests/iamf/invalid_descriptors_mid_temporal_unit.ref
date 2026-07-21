@@ -1,0 +1,24 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #20] Error: [Section 4] Descriptors placed mid-sequence SHALL NOT be placed in the middle of a Temporal Unit.
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #20] id: assert-section4-descriptor-placement
+Section 4
+Descriptor and Data placement restrictions for all profiles:
+- There SHALL be only one unique set of Descriptors in an IA Sequence. If the Descriptors are repeated in the middle of the IA Sequence, all the OBUs in that set of Descriptors SHALL be marked as redundant (i.e., obu_redundant_copy = 1).
+- When a set of Descriptors is placed in the middle of the IA Sequence, it SHALL NOT be placed in the middle of a Temporal Unit.
+- There SHALL be no redundant Parameter Block OBUs in a Temporal Unit.
+- Parameter Block OBUs SHALL come first and SHALL be followed by Audio Frame OBUs in a Temporal Unit.
+- There MAY be Temporal Delimiter OBUs present. If present, the first OBU of every Temporal Unit SHALL be the Temporal Delimiter OBU.
+

@@ -577,8 +577,9 @@ const SpecDesc specAv1Hdr10plus = {
                 if(!strcmp(sym.name, "compatible_brand"))
                   if(toString((uint32_t)sym.value) == "cdm4")
                     if(!cdm4Found)
-                      out->warning("'cdm4' brand should be present but is not in the 'ftyp' "
-                                   "compatible_brand list");
+                      out->warning(
+                        "'cdm4' brand should be present but is not in the 'ftyp' "
+                        "compatible_brand list");
 
           out->covered();
         }

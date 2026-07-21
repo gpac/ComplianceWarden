@@ -2,24 +2,20 @@
 |           avif validation            |
 +--------------------------------------+
 
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+Specification description: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
 
 [avif][Rule #2] Error: [ItemId=1] Expected 1 sequence Header OBU in Image Item Data but found 2
-[avif][Rule #3] Warning: [ItemId=1] still_picture flag set to 0
-[avif][Rule #3] Warning: [ItemId=1] still_picture flag set to 0
 
 ========================================
-[avif] 1 error(s), 2 warning(s).
+[avif] 1 error(s), 0 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[avif][Rule #2] Section 2.1
+[avif][Rule #2] id: assert-809b9acc
+Section 2.1
 The AV1 Image Item Data shall have exactly one Sequence Header OBU.
-
-[avif][Rule #3] Section 2.1
-The AV1 Image Item Data should have its still_picture flag set to 1.
 
 +--------------------------------------+
 |           miaf validation            |

@@ -1,0 +1,31 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 10, expected 1
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 1 (layout 0) has substream_count 10, expected 1
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, the sum of channels across all Audio Elements in Mix Presentation 1 before mixing exceeds 18. Found 20
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, no Mix Presentation complies with Base Profile constraints.
+
+========================================
+[iamf] 4 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #8] id: assert-scalable-channel-group-format
+Section 3.6.3
+Channel Group Format checks:
+- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
+
+[iamf][Rule #22] id: assert-base-profile-restrictions
+Section 4.2
+Base Profile restrictions:
+- There SHALL be at most two unique Audio Element OBUs.
+- There SHALL be at most one Channel-based Audio Element having num_layers > 1.
+- There SHALL be at most one Scene-based Audio Element.
+- The sum of channels across all Audio Elements in a Mix Presentation before mixing SHALL NOT exceed 18.
+

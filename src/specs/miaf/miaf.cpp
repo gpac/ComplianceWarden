@@ -228,8 +228,9 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
                   for(auto &sym : iinfChild.syms)
                     if(!strcmp(sym.name, "item_protection_index"))
                       if(sym.value != 0)
-                        out->error("MIAF image item shall not reference any item protection ('infe' "
-                                   "item_protection_index)");
+                        out->error(
+                          "MIAF image item shall not reference any item protection ('infe' "
+                          "item_protection_index)");
           }
         }
     },
@@ -971,8 +972,9 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
                   if(trakChild.fourcc == FOURCC("tref"))
                     for(auto &trefChild : trakChild.children) {
                       if(trefFound)
-                        out->error("'tref' with multiple TrackReferenceTypeBox: check ISOBMFF "
-                                   "conformance");
+                        out->error(
+                          "'tref' with multiple TrackReferenceTypeBox: check ISOBMFF "
+                          "conformance");
 
                       if(trefChild.fourcc != FOURCC("thmb") && trefChild.fourcc != FOURCC("auxl"))
                         out->error("'tref' with unknown TrackReferenceTypeBox type \'%X\'", trefChild.fourcc);
@@ -1046,8 +1048,9 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
                             repeat = (sym.value & 1);
 
                           if(repeat != (sym.value & 1))
-                            out->error("Either all tracks or none shall indicate an edit "
-                                       "list repetition");
+                            out->error(
+                              "Either all tracks or none shall indicate an edit "
+                              "list repetition");
                         }
                     }
     } },
@@ -1623,8 +1626,9 @@ static const SpecDesc specMiaf = {
   "MIAF (Multi-Image Application Format)\n"
   "MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019", // TODO: + DAM2 WG03 N0032",
   { "heif" },
-  concatRules({ rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(),
-                getRulesMiafColours(), getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
+  concatRules(
+    { rulesMiafGeneral, getRulesMiafAudio(), getRulesMiafDerivations(), getRulesMiafNumPixels(), getRulesMiafColours(),
+      getRulesMiafBrands(specMiaf), getRulesMiafProfiles(specMiaf) }),
   isIsobmff,
 };
 

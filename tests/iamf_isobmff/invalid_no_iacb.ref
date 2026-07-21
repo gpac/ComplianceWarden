@@ -1,0 +1,29 @@
++--------------------------------------+
+|       iamf_isobmff validation        |
++--------------------------------------+
+
+Specification description: IAMF in ISOBMFF
+
+[iamf_isobmff][Rule #0] Error: Sample entry 'iamf' does not contain an 'iacb' box
+
+========================================
+[iamf_isobmff] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf_isobmff][Rule #0] id: assert-iamf-sample-entry-has-iacb
+Section 6.2.3
+An 'iamf' sample entry SHALL contain an 'iacb' box.
+
++--------------------------------------+
+|          isobmff validation          |
++--------------------------------------+
+
+Specification description: ISO Base Media File Format
+MPEG-4 part 12 - ISO/IEC 14496-12 - m17277 (6th+FDAM1+FDAM2+COR1-R4)
+
+========================================
+[isobmff] No errors.
+========================================
+

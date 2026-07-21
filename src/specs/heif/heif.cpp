@@ -823,13 +823,15 @@ static const SpecDesc specHeif = {
                                         if(!foundCcst)
                                           foundCcst = true;
                                         else
-                                          out->error("CodingConstraintsBox ('ccst') is "
-                                                     "present several times");
+                                          out->error(
+                                            "CodingConstraintsBox ('ccst') is "
+                                            "present several times");
                                       }
 
                                     if(!foundCcst)
-                                      out->error("CodingConstraintsBox ('ccst') "
-                                                 "shall be present once");
+                                      out->error(
+                                        "CodingConstraintsBox ('ccst') "
+                                        "shall be present once");
                                   }
                                 }
                     }
@@ -1296,8 +1298,9 @@ static const SpecDesc specHeif = {
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("mif1"))
                   if(!checkRuleSection(specHeif, "6", root))
-                    out->error("'mif1' brand: this file shall conform to HEIF section 6, check the other "
-                               "errors for details");
+                    out->error(
+                      "'mif1' brand: this file shall conform to HEIF section 6, check the other "
+                      "errors for details");
       } },
     { "Section 10.3\n"
       "when a brand specified in 10.3 is among the compatible brands of a file,\n"
@@ -1309,8 +1312,9 @@ static const SpecDesc specHeif = {
               if(!strcmp(sym.name, "compatible_brand"))
                 if(sym.value == FOURCC("msf1"))
                   if(!checkRuleSection(specHeif, "7", root))
-                    out->error("'msf1' brand: this file shall conform to HEIF section 7, check the other "
-                               "errors for details");
+                    out->error(
+                      "'msf1' brand: this file shall conform to HEIF section 7, check the other "
+                      "errors for details");
       } },
   },
   isIsobmff,

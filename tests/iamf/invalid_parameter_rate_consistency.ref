@@ -1,0 +1,21 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #19] Error: [Section 4] Inconsistent parameter_rate for parameter_id 0: 48000 vs 24000
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #19] id: assert-parameter-substream-consistency
+Section 4
+Parameter Substream consistency checks:
+- Every Parameter Substream in the IA Sequence SHALL consist of the same number of Parameter Block OBUs.
+- Every Parameter Block OBU SHALL have the same duration as its corresponding Audio Frame OBU under the same sample rate.
+

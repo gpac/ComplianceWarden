@@ -1,0 +1,20 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #8] Error: [Section 3.6.3] Layer 2 (layout 2) has substream_count 4, expected 3
+
+========================================
+[iamf] 1 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #8] id: assert-scalable-channel-group-format
+Section 3.6.3
+Channel Group Format checks:
+- For scalable channel audio, substream_count and coupled_substream_count SHALL match expected values derived from layout transitions.
+

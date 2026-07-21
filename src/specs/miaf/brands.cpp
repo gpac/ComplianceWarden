@@ -59,8 +59,9 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc &spec)
         };
 
         if(!boxOrderCheck())
-          out->error("'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening "
-                     "BoxFileIndexBox)");
+          out->error(
+            "'MiPr' brand: the MetaBox shall follow the FileTypeBox (with at most one intervening "
+            "BoxFileIndexBox)");
 
         for(auto &b : root.children) {
           if(b.fourcc == FOURCC("mdat"))
@@ -185,9 +186,10 @@ const std::initializer_list<RuleDesc> getRulesMiafBrands(const SpecDesc &spec)
         }
 
         if(!found)
-          out->error("'MiPr' brand: The maximum number of bytes from the beginning of the file to\n"
-                     "  the last byte of the coded data for at least one of the thumbnail images of the\n"
-                     "  primary item, or the primary item itself, is 128 000 bytes.");
+          out->error(
+            "'MiPr' brand: The maximum number of bytes from the beginning of the file to\n"
+            "  the last byte of the coded data for at least one of the thumbnail images of the\n"
+            "  primary item, or the primary item itself, is 128 000 bytes.");
       } },
     { "Section 10.3\n"
       "The presence of the animation MIAF application brand indication ('MiAn') in the\n"

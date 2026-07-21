@@ -1,0 +1,23 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #14] Error: [Section 3.9] When obu_type = OBU_IA_Audio_Frame, explicit_audio_substream_id SHALL be greater than 17. Found 10
+[iamf][Rule #14] Error: [Section 3.9] AudioFrameOBU refers to an unknown audio_substream_id 10
+
+========================================
+[iamf] 2 error(s), 0 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #14] id: assert-audio-frame-obu
+Section 3.9
+Audio Frame OBU checks:
+- When obu_type = OBU_IA_Audio_Frame, explicit_audio_substream_id SHALL be greater than 17.
+- AudioFrameOBU SHALL refer to a valid audio_substream_id declared in an Audio Element OBU.
+- There SHALL be exactly one Audio Element OBU with a given audio_substream_id in a set of Descriptors.
+

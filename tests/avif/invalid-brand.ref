@@ -2,10 +2,10 @@
 |           avif validation            |
 +--------------------------------------+
 
-Specification description: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+Specification description: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
 
-[avif][Rule #19] Error: 'avif', 'avis', or 'avio' brand not found
+[avif][Rule #17] Error: 'avif', 'avis', or 'avio' brand not found
 
 ========================================
 [avif] 1 error(s), 0 warning(s).
@@ -13,7 +13,7 @@ https://aomediacodec.github.io/av1-avif/
 
 ===== Involved rules descriptions:
 
-[avif][Rule #19] Section 5
+[avif][Rule #17] Section 5
 AVIF files shall contain either the 'avif', 'avis', or 'avio' brand
 
 +--------------------------------------+

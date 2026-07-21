@@ -21,33 +21,15 @@ An online version is available [here](https://gpac.github.io/ComplianceWarden-wa
 
 ### Usage
 
-[New option parser](https://github.com/gpac/ComplianceWarden/issues/48) (introduced in July 2023):
-
 ```
-$ bin/cw.exe -h
-Compliance Warden, version v32-master-rev14-g363d8d3
+Compliance Warden, version v35-master-rev24-g203f95e
 
 Usage:
-    -s, --spec                              Specification name.
-    -f, --format                            Output format: "raw" (default), or "json"
-    -l, --list                              List available specifications or available rules.
-    -v, --version                           Print version and exit.
-    -h, --help                              Print usage and exit.
-    -t, --test                              Don't print warnings when switching to legacy mode.
-```
-
-
-The old usage is deprecated and will be removed in v34:
-
-```
-$ bin/cw.exe
-Compliance Warden, version v32-master-rev14-g363d8d3
-
-Usage:
-- Run conformance:          bin/cw.exe <spec> input.mp4 [json]
-- List specifications:      bin/cw.exe list
-- List specification rules: bin/cw.exe <spec> list
-- Print version:            bin/cw.exe version
+    -s, --spec                              Specification name
+    -f, --format                            Output formats: "raw" (default), or "json"
+    -l, --list                              List available specifications, or available rules for a given specification (see "-s")
+    -v, --version                           Print version and exit
+    -h, --help                              Print usage and exit
 ```
 
 ### Specifications
@@ -79,8 +61,8 @@ https://aomediacodec.github.io/av1-isobmff/v1.2.0.html
 
 ================================================================================
 Specification name: avif
-            detail: AVIF v1.0.0, 19 February 2019
-https://aomediacodec.github.io/av1-avif/
+            detail: AVIF v1.2.0, 8 January 2025
+https://aomediacodec.github.io/av1-avif/v1.2.0.html
         depends on: "miaf" specifications.
 ================================================================================
 
@@ -103,6 +85,19 @@ Specification name: miaf
 MPEG-A part 22 - ISO/IEC 23000-22 - w18260 FDIS - Jan 2019
         depends on: "heif" specifications.
 ================================================================================
+
+================================================================================
+Specification name: iamf
+            detail: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+        depends on: none.
+================================================================================
+
+================================================================================
+Specification name: iamf_isobmff
+            detail: IAMF in ISOBMFF
+        depends on: "isobmff" specifications.
+================================================================================
 ```
 
 ## Building
@@ -118,7 +113,7 @@ Linux, Windows:
 $ make -j
 ```
 
-MacOS X and BSD-likes:
+MacOS X and BSD-likes, just do `./check` unless not willing to execute the tests:
 
 ```
 $ CXX=scripts/darwin.sh make -j
@@ -326,3 +321,5 @@ Some aspects are not activated:
 This work was initiated as part of the MPEG MIAF conformance software.
 
 The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF, AV1-ISOBMFF, and AV1 HDR10+.
+
+Google contributed the work on IAMF.

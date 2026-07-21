@@ -1,0 +1,34 @@
++--------------------------------------+
+|           iamf validation            |
++--------------------------------------+
+
+Specification description: IAMF v1.1.0
+https://aomediacodec.github.io/iamf/v1.1.0.html
+
+[iamf][Rule #17] Warning: [Section 4] num_audio_elements SHOULD be set to at most 28. Found 29 in a sub-mix
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, at most two unique Audio Element OBUs are allowed. Found 3
+[iamf][Rule #22] Error: [Section 4.2] For Base Profile, no Mix Presentation complies with Base Profile constraints.
+
+========================================
+[iamf] 2 error(s), 1 warning(s).
+========================================
+
+===== Involved rules descriptions:
+
+[iamf][Rule #17] id: assert-common-profile-restrictions
+Section 4
+Common restrictions on the IA Sequence for all profiles:
+- The maximum size of an OBU SHALL be limited to 2MB.
+- There SHALL be only one unique Codec Config OBU.
+- num_sub_mixes SHOULD be set to 1.
+- num_audio_elements SHOULD be set to at most 28.
+- When num_layers = 1, both output_gain_is_present_flag and recon_gain_is_present_flag SHALL be set to 0.
+
+[iamf][Rule #22] id: assert-base-profile-restrictions
+Section 4.2
+Base Profile restrictions:
+- There SHALL be at most two unique Audio Element OBUs.
+- There SHALL be at most one Channel-based Audio Element having num_layers > 1.
+- There SHALL be at most one Scene-based Audio Element.
+- The sum of channels across all Audio Elements in a Mix Presentation before mixing SHALL NOT exceed 18.
+
