@@ -5,21 +5,50 @@
 Specification description: GEOINT Imagery Media for ISR - NGA.STND.0076
 
 [gimi][Rule #0] Error: 'geo1' brand not found in 'ftyp' box
-[gimi][Rule #1] Error: 'unif' brand not found in 'ftyp' box
+[gimi][Rule #2] Error: 'unif' brand not found in 'ftyp' box
+[gimi][Rule #3] Warning: TODO: Implement check for NGA.STND.0076_1.0-04
+[gimi][Rule #4] Warning: TODO: Implement check for NGA.STND.0076_1.0-05
+[gimi][Rule #5] Warning: TODO: Implement check for NGA.STND.0076_1.0-06
+[gimi][Rule #6] Warning: TODO: Implement check for NGA.STND.0076_1.0-07
+[gimi][Rule #7] Warning: TODO: Implement check for NGA.STND.0076_1.0-08
+[gimi][Rule #8] Warning: TODO: Implement check for NGA.STND.0076_1.0-09
 
 ========================================
-[gimi] 2 error(s), 0 warning(s).
+[gimi] 2 error(s), 6 warning(s).
 ========================================
 
 ===== Involved rules descriptions:
 
-[gimi][Rule #0] Requirement NGA.STND.0076_1.0-02
-An NGA.STND.0076_1.0 file shall include the 'geo1' brand in the
-compatible brands list.
+[gimi][Rule #0] id: NGA.STND.0076-01_V1.0-01
+A version 1.0 NGA.STND.0076-01 file shall include the 'geo1' brand in the compatible brands list.
+ 
+
+[gimi][Rule #2] id: NGA.STND.0076-01_V1.0-03
+An NGA.STND.0076-01 file shall include the 'unif' brand in the compatible brands list
 
 
-[gimi][Rule #1] Requirement NGA.STND.0076_1.0-03
-An NGA.STND.0076_1.0 file shall include the 'unif' brand in the compatible brands list.
+[gimi][Rule #3] id: NGA.STND.0076-01_V1.0-04
+An NGA.STND.0076 file shall include the 'unif' brand in the compatible brands list.
+
+
+[gimi][Rule #4] id: NGA.STND.0076-01_V1.0-05
+Where an NGA.STND.0076 file contains Still Imagery content, the file shall conform to the 'mif2' brand requirements.
+
+
+[gimi][Rule #5] id: NGA.STND.0076-01_V1.0-06
+Where an NGA.STND.0076 file contains Still Imagery content, the file shall include 'mif2' brand.
+
+
+[gimi][Rule #6] id: NGA.STND.0076-01_V1.0-07
+Where an NGA.STND.0076 file contains image sequence content, the file shall conform to the requirements associated with the 'msf1' brand.
+
+
+[gimi][Rule #7] id: NGA.STND.0076-01_V1.0-08
+Where an NGA.STND.0076 file contains image sequence content, the file shall include the 'msf1' brand.
+
+
+[gimi][Rule #8] id: NGA.STND.0076-01_V1.0-09
+Where an NGA.STND.0076-01 file contains image sequence content, the file shall include the 'msf1' brand.
 
 
 +--------------------------------------+

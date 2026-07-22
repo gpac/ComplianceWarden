@@ -8,29 +8,39 @@ static const SpecDesc specGimi = {
   "GEOINT Imagery Media for ISR - NGA.STND.0076",
   { "isobmff" },
   {
-    { "Requirement NGA.STND.0076_1.0-02\n"
-      "An NGA.STND.0076_1.0 file shall include the 'geo1' brand in the\n"
-      "compatible brands list.\n",
+    { "A version 1.0 NGA.STND.0076-01 file shall include the 'geo1' brand in the compatible brands list.\n ",
+      "NGA.STND.0076-01_V1.0-01",
       [](Box const &root, IReport *out) {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp")) {
           out->error("'ftyp' box not found");
           return;
         }
 
-        auto &ftypBox = root.children[0];
+        const Box &ftypBox = root.children[0];
 
         bool found = false;
 
-        for(auto &brand : ftypBox.syms)
-          if(!strcmp(brand.name, "compatible_brand") && brand.value == FOURCC("geo1"))
+        for(const Symbol &brand : ftypBox.syms) {
+          if(!strcmp(brand.name, "compatible_brand") && brand.value == FOURCC("geo1")) {
             found = true;
+            break;
+          }
+        }
 
         if(!found)
           out->error("'geo1' brand not found in 'ftyp' box");
       } },
 
-    { "Requirement NGA.STND.0076_1.0-03\n"
-      "An NGA.STND.0076_1.0 file shall include the 'unif' brand in the compatible brands list.\n",
+    { "An NGA.STND.0076-01 conformant reader shall correctly process the 'geo1' brand's associated box content.\n",
+      "NGA.STND.0076-01_V1.0-02",
+      [](Box const &root, IReport *out) {
+        (void)root;
+        (void)out;
+        // Applies to the Reader
+      } },
+
+    { "An NGA.STND.0076-01 file shall include the 'unif' brand in the compatible brands list\n",
+      "NGA.STND.0076-01_V1.0-03",
       [](Box const &root, IReport *out) {
         if(root.children.empty() || root.children[0].fourcc != FOURCC("ftyp")) {
           out->error("'ftyp' box not found");
@@ -49,77 +59,75 @@ static const SpecDesc specGimi = {
           out->error("'unif' brand not found in 'ftyp' box");
       } },
 
-    { "Requirement NGA.STND.0076_1.0-04\n"
-      "An NGA.STND.0076 file shall include the 'unif' brand in the compatible brands list.",
+    { "An NGA.STND.0076 file shall include the 'unif' brand in the compatible brands list.\n",
+      "NGA.STND.0076-01_V1.0-04",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-04\n");
+        out->warning("TODO: Implement check for NGA.STND.0076_1.0-04");
 
         /* TODO: The 'unif' brand indicates the unified implementation and handling of
         IDs across file-scoped MetaBox items, tracks, track groups, and entity groups.
         */
       } },
 
-    { "Requirement NGA.STND.0076_1.0-05\n"
-      "Where an NGA.STND.0076 file contains Still Imagery content, the file shall conform to the 'mif2' brand "
-      "requirements.",
+    { "Where an NGA.STND.0076 file contains Still Imagery content, the file shall conform to the 'mif2' brand "
+      "requirements.\n",
+      "NGA.STND.0076-01_V1.0-05",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-05\n");
+        out->warning("TODO: Implement check for NGA.STND.0076_1.0-05");
         /* TODO: The ‘mif2’ brand represents interoperability requirements for image and metadata items. ‘mif2’
          * represents a baseline for Still Imagery support in this standard. The HEIF standard documents the specifics
          * of the branding differences.*/
       } },
 
-    { "Requirement NGA.STND.0076_1.0-06\n"
-      "Where an NGA.STND.0076 file contains Still Imagery content, the file shall include 'mif2' brand.",
+    { "Where an NGA.STND.0076 file contains Still Imagery content, the file shall include 'mif2' brand.\n",
+      "NGA.STND.0076-01_V1.0-06",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-06\n");
+        out->warning("TODO: Implement check for NGA.STND.0076_1.0-06");
         /* TODO: */
       } },
 
-    { "Requirement NGA.STND.0076_1.0-07\n"
-      "Where an NGA.STND.0076 file contains image sequence content, the file shall conform to the requirements "
-      "associated with the 'msf1' brand.",
+    { "Where an NGA.STND.0076 file contains image sequence content, the file shall conform to the requirements "
+      "associated with the 'msf1' brand.\n",
+      "NGA.STND.0076-01_V1.0-07",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-07\n");
+        out->warning("TODO: Implement check for NGA.STND.0076_1.0-07");
         /* TODO: The 'msf1' brand indicates the presence of a HEIF defined image sequence.*/
       } },
 
-    { "Requirement NGA.STND.0076_1.0-08\n"
-      "Where an NGA.STND.0076 file contains image sequence content, the file shall include the 'msf1' brand.",
+    { "Where an NGA.STND.0076 file contains image sequence content, the file shall include the 'msf1' brand.\n",
+      "NGA.STND.0076-01_V1.0-08",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-08\n");
+        out->warning("TODO: Implement check for NGA.STND.0076_1.0-08");
         /* TODO: */
       } },
 
-    { "Requirement NGA.STND.0076_1.0-09\n"
-      "Where an NGA.STND.0076 file contains Motion Imagery content, the file shall conform to the requirements "
-      "associated with the 'isoa' brand.",
+    { "Where an NGA.STND.0076-01 file contains image sequence content, the file shall include the 'msf1' brand.\n",
+      "NGA.STND.0076-01_V1.0-09",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-09\n");
+        out->warning("TODO: Implement check for NGA.STND.0076_1.0-09");
         /* TODO: The ‘isoa’ brand represents interoperability requirements for the base format as well as Motion Imagery
          * requirements for this standard. */
       } },
 
-    { "Requirement NGA.STND.0076_1.0-10\n"
-      "NGA.STND.0076_1.0-10	Where an NGA.STND.0076 file contains Motion Imagery content, the file shall include "
-      "the 'isoa' brand.",
+    { "Where an NGA.STND.0076-01 file contains the 'msf1' brand, a GIMI reader conformant with the 'msf1' brand shall "
+      "correctly process the 'msf1' brand's associated box content",
+      "NGA.STND.0076-01_V1.0-10",
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        printf("TODO: Implement check for NGA.STND.0076_1.0-10\n");
-        /* TODO: */
+        // Applies to the Reader
       } },
 
   },
