@@ -54,6 +54,8 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-04\n");
+
         /* TODO: The 'unif' brand indicates the unified implementation and handling of
         IDs across file-scoped MetaBox items, tracks, track groups, and entity groups.
         */
@@ -65,6 +67,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-05\n");
         /* TODO: The ‘mif2’ brand represents interoperability requirements for image and metadata items. ‘mif2’
          * represents a baseline for Still Imagery support in this standard. The HEIF standard documents the specifics
          * of the branding differences.*/
@@ -75,6 +78,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-06\n");
         /* TODO: */
       } },
 
@@ -84,6 +88,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-07\n");
         /* TODO: The 'msf1' brand indicates the presence of a HEIF defined image sequence.*/
       } },
 
@@ -92,6 +97,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-08\n");
         /* TODO: */
       } },
 
@@ -101,6 +107,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-09\n");
         /* TODO: The ‘isoa’ brand represents interoperability requirements for the base format as well as Motion Imagery
          * requirements for this standard. */
       } },
@@ -111,6 +118,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
+        printf("TODO: Implement check for NGA.STND.0076_1.0-10\n");
         /* TODO: */
       } },
 
