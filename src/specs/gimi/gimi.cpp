@@ -3,6 +3,8 @@
 
 #include <cstring>
 
+bool has_compatible_brand(Box const &ftypBox, uint32_t brand);
+
 static const SpecDesc specGimi = {
   "gimi",
   "GEOINT Imagery Media for ISR - NGA.STND.0076",
@@ -18,17 +20,10 @@ static const SpecDesc specGimi = {
 
         const Box &ftypBox = root.children[0];
 
-        bool found = false;
-
-        for(const Symbol &brand : ftypBox.syms) {
-          if(!strcmp(brand.name, "compatible_brand") && brand.value == FOURCC("geo1")) {
-            found = true;
-            break;
-          }
-        }
-
-        if(!found)
+        bool found = has_compatible_brand(ftypBox, FOURCC("geo1"));
+        if(!found) {
           out->error("'geo1' brand not found in 'ftyp' box");
+        }
       } },
 
     { "An NGA.STND.0076-01 conformant reader shall correctly process the 'geo1' brand's associated box content.\n",
@@ -36,7 +31,7 @@ static const SpecDesc specGimi = {
       [](Box const &root, IReport *out) {
         (void)root;
         (void)out;
-        // Applies to the Reader
+        // Rule #2 only applies to readers
       } },
 
     { "An NGA.STND.0076-01 file shall include the 'unif' brand in the compatible brands list\n",
@@ -49,14 +44,11 @@ static const SpecDesc specGimi = {
 
         auto &ftypBox = root.children[0];
 
-        bool found = false;
+        bool found = has_compatible_brand(ftypBox, FOURCC("unif"));
 
-        for(auto &brand : ftypBox.syms)
-          if(!strcmp(brand.name, "compatible_brand") && brand.value == FOURCC("unif"))
-            found = true;
-
-        if(!found)
+        if(!found) {
           out->error("'unif' brand not found in 'ftyp' box");
+        }
       } },
 
     { "An NGA.STND.0076 file shall include the 'unif' brand in the compatible brands list.\n",
