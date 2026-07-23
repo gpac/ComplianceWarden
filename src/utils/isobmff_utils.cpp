@@ -288,3 +288,17 @@ std::vector<const Box *> findBoxesWithProperty(Box const &root, uint32_t itemId,
 
   return propertyBoxes;
 }
+
+bool has_compatible_brand(Box const &ftypBox, uint32_t brand)
+{
+  bool found = false;
+
+  for(const Symbol &symbol : ftypBox.syms) {
+    if(!strcmp(symbol.name, "compatible_brand") && symbol.value == brand) {
+      found = true;
+      break;
+    }
+  }
+
+  return found;
+}
