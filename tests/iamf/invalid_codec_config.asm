@@ -19,12 +19,23 @@ db 0, 0, 0xBB, 0x80 ; sample_rate = 48000 (big-endian)
 
 ; OBU 2: Duplicate codec_config_id = 0
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
-db 8         ; obu_size = 8 bytes
+db 28        ; obu_size = 28 bytes
 db 0         ; codec_config_id = 0 -> INVALID (duplicate)
 db 'mp4a'    ; codec_id = 'mp4a'
 db 100       ; num_samples_per_frame = 100
 db 0xFF      ; audio_roll_distance = -1
 db 0xFF      ; audio_roll_distance (low byte)
+; DecoderConfig for AAC
+db 0x04      ; decoder_config_descriptor_tag = 4
+db 18        ; decoder_config_descriptor_length = 18
+db 0x40      ; objectTypeIndication = 0x40
+db 0x15      ; streamType = 5 (6 bits), upstream = 0 (1 bit), reserved = 1 (1 bit)
+db 0, 0, 0   ; bufferSizeDB = 0
+db 0, 0, 0, 0 ; maxBitrate = 0
+db 0, 0, 0, 0 ; avgBitrate = 0
+db 0x05      ; decoder_specific_info_tag = 5
+db 3         ; decoder_specific_info_length = 3
+db 0x11, 0x90, 0x00 ; AudioSpecificConfig: AOT=2, freq_index=3, channel_config=2, flags=0 + padding
 
 ; OBU 3: Invalid codec_id
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
@@ -37,12 +48,23 @@ db 0         ; audio_roll_distance (low byte)
 
 ; OBU 4: mp4a with invalid roll distance (0 instead of -1)
 db 00000000b ; OBU Header: obu_type = 0 (Codec Config)
-db 8         ; obu_size = 8 bytes
+db 28        ; obu_size = 28 bytes
 db 2         ; codec_config_id = 2
 db 'mp4a'    ; codec_id = 'mp4a'
 db 100       ; num_samples_per_frame = 100
 db 0         ; audio_roll_distance = 0 -> INVALID (mp4a requires -1)
 db 0         ; audio_roll_distance (low byte)
+; DecoderConfig for AAC
+db 0x04      ; decoder_config_descriptor_tag = 4
+db 18        ; decoder_config_descriptor_length = 18
+db 0x40      ; objectTypeIndication = 0x40
+db 0x15      ; streamType = 5 (6 bits), upstream = 0 (1 bit), reserved = 1 (1 bit)
+db 0, 0, 0   ; bufferSizeDB = 0
+db 0, 0, 0, 0 ; maxBitrate = 0
+db 0, 0, 0, 0 ; avgBitrate = 0
+db 0x05      ; decoder_specific_info_tag = 5
+db 3         ; decoder_specific_info_length = 3
+db 0x11, 0x90, 0x00 ; AudioSpecificConfig: AOT=2, freq_index=3, channel_config=2, flags=0 + padding
 
 ; OBU 5: fLaC with invalid roll distance (-1 instead of 0)
 obu_5_start:

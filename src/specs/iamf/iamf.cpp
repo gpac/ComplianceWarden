@@ -538,6 +538,35 @@ std::initializer_list<RuleDesc> rulesIamf = {
       validateDescriptorObusOrder(state, out);
     } },
 
+  { "Section 3.11.2\n"
+    "AAC-LC Specific checks:\n"
+    "- codec_id SHALL be mp4a.\n"
+    "- objectTypeIndication SHALL be 0x40.\n"
+    "- streamType SHALL be 0x05 (Audio Stream).\n"
+    "- upstream SHALL be 0.\n"
+    "- audioObjectType SHALL be 2 (AAC-LC).\n"
+    "- channelConfiguration SHALL be 2.\n"
+    "- frameLengthFlag SHALL be 0 (1024 lines IMDCT).\n"
+    "- dependsOnCoreCoder SHALL be 0.\n"
+    "- extensionFlag SHALL be 0.\n"
+    "- num_samples_per_frame SHALL be 1024 (Section 3.5 requires it to match the decoder_config frame length, which "
+    "Section 3.11.2 defines as 1024 via frameLengthFlag = 0).",
+    "assert-aac-lc-specific",
+    [](Box const &root, IReport *out) {
+      IamfState state;
+      BoxReader br;
+      if(!probeIamf(root, br, state, nullptr))
+        return;
+
+      while(!br.empty()) {
+        parseIamfObus(&br, state);
+      }
+
+      out->covered();
+
+      validateAacLcSpecific(state, out);
+    } },
+
   { "Section 3.11.3\n"
     "FLAC Specific checks:\n"
     "- minimum_block_size and maximum_block_size SHALL be set to num_samples_per_frame.\n"

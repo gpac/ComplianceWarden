@@ -617,20 +617,7 @@ void checkTicksPerFrame(const ParamDefinition &param, uint64_t codec_config_id, 
   }
 
   if(matched_config) {
-    uint32_t sample_rate = 0;
-    if(matched_config->codec_id == FOURCC("Opus")) {
-      sample_rate = 48000;
-    } else if(matched_config->codec_id == FOURCC("ipcm")) {
-      auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(matched_config->decoder_config.get());
-      if(pcm_config) {
-        sample_rate = pcm_config->sample_rate;
-      }
-    } else if(matched_config->codec_id == FOURCC("fLaC")) {
-      auto flac_config = dynamic_cast<const FlacDecoderConfig *>(matched_config->decoder_config.get());
-      if(flac_config && !flac_config->metadata_blocks.empty()) {
-        sample_rate = flac_config->metadata_blocks[0].sample_rate;
-      }
-    }
+    uint32_t sample_rate = getSampleRate(*matched_config);
 
     if(sample_rate != 0) {
       uint64_t ticks_per_frame_num = param.parameter_rate * matched_config->num_samples_per_frame;
@@ -667,6 +654,60 @@ int getAudioElementChannelCount(const AudioElementInfo &elem)
 }
 
 } // namespace
+
+uint32_t getSampleRate(const CodecConfigInfo &config)
+{
+  if(config.codec_id == FOURCC("Opus")) {
+    return 48000;
+  } else if(config.codec_id == FOURCC("mp4a")) {
+    auto aac_config = dynamic_cast<const AacLcDecoderConfig *>(config.decoder_config.get());
+    if(aac_config) {
+      if(aac_config->samplingFrequencyIndex == 0xf) {
+        return aac_config->samplingFrequency;
+      } else {
+        switch(aac_config->samplingFrequencyIndex) {
+        case 0x0:
+          return 96000;
+        case 0x1:
+          return 88200;
+        case 0x2:
+          return 64000;
+        case 0x3:
+          return 48000;
+        case 0x4:
+          return 44100;
+        case 0x5:
+          return 32000;
+        case 0x6:
+          return 24000;
+        case 0x7:
+          return 22050;
+        case 0x8:
+          return 16000;
+        case 0x9:
+          return 12000;
+        case 0xa:
+          return 11025;
+        case 0xb:
+          return 8000;
+        case 0xc:
+          return 7350;
+        }
+      }
+    }
+  } else if(config.codec_id == FOURCC("ipcm")) {
+    auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(config.decoder_config.get());
+    if(pcm_config) {
+      return pcm_config->sample_rate;
+    }
+  } else if(config.codec_id == FOURCC("fLaC")) {
+    auto flac_config = dynamic_cast<const FlacDecoderConfig *>(config.decoder_config.get());
+    if(flac_config && !flac_config->metadata_blocks.empty()) {
+      return flac_config->metadata_blocks[0].sample_rate;
+    }
+  }
+  return 0;
+}
 
 int64_t parseIamfObus(IReader *br, IamfState &state)
 {
@@ -740,6 +781,77 @@ int64_t parseIamfObus(IReader *br, IamfState &state)
       opus_config->output_gain = brBits->sym("output_gain", 16);
       opus_config->channel_mapping_family = brBits->sym("channel_mapping_family", 8);
       decoder_config = std::move(opus_config);
+    } else if(codec_id == FOURCC("mp4a")) {
+      auto aac_config = std::make_unique<AacLcDecoderConfig>();
+      aac_config->decoder_config_descriptor_tag = brBits->sym("decoder_config_descriptor_tag", 8);
+
+      uint32_t len = 0;
+      for(int i = 0; i < 4; ++i) {
+        uint8_t b = brBits->sym("decoder_config_descriptor_length_byte", 8);
+        len = (len << 7) | (b & 0x7f);
+        if(!(b & 0x80))
+          break;
+      }
+      aac_config->decoder_config_descriptor_length = len;
+
+      int64_t start_count = brBits->count;
+
+      aac_config->objectTypeIndication = brBits->sym("objectTypeIndication", 8);
+      aac_config->streamType = brBits->sym("streamType", 6);
+      aac_config->upStream = brBits->sym("upStream", 1);
+      brBits->sym("reserved", 1);
+      aac_config->bufferSizeDB = brBits->sym("bufferSizeDB", 24);
+      aac_config->maxBitrate = brBits->sym("maxBitrate", 32);
+      aac_config->avgBitrate = brBits->sym("avgBitrate", 32);
+
+      int64_t bytes_read = (brBits->count - start_count) / 8;
+      if(bytes_read < len) {
+        aac_config->decoder_specific_info_tag = brBits->sym("decoder_specific_info_tag", 8);
+
+        uint32_t dsi_len = 0;
+        for(int i = 0; i < 4; ++i) {
+          uint8_t b = brBits->sym("decoder_specific_info_length_byte", 8);
+          dsi_len = (dsi_len << 7) | (b & 0x7f);
+          if(!(b & 0x80))
+            break;
+        }
+        aac_config->decoder_specific_info_length = dsi_len;
+
+        int64_t dsi_start_count = brBits->count;
+
+        if(dsi_len > 0) {
+          aac_config->audioObjectType = brBits->sym("audioObjectType", 5);
+          if(aac_config->audioObjectType == 31) {
+            brBits->sym("audioObjectTypeExt", 6);
+          }
+          aac_config->samplingFrequencyIndex = brBits->sym("samplingFrequencyIndex", 4);
+          if(aac_config->samplingFrequencyIndex == 0xf) {
+            aac_config->samplingFrequency = brBits->sym("samplingFrequency", 24);
+          }
+          aac_config->channelConfiguration = brBits->sym("channelConfiguration", 4);
+
+          aac_config->frameLengthFlag = brBits->sym("frameLengthFlag", 1);
+          aac_config->dependsOnCoreCoder = brBits->sym("dependsOnCoreCoder", 1);
+          if(aac_config->dependsOnCoreCoder) {
+            brBits->sym("coreCoderDelay", 14);
+          }
+          aac_config->extensionFlag = brBits->sym("extensionFlag", 1);
+
+          int64_t dsi_bits_read = brBits->count - dsi_start_count;
+          int64_t dsi_remaining_bits = (dsi_len * 8) - dsi_bits_read;
+          if(dsi_remaining_bits > 0) {
+            brBits->sym("decoder_specific_info_padding", dsi_remaining_bits);
+          }
+        }
+      }
+
+      int64_t total_bits_read = brBits->count - start_count;
+      int64_t total_remaining_bits = (len * 8) - total_bits_read;
+      if(total_remaining_bits > 0) {
+        brBits->sym("decoder_config_descriptor_padding", total_remaining_bits);
+      }
+
+      decoder_config = std::move(aac_config);
     } else if(codec_id == FOURCC("ipcm")) {
       auto pcm_config = std::make_unique<LpcmDecoderConfig>();
       pcm_config->sample_format_flags = brBits->sym("sample_format_flags", 8);
@@ -1896,6 +2008,66 @@ void validateOpusSpecific(const IamfState &state, IReport *out)
   }
 }
 
+void validateAacLcSpecific(const IamfState &state, IReport *out)
+{
+  for(auto const &config : state.codecConfigs) {
+    if(config.codec_id == FOURCC("mp4a")) {
+      auto aac_config = dynamic_cast<const AacLcDecoderConfig *>(config.decoder_config.get());
+      if(!aac_config) {
+        out->error("[Section 3.11.2] DecoderConfig is missing or not AacLcDecoderConfig for mp4a codec");
+        continue;
+      }
+
+      if(aac_config->decoder_config_descriptor_tag != 0x04) {
+        out->error(
+          "[Section 3.11.2] DecoderConfigDescriptor tag SHALL be 0x04, found 0x%02x",
+          aac_config->decoder_config_descriptor_tag);
+      }
+      if(aac_config->objectTypeIndication != 0x40) {
+        out->error(
+          "[Section 3.11.2] objectTypeIndication SHALL be 0x40, found 0x%02x", aac_config->objectTypeIndication);
+      }
+      if(aac_config->streamType != 0x05) {
+        out->error("[Section 3.11.2] streamType SHALL be 0x05 (Audio Stream), found 0x%02x", aac_config->streamType);
+      }
+      if(aac_config->upStream != 0) {
+        out->error("[Section 3.11.2] upstream SHALL be 0, found %d", aac_config->upStream);
+      }
+
+      if(aac_config->decoder_specific_info_tag != 0x05) {
+        out->error(
+          "[Section 3.11.2] DecoderSpecificInfo tag SHALL be 0x05, found 0x%02x",
+          aac_config->decoder_specific_info_tag);
+      }
+
+      if(aac_config->audioObjectType != 2) {
+        out->error("[Section 3.11.2] audioObjectType SHALL be 2 (AAC-LC), found %d", aac_config->audioObjectType);
+      }
+      if(aac_config->channelConfiguration != 2) {
+        out->error(
+          "[Section 3.11.2] channelConfiguration SHALL be set to 2, found %d", aac_config->channelConfiguration);
+      }
+      if(aac_config->frameLengthFlag != 0) {
+        out->error(
+          "[Section 3.11.2] frameLengthFlag SHALL be 0 (1024 lines IMDCT), found %d", aac_config->frameLengthFlag);
+      }
+      if(config.num_samples_per_frame != 1024) {
+        // Section 3.5: "If the decoder_config structure for a given codec specifies a value for the frame length,
+        // the two values SHALL be equal."
+        // Section 3.11.2: "frameLengthFlag SHALL be 0 (1024 lines IMDCT)."
+        out->error(
+          "[Section 3.11.2] num_samples_per_frame SHALL be 1024 for AAC-LC, found %lu", config.num_samples_per_frame);
+      }
+      if(aac_config->dependsOnCoreCoder != 0) {
+        out->error("[Section 3.11.2] dependsOnCoreCoder SHALL be 0, found %d", aac_config->dependsOnCoreCoder);
+      }
+      if(aac_config->extensionFlag != 0) {
+        out->error("[Section 3.11.2] extensionFlag SHALL be 0, found %d", aac_config->extensionFlag);
+      }
+    }
+  }
+}
+
 void validateLpcmSpecific(const IamfState &state, IReport *out)
 {
   for(auto const &config : state.codecConfigs) {
@@ -2146,20 +2318,7 @@ void validateParameterSubstreamConsistency(const IamfState &state, IReport *out)
   if(state.codecConfigs.empty())
     return;
   const auto &config = state.codecConfigs[0];
-  uint32_t audio_sample_rate = 0;
-  if(config.codec_id == FOURCC("Opus")) {
-    audio_sample_rate = 48000;
-  } else if(config.codec_id == FOURCC("ipcm")) {
-    auto pcm_config = dynamic_cast<const LpcmDecoderConfig *>(config.decoder_config.get());
-    if(pcm_config) {
-      audio_sample_rate = pcm_config->sample_rate;
-    }
-  } else if(config.codec_id == FOURCC("fLaC")) {
-    auto flac_config = dynamic_cast<const FlacDecoderConfig *>(config.decoder_config.get());
-    if(flac_config && !flac_config->metadata_blocks.empty()) {
-      audio_sample_rate = flac_config->metadata_blocks[0].sample_rate;
-    }
-  }
+  uint32_t audio_sample_rate = getSampleRate(config);
 
   if(audio_sample_rate == 0)
     return;
