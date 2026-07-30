@@ -12,6 +12,31 @@ namespace
 {
 
 std::initializer_list<RuleDesc> rulesIamfIsobmff = {
+  { "Section 6.1\n"
+    "An IAMF file SHALL have the 'iamf' brand among the compatible brands array of the FileTypeBox.",
+    "assert-ftyp-iamf-brand",
+    [](Box const &root, IReport *out) {
+      auto ftyps = findBoxes(root, FOURCC("ftyp"));
+      if(ftyps.empty()) {
+        out->error("FileTypeBox ('ftyp') not found");
+        return;
+      }
+      for(auto const &ftyp : ftyps) {
+        out->covered();
+        bool found = false;
+        for(auto const &sym : ftyp->syms) {
+          if(!strcmp(sym.name, "compatible_brand")) {
+            if(sym.value == FOURCC("iamf")) {
+              found = true;
+              break;
+            }
+          }
+        }
+        if(!found) {
+          out->error("The compatible_brands list in FileTypeBox SHALL contain 'iamf'");
+        }
+      }
+    } },
   { "Section 6.2.3\n"
     "An 'iamf' sample entry SHALL contain an 'iacb' box.",
     "assert-iamf-sample-entry-has-iacb",
@@ -58,7 +83,8 @@ std::initializer_list<RuleDesc> rulesIamfIsobmff = {
       }
     } },
   { "Section 6.2.4\n"
-    "The Configuration OBUs contained in the 'iacb' box SHALL comply with the IAMF specification.",
+    "The 'iacb' box and the Configuration OBUs contained in it SHALL comply with the IAMF specification.\n"
+    "- configurationVersion SHALL be 1.",
     "assert-iacb-config-obus",
     [](Box const &root, IReport *out) {
       auto iacbBoxes = findBoxes(root, FOURCC("iacb"));
@@ -75,6 +101,8 @@ std::initializer_list<RuleDesc> rulesIamfIsobmff = {
 
         IamfState state;
         parseIacb(&br, state);
+
+        validateIacb(state, out);
 
         if(!validateProfiles(state, out)) {
           continue;
