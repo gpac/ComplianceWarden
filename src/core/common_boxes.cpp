@@ -939,6 +939,9 @@ bool isVisualSampleEntry(uint32_t fourcc)
 
 ParseBoxFunc *getParseFunction(uint32_t fourcc)
 {
+  if(fourcc == FOURCC("uuid")) {
+    printf("Warning: UUID box parsing is not implemented. Use parseRaw instead.\n");
+  }
   switch(fourcc) {
   case FOURCC("root"):
     return &parseChildren;
