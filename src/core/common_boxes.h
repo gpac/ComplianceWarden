@@ -3,3 +3,9 @@
 #include "box_reader.h"
 
 ParseBoxFunc *getParseFunction(uint32_t fourcc);
+
+ParseBoxFunc *getUuidParseFunction(const uint8_t (&extended_type)[16]);
+
+static const uint8_t ItemContentIDProperty[16] = {
+  0x26, 0x1e, 0xf3, 0x74, 0x1d, 0x97, 0x5b, 0xba, 0xac, 0xbd, 0x9d, 0x2c, 0x8e, 0xa7, 0x35, 0x22,
+};

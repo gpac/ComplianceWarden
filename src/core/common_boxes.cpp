@@ -2,6 +2,7 @@
 #include "common_boxes.h"
 
 #include <cassert>
+#include <cstring>
 #include <vector>
 
 #include "fourcc.h"
@@ -915,6 +916,22 @@ void parseTrun(IReader *br)
   }
 }
 
+void parseUuid(IReader *br)
+{
+  uint8_t extended_type[16];
+  for(int i = 0; i < 16; ++i)
+    extended_type[i] = br->sym("extended_type", 8);
+
+  ParseBoxFunc *func = getUuidParseFunction(extended_type);
+  func(br);
+}
+
+void parseItemContentIDProperty(IReader *br)
+{
+  while(!br->empty())
+    br->sym("ItemContentID", 8);
+}
+
 void parseChildren(IReader *br)
 {
   while(!br->empty())
@@ -1049,10 +1066,21 @@ ParseBoxFunc *getParseFunction(uint32_t fourcc)
     return &parseTrex;
   case FOURCC("trun"):
     return &parseTrun;
+  case FOURCC("uuid"):
+    return &parseUuid;
   }
 
   if(isVisualSampleEntry(fourcc))
     return &parseVisualSampleEntry;
 
   return &parseRaw;
+}
+
+ParseBoxFunc *getUuidParseFunction(const uint8_t (&extended_type)[16])
+{
+  if(std::memcmp(extended_type, ItemContentIDProperty, 16) == 0) {
+    return &parseItemContentIDProperty;
+  } else {
+    return &parseRaw;
+  }
 }
