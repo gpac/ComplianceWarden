@@ -956,9 +956,6 @@ bool isVisualSampleEntry(uint32_t fourcc)
 
 ParseBoxFunc *getParseFunction(uint32_t fourcc)
 {
-  if(fourcc == FOURCC("uuid")) {
-    printf("Warning: UUID box parsing is not implemented. Use parseRaw instead.\n");
-  }
   switch(fourcc) {
   case FOURCC("root"):
     return &parseChildren;
@@ -1084,6 +1081,7 @@ ParseBoxFunc *getUuidParseFunction(const uint8_t (&extended_type)[16])
   if(std::memcmp(extended_type, ItemContentIDProperty, 16) == 0) {
     return &parseItemContentIDProperty;
   } else {
+    printf("Warning: UUID box parsing is not implemented. Use parseRaw instead.\n");
     return &parseRaw;
   }
 }

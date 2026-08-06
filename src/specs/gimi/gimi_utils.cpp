@@ -58,7 +58,6 @@ std::vector<const Box *> get_image_items(const Box &metabox)
     // Get Item Type
     uint32_t item_type = 0;
     for(const Symbol &sym : item->syms) {
-      printf("sym.name: %s, sym.value: %ld\n", sym.name, sym.value);
       if(!sym.name) {
         throw std::runtime_error("Symbol name is null for item");
       }
@@ -72,12 +71,11 @@ std::vector<const Box *> get_image_items(const Box &metabox)
     }
 
     // clang-format off
-    printf("FOURCC(hvc1) = %x\n", FOURCC("hvc1"));
-    printf("item_type: %x\n", item_type);
     if(item_type == FOURCC("hvc1") ||
        item_type == FOURCC("unci") ||
        item_type == FOURCC("avc1") ||
        item_type == FOURCC("jpeg") ||
+       item_type == FOURCC("grid") ||
        item_type == FOURCC("j2k1")) {
       // clang-format on
       image_items.push_back(item);
@@ -87,7 +85,7 @@ std::vector<const Box *> get_image_items(const Box &metabox)
   return image_items;
 }
 
-std::vector<const Box *> get_item_properties(const Box &metabox)
+std::vector<const Box *> get_ipco_properties(const Box &metabox)
 {
   std::vector<const Box *> itemProperties;
 
@@ -106,7 +104,7 @@ std::vector<const Box *> get_item_properties(const Box &metabox)
   return itemProperties;
 }
 
-std::vector<const Box *> get_item_property_associations(const Box &metabox)
+std::vector<const Box *> get_ipma_property_associations(const Box &metabox)
 {
   std::vector<const Box *> itemPropertyAssociations;
 
@@ -123,6 +121,33 @@ std::vector<const Box *> get_item_property_associations(const Box &metabox)
   return itemPropertyAssociations;
 }
 
+std::vector<const Box *> get_properties_for_item(const Box &metabox, uint32_t item_ID)
+{
+  std::vector<const Box *> propertiesForItem;
+  std::vector<const Box *> associations = get_ipma_property_associations(metabox);
+  std::vector<const Box *> allProperties = get_ipco_properties(metabox);
+
+  for(const Box *association : associations) {
+    const Symbol &association_item_ID = get_symbol_by_name(*association, "item_ID");
+    if(association_item_ID.value != item_ID) {
+      continue;
+    }
+
+    std::vector<uint32_t> property_indices = get_symbol_values<uint32_t>(*association, "property_index");
+    for(const uint32_t index : property_indices) {
+
+      if(index == 0 || index > allProperties.size()) {
+        throw std::runtime_error("Invalid property_index: " + std::to_string(index));
+      }
+
+      const Box *property = allProperties.at(index - 1); // convert 1-based index to 0-based
+      propertiesForItem.push_back(property);
+    }
+  }
+
+  return propertiesForItem;
+}
+
 const Symbol &get_symbol_by_name(const Box &box, const char *name)
 {
 
@@ -134,3 +159,24 @@ const Symbol &get_symbol_by_name(const Box &box, const char *name)
 
   throw std::runtime_error("Symbol not found: " + std::string(name));
 }
+
+template<typename T>
+std::vector<T> get_symbol_values(const Box &box, const char *symbol_name)
+{
+  std::vector<T> values;
+
+  for(const Symbol &symbol : box.syms) {
+    if(strcmp(symbol.name, symbol_name) == 0) {
+      T value = static_cast<T>(symbol.value);
+      values.push_back(value);
+    }
+  }
+
+  return values;
+}
+
+// Explicitly List supported Types
+template std::vector<uint8_t> get_symbol_values<uint8_t>(const Box &, const char *symbol_name);
+template std::vector<uint16_t> get_symbol_values<uint16_t>(const Box &, const char *symbol_name);
+template std::vector<uint32_t> get_symbol_values<uint32_t>(const Box &, const char *symbol_name);
+template std::vector<int64_t> get_symbol_values<int64_t>(const Box &, const char *symbol_name);

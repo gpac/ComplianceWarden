@@ -1,6 +1,8 @@
-
+#include "core/common_boxes.h"
 
 #include "gimi_utils.h"
+
+using std::vector;
 
 bool has_compatible_brand(const Box &ftypBox, uint32_t brand);
 
@@ -128,35 +130,28 @@ static const SpecDesc specGimi = {
     { "Image items shall associate with an ItemContentID property.", //
       "NGA.STND.0076-01_V1.0-63",
       [](const Box &root, IReport *out) {
-        (void)out; // Resolves unused parameter warning
-
-        std::vector<const Box *> metaboxes = get_all_metaboxes(root);
+        vector<const Box *> metaboxes = get_all_metaboxes(root);
 
         for(const Box *metabox : metaboxes) {
-          std::vector<const Box *> items = get_image_items(*metabox);
-          std::vector<const Box *> itemProperties = get_item_properties(*metabox);
-          std::vector<const Box *> itemPropertyAssociations = get_item_property_associations(*metabox);
+          vector<const Box *> items = get_image_items(*metabox);
 
-          // Get All Item ContentID Properties
-          std::vector<const Box *> itemContentIDProperties;
-          for(const Box *property : itemProperties) {
-            if(property->fourcc == FOURCC("uuid")) {
-              // TODO: parse uuid box!!!
-              // itemContentIDProperties.push_back(property);
-            }
-          }
-
-          // WIP
           for(const Box *item : items) {
-            const Symbol &item_ID = get_symbol_by_name(*item, "item_ID");
-            printf("item_ID: %ld\n", item_ID.value);
-          }
+            bool foundContentID = false;
+            const uint32_t item_ID = get_symbol_by_name(*item, "item_ID").value;
+            vector<const Box *> properties = get_properties_for_item(*metabox, item_ID);
 
-          for(const Box *association : itemPropertyAssociations) {
-            const Symbol &association_count = get_symbol_by_name(*association, "association_count");
-            const Symbol &item_ID = get_symbol_by_name(*association, "item_ID");
-
-            printf("association_count: %ld, item_ID: %ld\n", association_count.value, item_ID.value);
+            for(const Box *property : properties) {
+              if(property->fourcc == FOURCC("uuid")) {
+                vector<uint8_t> extended_type = get_symbol_values<uint8_t>(*property, "extended_type");
+                if(std::memcmp(extended_type.data(), ItemContentIDProperty, 16) == 0) {
+                  foundContentID = true;
+                  break;
+                }
+              }
+            }
+            if(!foundContentID) {
+              out->error("Image item with item_ID %d does not have an associated ItemContentID property", item_ID);
+            }
           }
         }
       } },
