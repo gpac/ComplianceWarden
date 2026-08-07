@@ -41,14 +41,16 @@ version:
 $(BIN)/cw_version.cpp: version
 
 #------------------------------------------------------------------------------
-SRCS_CW+=\
-  src/app/cw.cpp\
-  src/app/options.cpp\
-  src/app/json.cpp\
-  src/app/list_std.cpp\
-  src/app/list_json.cpp\
-  src/app/report_std.cpp\
-  src/app/report_json.cpp\
+SRCS_CW_APP+=\
+  src/app/cw/cw.cpp\
+  src/app/cw/options.cpp\
+  src/app/cw/json.cpp\
+  src/app/cw/list_std.cpp\
+  src/app/cw/list_json.cpp\
+  src/app/cw/report_std.cpp\
+  src/app/cw/report_json.cpp
+
+SRCS_CW_COMMON+=\
   src/core/common_boxes.cpp\
   src/utils/tools.cpp\
   src/utils/av1_utils.cpp\
@@ -58,29 +60,31 @@ SRCS_CW+=\
   src/utils/spec_utils.cpp\
   src/utils/iamf_utils.cpp\
 
-SRCS_CW+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
-SRCS_CW+=src/specs/av1_isobmff/av1_isobmff.cpp
-SRCS_CW+=src/specs/iamf_isobmff/iamf_isobmff.cpp
+SRCS_CW_COMMON+=src/specs/av1_hdr10plus/av1_hdr10plus.cpp
+SRCS_CW_COMMON+=src/specs/av1_isobmff/av1_isobmff.cpp
+SRCS_CW_COMMON+=src/specs/iamf_isobmff/iamf_isobmff.cpp
 
-SRCS_CW+=src/specs/avif/avif.cpp src/specs/avif/profiles.cpp src/specs/avif/utils.cpp
-SRCS_CW+=src/specs/isobmff/isobmff.cpp
-SRCS_CW+=src/specs/heif/heif.cpp
-SRCS_CW+=src/specs/gimi/gimi.cpp
-SRCS_CW+=src/specs/miaf/miaf.cpp src/specs/miaf/audio.cpp src/specs/miaf/brands.cpp\
+SRCS_CW_COMMON+=src/specs/avif/avif.cpp src/specs/avif/profiles.cpp src/specs/avif/utils.cpp
+SRCS_CW_COMMON+=src/specs/isobmff/isobmff.cpp
+SRCS_CW_COMMON+=src/specs/heif/heif.cpp
+SRCS_CW_COMMON+=src/specs/gimi/gimi.cpp
+SRCS_CW_COMMON+=src/specs/miaf/miaf.cpp src/specs/miaf/audio.cpp src/specs/miaf/brands.cpp\
   src/specs/miaf/derivations.cpp src/specs/miaf/colours.cpp src/specs/miaf/num_pixels.cpp\
   src/specs/miaf/profiles.cpp
-SRCS_CW+=src/specs/iamf/iamf.cpp
-SRCS_CW+=src/specs/iamf_isobmff/iamf_isobmff.cpp
+SRCS_CW_COMMON+=src/specs/iamf/iamf.cpp
+SRCS_CW_COMMON+=src/specs/iamf_isobmff/iamf_isobmff.cpp
 
-SRCS_CW+=$(BIN)/cw_version.cpp
+SRCS_CW_COMMON+=$(BIN)/cw_version.cpp
 
 #------------------------------------------------------------------------------
 
-TARGETS+=$(BIN)/cw.exe
+TARGETS+=$(BIN)/cw.exe $(BIN)/disasmp4.exe
 
 everything: version $(TARGETS)
 
-$(BIN)/cw.exe: $(SRCS_CW:%=$(BIN)/%.o)
+$(BIN)/cw.exe: $(SRCS_CW_APP:%=$(BIN)/%.o) $(SRCS_CW_COMMON:%=$(BIN)/%.o)
+
+$(BIN)/disasmp4.exe: $(SRCS_CW_COMMON:%=$(BIN)/%.o) $(BIN)/src/app/disasmp4/disasmp4.cpp.o
 
 $(BIN)/%.exe:
 	@mkdir -p $(dir $@)
