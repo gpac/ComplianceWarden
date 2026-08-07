@@ -320,7 +320,7 @@ std::vector<SampleToGroup> getSampleGroupMapping(const Box &root, IReport *out, 
               // Check if sample already exists
               if(res.size() <= last_sample + i) {
                 // Create new SampleToGroup
-                SampleToGroup sampleToGroup{};
+                SampleToGroup sampleToGroup{ };
                 if(group_description_index != 0)
                   sampleToGroup.push_back(sampleGroup);
                 res.push_back(sampleToGroup);
@@ -348,7 +348,7 @@ std::vector<SampleToGroup> getSampleGroupMapping(const Box &root, IReport *out, 
         auto tfhdBoxes = findBoxes(*trafBox, FOURCC("tfhd"));
         if(tfhdBoxes.size() != 1) {
           out->error("%llu 'tfhd' boxes found, when 1 is expected", tfhdBoxes.size());
-          return {};
+          return { };
         }
 
         uint32_t thisTrackId = 0;
@@ -708,9 +708,10 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
-                            if(parseAv1Configs(
-                                 root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
+                            AV1CodecConfigurationRecord av1cRef{ };
+                            if(
+                              parseAv1Configs(
+                                root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.seq_profile != bsState.av1c.seq_profile)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox seq_profile field value (%lld) SHALL be\n"
@@ -750,9 +751,10 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
-                            if(parseAv1Configs(
-                                 root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
+                            AV1CodecConfigurationRecord av1cRef{ };
+                            if(
+                              parseAv1Configs(
+                                root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.seq_level_idx_0 != bsState.av1c.seq_level_idx_0)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox seq_level_idx_0 field value (%lld) SHALL "
@@ -793,9 +795,10 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
-                            if(parseAv1Configs(
-                                 root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
+                            AV1CodecConfigurationRecord av1cRef{ };
+                            if(
+                              parseAv1Configs(
+                                root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.seq_tier_0 != bsState.av1c.seq_tier_0)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox seq_tier_0 field value (%lld) SHALL be\n"
@@ -834,9 +837,10 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
-                            if(parseAv1Configs(
-                                 root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
+                            AV1CodecConfigurationRecord av1cRef{ };
+                            if(
+                              parseAv1Configs(
+                                root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.high_bitdepth != bsState.av1c.high_bitdepth)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox high_bitdepth field value (%lld) SHALL "
@@ -879,9 +883,10 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
-                            if(parseAv1Configs(
-                                 root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
+                            AV1CodecConfigurationRecord av1cRef{ };
+                            if(
+                              parseAv1Configs(
+                                root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(av1cRef.twelve_bit != bsState.av1c.twelve_bit)
                                 out->error(
                                   "[TrackId=%u] The AV1CodecConfigurationBox twelve_bit field value (%lld) SHALL be\n"
@@ -919,7 +924,7 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
+                            AV1CodecConfigurationRecord av1cRef{ };
                             parseAv1Configs(
                               root, out, trackId, minfChild, bsState, av1cState, av1cRef, true, false, false);
                           }
@@ -946,7 +951,7 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
+                            AV1CodecConfigurationRecord av1cRef{ };
                             parseAv1Configs(
                               root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, true, false);
                           }
@@ -976,9 +981,10 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
-                            if(parseAv1Configs(
-                                 root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
+                            AV1CodecConfigurationRecord av1cRef{ };
+                            if(
+                              parseAv1Configs(
+                                root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, false)) {
                               if(memcmp(&av1cState.av1c, &av1cRef, sizeof(AV1CodecConfigurationRecord)))
                                 out->error(
                                   "[TrackId=%u] The values of the AV1CodecConfigurationBox shall match\n"
@@ -1012,7 +1018,7 @@ const SpecDesc specAv1ISOBMFF = {
                         for(auto &minfChild : mdiaChild.children)
                           if(minfChild.fourcc == FOURCC("stbl")) {
                             Av1State bsState, av1cState;
-                            AV1CodecConfigurationRecord av1cRef{};
+                            AV1CodecConfigurationRecord av1cRef{ };
                             parseAv1Configs(
                               root, out, trackId, minfChild, bsState, av1cState, av1cRef, false, false, true);
                           }
@@ -1028,7 +1034,7 @@ const SpecDesc specAv1ISOBMFF = {
       "configOBUs does not contain a Sequence Header OBU, this box with colour_type set\n"
       "to nclx SHALL be present.",
       "assert-6056f4f8", // TODO: merged with assert-6056f4f8 (and possible other new rules from v)
-      [](Box const & /*root*/, IReport * /*out*/) {} },
+      [](Box const & /*root*/, IReport * /*out*/) { } },
     { "Section 2.3.4\n"
       "The CleanApertureBox clap SHOULD not be present.", // TODO: removed in AV1-ISOBMFF 1.3.0
       [](Box const &root, IReport *out) {
@@ -1112,8 +1118,8 @@ const SpecDesc specAv1ISOBMFF = {
           }
 
           // See if MDCV and CLL are present in this sample
-          MDCV in_sample_mdcv{};
-          CLL in_sample_cll{};
+          MDCV in_sample_mdcv{ };
+          CLL in_sample_cll{ };
           for(auto sampleIndex = 0u; sampleIndex < samples.size(); sampleIndex++) {
             BoxReader br;
             br.br = BitReader{ samples[sampleIndex].position, (int)samples[sampleIndex].size };
@@ -1187,8 +1193,8 @@ const SpecDesc specAv1ISOBMFF = {
             }
 
             // Parse obu array in this av1C box
-            MDCV in_av1C_mdcv{};
-            CLL in_av1C_cll{};
+            MDCV in_av1C_mdcv{ };
+            CLL in_av1C_cll{ };
 
             for(auto &av1c : av1cBoxes) {
               bool isMetadata = false;

@@ -12,7 +12,7 @@ void parseIacb(IReader *br);
 
 std::string toString(uint32_t fourcc)
 {
-  char fourccStr[5] = {};
+  char fourccStr[5] = { };
   snprintf(
     fourccStr, 5, "%c%c%c%c", (fourcc >> 24) & 0xff, (fourcc >> 16) & 0xff, (fourcc >> 8) & 0xff, (fourcc >> 0) & 0xff);
   return fourccStr;
@@ -514,7 +514,7 @@ void parseAuxc(IReader *br)
   br->sym("version", 8);
   br->sym("flags", 24);
 
-  while(br->sym("aux_type", 8)) {}
+  while(br->sym("aux_type", 8)) { }
 
   while(!br->empty())
     br->sym("aux_subtype", 8);

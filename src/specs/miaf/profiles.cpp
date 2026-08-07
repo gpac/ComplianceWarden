@@ -184,7 +184,7 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc &spec)
 
         for(auto &box : root.children) {
           if(box.fourcc == FOURCC("meta"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), {}, 6.0, true, true);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { }, 6.0, true, true);
 
           if(box.fourcc == FOURCC("moov"))
             checkHevcProfilesLevels(
@@ -236,7 +236,7 @@ const std::initializer_list<RuleDesc> getRulesMiafProfiles(const SpecDesc &spec)
 
         for(auto &box : root.children) {
           if(box.fourcc == FOURCC("meta"))
-            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), {}, 6.0, true, false);
+            checkHevcProfilesLevels(out, profileName, findBoxes(box, FOURCC("hvcC")), { }, 6.0, true, false);
 
           if(box.fourcc == FOURCC("moov"))
             checkHevcProfilesLevels(

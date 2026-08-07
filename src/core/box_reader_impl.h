@@ -79,6 +79,6 @@ struct BoxReader : IReader {
 
   BitReader br;
 
-  Box myBox{};
+  Box myBox{ };
   std::vector<const SpecDesc *> specs;
 };

@@ -19,7 +19,7 @@ struct sampleValues {
   int64_t offset;
   uint64_t size;
   uint8_t *position;
-  sampleFlags flags = {};
+  sampleFlags flags = { };
   std::string pretty() const;
   BitReader getSample() const;
 };

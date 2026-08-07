@@ -65,7 +65,7 @@ struct Av1State {
   uint8_t temporalId = 0;
   uint8_t spatialId = 0;
   uint64_t metadata_type = 0;
-  AV1CodecConfigurationRecord av1c{};
+  AV1CodecConfigurationRecord av1c{ };
 };
 
 int64_t parseAv1Obus(IReader *br, Av1State &state, bool storeUnparsed);

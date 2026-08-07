@@ -38,7 +38,7 @@ bool checkComplianceStd(Box const &file, SpecDesc const *spec)
       ++warningCount;
     }
 
-    void covered() override {}
+    void covered() override { }
 
     int ruleIdx = 0;
     int errorCount = 0;

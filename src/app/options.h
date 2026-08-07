@@ -32,7 +32,7 @@ static inline void parseValue(std::string &var, ArgQueue &args)
 template<typename Element>
 static inline void parseValue(std::vector<Element> &var, ArgQueue &args)
 {
-  Element e{};
+  Element e{ };
   parseValue(e, args);
   var.push_back(e);
 }

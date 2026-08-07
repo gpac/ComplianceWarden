@@ -108,7 +108,7 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getItemColorspaces(Box 
     return getHevcItemColorspaces(root, out);
   default:
     out->error("Internal codec detection error. No colorspace will be analyzed.");
-    return {};
+    return { };
   }
 }
 }

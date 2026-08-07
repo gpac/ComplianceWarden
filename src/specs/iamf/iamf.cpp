@@ -594,7 +594,7 @@ static const SpecDesc specIamf = {
   "iamf",
   "IAMF v1.1.0\n"
   "https://aomediacodec.github.io/iamf/v1.1.0.html",
-  {}, // no dependencies
+  { }, // no dependencies
   rulesIamf,
   nullptr, // valid
 };

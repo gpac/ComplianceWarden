@@ -159,7 +159,7 @@ Derivations getDerivationsInfo(Box const &root, uint32_t irefTypeFourcc)
                 auto it = d.itemRefs.find(sym.value);
 
                 if(it == d.itemRefs.end()) {
-                  d.itemRefs.insert({ (uint32_t)sym.value, {} });
+                  d.itemRefs.insert({ (uint32_t)sym.value, { } });
                   it = d.itemRefs.find(sym.value);
                 }
 

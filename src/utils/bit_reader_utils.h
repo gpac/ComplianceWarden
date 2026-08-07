@@ -15,7 +15,7 @@ struct ReaderBits : IReader {
   {
   }
 
-  virtual ~ReaderBits() {}
+  virtual ~ReaderBits() { }
 
   bool empty() { return delegate->empty(); }
 

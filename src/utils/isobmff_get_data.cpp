@@ -24,7 +24,7 @@ namespace
 std::vector<int> getOffsets(const Box *offsetBox, const Box *sampleToChunkBox, std::vector<uint64_t> &sizes)
 {
   if(!offsetBox || !sampleToChunkBox) {
-    return {};
+    return { };
   }
 
   int64_t firstChunk = 0;
@@ -33,7 +33,7 @@ std::vector<int> getOffsets(const Box *offsetBox, const Box *sampleToChunkBox, s
     if(!strcmp(sym.name, "first_chunk")) {
       firstChunk = sym.value;
       if(chunkEntries.empty() && firstChunk != 1) {
-        return {}; // 14496-12: "the index of the first chunk in a track has the value 1"
+        return { }; // 14496-12: "the index of the first chunk in a track has the value 1"
       }
     } else if(!strcmp(sym.name, "samples_per_chunk")) {
       chunkEntries.push_back({ firstChunk, sym.value });
@@ -67,7 +67,7 @@ std::vector<int> getOffsets(const Box *offsetBox, const Box *sampleToChunkBox, s
 std::vector<uint64_t> getSizes(const Box *sizeBox)
 {
   if(!sizeBox) {
-    return {};
+    return { };
   }
 
   std::vector<uint64_t> res;
@@ -97,15 +97,15 @@ std::vector<uint64_t> getSizes(const Box *sizeBox)
 std::vector<sampleFlags> getFlags(const Box *flagsBox)
 {
   if(!flagsBox) {
-    return {};
+    return { };
   }
 
   std::vector<sampleFlags> res;
 
-  sampleFlags sf = {};
+  sampleFlags sf = { };
   for(auto &sym : flagsBox->syms) {
     if(!strcmp(sym.name, "is_leading")) {
-      sf = {};
+      sf = { };
       sf.isLeading = sym.value;
     }
     if(!strcmp(sym.name, "sample_depends_on")) {
@@ -135,14 +135,14 @@ std::vector<sampleValues> getSampleValues(
     out->error(
       "Found %llu samples offsets, and %llu sample sizes, while expecting an equal amount", offsets.size(),
       sizes.size());
-    return {};
+    return { };
   }
 
   if(flags.size() != 0 && flags.size() != sizes.size()) {
     out->error(
       "Found %llu sample flags, and %llu sample sizes, while expecting an equal amount or no flags at all",
       flags.size(), sizes.size());
-    return {};
+    return { };
   }
 
   std::vector<sampleValues> res;
@@ -150,7 +150,7 @@ std::vector<sampleValues> getSampleValues(
     if(offsets[i] + sizes[i] > root.size) {
       out->error(
         "Sample %zu of %zu bytes @ offset %zu exceeds root size of %zu bytes", i, sizes[i], offsets[i], root.size);
-      return {};
+      return { };
     }
     sampleValues sv = { offsets[i], sizes[i], root.original + offsets[i] };
 
@@ -205,7 +205,7 @@ std::vector<sampleValues> getFragmentedData(const Box &root, IReport *out, uint6
       auto tfhdBoxes = findBoxes(*trafBox, FOURCC("tfhd"));
       if(tfhdBoxes.size() != 1) {
         out->error("%llu 'tfhd' boxes found, when 1 is expected", tfhdBoxes.size());
-        return {};
+        return { };
       }
 
       uint32_t thisTrackId = 0;
@@ -256,13 +256,13 @@ std::vector<sampleValues> getFragmentedData(const Box &root, IReport *out, uint6
 
         if(dataOffsetTrun == -1) {
           out->error("Could not determine data offset");
-          return {};
+          return { };
         }
 
         // Check if first-sample-flags-present and sample-flags-present are set
         if(flags & 0x000004 && flags & 0x000400) {
           out->error("Both first-sample-flags-present and sample-flags-present are set");
-          return {};
+          return { };
         }
 
         // Get offsets, sizes, flags
@@ -281,7 +281,7 @@ std::vector<sampleValues> getFragmentedData(const Box &root, IReport *out, uint6
           // All samples have the same size
           if(defaultSampleSize == 0) {
             out->error("Could not determine sample size");
-            return {};
+            return { };
           }
           for(uint32_t i = 0; i < sampleCount; i++)
             s_sizes.push_back(defaultSampleSize);
@@ -320,9 +320,9 @@ std::vector<sampleValues> getFragmentedData(const Box &root, IReport *out, uint6
             out->error(
               "Sample %zu of %zu bytes @ offset %zu exceeds root size of %zu bytes", i + 1, s_sizes[i], s_offsets[i],
               root.size);
-            return {};
+            return { };
           }
-          sampleFlags sf = {};
+          sampleFlags sf = { };
           memcpy(&sf, &s_flags[i], sizeof(sf));
           res.push_back({ s_offsets[i], s_sizes[i], root.original + s_offsets[i], sf });
         }
@@ -343,7 +343,7 @@ std::vector<sampleValues> getNonFragmentedData(const Box &root, IReport *out, ui
     auto tkhdBoxes = findBoxes(*trakBox, FOURCC("tkhd"));
     if(tkhdBoxes.size() != 1) {
       out->error("%llu 'tkhd' boxes found, when 1 is expected", tkhdBoxes.size());
-      return {};
+      return { };
     }
 
     uint32_t thisTrackId = 0;
@@ -359,7 +359,7 @@ std::vector<sampleValues> getNonFragmentedData(const Box &root, IReport *out, ui
     auto sampleToChunkBoxes = findBoxes(*trakBox, FOURCC("stsc"));
     if(sampleToChunkBoxes.size() != 1) {
       out->error("%llu 'stsc' boxes found, when 1 is expected", sampleToChunkBoxes.size());
-      return {};
+      return { };
     }
     auto sampleToChunkBox = sampleToChunkBoxes[0];
     auto sizeBox = selectEither(*trakBox, out, FOURCC("stsz"), FOURCC("stz2"));
@@ -371,12 +371,12 @@ std::vector<sampleValues> getNonFragmentedData(const Box &root, IReport *out, ui
     }
 
     if(!offsetBox || !sizeBox) {
-      return {};
+      return { };
     }
 
     return getSampleValues(root, out, offsetBox, sampleToChunkBox, sizeBox, sdtpBox);
   }
-  return {};
+  return { };
 }
 
 std::vector<sampleValues> getData(const Box &root, IReport *out, uint64_t trackId)

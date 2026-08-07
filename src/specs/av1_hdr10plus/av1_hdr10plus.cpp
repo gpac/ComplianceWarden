@@ -72,8 +72,8 @@ AV1Stream getAv1Stream(Box const &root, IReport *out)
       break;
 
     if(obu.type == OBU_TEMPORAL_DELIMITER) {
-      av1Stream.push_back(TemporalUnit{});
-      av1Stream.back().push_back(Frame{});
+      av1Stream.push_back(TemporalUnit{ });
+      av1Stream.back().push_back(Frame{ });
     }
 
     if(av1Stream.empty()) {
@@ -82,14 +82,14 @@ AV1Stream getAv1Stream(Box const &root, IReport *out)
         break;
       }
 
-      av1Stream.push_back(TemporalUnit{});
-      av1Stream.back().push_back(Frame{});
+      av1Stream.push_back(TemporalUnit{ });
+      av1Stream.back().push_back(Frame{ });
     }
 
     av1Stream.back().back().push_back(obu);
 
     if(obu.type == OBU_FRAME)
-      av1Stream.back().push_back(Frame{});
+      av1Stream.back().push_back(Frame{ });
   }
 
   for(auto &tu : av1Stream)

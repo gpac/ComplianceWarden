@@ -173,7 +173,7 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
                         sym.value == FOURCC("iden") || sym.value == FOURCC("grid") || sym.value == FOURCC("iovl")) {
                         imageItems[itemId] = { ImageItem::Type::derived, -1 };
                       } else {
-                        imageItems[itemId] = {};
+                        imageItems[itemId] = { };
                       }
                     }
                   }
@@ -954,7 +954,7 @@ std::initializer_list<RuleDesc> rulesMiafGeneral = {
 
               // ensure entry
               if(trackTypes.find(handlerType) == trackTypes.end())
-                trackTypes.insert({ handlerType, HandlerTypeData{} });
+                trackTypes.insert({ handlerType, HandlerTypeData{ } });
 
               // find alternate_group
               {

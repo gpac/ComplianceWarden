@@ -14,7 +14,7 @@ std::vector<std::pair<uint32_t /*ItemId*/, std::string>> getAv1ItemColorspaces(B
   auto const av1ImageItemIDs = findImageItems(root, FOURCC("av01"));
 
   for(auto itemId : av1ImageItemIDs) {
-    AV1CodecConfigurationRecord av1cRef{};
+    AV1CodecConfigurationRecord av1cRef{ };
 
     auto av1Cs = findBoxesWithProperty(root, itemId, FOURCC("av1C"));
 
