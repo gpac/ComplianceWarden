@@ -108,21 +108,8 @@ Specification name: iamf_isobmff
 
 ### Native build
 
-Linux, Windows:
+Linux, Windows, MacOS, all:
 ```
-$ make -j
-```
-
-MacOS X and BSD-likes, just do `./check` unless not willing to execute the tests:
-
-```
-$ CXX=scripts/darwin.sh make -j
-```
-
-or
-
-```
-$ export CXX=scripts/darwin.sh
 $ make -j
 ```
 
@@ -167,8 +154,6 @@ The Compliance Warden includes known good tests and known bad tests. This ensure
 ./check
 ```
 
-NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwin (MacOS) ```CXX=scripts/darwin.sh ./check```.
-
 ## Contributing
 
 ### Build dependencies
@@ -180,7 +165,7 @@ NB: don't forget to set ```CXX``` when your toolchain requires so e.g. for Darwi
 
 ### Code formatter (optional)
 
-Install ```clang-format```.
+Install `clang-format`.
 
 ### Pre-commit: format, build and run tests before committing
 
@@ -190,19 +175,19 @@ Install ```clang-format```.
 
 ### Ensure good code coverage
 
-You need ```lcov```.
+You need `lcov`.
 
 ```
 scripts/cov.sh
 ```
 
-> Note: On Darwin (MacOS) systems you may need to install GNU version of ```g++``` and ```gcov``` (e.g. ```brew install gcc```). Then change ```./scripts/darwin.sh``` to alias GNU versions instead of Clang versions.
+> Note: On Darwin (MacOS) systems you may need to install GNU version of `g++` and `gcov` (e.g. `brew install gcc`). Then change `./scripts/darwin.sh` to alias GNU versions instead of Clang versions.
 
 ### Modifying test results
 
-The tests (launched with ```./check```) will stop running on first error.
+The tests (launched with `./check`) will stop running on first error.
 
-To update the test results, uncomment the ```# cp "$new" "$ref"``` line in the ```tests/run``` script. This avoids tests to halt when an error occurs. Please review carefully the changes before updating test results.
+To update the test results, uncomment the `# cp "$new" "$ref"` line in the `tests/run` script. This avoids tests to halt when an error occurs. Please review carefully the changes before updating test results.
 
 ## Code architecture
 
@@ -224,9 +209,9 @@ scripts/sanitize.sh        Runs the test suite under asan+ubsan.
 ### Principles
 
 The Compliance Warden is made of three parts:
- - a file parser ```common_boxes.cpp``` that can be extended (or superseded) by each specification,
- - some array of rules stored in ```specs/```,
- - an application stored in ```src/app/cw.cpp``` that probes the files, launches the tests, and produces a human-readable report.
+ - a file parser `common_boxes.cpp` that can be extended (or superseded) by each specification,
+ - some array of rules stored in `specs/`,
+ - an application stored in `src/app/cw.cpp` that probes the files, launches the tests, and produces a human-readable report.
 
 The parsing is decoupled from the rules. This allows a lot of flexibility such as:
  - the replacement of the parser by an external tool,
@@ -242,7 +227,7 @@ A test is a pair of a file format description in the [NASM syntax](https://en.wi
 
 ### Test vectors edition
 
-Test vectors are represented using some x86 assembly, in a textual human-editable form. In practice only labels and two instructions (```db``` to write 8 bits and ```dd``` to write 32 bits) are used. See this example of a ```mdat``` box containing some AV1 OBU:
+Test vectors are represented using some x86 assembly, in a textual human-editable form. In practice only labels and two instructions (`db` to write 8 bits and `dd` to write 32 bits) are used. See this example of a `mdat` box containing some AV1 OBU:
 
 ```
 mdat_start:
@@ -258,15 +243,15 @@ At the time of creating the project, we couldn't find any way to create both val
 
 The easiest way is to create a new test vector is to derive an existing one.
 
-When this is not possible, one needs to disassemble an existing binary file. Contact romain.bouqueau@motionspell.com if you need some help. The assembly file needs to be stripped from its data (generally shortining radically the ```mdat``` box) and metadata (removing unused boxes and strings).
+When this is not possible, one needs to disassemble an existing binary file. Contact romain.bouqueau@motionspell.com if you need some help. The assembly file needs to be stripped from its data (generally shortining radically the `mdat` box) and metadata (removing unused boxes and strings).
 
-The key point is to understand that these test vectors are not intended to be valid media files. We may want to add valid samples to the tests though (e.g. retrieving files and testing them) ; in this case other tools (e.g. ```MP4Box -diso``` or ```gpac -i FILE inspect:deep:analyze=bs```) already provides some deep view of what's in the file.
+The key point is to understand that these test vectors are not intended to be valid media files. We may want to add valid samples to the tests though (e.g. retrieving files and testing them) ; in this case other tools (e.g. `MP4Box -diso` or `gpac -i FILE inspect:deep:analyze=bs`) already provides some deep view of what's in the file.
 
 ### Adding a test
 
 A test is a function:
 - Input is both a box tree (from the parsing phase) and a link to the report.
-- Output is written to the report: warning, errors, and ```covered()``` to assess that the rule was exercised by the input sample.
+- Output is written to the report: warning, errors, and `covered()` to assess that the rule was exercised by the input sample.
 
 ```
 struct RuleDesc
