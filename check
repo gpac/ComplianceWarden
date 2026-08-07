@@ -5,17 +5,12 @@ export BIN=${BIN-bin}
 
 if [ $(uname -s) == "Darwin" ]; then
   CORES=$(sysctl -n hw.logicalcpu)
-  CXX=scripts/darwin.sh
 else
   CORES=$(nproc)
 fi
 
 ./scripts/reformat.sh
-if [ -z ${CXX+x} ]; then
-  make -j$CORES
-else
-  CXX=$CXX make -j$CORES
-fi
+make -j$CORES
   
 ./tests/run $BIN
 

@@ -17,6 +17,13 @@ else
   CXXFLAGS+=-O3
 endif
 
+# Wrap Darwin because its linker does not support all of the flags used below
+ifeq ($(shell uname -s),Darwin)
+ifeq ($(origin CXX),default)
+CXX=scripts/darwin.sh
+endif
+endif
+
 CXXFLAGS+=-Isrc/ -I$(BIN)
 
 all: everything
