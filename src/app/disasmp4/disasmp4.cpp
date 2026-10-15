@@ -88,6 +88,21 @@ void dump(Box const &box, int depth = 0)
       // if (box.fourcc != FOURCC("mdat"))
       {
         accumulatedBits += sym.numBits;
+
+        if(!strcmp(sym.name, "")) {
+          // unknown symbol: just write the bytes
+          assert(sym.numBits % 8 == 0);
+          while(accumulatedBits >= 8) {
+            accumulatedBits -= 8;
+            auto const val = ((uint8_t *)(&sym.value))[accumulatedBits / 8];
+            char hex[5] = { };
+            snprintf(hex, 5, "0x%02X", val);
+            println(depth + 1, "db %s", hex);
+          }
+          assert (accumulatedBits == 0);
+          continue;
+        }
+
         if(accumulatedBits > sizeof(accumulatedVal) * 8)
           assert(0); // too many unaligned bits: need to write a bitstream writer
 
