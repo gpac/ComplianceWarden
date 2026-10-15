@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 # Helper script to generate a coverage report for the full test suite.
-# Usage: ./cov.sh
-# The result is at: bin-cov/html/index.html
+# Usage: [BRANCH_COVERAGE=1] scripts/cov.sh
+# The result is at: cov-html/index.html
 set -euo pipefail
+
+# Use --rc so lcov forwards the setting to geninfo even when it is disabled.
+BRANCH_COV_OPT="branch_coverage=0"
+if [[ ${BRANCH_COVERAGE:-0} == 1 ]]; then
+  BRANCH_COV_OPT="branch_coverage=1"
+fi
+LCOV_OPTS=(--rc "$BRANCH_COV_OPT")
+
+if [[ $(gcov --version) == *LLVM* ]]; then
+  LCOV_OPTS+=(--ignore-errors inconsistent,format,category)
+fi
+
 rm -rf bin-cov
 readonly scriptDir=$(dirname $(readlink -f $0))
 
@@ -16,15 +28,16 @@ $scriptDir/../tests/run $BIN
 
 # Generate coverage report
 find $BIN -path "*/unittests/*.gcda" -delete
-lcov --capture -d $BIN -o $BIN/profile-full.txt
-lcov --remove $BIN/profile-full.txt \
+# Exclude system headers during capture, before consistency checks. The
+# leading wildcard also matches headers inside Apple's SDK directories.
+lcov "${LCOV_OPTS[@]}" --capture -d $BIN \
   --ignore-errors unused \
-  '/usr/include/*' \
-  '/usr/lib/*' \
-  '*/extra/*' \
+  --exclude '*/usr/include/*' \
+  --exclude '*/usr/lib/*' \
+  --exclude '*/extra/*' \
   -o $BIN/profile.txt
 
-genhtml -o cov-html $BIN/profile.txt
+genhtml "${LCOV_OPTS[@]}" -o cov-html $BIN/profile.txt
 
 # free disk space
 rm -rf $BIN

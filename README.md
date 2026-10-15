@@ -162,6 +162,7 @@ The Compliance Warden includes known good tests and known bad tests. This ensure
  - GNU g++ version 7+
  - GNU make
  - NASM 2.01+
+ - Optional: Python3 (for rule analysis and JSON report tests)
 
 ### Code formatter (optional)
 
@@ -179,6 +180,12 @@ You need `lcov`.
 
 ```
 scripts/cov.sh
+```
+
+Branch coverage is disabled by default. To enable it for capture, filtering, and the HTML report:
+
+```sh
+BRANCH_COVERAGE=1 scripts/cov.sh
 ```
 
 > Note: On Darwin (MacOS) systems you may need to install GNU version of `g++` and `gcov` (e.g. `brew install gcc`). Then change `./scripts/darwin.sh` to alias GNU versions instead of Clang versions.
