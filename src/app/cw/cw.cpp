@@ -12,7 +12,7 @@ std::vector<uint8_t> loadFile(const char *path);
 std::vector<SpecDesc const *> &g_allSpecs();
 void probeIsobmff(uint8_t *data, size_t size);
 bool checkComplianceStd(Box const &file, SpecDesc const *spec);
-bool checkComplianceJson(Box const &file, SpecDesc const *spec);
+bool checkComplianceJson(Box const &file, SpecDesc const *spec, const char *probeError = nullptr);
 SpecDesc const *specFind(const char *name);
 void printSpecDescriptionStd(const SpecDesc *spec);
 void printSpecDescriptionJson(std::vector<SpecDesc const *> &specs);
@@ -73,11 +73,21 @@ bool specCheck(const SpecDesc *spec, const char *filename, uint8_t *data, size_t
     extPos == std::string::npos ||
     (fnStr.substr(extPos) != ".obu" && fnStr.substr(extPos) != ".av1" && fnStr.substr(extPos) != ".av1b" &&
      fnStr.substr(extPos) != ".iamf")) {
+    std::string probeError;
     try {
       probeIsobmff(data, size);
+    } catch(std::exception const &e) {
+      probeError = e.what();
     } catch(...) {
+      probeError = "Failed to probe ISOBMFF";
+    }
+
+    if(!probeError.empty()) {
+      if(isJson)
+        return checkComplianceJson(topReader.myBox, spec, probeError.c_str());
+
       fprintf(stderr, "Failed to probe ISOBMFF\n");
-      exit(1);
+      return true;
     }
 
     auto parseFunc = getParseFunction(topReader.myBox.fourcc);

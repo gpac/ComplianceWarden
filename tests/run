@@ -10,6 +10,7 @@ mkdir -p "$tmpDir"
 
 function main
 {
+  run_test python3 "$scriptDir/probe_json.py" "$BIN"
   run_test real_mp4_aac
   run_test real_mp4_avc
   run_test real_mp4_heif

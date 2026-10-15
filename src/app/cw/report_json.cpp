@@ -129,7 +129,7 @@ bool checkComplianceJsonSpec(Box const &file, SpecDesc const *spec, Json::Array 
 }
 }
 
-bool checkComplianceJson(Box const &file, SpecDesc const *spec)
+bool checkComplianceJson(Box const &file, SpecDesc const *spec, const char *probeError)
 {
   Json::Object root;
   root.content.push_back(std::make_unique<Json::Data>("cw_version", g_version));
@@ -155,11 +155,21 @@ bool checkComplianceJson(Box const &file, SpecDesc const *spec)
   auto validationArrayPtr = validationArray.get();
   root.content.push_back(std::move(validationArray));
 
-  bool fail = false;
+  bool fail = probeError != nullptr;
+
+  if(probeError) {
+    auto errors = std::make_unique<Json::Array>("errors");
+    auto error = std::make_unique<Json::Object>();
+    error->content.push_back(std::make_unique<Json::Data>("stage", "probe"));
+    error->content.push_back(std::make_unique<Json::Data>("description", probeError));
+    errors->content.push_back(std::move(error));
+    root.content.push_back(std::move(errors));
+  }
 
   for(auto &dep : spec->dependencies) {
     depsArrayPtr->content.push_back(std::make_unique<Json::Array::String>(dep));
-    fail |= checkComplianceJsonSpec(file, spec, validationArrayPtr);
+    if(!probeError)
+      fail |= checkComplianceJsonSpec(file, spec, validationArrayPtr);
   }
 
   root.serialize(0);

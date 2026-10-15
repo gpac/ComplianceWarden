@@ -99,7 +99,7 @@ void dump(Box const &box, int depth = 0)
             snprintf(hex, 5, "0x%02X", val);
             println(depth + 1, "db %s", hex);
           }
-          assert (accumulatedBits == 0);
+          assert(accumulatedBits == 0);
           continue;
         }
 
