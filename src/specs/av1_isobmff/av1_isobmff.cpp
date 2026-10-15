@@ -256,8 +256,7 @@ struct SampleGroup {
   uint32_t grouping_type;
   uint32_t sample_description_index;
 };
-struct SampleToGroup : std::vector<SampleGroup> {
-};
+struct SampleToGroup : std::vector<SampleGroup> { };
 
 std::vector<SampleToGroup> getSampleGroupMapping(const Box &root, IReport *out, uint32_t trackId)
 {

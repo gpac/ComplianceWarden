@@ -33,8 +33,7 @@ struct Frame : std::vector<OBU> {
   bool show_frame = false;
   bool show_existing_frame = false;
 };
-struct TemporalUnit : std::vector<Frame> {
-};
+struct TemporalUnit : std::vector<Frame> { };
 struct AV1Stream : std::vector<TemporalUnit> {
   bool layered = true;
 };
