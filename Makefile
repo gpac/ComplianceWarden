@@ -93,8 +93,8 @@ $(BIN)/%.exe:
 $(BIN)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c -o "$@" "$<"
-	@$(CXX) $(CXXFLAGS) -c -o "$@.deps" "$<" -MP -MM -MT "$@"
-	@$(CXX) $(CXXFLAGS) -c "$<" -E | wc -l > "$@.lines" # keep track of the code mass
+	@$(CXX) $(CXXFLAGS) -o "$@.deps" "$<" -MP -MM -MT "$@"
+	@$(CXX) $(CXXFLAGS) "$<" -E | wc -l > "$@.lines" # keep track of the code mass
 
 clean:
 	rm -rf $(BIN)
