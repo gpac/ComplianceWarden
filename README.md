@@ -1,5 +1,4 @@
-# Compliance Warden
-# A pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+, AV1-ISOBMFF)
+# Compliance Warden - a pluggable compliance checker (ISOBMFF, HEIF/MIAF/AVIF, AV1 HDR10+, AV1-ISOBMFF)
 
 ## Introduction
 
@@ -9,7 +8,7 @@ It is meant to be extended to check MP4, CMAF, and many other file formats.
 
 CW decouples the processing phases. First it parses the input to build an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree) stored in very generic structures. Then it processes the AST to validate sets of rules attached to specifications. This approach offers a lot of flexibility and extensibility.
 
-CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [why](#Test-vectors-edition) or [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
+CW is written in modern C++. Binary test vectors are described in assembly (x86 nasm syntax) because [Why](#Test-vectors-edition) or [Why Not](https://twitter.com/daemon404/status/1301885488928878593). CW derives from a more generic effort called [Abstract](https://www.motionspell.com/compliance-testing/) started by contributors from the [GPAC](http://gpac.io) open-source project.
 
 The Compliance Warden is distributed under the [BSD-3 permissive license](https://raw.githubusercontent.com/gpac/ComplianceWarden/master/LICENSE).
 
@@ -22,7 +21,7 @@ An online version is available [here](https://gpac.github.io/ComplianceWarden-wa
 ### Usage
 
 ```
-Compliance Warden, version v35-master-rev24-g203f95e
+Compliance Warden, version v37-master-rev0-ge2f6002
 
 Usage:
     -s, --spec                              Specification name
@@ -127,20 +126,20 @@ Simply override CXX to use your target toolchain.
 Example for a Windows 64 bit target:
 
 ```
-$ CXX=x86_64-w64-mingw32-g++ make
+$ CXX=x86_64-w64-mingw32-g++ make -j4
 ```
 
 or
 
 ```
 $ export CXX=x86_64-w64-mingw32-g++
-$ make
+$ make -j4
 ```
 
 or
 
 ```
-$ BIN=bin_32 CXX=i686-linux-gnu-g++-12 ./check
+$ BIN=bin_32 CXX=i686-linux-gnu-g++-12 make -j4
 ```
 
 ### Emscripten (WASM)
@@ -229,11 +228,12 @@ The Compliance Warden is made of three parts:
 
 The parsing is decoupled from the rules. This allows a lot of flexibility such as:
  - the replacement of the parser by an external tool,
- - the implementation of rules in a different language.
+ - the implementation of rules in a different language,
+ - writting a disassembler such as [`src/app/disasmp4/disasmp4.cpp`](src/app/disasmp4/disasmp4.cpp).
 
 The result of the parsing phase is comparable to an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree). This AST is then processed by the rules.
 
-The datastructures are generic. This allows to easily serialize them. This is useful when plugging new languages or building new tests.
+The data structures are generic. This allows to easily serialize them. This is useful when plugging new languages or building new tests.
 
 ### Tests
 
@@ -257,9 +257,9 @@ At the time of creating the project, we couldn't find any way to create both val
 
 The easiest way is to create a new test vector is to derive an existing one.
 
-When this is not possible, one needs to disassemble an existing binary file. Contact romain.bouqueau@motionspell.com if you need some help. The assembly file needs to be stripped from its data (generally shortining radically the `mdat` box) and metadata (removing unused boxes and strings).
+When this is not possible, we provide a binary file disassembler called [disasmp4](src/app/disasmp4/disasmp4.cpp). The assembly file then needs to be stripped from its data (generally shortining radically the `mdat` box) and metadata (removing unused boxes and strings). Note that offsets and sizes are not recomputed automatically, so changing a file may lead to invalid files.
 
-The key point is to understand that these test vectors are not intended to be valid media files. We may want to add valid samples to the tests though (e.g. retrieving files and testing them) ; in this case other tools (e.g. `MP4Box -diso` or `gpac -i FILE inspect:deep:analyze=bs`) already provides some deep view of what's in the file.
+The key point is to understand that these test vectors are not intended to be valid media files. We may want to add valid samples to the tests though (e.g. retrieving files and testing them) ; in this case other tools (e.g. `MP4Box -diso` or `gpac -i FILE inspect:deep:analyze=bs`) also provides some deep view of what's in the file.
 
 ### Adding a test
 
@@ -322,3 +322,5 @@ This work was initiated as part of the MPEG MIAF conformance software.
 The [Alliance for Open Media (AOM)](https://aomedia.org/) sponsored the work on AVIF, AV1-ISOBMFF, and AV1 HDR10+.
 
 Google contributed the work on IAMF.
+
+Please feel free to contribute, or write to contact@motionspell.com to sponsor some work.
