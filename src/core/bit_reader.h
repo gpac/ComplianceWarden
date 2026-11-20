@@ -6,7 +6,7 @@ void ENSURE(bool cond, const char *format, ...);
 
 struct BitReader {
   uint8_t *src;
-  int size = 0;
+  int64_t size = 0; // bytes
 
   int64_t u(int n)
   {
@@ -18,10 +18,12 @@ struct BitReader {
     return r;
   }
 
-  BitReader sub(int byteCount)
+  BitReader sub(int64_t byteCount)
   {
     ENSURE((m_pos % 8) == 0, "BitReader::sub(): not byte-aligned");
-    ENSURE(byteCount <= size, "BitReader::sub(): overflow asking %d bytes with %d available", byteCount, size - m_pos);
+    ENSURE(
+      byteCount <= size, "BitReader::sub(): overflow asking %lld bytes with %lld available", (long long)byteCount,
+      (long long)(size - m_pos));
 
     auto sub = BitReader{ src + m_pos / 8, byteCount };
     m_pos += byteCount * 8;
@@ -30,7 +32,7 @@ struct BitReader {
 
   int bit()
   {
-    const int byteOffset = m_pos / 8;
+    const int64_t byteOffset = m_pos / 8;
     const int bitOffset = m_pos % 8;
 
     ENSURE(byteOffset < size, "BitReader::bit() overflow");
@@ -41,5 +43,5 @@ struct BitReader {
 
   bool empty() const { return m_pos / 8 >= size; }
 
-  int m_pos = 0;
+  int64_t m_pos = 0; // bits
 };

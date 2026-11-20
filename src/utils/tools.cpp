@@ -20,17 +20,54 @@ void ENSURE(bool cond, const char *format, ...)
   }
 }
 
-std::vector<uint8_t> loadFile(const char *path)
+static const size_t kDefaultMaxFileSize = 100 * 1024 * 1024;
+
+std::vector<uint8_t> loadFile(const char *path, bool unlimitedMemory)
 {
   auto fp = fopen(path, "rb");
   ENSURE(fp, "Can't open '%s' for reading", path);
 
-  std::vector<uint8_t> buf(100 * 1024 * 1024);
-  auto const size = fread(buf.data(), 1, buf.size(), fp);
+  std::vector<uint8_t> buf;
+
+  if(fseek(fp, 0, SEEK_END) == 0) {
+    const long fileSize = ftell(fp);
+    if(fileSize > 0 && (unlimitedMemory || (size_t)fileSize <= kDefaultMaxFileSize))
+      buf.reserve((size_t)fileSize);
+  }
+  rewind(fp);
+
+  std::vector<uint8_t> chunk(1024 * 1024);
+  size_t n;
+
+  while((n = fread(chunk.data(), 1, chunk.size(), fp)) > 0) {
+    if(!unlimitedMemory && buf.size() + n > kDefaultMaxFileSize) {
+      fclose(fp);
+      ENSURE(
+        false,
+        "'%s' is larger than %zu MiB. Inputs are loaded entirely in memory: use --unlimited-memory to process it "
+        "anyway.",
+        path, kDefaultMaxFileSize / (1024 * 1024));
+    }
+
+    buf.insert(buf.end(), chunk.begin(), chunk.begin() + n);
+  }
+
+  const bool readError = ferror(fp);
   fclose(fp);
-  buf.resize(size);
+  ENSURE(!readError, "Error while reading '%s'", path);
+
+  if(buf.size() > kDefaultMaxFileSize)
+    fprintf(
+      stderr, "Warning: '%s' is %zu bytes (more than %zu MiB) and is loaded entirely in memory.\n", path, buf.size(),
+      kDefaultMaxFileSize / (1024 * 1024));
+
   buf.shrink_to_fit();
   return buf;
+}
+
+std::vector<uint8_t> loadFile(const char *path)
+{
+  return loadFile(path, true);
 }
 
 void probeIsobmff(uint8_t *data, size_t size)
