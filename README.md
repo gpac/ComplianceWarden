@@ -28,6 +28,7 @@ Usage:
     -s, --spec                              Specification name
     -f, --format                            Output formats: "raw" (default), or "json"
     -l, --list                              List available specifications, or available rules for a given specification (see "-s")
+    -u, --unlimited-memory                  Allow input files larger than 100 MiB (the whole input is loaded in memory)
     -v, --version                           Print version and exit
     -h, --help                              Print usage and exit
 ```
