@@ -8,7 +8,7 @@ extern const char *g_version;
 
 const char *g_appName = "Compliance Warden";
 
-std::vector<uint8_t> loadFile(const char *path);
+std::vector<uint8_t> loadFile(const char *path, bool unlimitedMemory);
 std::vector<SpecDesc const *> &g_allSpecs();
 void probeIsobmff(uint8_t *data, size_t size);
 bool checkComplianceStd(Box const &file, SpecDesc const *spec);
@@ -46,7 +46,7 @@ void dump(Box const &box, int depth = 0)
 bool specCheck(const SpecDesc *spec, const char *filename, uint8_t *data, size_t size, bool isJson)
 {
   BoxReader topReader;
-  topReader.br = { data, (int)size };
+  topReader.br = { data, (int64_t)size };
   topReader.myBox.original = data;
   topReader.myBox.position = 0;
   topReader.myBox.size = size;
@@ -114,7 +114,7 @@ void fprintVersion(FILE *const stream)
 
 int main(int argc, const char *argv[])
 {
-  bool help = false, list = false, version = false;
+  bool help = false, list = false, version = false, unlimitedMemory = false;
   std::string specName, format = "text";
 
   OptionHandler opt;
@@ -122,6 +122,9 @@ int main(int argc, const char *argv[])
   opt.add("f", "format", &format, "Output formats: \"raw\" (default), or \"json\"");
   opt.addFlag(
     "l", "list", &list, "List available specifications, or available rules for a given specification (see \"-s\")");
+  opt.addFlag(
+    "u", "unlimited-memory", &unlimitedMemory,
+    "Allow input files larger than 100 MiB (the whole input is loaded in memory)");
   opt.addFlag("v", "version", &version, "Print version and exit");
   opt.addFlag("h", "help", &help, "Print usage and exit");
 
@@ -178,8 +181,8 @@ int main(int argc, const char *argv[])
 
   auto spec = specFind(specName.c_str());
   try {
-    auto buf = loadFile(urls[0].c_str());
-    return specCheck(spec, urls[0].c_str(), buf.data(), (int)buf.size(), format == "json");
+    auto buf = loadFile(urls[0].c_str(), unlimitedMemory);
+    return specCheck(spec, urls[0].c_str(), buf.data(), buf.size(), format == "json");
   } catch(...) {
     fprintf(stderr, "Failed to load file: '%s'\n", urls[0].c_str());
     exit(1);
