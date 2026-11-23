@@ -116,9 +116,6 @@ int parseAv1SeqHdr(IReader *reader, Av1State &state)
 
     auto initial_display_delay_present_flag = br->sym("initial_display_delay_present_flag", 1);
 
-    if(initial_display_delay_present_flag != 0)
-      throw std::runtime_error("Unimplemented initial_display_delay_present_flag != 0. Aborting.");
-
     auto operating_points_cnt_minus_1 = br->sym("operating_points_cnt_minus_1", 5);
 
     for(int i = 0; i <= operating_points_cnt_minus_1; i++) {
@@ -148,15 +145,12 @@ int parseAv1SeqHdr(IReader *reader, Av1State &state)
          decoder_model_present_for_this_op[ i ] = 0
          }
        */
-      // Not covered: there is an assert ensuring initial_display_delay_present_flag == false.
-      /*
-         if ( initial_display_delay_present_flag ) {
-         initial_display_delay_present_for_this_op[ i ] f(1)
-         if ( initial_display_delay_present_for_this_op[ i ] ) {
-          initial_display_delay_minus_1[ i ] f(4)
-         }
-         }
-       */
+      if(initial_display_delay_present_flag) {
+        auto initial_display_delay_present_for_this_op = br->sym("initial_display_delay_present_for_this_op[i]", 1);
+
+        if(initial_display_delay_present_for_this_op)
+          br->sym("initial_display_delay_minus_1[i]", 4);
+      }
     }
   }
 
